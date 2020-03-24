@@ -23,8 +23,17 @@ if (!cfgVal.validateConfig().isValid) {
     Please, review your ".env" file and adjust it accordingly.\n\n`);
 }
 
-//Database setup:
-database.connect()
+database.connect(); //Database setup.
+webServer.start(); //Web Server and routing services start.
 
-//Web Server and routing services start:
-webServer.start();
+function closeHandler(err, origin, code = 1) {
+    logger.logError(`There was an error on: "${origin}", error details are: \n${String(err)}`);
+    logger.logInfo(`Exiting now with code ${code}`);
+    process.exit(code);
+}
+
+process.on("unhandledRejection", closeHandler);
+process.on('SIGKILL', closeHandler);
+process.on('SIGINT', closeHandler);
+process.on('SIGUSR1', closeHandler);
+process.on('SIGUSR2', closeHandler);

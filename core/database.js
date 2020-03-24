@@ -14,7 +14,7 @@ const mongooseOptions = {
 const logger = require("../services/logger-service");
 
 /**
- * Database initial setup
+ * This class provides the database initialization setup.
  */
 class Database {
 
@@ -27,19 +27,22 @@ class Database {
         }
     }
 
+    /**
+     * Establish database connectivity and report errors if any.
+     */
     connect() {
         //Establishing database conection:
         mongoose.connect(process.env.DB_ENDPOINT, mongooseOptions, (err) => {
             if (err) {
                 logger.logError("There was an error connecting to Mongo DB instance. Error description:\n" + err);
+                throw err
             }
-            else {
-                logger.logInfo(`Successfully connected to Mongo DB instance!
+
+            logger.logInfo(`Successfully connected to Mongo DB instance!
 Connection options in use:\n${JSON.stringify(mongooseOptions)
-                        .replace(/,/g, "\n")
-                        .replace(/{/g, "")
-                        .replace(/}/g, "")}\n`)
-            }
+                    .replace(/,/g, "\n")
+                    .replace(/{/g, "")
+                    .replace(/}/g, "")}\n`)
         });
     }
 }
