@@ -1,11 +1,13 @@
 // @ts-check
 
+//Node libraries
+const util = require('util');
+
 //Express App & Middlewares dependencies:
 const express = require("express");
 const bodyParser = require("body-parser");
 
 //Core Propel API services and helpers:
-const logger = require("../services/logger-service");
 const Router = require("./router");
 
 /**
@@ -27,20 +29,7 @@ class WebServer {
         this.router.setup();
 
         //Starting HTTP Server:
-        this.app.listen(process.env.PORT, () => {
-
-            if (process.env.NODE_ENV == "production") {
-                console.warn(`\n
-            =============================================================
-            CURRENT ENVIRONMENT SETTINGS CORRESPONDS TO: PRODUCTION SITE.
-            =============================================================\n`)
-            }
-
-            logger.logInfo(`Executing on folder: ${__dirname}`);
-            logger.logInfo(`Executing script: ${__filename}`);
-            logger.logInfo(`\nServer is ready and listening on port:${process.env.PORT}!\n`);
-            logger.logInfo(`\nPropel API STARTED on "${process.env.NODE_ENV}" environment.\n`);
-        });
+        return util.promisify(this.app.listen).bind(this.app)(process.env.PORT);
     }
 }
 

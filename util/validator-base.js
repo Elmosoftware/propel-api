@@ -1,6 +1,7 @@
 // @ts-check
 
-var Codes = require("./codes")
+var Codes = require("../core/api-error-codes")
+var APIError = require("../core/api-error")
 
 /**
  * Provides basic methods to apply basic validation rules.
@@ -11,7 +12,6 @@ class ValidatorBase {
 
     constructor() {
         this._results = [];
-        this.userErrorCodeKey = "";
     }
 
     //#region Private Members
@@ -23,15 +23,6 @@ class ValidatorBase {
         this._results.push("-" + errorMsg)
     }
 
-    /**
-     * Allows to set the user error code to return with the Error object by the "getErrors()" method.
-     * @param {string} key User error code key
-     */
-    _setUserErrorCode(key){
-        this.userErrorCodeKey = key;
-    }
-    //#endregion
-
     get isValid() {
         return (this._results.length == 0);
     }
@@ -40,11 +31,7 @@ class ValidatorBase {
         var ret = null;
 
         if (!this.isValid) {
-            ret = new Error(this._results.join("\n"));
-
-            if (this.userErrorCodeKey) {
-                Codes.addUserErrorCode(ret, this.userErrorCodeKey);
-            }
+            ret = new APIError(this._results.join("\n"))
         }
 
         return ret;

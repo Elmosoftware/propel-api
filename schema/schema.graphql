@@ -1,0 +1,57 @@
+#Custom definitions:
+
+
+scalar JSON
+
+input QueryModifier {
+    top: Int
+    skip: Int
+    sortBy: String
+    populate: Boolean
+    filterBy: String
+}
+
+input entity {
+    name: String!
+    doc: JSON!
+}
+
+# From here, specific domain model types:
+# ===============================================
+
+type User {
+    _id: ID!
+    name: String!
+    email: String!
+    initials: String!
+    picture: String
+}
+
+type UserQueryResults  {
+    data: [User!]!
+    ok: Boolean!
+    count: Int!
+    totalCount: Int
+}
+
+# type MutationResults {
+#     _id: ID
+#     ok: Boolean!
+# }
+
+# Queries and Mutations
+# ===============================================
+type Queries {
+    getUser(_id: String!): UserQueryResults
+    findUsers(q: QueryModifier): UserQueryResults
+}
+        
+type Mutations {
+    insertUser(doc: entity): ID!
+    updateUser(doc: entity): ID!
+}
+
+schema {
+    query: Queries
+    mutation: Mutations
+}

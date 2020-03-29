@@ -1,5 +1,6 @@
 // @ts-check
-
+const fs = require("fs");
+const path = require("path");
 const mongoose = require("mongoose");
 const mongooseOptions = {
     useNewUrlParser: true, //(node:61064) DeprecationWarning: current URL string parser is deprecated.
@@ -12,6 +13,7 @@ const mongooseOptions = {
 
 //Core Propel API services and helpers:
 const logger = require("../services/logger-service");
+const { DataService } = require("../services/data-service");
 
 /**
  * This class provides the database initialization setup.
@@ -25,25 +27,93 @@ class Database {
             mongooseOptions.autoCreate = false;
             mongooseOptions.autoIndex = false;
         }
+
+        this.models = []
+        this._started = false;
     }
 
     /**
-     * Establish database connectivity and report errors if any.
+     * Readonly options set for the database connection.
      */
-    connect() {
-        //Establishing database conection:
-        mongoose.connect(process.env.DB_ENDPOINT, mongooseOptions, (err) => {
-            if (err) {
-                logger.logError("There was an error connecting to Mongo DB instance. Error description:\n" + err);
-                throw err
-            }
+    get options() {
+        return mongooseOptions;
+    }
 
-            logger.logInfo(`Successfully connected to Mongo DB instance!
-Connection options in use:\n${JSON.stringify(mongooseOptions)
-                    .replace(/,/g, "\n")
-                    .replace(/{/g, "")
-                    .replace(/}/g, "")}\n`)
-        });
+    /**
+     * returns a readonly boolean value indicating if the Database has been already initialized. 
+     */
+    get started() {
+        return this._started;
+    }
+
+    /**
+     * Built models and establish database connectivity.
+     */
+    start() {
+        if (this._started) {
+            throw new Error("Database has been already started.")
+        }
+
+        this._initModels();
+        logger.logInfo("Establishing database conection...");
+        return mongoose.connect(process.env.DB_ENDPOINT, mongooseOptions);
+    }
+
+    getService(modelName) {
+        return new DataService(this._getModelByName(modelName));
+    }
+
+    _getModelByName(modelName) {
+        let ret = null
+
+        if (modelName && typeof modelName == "string") {
+
+            ret = this.models.find((model) => {
+                return model.name.toLowerCase() == modelName.toLowerCase();
+            })
+
+            if (!ret) {
+                throw new Error(`There is no model named "${modelName}".`)    
+            } 
+        }
+        else{
+            throw new Error(`Parameter "modelName" is not from the expected type. Expected type "string" received type "${typeof modelName}".`);
+        }
+
+        return ret;
+    }
+
+    _initModels() {
+        if (this.models && this.models.length == 0) {
+            logger.logInfo("Initializing database models ...")
+
+            try {
+                fs.readdirSync(process.env.MODELS_FOLDER).forEach((file) => {
+                    if (file.toLowerCase().endsWith(".js")) {
+                        let m = require(`../${process.env.MODELS_FOLDER}/${path.basename(file, ".js")}`);
+                        this.models.push(new EntityModel(m));
+                    }
+                })
+            } catch (error) {
+                logger.logError(`There was an error initializing database models, 
+process will be aborted. Error details: \n${String(error)}.`)
+                throw error
+            }
+        }
+        else{
+            logger.logInfo(`Database models has been initialized already.`)
+        }
+
+        logger.logInfo(`Database models initialization process finished successfully. Models found: ${this.models.length}.`)
+    }
+}
+
+class EntityModel{
+    constructor(model){
+        this.repository = model; //.model;
+        this.schema = model.schema.tree;
+        this.name = model.modelName;
+        this.pluralName = model.collection.collectionName;
     }
 }
 
