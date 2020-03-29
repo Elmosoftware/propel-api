@@ -8,6 +8,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 //Core Propel API services and helpers:
+const cfg = require("./config")
 const Router = require("./router");
 
 /**
@@ -29,7 +30,7 @@ class WebServer {
         this.router.setup();
 
         //Starting HTTP Server:
-        return util.promisify(this.app.listen).bind(this.app)(process.env.PORT);
+        return util.promisify(this.app.listen).bind(this.app)(cfg.port);
     }
 }
 

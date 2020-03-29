@@ -1,3 +1,4 @@
+const cfg = require("../core/config")
 const { Code } = require("./api-error-codes");
 
 /**
@@ -63,7 +64,7 @@ class APIError extends Error {
     parseStack(err) {
         let ret = []
 
-        if (process.env.NODE_ENV != "production") {
+        if (!cfg.isProduction) {
             if (typeof err == 'object') {
                 ret = (err.stack) ? err.stack.split('\n') : ret;
             }

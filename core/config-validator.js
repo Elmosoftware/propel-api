@@ -1,6 +1,6 @@
 //@ts-check
 
-const ValidatorBase = require("./validator-base");
+const ValidatorBase = require("../util/validator-base");
 
 /**
  * This  class provides a method to validate .env config file.

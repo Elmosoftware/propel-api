@@ -13,13 +13,13 @@ console.log(`\n     --------------------  Reach your servers! ------------------
 
 //Core Propel API services and helpers:
 const logger = require("./services/logger-service");
-const cfgVal = require("./util/config-validator");
+const cfg = require("./core/config");
 const webServer = require("./core/web-server");
 const database = require("./core/database")
 
 //Configuration validation:
-if (!cfgVal.validateConfig().isValid) {
-    logger.logWarn(`\n\nIMPORTANT: The following configuration errors could prevent the application to start:\n${cfgVal.getErrors().message}
+if (!cfg.validator.validateConfig().isValid) {
+    logger.logWarn(`\n\nIMPORTANT: The following configuration errors could prevent the application to start:\n${cfg.getErrors().message}
     Please, review your ".env" file and adjust it accordingly.\n\n`);
 }
 
@@ -34,7 +34,7 @@ Connection options in use:\n${JSON.stringify(database.options)
         logger.logInfo("Starting HTTP server...")
         webServer.start() //Web Server and routing services start.
             .then(() => {
-                if (process.env.NODE_ENV == "production") {
+                if (cfg.isProduction) {
                     logger.logWarn(`\n
                 =============================================================
                 CURRENT ENVIRONMENT SETTINGS CORRESPONDS TO: PRODUCTION SITE.
@@ -43,8 +43,8 @@ Connection options in use:\n${JSON.stringify(database.options)
 
                 logger.logInfo(`Executing on folder: ${__dirname}`);
                 logger.logInfo(`Executing script: ${__filename}`);
-                logger.logInfo(`Server is ready and listening on port:${process.env.PORT}!`);
-                logger.logInfo(`\n\nPropel API STARTED on "${process.env.NODE_ENV}" environment.\n`);
+                logger.logInfo(`Server is ready and listening on port:${cfg.port}!`);
+                logger.logInfo(`\n\nPropel API STARTED on "${cfg.environment}" environment.\n`);
             })
         .catch((err) => {
             closeHandler(err)

@@ -12,6 +12,7 @@ const mongooseOptions = {
 };
 
 //Core Propel API services and helpers:
+const cfg = require("./config")
 const logger = require("../services/logger-service");
 const { DataService } = require("../services/data-service");
 
@@ -23,7 +24,7 @@ class Database {
     constructor() {
 
         //Adding specific Mongo DB driver connection options for Prod:
-        if (process.env.NODE_ENV == "production") {
+        if (cfg.isProduction) {
             mongooseOptions.autoCreate = false;
             mongooseOptions.autoIndex = false;
         }
@@ -56,7 +57,7 @@ class Database {
 
         this._initModels();
         logger.logInfo("Establishing database conection...");
-        return mongoose.connect(process.env.DB_ENDPOINT, mongooseOptions);
+        return mongoose.connect(cfg.databaseEndpoint, mongooseOptions);
     }
 
     getService(modelName) {
@@ -88,9 +89,9 @@ class Database {
             logger.logInfo("Initializing database models ...")
 
             try {
-                fs.readdirSync(process.env.MODELS_FOLDER).forEach((file) => {
+                fs.readdirSync(cfg.modelsFolder).forEach((file) => {
                     if (file.toLowerCase().endsWith(".js")) {
-                        let m = require(`../${process.env.MODELS_FOLDER}/${path.basename(file, ".js")}`);
+                        let m = require(`../${cfg.modelsFolder}/${path.basename(file, ".js")}`);
                         this.models.push(new EntityModel(m));
                     }
                 })
