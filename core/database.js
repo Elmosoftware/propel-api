@@ -29,8 +29,12 @@ class Database {
             mongooseOptions.autoIndex = false;
         }
 
-        this.models = []
+        this._models = []
         this._started = false;
+    }
+
+    get models() {
+        return this._models;
     }
 
     /**

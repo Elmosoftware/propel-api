@@ -19,6 +19,13 @@ class DataService {
     }
 
     /**
+     * Return the model name currently servicing.
+     */
+    get modelName() {
+        return this._model.name;
+    }
+
+    /**
      * Return a new Entity Object ID
      */
     getNewobjectId() {
@@ -439,13 +446,13 @@ class DataService {
         if (this._model.schema.createdBy) { //Checking for just one of the audit fields is enough :-)
             if (isNewDoc) {
                 doc.createdOn = new Date();
-                doc.createdBy = session.userId;
+                doc.createdBy = (session && session.userId) ? session.userId : null;
                 doc.lastUpdateOn = null;
                 doc.lastUpdateBy = null;
             }
             else {
                 doc.lastUpdateOn = new Date();
-                doc.lastUpdateBy = session.userId;
+                doc.lastUpdateBy = (session && session.userId) ? session.userId : null;
             }
         }
     }

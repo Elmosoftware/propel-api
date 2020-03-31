@@ -11,7 +11,7 @@ var APIError = require("../core/api-error")
 class ValidatorBase {
 
     constructor() {
-        this._results = [];
+        this.reset();
     }
 
     //#region Private Members
@@ -27,14 +27,22 @@ class ValidatorBase {
         return (this._results.length == 0);
     }
 
-    getErrors() {
+    getErrors(reset = false) {
         var ret = null;
 
         if (!this.isValid) {
             ret = new APIError(this._results.join("\n"))
         }
 
+        if (reset) {
+            this.reset();
+        }
+        
         return ret;
+    }
+
+    reset() {
+        this._results = [];
     }
 }
 

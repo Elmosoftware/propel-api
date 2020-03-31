@@ -30,7 +30,8 @@ class APIError extends Error {
         super((error.message)? error.message : String(error));
         this.name = this.parseName(error);
         this.message = this.parseMessage(error);
-        this.stackArray = this.parseStack(error);
+        this.stack = this.parseStack(error);
+        this.stackArray = this.parseStackArray(error);
         this.errorCode = this.parseErrorCode(errorCode); 
     }
 
@@ -57,26 +58,42 @@ class APIError extends Error {
     }
 
     /**
-     * Parse the stack and turn it into a string[].
+     * Parse the stack and return it as a plain text.
      * If the err param is just an error message, we will get the actual stack as the property value.
      * @param {Error | string} err Error message or original Error instance.
      */
     parseStack(err) {
-        let ret = []
+        let ret = ""
 
         if (!cfg.isProduction) {
             if (typeof err == 'object') {
-                ret = (err.stack) ? err.stack.split('\n') : ret;
+                ret = err.stack;
             }
             else {
-                ret = Error().stack
-                    .split('\n')
-                    .filter((line) => {
-                        //Excluding first line and references to this module from the stack:
-                        return !(line.startsWith("Error") || line.indexOf("api-error.js") != -1)
-                    })
-                    .map( (line) => line.trim());
+                ret = Error().stack;
             }
+        }
+
+        return ret;
+    }
+
+    /**
+     * Parse the stack and turn it into a string[].
+     * If the err param is just an error message, we will get the actual stack as the property value.
+     * @param {Error | string} err Error message or original Error instance.
+     */
+    parseStackArray(err) {
+        let ret = []
+        let currentStack = this.parseStack(err);
+
+        if (currentStack) {
+            ret = currentStack
+                .split('\n')
+                .filter((line) => {
+                    //Excluding first line and references to this module from the stack:
+                    return !(line.startsWith("Error") || line.indexOf("api-error.js") != -1)
+                })
+                .map((line) => line.trim());
         }
 
         return ret;

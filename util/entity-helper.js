@@ -15,7 +15,12 @@ function addCommonEntityAttributes(schemaDefinition, includeAuditFields = true) 
 
     if (includeAuditFields) {
         schemaDefinition.createdOn = { type: Date, required: true }; 
-        schemaDefinition.createdBy = { type: mongoose.Schema.Types.ObjectId, required: true }; 
+        /* 
+            TODO:
+                Below "CreatedBy" field must be set as required as soon we add the 
+                user authentication & Authorization process in Propel.
+        */
+        schemaDefinition.createdBy = { type: mongoose.Schema.Types.ObjectId, required: false }; 
         schemaDefinition.lastUpdateOn = { type: Date, required: false };
         schemaDefinition.lastUpdateBy = { type: mongoose.Schema.Types.ObjectId, required: false }; 
     }
