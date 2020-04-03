@@ -12,6 +12,13 @@
         },
         {
             "type": "node",
+            "request": "attach",
+            "name": "Nodemon Debug",
+            "port": 9229, //Default node debug port
+            "restart": true
+        },
+        {
+            "type": "node",
             "request": "launch",
             "name": "Run & Debug All Test",
             "program": "${workspaceFolder}/node_modules/.bin/jest",
