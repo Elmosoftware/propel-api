@@ -1,6 +1,5 @@
 // @ts-check
 
-var Codes = require("../core/api-error-codes")
 var APIError = require("../core/api-error")
 
 /**
@@ -14,28 +13,19 @@ class ValidatorBase {
         this.reset();
     }
 
-    //#region Private Members
-    /**
-     * Add and error to the list of error messages found by the validator.
-     * @param {string} errorMsg Error message to add.
-     */
-    _addError(errorMsg) {
-        this._results.push("-" + errorMsg)
+    validate() {
+        this.reset();
     }
-
+    
     get isValid() {
         return (this._results.length == 0);
     }
 
-    getErrors(reset = false) {
+    getErrors() {
         var ret = null;
 
         if (!this.isValid) {
             ret = new APIError(this._results.join("\n"))
-        }
-
-        if (reset) {
-            this.reset();
         }
         
         return ret;
@@ -43,6 +33,15 @@ class ValidatorBase {
 
     reset() {
         this._results = [];
+    }
+
+    //#region Private Members
+    /**
+     * Add and error to the list of error messages found by the validator.
+     * @param {string} errorMsg Error message to add.
+     */
+    _addError(errorMsg) {
+        this._results.push("-" + errorMsg)
     }
 }
 

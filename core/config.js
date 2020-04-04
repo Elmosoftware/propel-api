@@ -1,5 +1,5 @@
 
-const configValidator = require("./config-validator");
+// const configValidator = require("../validators/config-validator");
 
 /**
  * Unified access to the API configuration.
@@ -7,13 +7,6 @@ const configValidator = require("./config-validator");
 class Config {
 
     constructor() {
-    }
-
-    /**
-     * Configuration validator instance.
-     */
-    get validator() {
-        return configValidator;
     }
 
     /**

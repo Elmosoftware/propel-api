@@ -1,8 +1,5 @@
 #Custom definitions:
 
-
-scalar JSON
-
 input QueryModifier {
     top: Int
     skip: Int
@@ -11,13 +8,8 @@ input QueryModifier {
     filterBy: String
 }
 
-input entity {
-    name: String!
-    doc: JSON!
-}
-
-# From here, specific domain model types:
-# ===============================================
+# From here, specific domain model types and inputs:
+# ==================================================
 
 type User {
     _id: ID!
@@ -27,17 +19,19 @@ type User {
     picture: String
 }
 
+input UserInput {
+    _id: ID #Not required here, because insert resolver.
+    name: String!
+    email: String!
+    initials: String!
+    picture: String
+}
+
 type UserQueryResults  {
     data: [User!]!
-    ok: Boolean!
     count: Int!
     totalCount: Int
 }
-
-# type MutationResults {
-#     _id: ID
-#     ok: Boolean!
-# }
 
 # Queries and Mutations
 # ===============================================
@@ -47,8 +41,9 @@ type Queries {
 }
         
 type Mutations {
-    insertUser(doc: entity): ID!
-    updateUser(doc: entity): ID!
+    insertUser(doc: UserInput): ID!
+    updateUser(doc: UserInput): ID!
+    deleteUser(_id: String!): ID!
 }
 
 schema {

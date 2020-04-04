@@ -14,12 +14,13 @@ console.log(`\n     --------------------  Reach your servers! ------------------
 //Core Propel API services and helpers:
 const logger = require("./services/logger-service");
 const cfg = require("./core/config");
+const cfgVal = require("./validators/config-validator")
 const webServer = require("./core/web-server");
 const database = require("./core/database")
 
 //Configuration validation:
-if (!cfg.validator.validateConfig().isValid) {
-    logger.logWarn(`\n\nIMPORTANT: The following configuration errors could prevent the application to start:\n${cfg.getErrors().message}
+if (!cfgVal.validate().isValid) {
+    logger.logWarn(`\n\nIMPORTANT: The following configuration errors could prevent the application to start:\n${cfgVal.getErrors().message}
     Please, review your ".env" file and adjust it accordingly.\n\n`);
 }
 

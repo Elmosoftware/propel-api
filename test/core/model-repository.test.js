@@ -36,7 +36,9 @@ var m05With1Emb = new EntityModel(mongoose.model("m05With1Emb", mongoose.Schema(
     m03Field02: { type: mongoose.Schema.Types.ObjectId, ref: "m01NoRef", required: true },
     m03Field03: { type: mongoose.Schema.Types.ObjectId, ref: "m02With1Ref", required: true },
     m04Field04: [{ type: mongoose.Schema.Types.ObjectId, ref: "m03With2Ref", required: true }],
-    m05Field05: addressEmbeddedSchema
+    m05Field05: addressEmbeddedSchema,
+    m05Field06: { type: String, required: true, unique: true, INTERNAL: true },
+    m05Field07: { type: String, required: true, unique: true, INTERNAL: false }
 }), "m05With1Embs"));
 
 var repo = null;
@@ -206,5 +208,6 @@ describe("ModelRepository Class - Fifth models, 1 with 1 ref, 1 with 2 refs, 1 w
                 }
             }
         });
+        expect(m5.internalFields).toEqual(["m05Field06"])
     })
 })

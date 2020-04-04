@@ -7,13 +7,7 @@
         {
             "type": "node",
             "request": "attach",
-            "name": "Attach API Debugger",
-            "port": 9229 //Default node debug port
-        },
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Nodemon Debug",
+            "name": "Attach Nodemon Debug",
             "port": 9229, //Default node debug port
             "restart": true
         },

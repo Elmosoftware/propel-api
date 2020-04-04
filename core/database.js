@@ -15,7 +15,7 @@ const mongooseOptions = {
 const cfg = require("./config")
 const { ModelRepository, EntityModel } = require("./model-repository")
 const logger = require("../services/logger-service");
-const { DataService } = require("../services/data-service");
+const DataService = require("../services/data-service");
 
 /**
  * This class provides the database initialization setup.

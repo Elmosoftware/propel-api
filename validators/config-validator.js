@@ -1,6 +1,6 @@
 //@ts-check
 
-const ValidatorBase = require("../util/validator-base");
+const ValidatorBase = require("./validator-base");
 
 /**
  * This  class provides a method to validate .env config file.
@@ -17,7 +17,8 @@ class ConfigValidator extends ValidatorBase {
     /**
      * Validates the .env Config file after been loaded.
      */
-    validateConfig() {
+    validate() {
+        super.validate();
 
         let validEnvValues = ["development", "production"];
 

@@ -5,7 +5,8 @@ const graphqlHTTP = require("express-graphql");
 
 const db = require("../core/database")
 const graphqlSchema = require("../schema/schema");
-const ErrorFormater = require("../schema/error-formatter")
+const ErrorFormater = require("../schema/error-formatter");
+const QueryModifier = require("../core/query-modifier")
 
 handler.use("", graphqlHTTP({
     schema: graphqlSchema,
@@ -13,26 +14,22 @@ handler.use("", graphqlHTTP({
     customFormatErrorFn: ErrorFormater.format,
     rootValue: {
         insertUser: (args) => {
-            return db.getService(args.doc.name).add(args.doc.doc);
+            return db.getService("user").add(args.doc);
         },
         updateUser: (args) => {
-            return db.getService(args.doc.name).update(args.doc.doc);
+            return db.getService("user").update(args.doc);
         },
         getUser: (args) => {
 
+            let qm = new QueryModifier( { filterBy: `{ "_id": "${args._id}" }` });
 
-            // =======================================================================
-            throw new Error("FEATURE NOT IMPLEMENTED YET!!!");
-            // =======================================================================
-
-
+            return db.getService("user").find(qm);
         },
         findUsers: (args) => {
-
-            // =======================================================================
-            throw new Error("FEATURE NOT IMPLEMENTED YET!!!");
-            // =======================================================================
-
+            return db.getService("user").find(args.q);
+        },
+        deleteUser: (args) => {
+            return db.getService("user").delete(args._id);   
         }
     }
 }))

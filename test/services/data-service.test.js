@@ -1,4 +1,4 @@
-const { DataService } = require("../../services/data-service");
+const DataService = require("../../services/data-service");
 
 function getModel(inheritFromEntityBase = false) {
 
@@ -10,45 +10,18 @@ function getModel(inheritFromEntityBase = false) {
 
     return {
         repository:{
-            create(doc) {
-                return doc;
+            hydrate(doc) {
+                return {
+                    isNew: false,
+                    save(){
+                        return doc._id;
+                    }
+                };
             }
         },
         schema: schema
     };
 }
-
-describe("DataService Class - add()", () => {
-
-    test(`Setting audit data for "EntityBase" entities (with no audit data)`, () => {
-        let m = getModel(true)
-        let ds = new DataService(m)
-        let doc= ds.add({
-            _id: "id"
-        })
-
-        expect(doc._id).toEqual("id");
-        expect(doc.createdOn).toBeFalsy();
-        expect(doc.createdBy).toBeFalsy();
-        expect(doc.lastUpdateOn).toBeFalsy();
-        expect(doc.lastUpdateBy).toBeFalsy();
-        expect(doc.deletedOn).toEqual(null);
-    }),
-    test(`Setting audit data for "Entity" entities (with audit data)`, () => {
-        let m = getModel(false)
-        let ds = new DataService(m)
-        let doc= ds.add({
-            _id: "id"
-        })
-
-        expect(doc._id).toEqual("id");
-        expect(doc.createdOn).not.toBeFalsy();
-        expect(doc.createdBy).toBeFalsy();
-        expect(doc.lastUpdateOn).toBeFalsy();
-        expect(doc.lastUpdateBy).toBeFalsy();
-        expect(doc.deletedOn).toEqual(null);
-    })
-})
 
 describe("DataService Class - update()", () => {
     test(`Must Throw if document is a Null reference"`, () => {

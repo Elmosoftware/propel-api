@@ -1,4 +1,4 @@
-const cfg = require("../core/config")
+const cfg = require("./config")
 const { Code } = require("./api-error-codes");
 
 /**

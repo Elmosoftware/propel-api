@@ -39,14 +39,15 @@ class ModelRepository {
         if (models && Array.isArray(models)) {
             logger.logInfo("Initializing database models ...")
             this._models = models;
-            this._fillPopulateSchemas();
+            this._fillSchemaMetadata();
 
             if (!cfg.isProduction) {
                 console.log("\n --------------- MODELS --------------- ")
                 this.models.forEach(model => {
                     console.log(`"${model.name}":\n    
                 Schema:${JSON.stringify(model.schema)}\n    
-                Sub docs populate schema:${JSON.stringify(model.populateSchema)}`);
+                Sub docs populate schema:${JSON.stringify(model.populateSchema)}
+                Internal fields: ${model.internalFields.join(", ")}`);
                 });
             }
             logger.logInfo(`\nDatabase models initialization process finished 
@@ -58,11 +59,12 @@ class ModelRepository {
         }
     }
 
-    _fillPopulateSchemas() {
+    _fillSchemaMetadata() {
 
         this.models.forEach(model => {
             model.populateSchema = Utils.defaultIfEmptyObject(Object.assign({},
                 this._recursivePopulateSchemas(model)), "");
+            model.internalFields = this._getInternalFields(model.schema);
         });
     }
 
@@ -93,6 +95,18 @@ class ModelRepository {
             }
         }
         return populateSchema;
+    }
+
+    _getInternalFields(schema) {
+        let ret = [];
+
+        for (var key in schema) {
+            if (schema[key].INTERNAL) {
+                ret.push(key);
+            }
+        }
+
+        return ret;
     }
 
     _isRefField(schemaProperty) {
@@ -135,6 +149,13 @@ class EntityModel {
         this.name = model.modelName;
         this.pluralName = model.collection.collectionName;
         this.populateSchema = null
+        this.internalFields = []
+    }
+
+    hasInternalField(fieldName){
+        return this.internalFields.length > 0 && this.internalFields.some((field) => {
+            return field.toLowerCase() == field.toLowerCase();
+        })
     }
 }
 
