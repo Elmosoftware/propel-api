@@ -132,3 +132,46 @@ describe("Utils Class - defaultIfEmptyObject()", () => {
         expect(Utils.defaultIfEmptyObject({attr: "Hello!"})).toEqual({attr: "Hello!"});
     })
 })
+
+describe("Utils Class - capitalize()", () => {
+
+    test(`capitalize(null)`, () => {
+        expect(Utils.capitalize(null)).toEqual("");
+    })
+    test(`capitalize(undefined)`, () => {
+        expect(Utils.capitalize(undefined)).toEqual("");
+    })
+    test(`capitalize("")`, () => {
+        expect(Utils.capitalize(null)).toEqual("");
+    })
+    test(`capitalize(234)`, () => {
+        expect(Utils.capitalize(234)).toEqual("234");
+    })
+    test(`capitalize(156.45)`, () => {
+        expect(Utils.capitalize(156.45)).toEqual("156.45");
+    })
+    test(`capitalize({})`, () => {
+        expect(Utils.capitalize({})).toEqual("[object Object]");
+    })
+    test(`capitalize(true)`, () => {
+        expect(Utils.capitalize(true)).toEqual("True");
+    })
+    test(`capitalize(false)`, () => {
+        expect(Utils.capitalize(false)).toEqual("False");
+    })
+    test(`capitalize(["text"])`, () => {
+        expect(Utils.capitalize(["text"])).toEqual("Text");
+    })
+    test(`capitalize([4567, "text"])`, () => {
+        expect(Utils.capitalize([4567, "text"])).toEqual("4567,text");
+    })
+    test(`capitalize("abracadabra")`, () => {
+        expect(Utils.capitalize("abracadabra")).toEqual("Abracadabra");
+    })
+    test(`capitalize("Abracadabra")`, () => {
+        expect(Utils.capitalize("Abracadabra")).toEqual("Abracadabra");
+    })
+    test(`capitalize("ABRACADABRA")`, () => {
+        expect(Utils.capitalize("ABRACADABRA")).toEqual("ABRACADABRA");
+    })
+})

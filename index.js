@@ -16,7 +16,7 @@ const logger = require("./services/logger-service");
 const cfg = require("./core/config");
 const cfgVal = require("./validators/config-validator")
 const webServer = require("./core/web-server");
-const database = require("./core/database")
+const database = require("./core/database");
 
 //Configuration validation:
 if (!cfgVal.validate().isValid) {
@@ -26,11 +26,11 @@ if (!cfgVal.validate().isValid) {
 
 database.start() //Database setup.
     .then((data) => {
-        logger.logInfo(`Successfully connected to Mongo DB instance!
-Connection options in use:\n${JSON.stringify(database.options)
-                .replace(/,/g, "\n")
+        logger.logInfo(`Successfully connected to Mongo DB instance! Options in use:
+        ${JSON.stringify(database.options)
+                .replace(/,/g, "\n\t")
                 .replace(/{/g, "")
-                .replace(/}/g, "")}\n`)
+                .replace(/}/g, "")}\n`);
 
         logger.logInfo("Starting HTTP server...")
         webServer.start() //Web Server and routing services start.

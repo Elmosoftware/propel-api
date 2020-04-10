@@ -14,15 +14,15 @@ var mongoose = require("mongoose");
 function addCommonEntityAttributes(schemaDefinition, includeAuditFields = true) {
 
     if (includeAuditFields) {
-        schemaDefinition.createdOn = { type: Date, required: true }; 
+        schemaDefinition.createdOn = { type: Date, required: true, AUDIT: true}; 
         /* 
             TODO:
                 Below "CreatedBy" field must be set as required as soon we add the 
                 user authentication & Authorization process in Propel.
         */
-        schemaDefinition.createdBy = { type: mongoose.Schema.Types.ObjectId, required: false }; 
-        schemaDefinition.lastUpdateOn = { type: Date, required: false };
-        schemaDefinition.lastUpdateBy = { type: mongoose.Schema.Types.ObjectId, required: false }; 
+        schemaDefinition.createdBy = { type: mongoose.Schema.Types.ObjectId, required: false, AUDIT: true}; 
+        schemaDefinition.lastUpdateOn = { type: Date, required: false, AUDIT: true};
+        schemaDefinition.lastUpdateBy = { type: mongoose.Schema.Types.ObjectId, required: false, AUDIT: true}; 
     }
     
     schemaDefinition.deletedOn = { type: Date, required: false, INTERNAL: true }; //This has the 

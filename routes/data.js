@@ -4,12 +4,11 @@ const handler = require("express").Router();
 const graphqlHTTP = require("express-graphql");
 
 const db = require("../core/database")
-const graphqlSchema = require("../schema/schema");
 const ErrorFormater = require("../schema/error-formatter");
 const QueryModifier = require("../core/query-modifier")
 
 handler.use("", graphqlHTTP({
-    schema: graphqlSchema,
+    schema: db.getGraphQLSchema(),
     graphiql: true,
     customFormatErrorFn: ErrorFormater.format,
     rootValue: {

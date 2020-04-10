@@ -1,8 +1,5 @@
 // @ts-check
 
-const routeHome = require("../routes/home")
-const routeData = require("../routes/data")
-
 /**
  * Router for the Express JS Web Server
  */
@@ -20,9 +17,9 @@ class Router {
         // });
 
         //Home:
-        this._app.use("/api", routeHome);
+        this._app.use("/api", require("../routes/home"));
         //Data:
-        this._app.use("/api/data", routeData);
+        this._app.use("/api/data", require("../routes/data"));
     }
 }
 

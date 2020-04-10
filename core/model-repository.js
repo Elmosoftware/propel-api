@@ -1,25 +1,54 @@
-const cfg = require("./config")
+// @ts-check
+
 const Utils = require("../util/utils")
-const logger = require("../services/logger-service");
 const APIError = require("./api-error");
+const EntityModel = require("./entity-model")
+const EntityModelConfig = require("./entity-model-config")
 
 class ModelRepository {
 
-    constructor(models = null) {
+    constructor(nativeModels) {
         this._models = [];
-        this._generate(models);
+        this._generate(nativeModels);
     }
 
+    /**
+     * Collection of database models.
+     */
     get models() {
         return this._models;
     }
 
+    /**
+     * Returns the amount of database models stored in the repository.
+     */
+    get count() {
+        return (this._models && this._models.length) ? this._models.length : 0;
+    }
+
+    /**
+     * GraphQL types cross all the models.
+     */
+    getAPISpecificGraphQLTypes () {
+        return `input ${EntityModelConfig.GraphQLQueryOptionsName} {
+    top: Int
+    skip: Int
+    sortBy: String
+    populate: Boolean
+    filterBy: String
+}\n`
+    }
+
+    /**
+     * Return the specified model by his name.
+     * @param {string} modelName Name of the model to search for.
+     */
     getModelByName(modelName) {
         let ret = null
 
         if (modelName && typeof modelName == "string") {
 
-            ret = this.models.find((model) => {
+            ret = this._models.find((model) => {
                 return model.name.toLowerCase() == modelName.toLowerCase();
             })
 
@@ -34,24 +63,60 @@ class ModelRepository {
         return ret;
     }
 
-    _generate(models) {
+    /**
+     * Returns a text version of the inferred GraphQL schema for the database model.
+     */
+    getGraphQLSchema() {
 
-        if (models && Array.isArray(models)) {
-            logger.logInfo("Initializing database models ...")
-            this._models = models;
-            this._fillSchemaMetadata();
+        let ret = "";
+        let types = this.getAPISpecificGraphQLTypes()
+        let queries = [];
+        let mutations = [];
 
-            if (!cfg.isProduction) {
-                console.log("\n --------------- MODELS --------------- ")
-                this.models.forEach(model => {
-                    console.log(`"${model.name}":\n    
-                Schema:${JSON.stringify(model.schema)}\n    
-                Sub docs populate schema:${JSON.stringify(model.populateSchema)}
-                Internal fields: ${model.internalFields.join(", ")}`);
-                });
-            }
-            logger.logInfo(`\nDatabase models initialization process finished 
-            successfully. Models found: ${this.models.length}.`)
+        this._models.forEach((model) =>{
+            model.getGraphQLTypes().forEach((type) => {
+                types += `${type}\n`
+            });
+            queries = queries.concat(model.getGraphQLQueries());
+            mutations = mutations.concat(model.getGraphQLMutations());
+        })
+
+        ret = types;
+
+        ret += `type Queries {\n`
+        queries.forEach((query) => {
+            ret += `\t${query}\n`;
+        })
+        ret += `}\n`
+
+        ret += `type Mutations {\n`
+        mutations.forEach((mutation) => {
+            ret += `\t${mutation}\n`;
+        })
+        ret += `}\n`
+
+        ret += `schema {
+\tquery: Queries
+\tmutation: Mutations
+}`
+        return ret;
+    }
+
+    _generate(nativeModels) {
+
+        if (nativeModels && Array.isArray(nativeModels)) {
+            this._models = [];
+
+            //Creating one EntityModel per each native database model.
+            nativeModels.forEach((model) => {
+                this._models.push(new EntityModel(model));
+            })
+
+            //Generating the model "populateSchema" property that will allow document auto population:
+            this._models.forEach(model => {
+                model.populateSchema = Utils.defaultIfEmptyObject(Object.assign({},
+                    this._recursivePopulateSchemas(model)), "");
+            });
         }
         else {
             throw new APIError(`Database models initialization failed. The parameter "models" is a 
@@ -59,33 +124,25 @@ class ModelRepository {
         }
     }
 
-    _fillSchemaMetadata() {
-
-        this.models.forEach(model => {
-            model.populateSchema = Utils.defaultIfEmptyObject(Object.assign({},
-                this._recursivePopulateSchemas(model)), "");
-            model.internalFields = this._getInternalFields(model.schema);
-        });
-    }
-
     _recursivePopulateSchemas(parentModel, childModel = null) {
 
-        let m = (!childModel) ? parentModel : childModel
+        let m = (!childModel) ? parentModel : childModel;
         let populateSchema = {};
 
-        for (var key in m.schema) {
+        // for (var key in m.schema) {
+        m.fields.forEach((field) => {
 
-            if (this._isRefField(m.schema[key])) {
-                //We add a path for the reference property that need to be populated.
+            if (field.isReference) {
+                //We add a fieldSchema for the reference property that need to be populated.
                 if (populateSchema.path) {
-                    populateSchema.path += ` ${key}`
+                    populateSchema.path += ` ${field.name}`
                 }
                 else {
-                    populateSchema.path = key
+                    populateSchema.path = field.name
                 }
 
                 //We need to add all the populate references for childs too!
-                let child = this.getModelByName(this._getRefFieldModelName(m.schema[key]));
+                let child = this.getModelByName(field.referenceName);
                 let populate = Object.assign({}, this._recursivePopulateSchemas(m, child));
 
                 //If the child has at least one references, we will add those to the parent:
@@ -93,70 +150,10 @@ class ModelRepository {
                     populateSchema.populate = populate;
                 }
             }
-        }
-        return populateSchema;
-    }
+        });
 
-    _getInternalFields(schema) {
-        let ret = [];
-
-        for (var key in schema) {
-            if (schema[key].INTERNAL) {
-                ret.push(key);
-            }
-        }
-
-        return ret;
-    }
-
-    _isRefField(schemaProperty) {
-
-        let ret = false;
-
-        if (Array.isArray(schemaProperty)) {
-            if (schemaProperty.length > 0) {
-                ret = Boolean(schemaProperty[0].ref)
-            }
-        }
-        else {
-            ret = Boolean(schemaProperty.ref);
-        }
-
-        return ret;
-    }
-
-    _getRefFieldModelName(schemaProperty) {
-
-        let ret = null;
-
-        if (this._isRefField(schemaProperty)) {
-            if (Array.isArray(schemaProperty)) {
-                ret = schemaProperty[0].ref;
-            }
-            else {
-                ret = schemaProperty.ref;
-            }
-        }
-
-        return ret;
+        return populateSchema
     }
 }
 
-class EntityModel {
-    constructor(model) {
-        this.repository = model;
-        this.schema = model.schema.tree;
-        this.name = model.modelName;
-        this.pluralName = model.collection.collectionName;
-        this.populateSchema = null
-        this.internalFields = []
-    }
-
-    hasInternalField(fieldName){
-        return this.internalFields.length > 0 && this.internalFields.some((field) => {
-            return field.toLowerCase() == field.toLowerCase();
-        })
-    }
-}
-
-module.exports = { ModelRepository, EntityModel }
+module.exports = ModelRepository

@@ -248,7 +248,7 @@ class DataService {
         doc.deletedOn = null;
 
         //If the entity have audit data:
-        if (this._model.schema.createdBy) { //Checking for just one of the audit fields is enough :-)
+        if (this._model.auditFields.length > 0) { 
             if (isNewDoc) {
                 doc.createdOn = new Date();
                 doc.createdBy = (session && session.userId) ? session.userId : null;

@@ -51,6 +51,15 @@ class Utils {
 
         return object;
     }
+
+    /**
+     * This function returns the same string but capitalized.
+     * @param {string} stringValue String value to be capitalized.
+     */
+    static capitalize(stringValue) {
+        stringValue = (stringValue == null || stringValue == undefined)? "" : stringValue;
+        return String(stringValue).charAt(0).toUpperCase() + String(stringValue).slice(1); 
+    }
 }
 
 module.exports = Utils;
