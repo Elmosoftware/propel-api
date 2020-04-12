@@ -1,43 +1,59 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Attach Nodemon Debug",
-            "port": 9229, //Default node debug port
-            "restart": true
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Run & Debug All Test",
-            "program": "${workspaceFolder}/node_modules/.bin/jest",
-            "args": ["--runInBand"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
-            "disableOptimisticBPs": true,
-            "windows": {
-              "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-            }
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Run & Debug Current Test",
-            "program": "${workspaceFolder}/node_modules/.bin/jest",
-            "args": [
-              "${fileBasenameNoExtension}"
-            ],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
-            "disableOptimisticBPs": true,
-            "windows": {
-              "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-            }
-          }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug APP",
+      "program": "${workspaceFolder}/index.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug ALL Test",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "cwd": "${workspaceFolder}",
+      "windows": {
+        "args": [
+          "--inspect-brk",
+          "${workspaceRoot}/node_modules/jest/bin/jest.js",
+          "./dist",
+          "--runInBand"   
+        ],
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug current opened Test",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "cwd": "${workspaceFolder}",
+      "windows": {
+        "args": [
+          "--inspect-brk",
+          "${workspaceRoot}/node_modules/jest/bin/jest.js",
+          "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
+          "--runInBand"   
+        ],
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
 }
