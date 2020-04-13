@@ -12,17 +12,17 @@ var m02With1Ref = mongoose.model("m02With1Ref", new mongoose.Schema({
 }), "m02With1Refs");
 
 var m03With2Ref = mongoose.model("m03With2Ref", new mongoose.Schema({
-        m03Field01: { type: String, required: true, unique: true },
-        m03Field02: { type: mongoose.Schema.Types.ObjectId, ref: "m01NoRef", required: true },
-        m03Field03: { type: mongoose.Schema.Types.ObjectId, ref: "m02With1Ref", required: true }
-    }), "m03With2Refs");
+    m03Field01: { type: String, required: true, unique: true },
+    m03Field02: { type: mongoose.Schema.Types.ObjectId, ref: "m01NoRef", required: true },
+    m03Field03: { type: mongoose.Schema.Types.ObjectId, ref: "m02With1Ref", required: true }
+}), "m03With2Refs");
 
 var m04With1RefColl = mongoose.model("m04With1RefColl", new mongoose.Schema({
-        m04Field01: { type: String, required: true, unique: true },
-        m04Field02: { type: mongoose.Schema.Types.ObjectId, ref: "m01NoRef", required: true },
-        m04Field03: { type: mongoose.Schema.Types.ObjectId, ref: "m02With1Ref", required: true },
-        m04Field04: [{ type: mongoose.Schema.Types.ObjectId, ref: "m03With2Ref", required: true }],
-    }), "m04With1RefColls");
+    m04Field01: { type: String, required: true, unique: true },
+    m04Field02: { type: mongoose.Schema.Types.ObjectId, ref: "m01NoRef", required: true },
+    m04Field03: { type: mongoose.Schema.Types.ObjectId, ref: "m02With1Ref", required: true },
+    m04Field04: [{ type: mongoose.Schema.Types.ObjectId, ref: "m03With2Ref", required: true }],
+}), "m04With1RefColls");
 
 var addressEmbeddedSchema = new mongoose.Schema({
     street: { type: String, required: true },
@@ -47,19 +47,19 @@ var doubleEmbeddedSchema = new mongoose.Schema({
 mongoose.model("doubleEmbeddedSchema", doubleEmbeddedSchema)
 
 var m05With1Emb = mongoose.model("m05With1Emb", new mongoose.Schema({
-        m05Field01: { type: String, required: true, unique: true },
-        m05Field02: { type: mongoose.Schema.Types.ObjectId, ref: "m01NoRef", required: true },
-        m05Field03: { type: mongoose.Schema.Types.ObjectId, ref: "m02With1Ref", required: true },
-        m05Field04: [{ type: mongoose.Schema.Types.ObjectId, ref: "m03With2Ref", required: true }],
-        m05Field05: addressEmbeddedSchema,
-        m05Field06: [addressEmbeddedSchema],
-        m05Field07: { type: String, required: true, unique: true, INTERNAL: true },
-        m05Field08: { type: String, required: true, unique: true, INTERNAL: false },
-        m05Field09: { type: Boolean },
-        m05Field10: { type: mongoose.Schema.Types.Decimal128, required: false, AUDIT: true },
-        m05Field11: { type: Date, required: true },
-        m05Field12: doubleEmbeddedSchema
-    }), "m05With1Embs");
+    m05Field01: { type: String, required: true, unique: true },
+    m05Field02: { type: mongoose.Schema.Types.ObjectId, ref: "m01NoRef", required: true },
+    m05Field03: { type: mongoose.Schema.Types.ObjectId, ref: "m02With1Ref", required: true },
+    m05Field04: [{ type: mongoose.Schema.Types.ObjectId, ref: "m03With2Ref", required: true }],
+    m05Field05: addressEmbeddedSchema,
+    m05Field06: [addressEmbeddedSchema],
+    m05Field07: { type: String, required: true, unique: true, INTERNAL: true },
+    m05Field08: { type: String, required: true, unique: true, INTERNAL: false },
+    m05Field09: { type: Boolean },
+    m05Field10: { type: mongoose.Schema.Types.Decimal128, required: false, AUDIT: true },
+    m05Field11: { type: Date, required: true },
+    m05Field12: doubleEmbeddedSchema
+}), "m05With1Embs");
 
 function getGraphQLTypeByName(types: any, nameToFind: any) {
     return types.find((type: any) => {
@@ -71,6 +71,10 @@ function getGraphQLQueriesAndMutationsByTypeName(qorms: any, typeNameToFind: any
     return qorms.filter((qorm: any) => {
         return String(qorm).indexOf(typeNameToFind) != -1;
     })
+}
+
+function resolverExists(resolvers: any, name: string) {
+    return Object.getOwnPropertyNames(resolvers).includes(name);
 }
 
 var repo: ModelRepository;
@@ -479,7 +483,7 @@ describe("ModelRepository Class - Parse GraphQL schema", () => {
     test(`Types in Model with embedded types"`, () => {
         let m5 = repo.getModelByName("m05With1Emb");
         let schemaM5 = getGraphQLTypeByName(m5.getGraphQLTypes(), "M05With1EmbInput");
-        
+
         expect(schemaM5).toContain("input M05With1EmbInput {");
         expect(schemaM5).toContain("_id: ID!");
         expect(schemaM5).toContain("m05Field04: [ID!]!");
@@ -504,7 +508,7 @@ describe("ModelRepository Class - Parse GraphQL schema", () => {
     test(`Queries in Model with embedded types"`, () => {
         let m5 = repo.getModelByName("m05With1Emb");
         let queries = getGraphQLQueriesAndMutationsByTypeName(m5.getGraphQLQueries(), "M05With1Emb");
-        
+
         expect(queries.length).toEqual(2);
         expect(queries[0]).toContain("getM05With1Emb");
         expect(queries[1]).toContain("findM05With1Emb");
@@ -513,7 +517,7 @@ describe("ModelRepository Class - Parse GraphQL schema", () => {
     test(`Mutations in Model with embedded types"`, () => {
         let m5 = repo.getModelByName("m05With1Emb");
         let queries = getGraphQLQueriesAndMutationsByTypeName(m5.getGraphQLMutations(), "M05With1Emb");
-        
+
         expect(queries.length).toEqual(3);
         expect(queries[0]).toContain("insertM05With1Emb");
         expect(queries[1]).toContain("updateM05With1Emb");
@@ -522,7 +526,7 @@ describe("ModelRepository Class - Parse GraphQL schema", () => {
 
     test(`Full GraqhQL model"`, () => {
         let schema = repo.getGraphQLSchema();
-        
+
         expect(schema).not.toBeFalsy();
         expect(schema).toContain("input M01NoRefInput {");
         expect(schema).toContain("input M02With1RefInput {");
@@ -540,7 +544,7 @@ describe("ModelRepository Class - Parse GraphQL schema", () => {
         expect(schema).toContain("type M04With1RefCollQueryResults {");
         expect(schema).toContain("type M05With1EmbQueryResults {");
         expect(schema).toContain("type M05With1EmbQueryResults {");
-        
+
         expect(schema).toContain("type Queries {");
         expect(schema).toContain("getM01NoRef(");
         expect(schema).toContain("getM02With1Ref(");
@@ -574,5 +578,35 @@ describe("ModelRepository Class - Parse GraphQL schema", () => {
         expect(schema).toContain("deleteM04With1RefColl(");
         expect(schema).toContain("deleteM05With1Emb(");
         expect(schema).toContain("deleteM05With1Emb(");
+    })
+    test(`Full GraqhQL Resolvers"`, () => {
+        let resolver = repo.getGraphQLResolver()
+
+        expect(resolver).not.toBeFalsy();
+        expect(resolverExists(resolver, "deleteM01NoRef")).toEqual(true);
+        expect(resolverExists(resolver, "deleteM02With1Ref")).toEqual(true);
+        expect(resolverExists(resolver, "deleteM03With2Ref")).toEqual(true);
+        expect(resolverExists(resolver, "deleteM04With1RefColl")).toEqual(true);
+        expect(resolverExists(resolver, "deleteM05With1Emb")).toEqual(true);
+        expect(resolverExists(resolver, "findM01NoRefs")).toEqual(true);
+        expect(resolverExists(resolver, "findM02With1Refs")).toEqual(true);
+        expect(resolverExists(resolver, "findM03With2Refs")).toEqual(true);
+        expect(resolverExists(resolver, "findM04With1RefColls")).toEqual(true);
+        expect(resolverExists(resolver, "findM05With1Embs")).toEqual(true);
+        expect(resolverExists(resolver, "getM01NoRef")).toEqual(true);
+        expect(resolverExists(resolver, "getM02With1Ref")).toEqual(true);
+        expect(resolverExists(resolver, "getM03With2Ref")).toEqual(true);
+        expect(resolverExists(resolver, "getM04With1RefColl")).toEqual(true);
+        expect(resolverExists(resolver, "getM05With1Emb")).toEqual(true);
+        expect(resolverExists(resolver, "insertM01NoRef")).toEqual(true);
+        expect(resolverExists(resolver, "insertM02With1Ref")).toEqual(true);
+        expect(resolverExists(resolver, "insertM03With2Ref")).toEqual(true);
+        expect(resolverExists(resolver, "insertM04With1RefColl")).toEqual(true);
+        expect(resolverExists(resolver, "insertM05With1Emb")).toEqual(true);
+        expect(resolverExists(resolver, "updateM01NoRef")).toEqual(true);
+        expect(resolverExists(resolver, "updateM02With1Ref")).toEqual(true);
+        expect(resolverExists(resolver, "updateM03With2Ref")).toEqual(true);
+        expect(resolverExists(resolver, "updateM04With1RefColl")).toEqual(true);
+        expect(resolverExists(resolver, "updateM05With1Emb")).toEqual(true);
     })
 })

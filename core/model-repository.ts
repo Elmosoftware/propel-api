@@ -3,6 +3,7 @@ import { Utils } from "../util/utils";
 import { APIError } from "./api-error";
 import { EntityModel } from "./entity-model";
 import { entityModelConfig } from "./entity-model-config";
+import { Resolver } from "../schema/resolver";
 
 export class ModelRepository {
 
@@ -99,6 +100,30 @@ export class ModelRepository {
 \tquery: Queries
 \tmutation: Mutations
 }`
+        return ret;
+    }
+
+    /**
+     * Returns the Resolver object for all the Queries and Mutations in the model.
+     */
+    getGraphQLResolver(): any {
+        let ret: any = {};
+        let resolver = new Resolver();
+
+        this.models.forEach((model: EntityModel) => {
+
+            let modelName = Utils.capitalize(model.name);
+            let pluralModelName = Utils.capitalize(model.pluralName);
+
+            ret[`insert${modelName}`] = (args: any) => { return resolver.insert(`${model.name}`, args); };
+            ret[`update${modelName}`] = (args: any) => { return resolver.update(`${model.name}`, args); };
+            ret[`get${modelName}`] = (args: any) => { return resolver.getOne(`${model.name}`, args); };
+            ret[`find${pluralModelName}`] = (args: any) => {
+                return resolver.getMany(`${model.name}`, args);
+            };
+            ret[`delete${modelName}`] = (args: any) => { return resolver.delete(`${model.name}`, args); };
+        })
+
         return ret;
     }
 

@@ -2,6 +2,14 @@
 import mongoose from "mongoose";
 import { buildSchema } from "graphql";
 
+//Core Propel API services and helpers:
+import { cfg } from "./config";
+import { allModels } from "../models/all-models";
+import { ModelRepository } from "./model-repository";
+import { logger } from "../services/logger-service";
+import { DataService } from "../services/data-service";
+import { APIError } from "./api-error";
+
 const mongooseOptions: any = {
     useNewUrlParser: true, //(node:61064) DeprecationWarning: current URL string parser is deprecated.
     useCreateIndex: true, //(node:61064) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
@@ -10,14 +18,6 @@ const mongooseOptions: any = {
     useFindAndModify: false,
     useUnifiedTopology: true
 };
-
-//Core Propel API services and helpers:
-import { cfg } from "./config";
-import { allModels } from "../models/all-models";
-import { ModelRepository } from "./model-repository";
-import { logger } from "../services/logger-service";
-import { DataService } from "../services/data-service";
-import { APIError } from "./api-error";
 
 /**
  * This class provides the database initialization setup.
@@ -80,6 +80,24 @@ class Database {
                 console.log("\n --------------- SCHEMA --------------- ")
                 console.log(this._modelRepository.getGraphQLSchema());
                 console.log("-----------------------------------------")
+                console.log("\n ------------- RESOLVERS ------------- ")
+                let r = this._modelRepository.getGraphQLResolver();
+                Object.getOwnPropertyNames(r)
+                    .filter((method) => typeof r[method] === 'function')
+                    .map((method) => {
+                        let model = method
+                            .replace(/^(insert)/,"")
+                            .replace(/^(update)/,"")
+                            .replace(/^(get)/,"")
+                            .replace(/^(find)/,"")
+                            .replace(/^(delete)/,"");
+                        return `${model.toUpperCase()} -> ${method}`;
+                    })
+                    .sort()
+                    .forEach((resolver) => {
+                        console.log(resolver);
+                    })
+                console.log("-----------------------------------------\n")
             }
         } catch (error) {
             logger.logError(`There was an error initializing database models, 
@@ -108,7 +126,16 @@ process will be aborted. Error details: \n${String(error)}.`)
     getGraphQLSchema() {
         this._throwIfNoRepository();
         //@ts-ignore
-        return buildSchema(this._modelRepository.getGraphQLSchema());
+        return buildSchema(this._modelRepository?.getGraphQLSchema());
+    }
+
+    /**
+     * Returns the Resolver object for all the Queries and Mutations in the model.
+     */
+    getGraphQLResolver(): any {
+        this._throwIfNoRepository();
+        //@ts-ignore
+        return this._modelRepository?.getGraphQLResolver();
     }
 
     private _throwIfNoRepository(): void{
