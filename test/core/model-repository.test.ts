@@ -58,7 +58,8 @@ var m05With1Emb = mongoose.model("m05With1Emb", new mongoose.Schema({
     m05Field09: { type: Boolean },
     m05Field10: { type: mongoose.Schema.Types.Decimal128, required: false, AUDIT: true },
     m05Field11: { type: Date, required: true },
-    m05Field12: doubleEmbeddedSchema
+    m05Field12: doubleEmbeddedSchema,
+    m05Field13: [{type: String, required: true}]
 }), "m05With1Embs");
 
 function getGraphQLTypeByName(types: any, nameToFind: any) {
@@ -251,7 +252,7 @@ describe("ModelRepository Class - Fifth models, 1 with 1 ref, 1 with 2 refs, 1 w
     beforeAll(() => {
         repo = new ModelRepository([
             m01NoRef,
-            m02With1Ref,
+            m02With1Ref,    
             m03With2Ref,
             m04With1RefColl,
             m05With1Emb
@@ -294,7 +295,7 @@ describe("ModelRepository Class - Fifth models, 1 with 1 ref, 1 with 2 refs, 1 w
         //@ts-ignore
         expect(f.isArray).toEqual(false);
         //@ts-ignore
-        expect(f.isScalar).toEqual(true);
+        expect(f.isScalar).toEqual(false);
         //@ts-ignore
         expect(f.isEmbedded).toEqual(false);
         //@ts-ignore
@@ -444,6 +445,37 @@ describe("ModelRepository Class - Fifth models, 1 with 1 ref, 1 with 2 refs, 1 w
 
         expect(f).toBe(undefined);
     })
+    test(`ModelRepository.getFieldDefinition() built correctly for scalar array type."`, () => {
+        let m5 = repo.getModelByName("m05With1Emb");
+        let f = m5.getFieldDefinition("m05Field13");
+        
+        //@ts-ignore
+        expect(f.name).toEqual("m05Field13");
+        //@ts-ignore
+        expect(f.isArray).toEqual(true);
+        //@ts-ignore
+        expect(f.isScalar).toEqual(true);
+        //@ts-ignore
+        expect(f.isAuto).toEqual(false);
+        //@ts-ignore
+        expect(f.isUniqueIdentifier).toEqual(false);
+        //@ts-ignore
+        expect(f.isEmbedded).toEqual(false);
+        //@ts-ignore
+        expect(f.isReference).toEqual(false);
+        //@ts-ignore
+        expect(f.embeddedSchema).toStrictEqual([]);
+        //@ts-ignore
+        expect(f.referenceName).toEqual("");
+        //@ts-ignore
+        expect(f.isRequired).toEqual(true);
+        //@ts-ignore
+        expect(f.isInternal).toEqual(false);
+        //@ts-ignore
+        expect(f.type).toBe("String");
+        //@ts-ignore
+        expect(f.graphQLType).toBe("String");
+    })    
 })
 
 describe("ModelRepository Class - Parse GraphQL schema", () => {
@@ -485,7 +517,7 @@ describe("ModelRepository Class - Parse GraphQL schema", () => {
         let schemaM5 = getGraphQLTypeByName(m5.getGraphQLTypes(), "M05With1EmbInput");
 
         expect(schemaM5).toContain("input M05With1EmbInput {");
-        expect(schemaM5).toContain("_id: ID!");
+        expect(schemaM5).toContain("_id: ID");
         expect(schemaM5).toContain("m05Field04: [ID!]!");
 
         schemaM5 = getGraphQLTypeByName(m5.getGraphQLTypes(), "M05With1EmbM05Field12DoubleEmbedded03");

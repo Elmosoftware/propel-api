@@ -115,8 +115,14 @@ export class EntityModel {
         input = `input ${modelName}${entityModelConfig.GraphQLQueryInputSuffix} {\n`;
 
         fields.forEach((fd) => {
-            //Internal fields don't have to be included in the model schema. Also, fields that starts with 
-            //double underscore must be excluded because that is reserved for GraphQL introspection:
+
+            //A few considerations here:
+            // - Internal fields: They are for internal use only, so need to be excluded from the 
+            //  GraphQL schema.
+            // - Fields prefixed with double underscore: Like "__v" default Mongoose version field, must be 
+            //  excluded because that is reserved for GraphQL introspection.
+            // - Audit fields: - Need to be excluded from GraphQL inputs, (because they are updated by the
+            //  API only), but need to be included in the GraphQL types, because they can be queried.
             if (!(fd.isInternal || fd.name.startsWith("__"))) {
                 if (fd.isEmbedded) {
                     items = items.concat(this.getGraphQLTypes(`${modelName}${Utils.capitalize(fd.name)}`,
@@ -124,7 +130,10 @@ export class EntityModel {
                 }
 
                 type += `"""${fd.description}"""\n\t${fd.getGraphQLFieldDefinition()}\n`;
-                input += `\t${fd.getGraphQLFieldDefinition(true)}\n`
+
+                if (!fd.isAudit) {
+                    input += `\t${fd.getGraphQLFieldDefinition(true)}\n`
+                }                
             }
         })
 

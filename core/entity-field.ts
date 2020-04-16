@@ -9,20 +9,20 @@ import { entityModelConfig } from "./entity-model-config";
 export class EntityField {
 
     private _name: string = "";
-    private _modelName:string = "";
+    private _modelName: string = "";
     private _isArray: boolean = false;
-    private _isScalar:boolean = false;
-    private _isAuto:boolean = false;
-    private _isAudit:boolean = false;
-    private _isEmbedded:boolean = false;
-    private _isReference:boolean = false;
-    private _embeddedSchema:EntityField[] = [];
-    private _referenceName:string = "";
-    private _isRequired:boolean = false;
-    private _isInternal:boolean = false;
-    private _type:string = "";
-    private _graphQLType:string = "";
-    private _description:string = "";
+    private _isScalar: boolean = false;
+    private _isAuto: boolean = false;
+    private _isAudit: boolean = false;
+    private _isEmbedded: boolean = false;
+    private _isReference: boolean = false;
+    private _embeddedSchema: EntityField[] = [];
+    private _referenceName: string = "";
+    private _isRequired: boolean = false;
+    private _isInternal: boolean = false;
+    private _type: string = "";
+    private _graphQLType: string = "";
+    private _description: string = "";
 
     constructor(nativeFieldSchema: any, modelName: string) {
         this._modelName = Utils.capitalize(modelName);
@@ -95,7 +95,7 @@ export class EntityField {
     /**
      * Name of the referenced type.
      */
-    get referenceName():string {
+    get referenceName(): string {
         return this._referenceName
     }
 
@@ -135,7 +135,7 @@ export class EntityField {
     }
 
     /**
-     * Get the field definition as must be included as part of a type or input definition. 
+     * Get the field definition as must be included as part of a type or input definition.
      * @param {boolean} asInput Indicates if the field definition will be used for a GraphQL input.
      */
     getGraphQLFieldDefinition(asInput: boolean = false): string {
@@ -145,37 +145,32 @@ export class EntityField {
         let suffix: string = ""
         let ret: string = "";
 
-         //Internal fields don't have to be included in the model schema:
-         if (!this._isInternal) {
-            if (this._isEmbedded) {
-                graphQLType = `${this._modelName}${Utils.capitalize(this._name)}`;
-            }
-
-            // If the field definition will be used in a GraphQL "input" instead of a "type":
-            if (asInput) {
-                //If this is an entity identifier, for our GraphQL input it must be not required, so we 
-                //can use it in both, inserts and updates:                
-                if(this.isUniqueIdentifier) {
-                    isRequired = false;
-                }
-
-                //If the field is a reference to another entity, in the GraphQL input we must change 
-                //the type of the field to "ID":
-                if (this._isReference) {
-                    graphQLType = "ID"
-                }
-
-                //In a GraphQL input we can't have types, only scalars and other inputs. So, if the field 
-                //is an embedded document, we need to use his "input", istead of his "type":
-                if (this._isEmbedded) {
-                    suffix = entityModelConfig.GraphQLQueryInputSuffix;
-                }
-            }
-            
-            ret = `${this._name}: ${(this._isArray) ? "[" : ""}${graphQLType}${suffix}${(this._isRequired) ? "!" : ""}${(this._isArray) ? "]!" : ""}`;
+        if (this._isEmbedded) {
+            graphQLType = `${this._modelName}${Utils.capitalize(this._name)}`;
         }
 
-        return ret;
+        // If the field definition will be used in a GraphQL "input" instead of a "type":
+        if (asInput) {
+            //If this is an entity identifier, for our GraphQL input it must be not required, so we
+            //can use it in both, inserts and updates:
+            if (this.isUniqueIdentifier) {
+                isRequired = false;
+            }
+
+            //If the field is a reference to another entity, in the GraphQL input we must change
+            //the type of the field to "ID":
+            if (this._isReference) {
+                graphQLType = "ID"
+            }
+
+            //In a GraphQL input we can't have types, only scalars and other inputs. So, if the field
+            //is an embedded document, we need to use his "input", istead of his "type":
+            if (this._isEmbedded) {
+                suffix = entityModelConfig.GraphQLQueryInputSuffix;
+            }
+        }
+
+        return `${this._name}: ${(this._isArray) ? "[" : ""}${graphQLType}${suffix}${(isRequired) ? "!" : ""}${(this._isArray) ? "]!" : ""}`;
     }
 
     private _buildDefinition(fieldSchema: any) {
@@ -184,23 +179,34 @@ export class EntityField {
 
         this._name = fieldSchema.path;
         this._isArray = (fieldSchema.instance == "Array");
-        this._isScalar = !this._isArray && fieldSchema.instance != "Embedded";
         this._isAuto = Boolean(options.auto);
         this._isInternal = Boolean(options.INTERNAL);
         this._isAudit = Boolean(options.AUDIT);
-        this._isEmbedded = fieldSchema.instance == "Embedded" || (this._isArray && !options.ref);
         this._isReference = Boolean(options.ref);
+        this._isEmbedded = Boolean(fieldSchema.instance == "Embedded" || 
+            (this._isArray && !this._isReference && fieldSchema.caster && fieldSchema.caster.schema));
+        this._isScalar = !this._isEmbedded && !this._isReference;
         this._description = (options.DESCRIPTION) ? String(options.DESCRIPTION) : "";
         this._referenceName = (this._isReference) ? String(options.ref) : "";
-        //The default "_id" field created as key identifier in all the documents by Mongoose, for some 
-        //reason is not marked as required. So, we are taking here the "auto" attribute in consideration too, so 
+        //The default "_id" field created as key identifier in all the documents by Mongoose, for some
+        //reason is not marked as required. So, we are taking here the "auto" attribute in consideration too, so
         //we can include also any auto-filled field as required:
-        this._isRequired = Boolean(fieldSchema.isRequired || this._isAuto || options.isRequired || 
+        this._isRequired = Boolean(fieldSchema.isRequired || this._isAuto || options.isRequired ||
             (fieldSchema.caster && fieldSchema.caster.isRequired));
 
         if (this._isScalar) {
-            this._type = fieldSchema.instance;
-            this._graphQLType = this._mongoToGraphQLTypeConverter(this._type)   
+            if (this._isArray) {
+                if (fieldSchema.caster && fieldSchema.caster.instance) {
+                    this._type = fieldSchema.caster.instance;
+                }
+                else {
+                    throw new APIError(`Not able to find the inner instance type inside the array field "${this._name}" on model "${this._modelName}".`)
+                }
+            }
+            else {
+                this._type = fieldSchema.instance;
+            }
+            this._graphQLType = this._mongoToGraphQLTypeConverter(this._type)
         }
 
         if (this._isReference) {
@@ -209,7 +215,7 @@ export class EntityField {
         }
         else if (this._isEmbedded) {
             this._embeddedSchema = [];
-            this._populateFieldsMetadata(this._modelName, fieldSchema.caster.schema, 
+            this._populateFieldsMetadata(this._modelName, fieldSchema.caster.schema,
                 this._embeddedSchema);
         }
     }

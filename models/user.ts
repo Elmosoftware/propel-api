@@ -1,33 +1,36 @@
 // @ts-check
-import mongoose from "mongoose";
-import { addCommonEntityAttributes, preProcessJSON } from "../util/entity-helper";
+import { model, Schema } from "mongoose"
+import { Entity } from "./entity";
+import { NativeModel } from "./native-model";
 
-let schema = new mongoose.Schema(addCommonEntityAttributes({
-    /**
-     * User full name.
-     */
-    name: { type: String, required: true, DESCRIPTION: `User name` },
-    /**
-     * User email.
-     */
-    email: { type: String, required: true, DESCRIPTION: `User email. Is also unique identifier.`  },
-    /**
-     * User initials.
-     */
-    initials: { type: String, required: true, DESCRIPTION: `User initials`  },
-    /**
-     * User picture URL.
-     */
-    picture: { type: String, required: false, DESCRIPTION: `Optional user picture URL.`  }
-}, false)); //This entity will not have audit fields. Security restrict data updetes to the user only.
+export class User extends Entity implements NativeModel {
 
-schema.methods.toJSON = function () {
-    return preProcessJSON(this);
+    public name: string = "";
+    public email: string = "";
+    public initials: string = "";
+    public picture: string = "";
+
+    constructor() {
+        super();
+    }
+
+    getModel(): any {
+        let s: Schema = super.getSchema()
+        
+        //Adding model fields:
+        s.add({ name: { type: String, required: true, DESCRIPTION: `User name` }});
+        s.add({ email: { type: String, required: true, DESCRIPTION: `User email. Is also unique identifier.` }});
+        s.add({ initials: { type: String, required: true, DESCRIPTION: `User initials` }});
+        s.add({ picture: { type: String, required: false, DESCRIPTION: `Optional user picture URL.` }});
+        
+        //Adding model indexes:
+        s.index({ email: 1, deletedOn: 1 }, { unique: true, background: true, name: "IU_EntityConstraint" });
+        s.index({ name: 1 }, { unique: false, background: true, name: "IX_UserName" });
+        
+        //Model description:
+        // @ts-ignore
+        s.DESCRIPTION = `Authenticated User`
+
+        return model("user", s, "users");
+    }
 }
-
-schema.index({ email: 1, deletedOn: 1 }, { unique: true, background: true, name: "IU_EntityConstraint" });
-schema.index({ name: 1 }, { unique: false, background: true, name: "IX_UserName" });
-// @ts-ignore
-schema.DESCRIPTION = `Authenticated User`
-
-export let userModel = mongoose.model("user", schema, "users");
