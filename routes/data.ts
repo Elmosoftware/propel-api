@@ -6,6 +6,10 @@ import { Route } from "./route";
 import { db } from "../core/database";
 import { errorFormatter } from "../schema/error-formatter";
 
+/**
+ * Data endpoint. Allows to manage all data operations for the API.
+ * @implements Route.
+ */
 export class DataRouter implements Route {
 
     constructor() {

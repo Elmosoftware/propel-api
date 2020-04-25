@@ -28,6 +28,8 @@ class WebServer {
         //Setting up Middlewares:
         this.app.use(bodyParser.json()); // to support JSON-encoded bodies.
         this.app.use(bodyParser.urlencoded({ extended: true })); // to support URL-encoded bodies.
+        this.app.use(bodyParser.text({ type: "text/plain" })); //to support plain text in the body. 
+        //Used to infer script parameters.
 
         //Setting up routes:
         this.router.setup();

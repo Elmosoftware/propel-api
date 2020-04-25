@@ -2,6 +2,10 @@
 import express from "express";
 import { Route } from "./route";
 
+/**
+ * API Home route. Returns the API home page.
+ * @implements Route.
+ */
 export class HomeRouter implements Route {
 
     constructor() {

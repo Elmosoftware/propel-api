@@ -1,4 +1,4 @@
-# Custom Settings
+# Custom Settings specific for Propel
 *.cmd
 *.ps1
 *.rar
@@ -9,6 +9,7 @@
 .env
 .env.*
 *.log
+!/ps-scripts/*.ps1
 
 # compiled output
 dist/**

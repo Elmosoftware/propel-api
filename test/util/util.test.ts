@@ -165,3 +165,149 @@ describe("Utils Class - capitalize()", () => {
         expect(Utils.capitalize("ABRACADABRA")).toEqual("ABRACADABRA");
     })
 })
+
+describe("Utils Class - isValidJSON()", () => {
+    test(`isValidJSON(undefined)`, () => {
+        //@ts-ignore
+        expect(Utils.isValidJSON(undefined)).toBe(false);
+    })
+    test(`isValidJSON("")`, () => {
+        expect(Utils.isValidJSON("")).toBe(false);
+    })
+    test(`isValidJSON("invalid")`, () => {
+        expect(Utils.isValidJSON("invalid")).toBe(false);
+    })
+    test(`isValidJSON(".")`, () => {
+        expect(Utils.isValidJSON(".")).toBe(false);
+    })
+    test(`isValidJSON(null)`, () => {
+        //@ts-ignore
+        expect(Utils.isValidJSON(null)).toBe(true);
+    })
+    test(`isValidJSON("Valid JSON 01")`, () => {
+        expect(Utils.isValidJSON(`{}`)).toBe(true);
+    })
+    test(`isValidJSON("Valid JSON 02")`, () => {
+        expect(Utils.isValidJSON(`
+        {  
+            "employee": {  
+                "name":       "sonoo",   
+                "salary":      56000,   
+                "married":    true  
+            }  
+        }  `)).toBe(true);
+    })
+    test(`isValidJSON("Valid JSON 02")`, () => {
+        expect(Utils.isValidJSON(`["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]`)).toBe(true);
+    })
+    test(`isValidJSON("Valid JSON 03")`, () => {
+        expect(Utils.isValidJSON(`[  
+            {"name":"Ram", "email":"Ram@gmail.com"},  
+            {"name":"Bob", "email":"bob32@gmail.com"}  
+        ]`)).toBe(true);
+    })
+    test(`isValidJSON("Valid JSON 04")`, () => {
+        expect(Utils.isValidJSON(`{
+            "menu": {  
+                "id": "file",  
+                "value": "File",  
+                "popup": {  
+                    "menuitem": [  
+                        {"value": "New", "onclick": "CreateDoc()"},  
+                        {"value": "Open", "onclick": "OpenDoc()"},  
+                        {"value": "Save", "onclick": "SaveDoc()"}  
+                    ]  
+                }  
+          }}`)).toBe(true);
+    })
+    test(`isValidJSON("Valid JSON 05")`, () => {
+        expect(Utils.isValidJSON(`{  
+            "integer": 34,  
+            "fraction": 0.2145,  
+            "exponent": 6.61789e+0  
+            }`)).toBe(true);
+    })
+    test(`isValidJSON("Valid JSON 06")`, () => {
+        expect(Utils.isValidJSON(`[    
+            [ "a", "b", "c" ],   
+            [ "m", "n", "o" ],   
+            [ "x", "y", "z" ]   
+           ]`)).toBe(true);
+    })
+})
+
+describe("Utils Class - removeEmptyLines() All lines", () => {
+    test(`removeEmptyLines(null, false)`, () => {
+        //@ts-ignore
+        expect(Utils.removeEmptyLines(null, false)).toBe(null);
+    })
+    test(`removeEmptyLines(undefined, false)`, () => {
+        //@ts-ignore
+        expect(Utils.removeEmptyLines(undefined, false)).toBe(undefined);
+    })
+    test(`removeEmptyLines("", false)`, () => {
+        expect(Utils.removeEmptyLines("", false)).toEqual("");
+    })
+    test(`removeEmptyLines("text with no lines", false)`, () => {
+        expect(Utils.removeEmptyLines("text with no lines", false)).toEqual("text with no lines");
+    })
+    test(`removeEmptyLines("text with 2 lines\nAnd no empty lines", false)`, () => {
+        expect(Utils.removeEmptyLines("text with 2 lines\nAnd no empty lines", false)).toEqual("text with 2 lines\nAnd no empty lines");
+    })
+    test(`removeEmptyLines("text with 3 lines\n\nAnd a middle empty line", false)`, () => {
+        expect(Utils.removeEmptyLines("text with 3 lines\n\nAnd a middle empty line", false)).toEqual("text with 3 lines\nAnd a middle empty line");
+    })
+    test(`removeEmptyLines("text with 3 lines\n \nAnd a middle empty line with space", false)`, () => {
+        expect(Utils.removeEmptyLines("text with 3 lines\n \nAnd a middle empty line with space", false)).toEqual("text with 3 lines\n \nAnd a middle empty line with space");
+    })
+    test(`removeEmptyLines("text with 4 lines\nThird and Fourth empty\n\n", false)`, () => {
+        expect(Utils.removeEmptyLines("text with 4 lines\nThird and Fourth empty\n\n", false)).toEqual("text with 4 lines\nThird and Fourth empty");
+    })
+    test(`removeEmptyLines("\ntext with 5 lines\nFirst, Fourth and Fifth empty\n\n", false)`, () => {
+        expect(Utils.removeEmptyLines("\ntext with 5 lines\nFirst, Fourth and Fifth empty\n\n", false)).toEqual("text with 5 lines\nFirst, Fourth and Fifth empty");
+    })
+    test(`removeEmptyLines("\n", false) Single empty line`, () => {
+        expect(Utils.removeEmptyLines("\n", false)).toEqual("");
+    })
+    test(`removeEmptyLines("\n\n\n", false) Multiple empty lines`, () => {
+        expect(Utils.removeEmptyLines("\n\n\n", false)).toEqual("");
+    })
+})
+
+describe("Utils Class - removeEmptyLines() Only last lines", () => {
+    test(`removeEmptyLines(null)`, () => {
+        //@ts-ignore
+        expect(Utils.removeEmptyLines(null)).toBe(null);
+    })
+    test(`removeEmptyLines(undefined)`, () => {
+        //@ts-ignore
+        expect(Utils.removeEmptyLines(undefined)).toBe(undefined);
+    })
+    test(`removeEmptyLines("")`, () => {
+        expect(Utils.removeEmptyLines("")).toEqual("");
+    })
+    test(`removeEmptyLines("text with no lines")`, () => {
+        expect(Utils.removeEmptyLines("text with no lines")).toEqual("text with no lines");
+    })
+    test(`removeEmptyLines("text with 2 lines\nAnd no empty lines")`, () => {
+        expect(Utils.removeEmptyLines("text with 2 lines\nAnd no empty lines")).toEqual("text with 2 lines\nAnd no empty lines");
+    })
+    test(`removeEmptyLines("text with 3 lines\n\nAnd a middle empty line")`, () => {
+        expect(Utils.removeEmptyLines("text with 3 lines\n\nAnd a middle empty line")).toEqual("text with 3 lines\n\nAnd a middle empty line");
+    })
+    test(`removeEmptyLines("text with 3 lines\n \nAnd a middle empty line with space")`, () => {
+        expect(Utils.removeEmptyLines("text with 3 lines\n \nAnd a middle empty line with space")).toEqual("text with 3 lines\n \nAnd a middle empty line with space");
+    })
+    test(`removeEmptyLines("text with 4 lines\nThird and Fourth empty\n\n")`, () => {
+        expect(Utils.removeEmptyLines("text with 4 lines\nThird and Fourth empty\n\n")).toEqual("text with 4 lines\nThird and Fourth empty");
+    })
+    test(`removeEmptyLines("\ntext with 5 lines\nFirst, Fourth and Fifth empty\n\n")`, () => {
+        expect(Utils.removeEmptyLines("\ntext with 5 lines\nFirst, Fourth and Fifth empty\n\n")).toEqual("\ntext with 5 lines\nFirst, Fourth and Fifth empty");
+    })
+    test(`removeEmptyLines("\n") Single empty line`, () => {
+        expect(Utils.removeEmptyLines("\n")).toEqual("");
+    })
+    test(`removeEmptyLines("\n\n\n") Multiple empty lines`, () => {
+        expect(Utils.removeEmptyLines("\n\n\n")).toEqual("");
+    })
+})

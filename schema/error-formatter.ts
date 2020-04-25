@@ -10,7 +10,7 @@ class ErrorFormatter {
      * Format the error exactly as it has to be seen in the response.
      * @param {GraphQLError} e GRaphQL Instance error.
      */
-    format(e: any){
+    format(e: any): any{
 
         let errorCode = (e.originalError && e.originalError.errorCode) ? e.originalError.errorCode : null;
         let stackArray = (e.originalError && e.originalError.stackArray) ? e.originalError.stackArray : [];

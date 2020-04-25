@@ -49,7 +49,8 @@
           "--inspect-brk",
           "${workspaceRoot}/node_modules/jest/bin/jest.js",
           "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
-          "--runInBand"   
+          "--runInBand",
+          "--detectOpenHandles"   
         ],
       },
       "console": "integratedTerminal",

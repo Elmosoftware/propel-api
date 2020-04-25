@@ -206,7 +206,7 @@ export class EntityField {
             else {
                 this._type = fieldSchema.instance;
             }
-            this._graphQLType = this._mongoToGraphQLTypeConverter(this._type)
+            this._graphQLType = Utils.mongoToGraphQLTypeConverter(this._type)
         }
 
         if (this._isReference) {
@@ -243,43 +243,5 @@ export class EntityField {
 
             return ret;
         });
-    }
-
-    private _mongoToGraphQLTypeConverter(type: string): string {
-
-        let ret = "";
-        type = String(type);
-
-        switch (type) {
-            case "String":
-                ret = "String";
-                break;
-            case "Number":
-                ret = "Int";
-                break;
-            case "Date":
-                ret = "String";
-                break;
-            case "Buffer":
-                ret = "[Int]!"
-                break;
-            case "Boolean":
-                ret = "Boolean";
-                break;
-            case "Mixed":
-                ret = "String";
-                break;
-            case "ObjectID":
-                ret = "ID";
-                break;
-            case "Decimal128":
-                ret = "Float";
-                break;
-            default:
-                throw new APIError(`The specified type is not supported by this API. Therefore can't be converted to a GraphQL\n
-                Type specified: "${type}".`)
-        }
-
-        return ret;
     }
 }

@@ -1,6 +1,7 @@
 // @ts-check
 import { DataRouter } from "../routes/data";
 import { HomeRouter } from "../routes/home";
+import { InferRouter } from "../routes/infer";
 
 /**
  * Router for the Express JS Web Server
@@ -16,10 +17,13 @@ export class Router {
     setup() {
         let homeRouter = new HomeRouter()
         let dataRouter = new DataRouter();
+        let inferRouter = new InferRouter();
 
         //Home:
         this._app.use("/api", homeRouter.route());
-        //Data:
+        //GraphQL Data endpoint:
         this._app.use("/api/data", dataRouter.route());
+        //Infer:
+        this._app.use("/api/infer", inferRouter.route());
     }
 }

@@ -4,15 +4,12 @@
     Propel API
 */
 
-import dotenv from "dotenv"
-dotenv.config();
-
 console.log(`\n -------------------------  Propel API ------------------------- \n`);
 console.log(`\n     --------------------  Reach your servers! -------------------- \n`);
 
 //Core Propel API services and helpers:
-import { logger } from "./services/logger-service";
 import { cfg } from "./core/config";
+import { logger } from "./services/logger-service";
 import { cfgVal } from "./validators/config-validator";
 import { webServer } from "./core/web-server";
 import { db } from "./core/database";
@@ -20,8 +17,9 @@ import { db } from "./core/database";
 //Configuration validation:
 if (!cfgVal.validate().isValid) {
     //@ts-ignore
-    logger.logWarn(`\n\nIMPORTANT: The following configuration errors could prevent the application to start:\n${cfgVal.getErrors().message}
-    Please, review your ".env" file and adjust it accordingly.\n\n`);
+    logger.logWarn(`\n\nIMPORTANT: One or more configuration errors prevent the application to start:\n
+Check the details below in order to review and remediate your ".env" file accordingly.\n\n`);
+    closeHandler(cfgVal.getErrors(), "Application start");
 }
 
 db.start() //Database setup.

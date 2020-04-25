@@ -1,3 +1,4 @@
+import dotenv from "dotenv"
 
 /**
  * Unified access to the API configuration.
@@ -5,6 +6,7 @@
 class Config {
 
     constructor() {
+        dotenv.config();
     }
 
     /**
@@ -33,6 +35,20 @@ class Config {
      */
     get databaseEndpoint(): string {
         return (process.env.DB_ENDPOINT) ? process.env.DB_ENDPOINT : "";
+    }
+
+    /**
+     * Returns the Service file system root folder.
+     */
+    get rootFolder(): string {
+        return process.cwd();
+    }
+
+    /**
+     * Returns the Powershell scripts folder name.
+     */
+    get PSScriptsFolder(): string {
+        return (process.env.PS_SCRIPTS_FOLDER) ? process.env.PS_SCRIPTS_FOLDER : "";
     }
 }
 
