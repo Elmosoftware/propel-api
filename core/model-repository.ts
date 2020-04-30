@@ -4,6 +4,7 @@ import { APIError } from "./api-error";
 import { EntityModel } from "./entity-model";
 import { entityModelConfig } from "./entity-model-config";
 import { Resolver } from "../schema/resolver";
+import { EntityField } from "./entity-field";
 
 export class ModelRepository {
 
@@ -30,7 +31,7 @@ export class ModelRepository {
     /**
      * GraphQL types cross all the models.
      */
-    getAPISpecificGraphQLTypes () {
+    getAPISpecificGraphQLTypes() {
         return `input ${entityModelConfig.GraphQLQueryOptionsName} {
     top: Int
     skip: Int
@@ -69,12 +70,12 @@ export class ModelRepository {
      */
     getGraphQLSchema(): string {
 
-        let ret:string = "";
-        let types:string = this.getAPISpecificGraphQLTypes()
-        let queries:string[] = [];
-        let mutations:string[] = [];
+        let ret: string = "";
+        let types: string = this.getAPISpecificGraphQLTypes()
+        let queries: string[] = [];
+        let mutations: string[] = [];
 
-        this._models.forEach((model) =>{
+        this._models.forEach((model) => {
             model.getGraphQLTypes().forEach((type) => {
                 types += `${type}\n`
             });
@@ -127,7 +128,7 @@ export class ModelRepository {
         return ret;
     }
 
-    private _generate(nativeModels:any) {
+    private _generate(nativeModels: any) {
 
         if (nativeModels && Array.isArray(nativeModels)) {
             this._models = [];
@@ -139,8 +140,7 @@ export class ModelRepository {
 
             //Generating the model "populateSchema" property that will allow document auto population:
             this._models.forEach(model => {
-                model.populateSchema = Utils.defaultIfEmptyObject(Object.assign({},
-                    this._recursivePopulateSchemas(model)), "");
+                model.populateSchema = this._buildPopulateSchema(model.fields);
             });
         }
         else {
@@ -149,29 +149,57 @@ export class ModelRepository {
         }
     }
 
-    private _recursivePopulateSchemas(parentModel: EntityModel, childModel?: EntityModel) {
+    private _buildPopulateSchema(fields: EntityField[], parentField?: EntityField): any[] {
 
-        let m: EntityModel = (!childModel) ? parentModel : childModel;
-        let populateSchema: any = {};
+        let populateSchema: any[] = [];
+        let populate: any[];
+        let childFields: EntityField[];
 
-        m.fields.forEach((field) => {
+        fields.forEach((field) => {
 
-            if (field.isReference) {
-                //We add a fieldSchema for the reference property that need to be populated.
-                if (populateSchema.path) {
-                    populateSchema.path += ` ${field.name}`
+            if (field.isReference || field.isEmbedded) {
+
+                if (field.isReference) {
+                    //If the field is a reference it need to be populated always. 
+                    //The only consideration is: If the parent is an embedded object, this entry will 
+                    //be added later as soon we get his below childs references, (if any).
+                    if (!parentField || (parentField && !parentField.isEmbedded)) {
+                        populateSchema.push({
+                            path: field.name
+                        });
+                    }
+
+                    childFields = this.getModelByName(field.referenceName).fields;
                 }
                 else {
-                    populateSchema.path = field.name
+                    childFields = field.embeddedSchema;
                 }
 
-                //We need to add all the populate references for childs too!
-                let child = this.getModelByName(field.referenceName);
-                let populate = Object.assign({}, this._recursivePopulateSchemas(m, child));
+                //We look recursively into child and subchild fields, looking for any other 
+                //references that need to be populated too:
+                populate = this._buildPopulateSchema(childFields, field);
 
-                //If the child has at least one references, we will add those to the parent:
-                if (!Utils.isEmptyObject(populate)) {
-                    populateSchema.populate = populate;
+                //If there is any child references:
+                if (populate.length > 0) {
+                    //In the case of embedded fields there is no point to add the populate path 
+                    //at least they have some reference subfields that need to be populated too. That's
+                    //why we add this entry at this point after checking if there is any child references:
+                    if (parentField && parentField.isEmbedded) {
+                        populateSchema.push({
+                            //In the case of embeded fields sub references, we need to add the 
+                            //parent embedded field name to the path also:
+                            path: `${parentField.name}.${field.name}`
+                        });
+                    }
+
+                   //Embedded field references need to be added individually:
+                    if (field.isEmbedded) {
+                        populateSchema = populateSchema.concat(populate);
+                    }
+                    else {
+                        //If is a reference of another reference we need to ad it as a child:
+                        populateSchema[populateSchema.length - 1].populate = populate;
+                    }
                 }
             }
         });
