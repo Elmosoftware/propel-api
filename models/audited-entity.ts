@@ -43,15 +43,39 @@ export class AuditedEntity extends Entity implements NativeSchema {
                 Below "CreatedBy" field must be set as required as soon we add the 
                 user authentication & Authorization process in Propel.
         */
-        s.add({ createdBy: { type: Schema.Types.ObjectId, required: false, AUDIT: true, 
-            DESCRIPTION: `Creator User Identifier.`}});
-        s.add({ createdOn: { type: Date, required: true, AUDIT: true,
-            DESCRIPTION: `Creation timestamp (UTC).`}});
-        s.add({ lastUpdateOn: { type: Date, required: false, AUDIT: true,
-            DESCRIPTION: `Last update user identifier.`}});
-        s.add({ lastUpdateBy: { type: Schema.Types.ObjectId, required: false, AUDIT: true,
-            DESCRIPTION: `Last update timestamp (UTC).`}});
-    
+        s.add({
+            createdBy: {
+                type: Schema.Types.ObjectId,
+                required: false,
+                AUDIT: true,
+                DESCRIPTION: `Creator User Identifier.`
+            }
+        });
+        s.add({
+            createdOn: {
+                type: Date,
+                required: true,
+                AUDIT: true,
+                DESCRIPTION: `Creation timestamp (UTC).`
+            }
+        });
+        s.add({
+            lastUpdateOn: {
+                type: Date,
+                required: false,
+                AUDIT: true,
+                DESCRIPTION: `Last update user identifier.`
+            }
+        });
+        s.add({
+            lastUpdateBy: {
+                type: Schema.Types.ObjectId,
+                required: false,
+                AUDIT: true,
+                DESCRIPTION: `Last update timestamp (UTC).`
+            }
+        });
+
         return s;
     }
 }

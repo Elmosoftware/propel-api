@@ -55,31 +55,61 @@ export class ScriptParameter implements NativeSchema {
 
     constructor() {
     }
-    
+
     /**
      * Returns a Native schema.
      * @implements NativeSchema.getSchema()
      */
     getSchema(): Schema {
         return new Schema({
-            position: { type: Number, required: true, unique: true,
-                DESCRIPTION: `Index position of the argument in the script.` },
-            name: { type: String, required: true, unique: true,
-                DESCRIPTION: `Argument name.` },
-            description: { type: String, required: false,
-                DESCRIPTION: `Argument description, (if available)` },
-            nativeType: { type: String, required: true,
-                DESCRIPTION: `Native PowerShell type.` },
-            type: { type: String, required: true,
-                DESCRIPTION: `JavaScript equivalent type.` },
-            required: { type: Boolean, required: true,
-                DESCRIPTION: `Boolean valueindicating if this parameter need to be present in an invocation.` },
-            validValues:[{ type: String, required: false,
-                DESCRIPTION: `If defined, a set of valid values you can pass for an invocation.` }],
-            canBeNull: { type: Boolean, required: true,
-                DESCRIPTION: `Indicates if when present, the parameter value can be null.` },
-            canBeEmpty: { type: Boolean, required: true,
-                DESCRIPTION: `Indicates if when present, the parameter value can be empty, (like an empty string or array).` }
-        }, { _id: false }); //This will be an embedded document, so no "_id" field is needed here.       
+            position: {
+                type: Number,
+                required: true,
+                DESCRIPTION: `Index position of the argument in the script.`
+            },
+            name: {
+                type: String,
+                required: true,
+                DESCRIPTION: `Argument name.`
+            },
+            description: {
+                type: String,
+                required: false,
+                DESCRIPTION: `Argument description, (if available)`
+            },
+            nativeType: {
+                type: String,
+                required: true,
+                DESCRIPTION: `Native PowerShell type.`
+            },
+            type: {
+                type: String,
+                required: true,
+                DESCRIPTION: `JavaScript equivalent type.`
+            },
+            required: {
+                type: Boolean,
+                required: true,
+                DESCRIPTION: `Boolean valueindicating if this parameter need to be present in an invocation.`
+            },
+            validValues: [{
+                type: String,
+                required: false,
+                DESCRIPTION: `If defined, a set of valid values you can pass for an invocation.`
+            }],
+            canBeNull: {
+                type: Boolean,
+                required: true,
+                DESCRIPTION: `Indicates if when present, the parameter value can be null.`
+            },
+            canBeEmpty: {
+                type: Boolean,
+                required: true,
+                DESCRIPTION: `Indicates if when present, the parameter value can be empty, (like an empty string or array).`
+            }
+        },
+            {
+                _id: false //This will be an embedded document, so no "_id" field is needed here. 
+            });
     }
 }

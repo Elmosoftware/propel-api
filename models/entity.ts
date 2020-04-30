@@ -17,7 +17,7 @@ export class Entity implements NativeSchema {
      */
     public deletedOn: Date | null = null;
 
-    constructor(){
+    constructor() {
     }
 
     /**
@@ -27,10 +27,14 @@ export class Entity implements NativeSchema {
     getSchema(): Schema {
         return new Schema({
             /**
-             * Internal use only
+             * Internal use only for the "soft deletion" feature.
              */
-            deletedOn: { type: Date, required: false, INTERNAL: true ,
-                DESCRIPTION: `Soft delete timestamp.`} //Used internally for the "soft deletion" feature. 
-        });        
+            deletedOn: {
+                type: Date,
+                required: false,
+                INTERNAL: true,
+                DESCRIPTION: `Soft delete timestamp.`
+            }
+        });
     }
 }

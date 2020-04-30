@@ -1,16 +1,16 @@
+
 // @ts-check
 import { model, Schema } from "mongoose"
 import { AuditedEntity } from "./audited-entity";
 import { NativeModel } from "./native-model";
 
 /**
- * Tags will be used by Targets and Scripts and allows to visualize easily the main functions they have.
- * Like: "File Server", "File System", "Web", "Database Engine Functions", etc.  
+ * Allows to implement groups of targets.
  */
-export class Tag extends AuditedEntity implements NativeModel {
+export class Group extends AuditedEntity implements NativeModel {
 
     /**
-     * Tag name. Identifies an application area for Scripts and/or Targets.
+     * Group name.
      */
     public name: string = "";
 
@@ -24,17 +24,23 @@ export class Tag extends AuditedEntity implements NativeModel {
      */
     getModel(): any {
         let s: Schema = super.getSchema()
-        
+
         //Adding model fields:
-        s.add({ name: { type: String, required: true, DESCRIPTION: `Unique tag.` }});
-        
+        s.add({
+            name: {
+                type: String,
+                required: true,
+                DESCRIPTION: `Group name.`
+            }
+        });
+
         //Adding model indexes:
         s.index({ name: 1, deletedOn: 1 }, { unique: true, background: true, name: "IU_EntityConstraint" });
 
         //Model description:
         // @ts-ignore
-        s.DESCRIPTION = `Tag identifier`;
+        s.DESCRIPTION = `Target groups.`;
 
-        return model("tag", s, "tags");
+        return model("group", s, "groups");
     }
 }

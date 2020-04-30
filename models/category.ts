@@ -24,10 +24,16 @@ export class Category extends AuditedEntity implements NativeModel {
      */
     getModel(): any {
         let s: Schema = super.getSchema()
-        
+
         //Adding model fields:
-        s.add({ name: { type: String, required: true, DESCRIPTION: `Category name.` }});
-        
+        s.add({
+            name: {
+                type: String,
+                required: true,
+                DESCRIPTION: `Category name.`
+            }
+        });
+
         //Adding model indexes:
         s.index({ name: 1, deletedOn: 1 }, { unique: true, background: true, name: "IU_EntityConstraint" });
 
