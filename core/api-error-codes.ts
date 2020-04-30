@@ -31,6 +31,14 @@ export class StandardCodes{
         return new Code("VOID_DELETE", 
             "The user try to delete an entity that no longer exists or is forbidden. So the operation hits no documents.");
     }
+
+    /**
+     * The user try to delete an entity that no longer exists or is forbidden. So the operation hits no documents.
+     */
+    static get QueueOverflow(): Code{
+        return new Code("QUEUE_OVERFLOW", 
+            "The implemented Object pool queue is overflow. An object pool is defined for the InvocationService so, this issue caused when all the objects in the pool are in use and also the queued request collection reach his maximum size. \nNew Requests will be dropped until there is enough space in the queue.");
+    }    
 }
 
 /**
