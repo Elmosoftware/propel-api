@@ -53,6 +53,11 @@ export class ScriptParameter implements NativeSchema {
      */
     public canBeEmpty: boolean = true;
 
+    /**
+     * The parameter default value.
+     */
+    public defaultValue: string = "";
+
     constructor() {
     }
 
@@ -106,6 +111,11 @@ export class ScriptParameter implements NativeSchema {
                 type: Boolean,
                 required: true,
                 DESCRIPTION: `Indicates if when present, the parameter value can be empty, (like an empty string or array).`
+            },
+            defaultValue: {
+                type: String,
+                required: true,
+                DESCRIPTION: `The parameter default value.`
             }
         },
             {

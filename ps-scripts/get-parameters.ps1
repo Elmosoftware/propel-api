@@ -36,8 +36,19 @@ Write-Output "Starting script execution ..."
 Write-Output "Parameters:"
 Write-Output "Path: ""$path"""
 
+#Getting here all the parameters default values:
+<#
+    Credit to Adam Bertram about his work on a Powershell function to get parameters default values.
+    https://github.com/adbertram/Random-PowerShell-Work/blob/master/PowerShell%20Internals/Get-FunctionDefaultParameter.ps1
+#>
+$defaultValues = `
+    (Get-Command $Path).ScriptBlock.Ast.FindAll({ $args[0] -is [System.Management.Automation.Language.ParameterAst] }, $true) | `
+        Where-Object { $_.DefaultValue } | `
+        Select-Object @{ Name = 'name'; Expression = { $_.Name.VariablePath.UserPath } }, `
+            @{ Name = 'value'; Expression = { $_.DefaultValue.Extent.Text } }
 
-(get-command $Path).ParameterSets.Parameters | ForEach-Object -Process {
+#Extracting each parameter individually to get all the details:
+(get-command $Path).ParameterSets.Parameters | Where-Object { $_.name -ne $null } | ForEach-Object -Process {
 
     $sysParams = @(
         "Verbose", 
@@ -56,24 +67,27 @@ Write-Output "Path: ""$path"""
     $canBeNull = $true
     $canBeEmpty = $true
     $validValues = @()
+    $name = $_.name
 
-    $_.attributes.TypeId | ForEach-Object -Process {
-        if($_.name -eq "ValidateNotNullAttribute") {
-            $canBeNull = $false;
-        }
-        if($_.name -eq "ValidateNotNullOrEmptyAttribute") {
-            $canBeNull = $false;
-            $canBeEmpty = $false;
-        }
-    }
+    #If is not a PowerShell default system parameter:
+    if($sysParams -notcontains $name) {
 
-    if($_.attributes.ValidValues -ne $null) {
-        $_.attributes.ValidValues | ForEach-Object -Process {
-            $validValues += $_;
+        $_.attributes.TypeId | ForEach-Object -Process {
+            if($_.name -eq "ValidateNotNullAttribute") {
+                $canBeNull = $false;
+            }
+            if($_.name -eq "ValidateNotNullOrEmptyAttribute") {
+                $canBeNull = $false;
+                $canBeEmpty = $false;
+            }
         }
-    }
 
-    if($sysParams -notcontains $_.name) {
+        if($_.attributes.ValidValues -ne $null) {
+            $_.attributes.ValidValues | ForEach-Object -Process {
+                $validValues += $_;
+            }
+        }
+
         $results += ([pscustomobject]@{ `
             Position = $_.Position; `
             Name = $_.name; `
@@ -83,6 +97,7 @@ Write-Output "Path: ""$path"""
             ValidValues = $validValues; `
             CanBeNull = $canBeNull; `
             CanBeEmpty = $canBeEmpty; `
+            DefaultValue = ($defaultValues | Where-Object { $_.name -eq $name }).value `
             })
     }
 }

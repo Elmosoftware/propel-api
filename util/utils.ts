@@ -199,6 +199,9 @@ export class Utils {
             case "System.Object[]":
                 ret = "Array";
                 break;
+            case "System.Array":
+                ret = "Array";
+                break;                
             case "System.Collections.Hashtable":
                 ret = "Object";
                 break;
