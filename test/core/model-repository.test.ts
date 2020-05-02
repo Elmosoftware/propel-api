@@ -93,7 +93,7 @@ describe("ModelRepository Class - Single Model with no refs", () => {
     })
     test(`ModelRepository.getModelByName() model is correct"`, () => {
         let m1 = repo.getModelByName("m01NoRef");
-        expect(m1.populateSchema).toBe("");
+        expect(m1.populateSchema).toEqual([]);
     })
 })
 
@@ -113,10 +113,10 @@ describe("ModelRepository Class - Two models, One with 1 ref", () => {
         let m1 = repo.getModelByName("m01NoRef");
         let m2 = repo.getModelByName("m02With1Ref");
 
-        expect(m1.populateSchema).toBe("");
-        expect(m2.populateSchema).toEqual({
+        expect(m1.populateSchema).toEqual([]);
+        expect(m2.populateSchema).toEqual([{
             path: "m02Field02"
-        });
+        }]);
     })
 })
 
@@ -138,16 +138,21 @@ describe("ModelRepository Class - Three models, 1 with 1 ref, 1 with 2 refs", ()
         let m2 = repo.getModelByName("m02With1Ref");
         let m3 = repo.getModelByName("m03With2Ref");
 
-        expect(m1.populateSchema).toBe("");
-        expect(m2.populateSchema).toEqual({
+        expect(m1.populateSchema).toEqual([]);
+        expect(m2.populateSchema).toEqual([{
             path: "m02Field02"
-        });
-        expect(m3.populateSchema).toEqual({
-            path: "m03Field02 m03Field03",
-            populate: {
-                path: "m02Field02"
+        }]);
+        expect(m3.populateSchema).toEqual([
+            {
+                path: "m03Field02"
+            },
+            {
+                path: "m03Field03",
+                populate: [{
+                    path: "m02Field02"
+                }]
             }
-        });
+        ]);
     })
 })
 
@@ -171,25 +176,39 @@ describe("ModelRepository Class - Fourth models, 1 with 1 ref, 1 with 2 refs, 1 
         let m3 = repo.getModelByName("m03With2Ref");
         let m4 = repo.getModelByName("m04With1RefColl");
 
-        expect(m1.populateSchema).toBe("");
-        expect(m2.populateSchema).toEqual({
+        expect(m1.populateSchema).toEqual([]);
+        expect(m2.populateSchema).toEqual([{
             path: "m02Field02"
-        });
-        expect(m3.populateSchema).toEqual({
-            path: "m03Field02 m03Field03",
-            populate: {
-                path: "m02Field02"
-            }
-        });
-        expect(m4.populateSchema).toEqual({
-            path: "m04Field02 m04Field03 m04Field04",
-            populate: {
-                path: "m03Field02 m03Field03",
-                populate: {
+        }]);
+        expect(m3.populateSchema).toEqual([
+            {
+                path: "m03Field02"
+            },
+            {
+                path: "m03Field03",
+                populate: [{
                     path: "m02Field02"
-                }
+                }]
             }
-        });
+        ]);
+        expect(m4.populateSchema).toEqual([{
+            path: "m04Field02"
+        }, {
+            path: "m04Field03",
+            populate: [{
+                path: "m02Field02"
+            }]
+        }, {
+            path: "m04Field04",
+            populate: [{
+                path: "m03Field02"
+            }, {
+                path: "m03Field03",
+                populate: [{
+                    path: "m02Field02"
+                }]
+            }]
+        }]);
     })
 })
 
@@ -215,34 +234,57 @@ describe("ModelRepository Class - Fifth models, 1 with 1 ref, 1 with 2 refs, 1 w
         let m4 = repo.getModelByName("m04With1RefColl");
         let m5 = repo.getModelByName("m05With1Emb");
 
-        expect(m1.populateSchema).toBe("");
-        expect(m2.populateSchema).toEqual({
+        expect(m1.populateSchema).toEqual([]);
+        expect(m2.populateSchema).toEqual([{
             path: "m02Field02"
-        });
-        expect(m3.populateSchema).toEqual({
-            path: "m03Field02 m03Field03",
-            populate: {
+        }]);
+        expect(m3.populateSchema).toEqual([
+            {
+                path: "m03Field02"
+            },
+            {
+                path: "m03Field03",
+                populate: [{
+                    path: "m02Field02"
+                }]
+            }
+        ]);
+        expect(m4.populateSchema).toEqual([{
+            path: "m04Field02"
+        }, {
+            path: "m04Field03",
+            populate: [{
                 path: "m02Field02"
-            }
-        });
-        expect(m4.populateSchema).toEqual({
-            path: "m04Field02 m04Field03 m04Field04",
-            populate: {
-                path: "m03Field02 m03Field03",
-                populate: {
+            }]
+        }, {
+            path: "m04Field04",
+            populate: [{
+                path: "m03Field02"
+            }, {
+                path: "m03Field03",
+                populate: [{
                     path: "m02Field02"
-                }
-            }
-        });
-        expect(m5.populateSchema).toEqual({
-            path: "m05Field02 m05Field03 m05Field04",
-            populate: {
-                path: "m03Field02 m03Field03",
-                populate: {
+                }]
+            }]
+        }]);
+        expect(m5.populateSchema).toEqual([{
+            path: "m05Field02"
+        }, {
+            path: "m05Field03",
+            populate: [{
+                path: "m02Field02"
+            }]
+        }, {
+            path: "m05Field04",
+            populate: [{
+                path: "m03Field02"
+            }, {
+                path: "m03Field03",
+                populate: [{
                     path: "m02Field02"
-                }
-            }
-        });
+                }]
+            }]
+        }]);
         expect(m5.internalFields).toEqual(["m05Field07"])
     })
 })

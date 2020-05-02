@@ -11,7 +11,7 @@ export class EntityModel {
     private _repository: any;
     private _name: string;
     private _pluralName: string;
-    private _populateSchema: any;
+    private _populateSchema: any[];
     private _internalFields: string[];
     private _auditFields: string[];
     private _fields: EntityField[];
@@ -21,7 +21,7 @@ export class EntityModel {
         this._repository = nativeModel;
         this._name = nativeModel.modelName;
         this._pluralName = nativeModel.collection.collectionName;
-        this._populateSchema = null;
+        this._populateSchema = [];
         this._internalFields = [];
         this._auditFields = [];
         this._fields = [];
@@ -32,38 +32,38 @@ export class EntityModel {
     /**
      * Entity fields
      */
-    get fields() {
+    get fields(): EntityField[] {
         return this._fields;
     }
 
-    get repository() {
+    get repository(): any {
         return this._repository;
     }
 
-    get name() {
+    get name(): string {
         return this._name;
     }
 
-    get description() {
+    get description(): string {
         return this._description;
     }
 
-    get pluralName() {
+    get pluralName(): string {
         return this._pluralName;
     }
 
-    get populateSchema() {
+    get populateSchema(): any[] {
         return this._populateSchema;
     }
-    set populateSchema(value: any) {
+    set populateSchema(value: any[]) {
         this._populateSchema = value;
     }
 
-    get internalFields() {
+    get internalFields(): string[] {
         return this._internalFields;
     }
 
-    get auditFields() {
+    get auditFields(): string[] {
         return this._auditFields;
     }
 
@@ -71,7 +71,7 @@ export class EntityModel {
      * Returns a boolean value indicating if the field exists.
      * @param {string} fieldName Field name to search for.
      */
-    hasInternalField(fieldName: string) {
+    hasInternalField(fieldName: string): boolean {
         return this._internalFields.length > 0 && this._internalFields.some((field) => {
             return field.toLowerCase() == field.toLowerCase();
         })

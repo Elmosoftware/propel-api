@@ -17,21 +17,21 @@ export class ModelRepository {
     /**
      * Collection of database models.
      */
-    get models() {
+    get models(): EntityModel[] {
         return this._models;
     }
 
     /**
      * Returns the amount of database models stored in the repository.
      */
-    get count() {
+    get count(): number {
         return (this._models && this._models.length) ? this._models.length : 0;
     }
 
     /**
      * GraphQL types cross all the models.
      */
-    getAPISpecificGraphQLTypes() {
+    getAPISpecificGraphQLTypes(): string {
         return `input ${entityModelConfig.GraphQLQueryOptionsName} {
     top: Int
     skip: Int
@@ -45,7 +45,7 @@ export class ModelRepository {
      * Return the specified model by his name.
      * @param {string} modelName Name of the model to search for.
      */
-    getModelByName(modelName: string) {
+    getModelByName(modelName: string): EntityModel {
         let ret = null
 
         if (modelName && typeof modelName == "string") {
@@ -128,7 +128,7 @@ export class ModelRepository {
         return ret;
     }
 
-    private _generate(nativeModels: any) {
+    private _generate(nativeModels: any): void {
 
         if (nativeModels && Array.isArray(nativeModels)) {
             this._models = [];
