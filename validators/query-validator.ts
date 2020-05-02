@@ -15,7 +15,6 @@ export class QueryValidator extends ValidatorBase {
      * @param {object} queryModifier "QueryModifier" object.
      */
     validateQuery(queryModifier: any): QueryValidator {
-        super.validate();
 
         let ret = "";
 

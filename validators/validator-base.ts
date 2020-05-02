@@ -13,11 +13,6 @@ export class ValidatorBase {
     constructor() {
         this.reset();
     }
-
-    validate(): ValidatorBase {
-        this.reset();
-        return this;
-    }
     
     get isValid(): boolean {
         return (this._results.length == 0);

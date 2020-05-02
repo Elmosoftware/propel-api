@@ -20,8 +20,6 @@ class ConfigValidator extends ValidatorBase {
      * Validates the .env Config file after been loaded.
      */
     validate(): ConfigValidator {
-        super.validate();
-
         let validEnvValues = ["development", "production"];
 
         //NODE_ENV is required and can be only one of the following values "dev", "prod":
@@ -49,6 +47,27 @@ class ConfigValidator extends ValidatorBase {
         //DB_ENDPOINT is required and can't be null or empty:
         if (!process.env.DB_ENDPOINT) {
             super._addError("DB_ENDPOINT is required and can't be null or empty.");
+        }
+
+        if (!process.env.POOL_MAX_SIZE) {
+            super._addError("POOL_MAX_SIZE is required.");
+        }
+        else if ((isNaN(Number(process.env.POOL_MAX_SIZE)) || Number(process.env.POOL_MAX_SIZE) < 0)) {
+            super._addError(`POOL_MAX_SIZE is not a number or is less than zero. Supplied value: "${process.env.POOL_MAX_SIZE}".`);
+        }
+
+        if (!process.env.POOL_PRE_ALLOC) {
+            super._addError("POOL_PRE_ALLOC is required.");
+        }
+        else if ((isNaN(Number(process.env.POOL_PRE_ALLOC)) || Number(process.env.POOL_PRE_ALLOC) < 0 || Number(process.env.POOL_PRE_ALLOC) > Number(process.env.POOL_MAX_SIZE))) {
+            super._addError(`POOL_PRE_ALLOC is not a number, is less than zero or greater to POOL_MAX_SIZE. Supplied value: "${process.env.POOL_PRE_ALLOC}".`);
+        }
+
+        if (!process.env.POOL_QUEUE_SIZE) {
+            super._addError("POOL_QUEUE_SIZE is required.");
+        }
+        else if ((isNaN(Number(process.env.POOL_QUEUE_SIZE)) || Number(process.env.POOL_QUEUE_SIZE) < 0)) {
+            super._addError(`POOL_QUEUE_SIZE is not a number or is less than zero. Supplied value: "${process.env.POOL_QUEUE_SIZE}".`);
         }
 
         return this;
