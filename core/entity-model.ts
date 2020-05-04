@@ -124,15 +124,19 @@ export class EntityModel {
             // - Audit fields: - Need to be excluded from GraphQL inputs, (because they are updated by the
             //  API only), but need to be included in the GraphQL types, because they can be queried.
             if (!(fd.isInternal || fd.name.startsWith("__"))) {
+                let fieldName: string = "";
+
                 if (fd.isEmbedded) {
-                    items = items.concat(this.getGraphQLTypes(`${modelName}${Utils.capitalize(fd.name)}`,
-                        fd.embeddedSchema));
+                    //When the filed is an embedded subdocument, the type and input name will be composed
+                    //by the model name and the field name too, because embedded schemas has no model defined:
+                    fieldName = `${modelName}${Utils.capitalize(fd.name)}`
+                    items = items.concat(this.getGraphQLTypes(fieldName, fd.embeddedSchema));
                 }
-
-                type += `"""${fd.description}"""\n\t${fd.getGraphQLFieldDefinition()}\n`;
-
+                
+                type += `"""${fd.description}"""\n\t${fd.getGraphQLFieldDefinition(false, fieldName)}\n`;
+                
                 if (!fd.isAudit) {
-                    input += `\t${fd.getGraphQLFieldDefinition(true)}\n`
+                    input += `\t${fd.getGraphQLFieldDefinition(true, fieldName)}\n`
                 }                
             }
         })

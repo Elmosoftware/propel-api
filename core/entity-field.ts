@@ -138,7 +138,7 @@ export class EntityField {
      * Get the field definition as must be included as part of a type or input definition.
      * @param {boolean} asInput Indicates if the field definition will be used for a GraphQL input.
      */
-    getGraphQLFieldDefinition(asInput: boolean = false): string {
+    getGraphQLFieldDefinition(asInput: boolean = false, embeddedFieldName: string = ""): string {
 
         let graphQLType: string = this._graphQLType;
         let isRequired: boolean = this._isRequired;
@@ -146,7 +146,16 @@ export class EntityField {
         let ret: string = "";
 
         if (this._isEmbedded) {
-            graphQLType = `${this._modelName}${Utils.capitalize(this._name)}`;
+            //When an embedded subdocument has a child that is also embedded, we need to keep the 
+            //parent embedded document field for the type and input one.
+            //Because is not possible to know hen the parent is also an embedded subdoc, we need to rely in the 
+            //"embeddedFieldName" parameter:
+            if (embeddedFieldName) {
+                graphQLType = embeddedFieldName;
+            }
+            else {
+                graphQLType = `${this._modelName}${Utils.capitalize(this._name)}`;
+            }            
         }
 
         // If the field definition will be used in a GraphQL "input" instead of a "type":
