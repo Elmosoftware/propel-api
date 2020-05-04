@@ -1,5 +1,6 @@
 import { appendFile, close, unlink } from "fs";
 import { file } from "tmp";
+import { APIError } from "../core/api-error";
 
 /**
  * File System utilities.
@@ -100,5 +101,31 @@ export class FileSystemHelper {
                 }
             })
         });
+    }
+
+    /**
+     * Returns a Base64 encoding of the supplied ASCII string.
+     * @param ASCIIString String value to be Base64 encoded.
+     */
+    static encodeBase64(ASCIIString: string): string{
+        
+        if (typeof ASCIIString !== "string") {
+            throw new APIError(`We expect a "string" for the parameter "ASCIIString". Supplied value type: "${typeof ASCIIString}".`)
+        }
+  
+        return Buffer.from(ASCIIString, "utf8").toString("base64");
+    }
+    
+    /**
+     * Decodes the provided Base64 encoded string.
+     * @param base64String String value to be decoded.
+     */
+    static decodeBase64(base64String: string): string{
+        
+        if (typeof base64String !== "string") {
+            throw new APIError(`We expect a "string" for the parameter "base64String". Supplied value type: "${typeof base64String}".`)
+        }
+  
+        return Buffer.from(base64String, "base64").toString("ascii");
     }
 }
