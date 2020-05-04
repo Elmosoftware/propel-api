@@ -2,6 +2,7 @@ import NodePowershell from "node-powershell";
 import { EventEmitter } from "events";
 
 import { Disposable } from "../core/disposable";
+import { Resettable } from "../core/object-pool";
 import { Utils } from "../util/utils";
 import { logger } from "../services/logger-service";
 
@@ -57,10 +58,10 @@ export class InvocationMessage {
  * results in JSON format.
  * @implements Disposable
  */
-export class InvocationService implements Disposable {
+export class InvocationService implements Disposable, Resettable {
 
     private _shell: NodePowershell;
-    private _eventEmitter: EventEmitter;
+    private _eventEmitter!: EventEmitter;
     private _STDOUTs!: string[];
 
     constructor() {
@@ -70,8 +71,7 @@ export class InvocationService implements Disposable {
             verbose: false
         })
 
-        this._reset();
-        this._eventEmitter = new EventEmitter();
+        this.reset();
     }
 
     /**
@@ -110,19 +110,23 @@ export class InvocationService implements Disposable {
     /**
      * Executes a powershell command or script and return the results.
      * @param command Command to execute. It can be a commandlet, script block or a full path to a script.
-     * @param params execution arguments.
+     * @param params Optional execution arguments.
      */
-    invoke(command: string, params: any[]): Promise<any> {
+    invoke(command: string, params?: any[]): Promise<any> {
 
-        this._reset();
+        this.reset();
         this._emit(InvocationStatus.Preparing);
 
         return new Promise<any[]>((resolve, reject) => {
             this._shell.addCommand(command);
-            //The following method is well documented in node-powershell library, but is not included 
-            //in @types/node-powershell *.d.ts file the types, so we need to ignore the warning.
-            //@ts-ignore
-            this._shell.addParameters(params);
+
+            if (params && Array.isArray(params) && params.length > 0) {
+                //The following method is well documented in node-powershell library, but is not included 
+                //in @types/node-powershell *.d.ts file the types, so we need to ignore the warning.
+                //@ts-ignore
+                this._shell.addParameters(params);
+            }
+            
             this._emit(InvocationStatus.Running)
             this._shell.invoke()
                 .then((out: string) => {
@@ -166,20 +170,26 @@ export class InvocationService implements Disposable {
         return this._dispose();
     }
 
+    reset() {
+        if (this._eventEmitter) {
+            this._eventEmitter.removeAllListeners("data");            
+        }
+
+        this._STDOUTs = [];
+        this._eventEmitter = new EventEmitter();
+
+        //The following method is well documented in node-powershell library, but is not included 
+        //in @types/node-powershell *.d.ts file the types, so we need to ignore the warning.
+        //@ts-ignore
+        this._shell.clear();
+    }
+
     private _dispose(): Promise<string> {
-        this._reset();
+        this.reset();
         return this._shell.dispose();
     }
 
     private _emit(status: InvocationStatus, message?: string) {
         this._eventEmitter.emit("data", new InvocationMessage(status, (message) ? message : ""));
-    }
-
-    private _reset() {
-        this._STDOUTs = [];
-        //The following method is well documented in node-powershell library, but is not included 
-        //in @types/node-powershell *.d.ts file the types, so we need to ignore the warning.
-        //@ts-ignore
-        this._shell.clear();
     }
 }
