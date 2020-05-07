@@ -38,6 +38,6 @@ export class ValidatorBase {
      * @param {string} errorMsg Error message to add.
      */
     _addError(errorMsg: string) {
-        this._results.push("-" + errorMsg)
+        this._results.push("- " + errorMsg)
     }
 }
