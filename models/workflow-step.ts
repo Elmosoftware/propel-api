@@ -1,7 +1,9 @@
 // @ts-check
 import { Schema } from "mongoose"
 import { NativeSchema } from "./native-schema";
-import { Task } from "./task";
+import { Script } from "./script";
+import { Target } from "./target";
+import { ParameterValue } from "./parameter-value";
 
 /**
  * Represent one step of a complete workflow. A workflow step contains a reference to the task that 
@@ -17,11 +19,6 @@ export class WorkflowStep implements NativeSchema {
     public name: string = "";
 
     /**
-     * Task to be executed.
-     */
-    public task!: Task;
-
-    /**
      * If true, the step will be included in the workflow execution. otherwise will be skipped.
      */
     public enabled: boolean = true;
@@ -31,6 +28,21 @@ export class WorkflowStep implements NativeSchema {
      */
     public abortOnError: boolean = true;
 
+    /**
+     * Script to be executed.
+     */
+    public script!: Script;
+
+    /**
+     * Values to assign to the script parameters during the task execution.
+     */
+    public values: ParameterValue[] = [];
+
+    /**
+     * Collection of targets for the task execution.
+     */
+    public targets: Target[] = [];
+
     constructor() {
     }
 
@@ -39,17 +51,13 @@ export class WorkflowStep implements NativeSchema {
      * @implements NativeSchema.getSchema()
      */
     getSchema(): Schema {
+        let parameterValueEmbeddedSchema = (new ParameterValue()).getSchema();
+
         return new Schema({
             name: {
                 type: String,
                 required: true,
                 DESCRIPTION: `Step name.`
-            },
-            task: {
-                type: Schema.Types.ObjectId, 
-                ref: "task", 
-                required: true,
-                DESCRIPTION: `Task to be executed.`
             },
             enabled: {
                 type: Boolean,
@@ -60,7 +68,20 @@ export class WorkflowStep implements NativeSchema {
                 type: Boolean,
                 required: true,
                 DESCRIPTION: `If true, the entire workflow will be aborted if this step fails.`
-            }
+            },
+            script: {
+                type: Schema.Types.ObjectId,
+                ref: "script",
+                required: true,
+                DESCRIPTION: `Script to be executed.`
+            },
+            values: [parameterValueEmbeddedSchema],
+            targets: [{
+                type: Schema.Types.ObjectId,
+                ref: "target",
+                required: true,
+                DESCRIPTION: `Collection of targets for the task execution.`
+            }]
         },
             {
                 _id: false //This will be an embedded document, so no "_id" field is needed here. 

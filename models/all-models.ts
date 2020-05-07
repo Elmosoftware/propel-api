@@ -7,8 +7,8 @@ import { Category } from "./category";
 import { Group } from "./group";
 import { Script } from "./script";
 import { Target } from "./target";
-import { Task } from "./task";
 import { Workflow } from "./workflow";
+import { ExecutionLog } from "./execution-log";
 
 export let allModels = [
     (new User()).getModel(),
@@ -16,6 +16,6 @@ export let allModels = [
     (new Group()).getModel(),
     (new Script()).getModel(),
     (new Target()).getModel(),
-    (new Task()).getModel(),
-    (new Workflow()).getModel()
+    (new Workflow()).getModel(),
+    (new ExecutionLog()).getModel()
 ];
