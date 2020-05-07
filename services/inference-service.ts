@@ -66,6 +66,7 @@ export class InferenceService implements Disposable {
                                         sp.canBeEmpty = param.CanBeEmpty;
 
                                         if (param.DefaultValue !== null) {
+                                            sp.hasDefault = true;
                                             sp.defaultValue = param.DefaultValue;
                                         }
                                         

@@ -58,6 +58,11 @@ export class ScriptParameter implements NativeSchema {
      */
     public defaultValue: string = "";
 
+    /**
+     * Indicates if the parameter has set a default value.
+     */
+    public hasDefault: boolean = false;
+
     constructor() {
     }
 
@@ -116,6 +121,11 @@ export class ScriptParameter implements NativeSchema {
                 type: String,
                 required: true,
                 DESCRIPTION: `The parameter default value.`
+            },
+            hasDefault: {
+                type: Boolean,
+                required: true,
+                DESCRIPTION: `Indicates if the parameter has set a default value.`
             }
         },
             {
