@@ -12,8 +12,24 @@ class ErrorFormatter {
      */
     format(e: any): any{
 
-        let errorCode = (e.originalError && e.originalError.errorCode) ? e.originalError.errorCode : null;
-        let stackArray = (e.originalError && e.originalError.stackArray) ? e.originalError.stackArray : [];
+        let errorCode: any = null;
+        let stackArray: string[] = [];
+        let stack: string = "";
+
+        if (e.originalError) {
+            errorCode = (e.originalError.errorCode) ? e.originalError.errorCode : null;
+            stackArray = (e.originalError.stackArray) ? e.originalError.stackArray : [];
+            stack = (e.originalError.stack) ? e.originalError.stack : "";
+        }
+        else {
+            errorCode = (e.errorCode) ? e.errorCode : null;
+            stackArray = (e.stackArray) ? e.stackArray : [];
+            stack = (e.stack) ? e.stack : "";
+        }
+
+        if (stackArray.length == 0 && stack) {
+            stackArray.push(stack);
+        }
 
         return {
             name: e.name,
