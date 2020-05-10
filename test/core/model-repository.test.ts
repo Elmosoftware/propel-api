@@ -569,7 +569,7 @@ describe("ModelRepository Class - Parse GraphQL schema", () => {
 
         schemaM5 = getGraphQLTypeByName(m5.getGraphQLTypes(), "M05With1EmbM05Field12");
         expect(schemaM5).toContain("type M05With1EmbM05Field12 {");
-        expect(schemaM5).toContain("doubleEmbedded03: M05With1EmbDoubleEmbedded03");
+        expect(schemaM5).toContain("doubleEmbedded03: M05With1EmbM05Field12DoubleEmbedded03");
 
         schemaM5 = getGraphQLTypeByName(m5.getGraphQLTypes(), "M05With1Emb");
         expect(schemaM5).toContain("type M05With1Emb {");
