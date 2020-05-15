@@ -1,8 +1,7 @@
 import NodePowershell from "node-powershell";
 import { EventEmitter } from "events";
 
-import { Disposable } from "../core/disposable";
-import { Resettable } from "../core/object-pool";
+import { Disposable, Resettable } from "../core/object-pool";
 import { Utils } from "../util/utils";
 import { logger } from "../services/logger-service";
 
@@ -114,7 +113,6 @@ export class InvocationService implements Disposable, Resettable {
      */
     invoke(command: string, params?: any[]): Promise<any> {
 
-        this.reset();
         this._emit(InvocationStatus.Preparing);
 
         return new Promise<any[]>((resolve, reject) => {

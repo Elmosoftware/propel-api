@@ -1,23 +1,21 @@
 import { join } from "path";
 
 import { cfg } from "../core/config";
-import { InvocationService } from "./invocation-service";
+import { pool } from "../services/invocation-service-pool";
 import { FileSystemHelper } from "../util/file-system-helper";
 import { ScriptParameter } from "../models/script-parameter";
 import { logger } from "./logger-service";
-import { Disposable } from "../core/disposable";
 import { Utils } from "../util/utils";
+import { InvocationService } from "./invocation-service";
 
 /**
  * This class encapsulates all teh functionality related to Script parameter inference used in the API.
  * @implements Disposable
  */
-export class InferenceService implements Disposable {
-
-    private _invsvc: InvocationService;
+export class InferenceService {
 
     constructor() {
-        this._invsvc = new InvocationService();
+
     }
 
     /**
@@ -31,77 +29,74 @@ export class InferenceService implements Disposable {
 
             let ret: ScriptParameter[] = [];
 
-            //Sadly for thsi we will need to persist the script in the file system, so firts 
-            //step is to create a temp file with the script content.
-            FileSystemHelper.createTempFile("infer-", "ps1", scriptBody)
-                .then((fileName) => {
-                    let command = join(cfg.rootFolder, cfg.PSScriptsFolder, "get-parameters.ps1");
-                    let params = [
-                        { name: "Path", value: fileName }
-                    ]
+            pool.aquire()
+                .then((invsvc: InvocationService) => {
+                    //Sadly for thsi we will need to persist the script in the file system, so firts 
+                    //step is to create a temp file with the script content.
+                    FileSystemHelper.createTempFile("infer-", "ps1", scriptBody)
+                        .then((fileName) => {
+                            let command = join(cfg.rootFolder, cfg.PSScriptsFolder, "get-parameters.ps1");
+                            let params = [
+                                { name: "Path", value: fileName }
+                            ]
 
-                    logger.logInfo(`Temporal file created: "${fileName}".`);
+                            invsvc.invoke(command, params)
+                                .then((params: any[]) => {
 
-                    // this._invsvc.addSTDOUTEventListener((msg: InvocationMessage) => {
-                    //     console.log(msg.toString());
-                    // })
+                                    if (params && params.length > 0) {
+                                        params.forEach((param) => {
 
-                    this._invsvc.invoke(command, params)
-                        .then((params: any[]) => {
+                                            if (!isNaN(param.Position) && param.Name) {
+                                                let sp = new ScriptParameter();
 
-                            if (params && params.length > 0) {
-                                params.forEach((param) => {
+                                                sp.position = param.Position;
+                                                sp.name = param.Name;
+                                                sp.description = (param.HelpMessage) ? param.HelpMessage : "";
+                                                sp.type = param.ParameterType;
+                                                sp.nativeType = Utils.powershellToJavascriptTypeConverter(sp.type);
+                                                sp.required = param.IsMandatory;
+                                                sp.validValues = param.ValidValues;
+                                                sp.canBeNull = param.CanBeNull;
+                                                sp.canBeEmpty = param.CanBeEmpty;
 
-                                    if (!isNaN(param.Position) && param.Name) {
-                                        let sp = new ScriptParameter();
+                                                if (param.DefaultValue !== null) {
+                                                    sp.hasDefault = true;
+                                                    sp.defaultValue = param.DefaultValue;
+                                                }
 
-                                        sp.position = param.Position;
-                                        sp.name = param.Name;
-                                        sp.description = (param.HelpMessage) ? param.HelpMessage : "";
-                                        sp.type = param.ParameterType;
-                                        sp.nativeType = Utils.powershellToJavascriptTypeConverter(sp.type);
-                                        sp.required = param.IsMandatory;
-                                        sp.validValues = param.ValidValues;
-                                        sp.canBeNull = param.CanBeNull;
-                                        sp.canBeEmpty = param.CanBeEmpty;
-
-                                        if (param.DefaultValue !== null) {
-                                            sp.hasDefault = true;
-                                            sp.defaultValue = param.DefaultValue;
-                                        }
-                                        
-                                        ret.push(sp);
+                                                ret.push(sp);
+                                            }
+                                        })
                                     }
-                                })
-                            }
 
-                            resolve(ret)
+                                    resolve(ret)
+                                })
+                                .catch((err: any) => {
+                                    reject(err);
+                                })
+                                .finally(() => {
+                                    
+                                    //Returning the InvocationService instance to the pool:
+                                    pool.release(invsvc);
+
+                                    //Deleting temp files:
+                                    FileSystemHelper.delete(fileName)
+                                        .then(() => {
+                                            //Temp file deleted successfully!
+                                        })
+                                        .catch((err) => {
+                                            logger.logWarn(`There was an error while trying to delete the temporal file "${fileName}" this is not critical.
+Error details: ${String(err)}`);
+                                        })
+                                });
                         })
                         .catch((err) => {
                             reject(err);
                         })
-                        .finally(() => {
-                            FileSystemHelper.delete(fileName)
-                                .then(() => {
-                                    logger.logInfo(`Temporal file "${fileName}" was deleted successfully.`);
-                                })
-                                .catch((err) => {
-                                    logger.logWarn(`There was an error while trying to delete the temporal file "${fileName}" this is not critical.
-Error details: ${String(err)}`);
-                                })
-                        });
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     reject(err);
                 })
         });
-    }
-
-    disposeSync() {
-        this._invsvc.disposeSync();
-    }
-
-    dispose() {
-        return this._invsvc.dispose();
     }
 }

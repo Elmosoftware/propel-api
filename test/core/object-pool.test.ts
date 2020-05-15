@@ -1,14 +1,21 @@
-import { ObjectPool, ObjectPoolOptions, Resettable } from "../../core/object-pool";
+import { ObjectPool, ObjectPoolOptions, Resettable, Disposable } from "../../core/object-pool";
 
 let counter: number = 0;
 
-class TestPool implements Resettable {
+class TestPool implements Resettable, Disposable {
 
     constructor() {
         counter++;
     }
 
     reset() {
+    }
+
+    disposeSync() {
+    }
+
+    dispose(): Promise<any> {
+        return Promise.resolve("Disposing!!!!");
     }
 }
 
@@ -200,7 +207,7 @@ describe("ObjectPool Class - Usage", () => {
                 });
             });
         });
-    },10000);
+    }, 10000);
     test(`Queue overflow exception"`, (done) => {
         let myPool: TestPool[] = []
 
@@ -242,5 +249,37 @@ describe("ObjectPool Class - Usage", () => {
                 });
             });
         });
-    },10000);
+    }, 10000);
+});
+
+describe("ObjectPool Class - Disposition", () => {
+
+    let pool: ObjectPool<TestPool>;
+
+    beforeEach(() => {
+        counter = 0;
+
+        let op = new ObjectPoolOptions();
+        op.maxSize = 3
+        op.preallocatedSize = 1
+        op.maxQueueSize = 1
+
+        pool = new ObjectPool<TestPool>(() => new TestPool(), op);
+    })
+    test(`disposing synchronously"`, (done) => {
+        pool.disposeSync();
+
+        expect(pool.isDisposing).toBe(true)
+        expect(pool.availableCount).toEqual(0)
+        expect(pool.lockedCount).toEqual(0)
+        expect(pool.availableToGrow).toEqual(0)
+        expect(pool.canGrow).toBe(false)
+        expect(pool.createdCount).toEqual(0)
+
+        pool.aquire()
+            .catch((err) => {
+                expect(err.message).toContain(`ObjectPool is right now disposing objects`);
+                done();
+            })
+    })
 });

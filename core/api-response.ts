@@ -1,5 +1,6 @@
 //@ts-check
 import { APIError } from "./api-error";
+import { errorFormatter } from "../schema/error-formatter";
 
 /**
  * This class encapsulates the unified response body sent always by this API.
@@ -17,7 +18,7 @@ export class APIResponse{
     public readonly data: any[];
 
     constructor(errors: any[] | any, data: any[] | any){
-        this.errors = this._toArray(errors, (error: any) => new APIError(error));
+        this.errors = this._toArray(errors, (error: any) => errorFormatter.format(new APIError(error)));
         this.data = this._toArray(data, (dataItem: any) => dataItem);
     }
 

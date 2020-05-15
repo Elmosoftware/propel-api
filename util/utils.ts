@@ -4,7 +4,7 @@ import { APIError } from "../core/api-error";
  * Utilities.
  */
 export class Utils {
-    
+
     /**
      * Returns a boolean value indicating if the supplied value is an object reference.
      * @param {object} object Object instance to validate.
@@ -12,7 +12,7 @@ export class Utils {
     static isObject(object: any): boolean {
         let ret = false
 
-        if (object && typeof object == "object" && 
+        if (object && typeof object == "object" &&
             object.constructor && typeof object.constructor == "function") {
             ret = true;
         }
@@ -59,8 +59,8 @@ export class Utils {
      * @param {any} stringValue String value to be capitalized.
      */
     static capitalize(stringValue: any): string {
-        stringValue = (stringValue == null || stringValue == undefined)? "" : stringValue;
-        return String(stringValue).charAt(0).toUpperCase() + String(stringValue).slice(1); 
+        stringValue = (stringValue == null || stringValue == undefined) ? "" : stringValue;
+        return String(stringValue).charAt(0).toUpperCase() + String(stringValue).slice(1);
     }
 
     /**
@@ -99,13 +99,28 @@ export class Utils {
         if (removeOnlyLastEmptyLines) {
             while (ret.length > 1 && ret[ret.length - 1] == "") {
                 ret.splice(ret.length - 1, 1);
-            }            
+            }
         }
         else {
             ret = ret.filter((line) => line.length > 0);
         }
-        
-        return ret.join(cr); 
+
+        return ret.join(cr);
+    }
+
+    /**
+     * This is an "async" version of the "Array.prototype.forEach" method that handles async functions 
+     * as callbacks. Normal forEach function will call the callback and immediately iterate to the 
+     * next item. This version is going to wait for the assynchronous callback to finish before to 
+     * continue with the next item in the array.
+     * @author [Sébastien Chopin](https://gist.github.com/Atinux/fd2bcce63e44a7d3addddc166ce93fb2) 
+     * @param array Array to iterate
+     * @param callback Callback function to call for each item in the array.
+     */
+    static async asyncForEach<T>(array: T[], callback: Function) {
+        for (let index = 0; index < array.length; index++) {
+            await callback(array[index], index, array);
+        }
     }
 
     /**
@@ -201,7 +216,7 @@ export class Utils {
                 break;
             case "System.Array":
                 ret = "Array";
-                break;                
+                break;
             case "System.Collections.Hashtable":
                 ret = "Object";
                 break;

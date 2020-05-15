@@ -1,5 +1,7 @@
 import dotenv from "dotenv"
 
+import { ObjectPoolOptions } from "./object-pool";
+
 /**
  * Unified access to the API configuration.
  */
@@ -49,6 +51,17 @@ class Config {
      */
     get PSScriptsFolder(): string {
         return (process.env.PS_SCRIPTS_FOLDER) ? process.env.PS_SCRIPTS_FOLDER : "";
+    }
+
+    /**
+     * Returns the current pool options configured for the API.
+     */
+    get poolOptions(): ObjectPoolOptions {
+        let o = new ObjectPoolOptions();
+        o.maxSize = Number(process.env.POOL_MAX_SIZE);
+        o.preallocatedSize = Number(process.env.POOL_PRE_ALLOC)
+        o.maxQueueSize = Number(process.env.POOL_QUEUE_SIZE)
+        return o;
     }
 }
 

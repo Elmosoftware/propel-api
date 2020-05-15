@@ -1,3 +1,4 @@
+import { pool } from "../../services/invocation-service-pool";
 import { InferenceService } from "../../services/inference-service";
 import { ScriptParameter } from "../../models/script-parameter";
 
@@ -97,14 +98,15 @@ return [pscustomobject]@{ ScriptDesc = "SingleOptionalUntypedParam"} | ConvertTo
 
 let infer: InferenceService;
 
+afterAll(() => {
+    pool.disposeSync();
+    pool.reset();
+})
+
 describe("InferenceService Class - infer()", () => {
 
     beforeEach(() => {
         infer = new InferenceService();
-    })
-
-    afterEach(() => {
-        infer.disposeSync();
     })
 
     test(`Script type: Empty script (no code at all)"`, (done) => {
@@ -238,7 +240,8 @@ describe("InferenceService Class - infer()", () => {
             })
     }, 15000)
     test(`Script type: Combo"`, (done) => {
-        infer.infer(testScripts.Combo)
+        
+            infer.infer(testScripts.Combo)
             .then((params: ScriptParameter[]) => {
                 expect(params.length).toEqual(11);
 
@@ -369,7 +372,9 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[10].defaultValue).toEqual(`@("One", "Two")`);
 
                 done();
-            })
-    }, 15000)
+            })  
+
+        
+    }, 20000)
 });
 
