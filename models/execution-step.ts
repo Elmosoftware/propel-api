@@ -1,13 +1,15 @@
 // @ts-check
 import { Schema } from "mongoose"
 import { NativeSchema } from "./native-schema";
-import { ExecutionTargets } from "./execution-targets";
+import { ExecutionTarget } from "./execution-target";
 import { ParameterValue } from "./parameter-value";
+import { ExecutionStatus } from "./execution-status";
+import { ExecutionError } from "./execution-error";
 
 /**
  * Details of a Workflow step execution. 
  */
-export class ExecutionSteps implements NativeSchema {
+export class ExecutionStep implements NativeSchema {
 
     /**
      * Step name.
@@ -25,9 +27,20 @@ export class ExecutionSteps implements NativeSchema {
     public values: ParameterValue[] = [];
 
     /**
-     * Allthe targets and the gathered results and/or errors on each one.
+     * All the targets and the gathered results and/or errors on each one.
      */
-    public targets: ExecutionTargets[] = [];
+    public targets: ExecutionTarget[] = [];
+
+    /**
+     * Finished execution status for the step. 
+     */
+    public status: ExecutionStatus = ExecutionStatus.Pending;
+
+    /**
+     * Step error. This is not related to the execution in the targets but any error that 
+     * could prevent the step to start. Mostly related to object pool issues.
+     */
+    public execError: ExecutionError | null = null;
 
     constructor() {
     }
@@ -37,10 +50,11 @@ export class ExecutionSteps implements NativeSchema {
      * @implements NativeSchema.getSchema()
      */
     getSchema(): Schema {
-        let executionTargetsEmbeddedSchema = (new ExecutionTargets()).getSchema();
+        let executionTargetEmbeddedSchema = (new ExecutionTarget()).getSchema();
+        let executionErrorEmbeddedSchema = (new ExecutionError()).getSchema();
         let parameterValueEmbeddedSchema = (new ParameterValue()).getSchema();
 
-        return new Schema({ 
+        return new Schema({
             stepName: {
                 type: String,
                 required: true,
@@ -52,7 +66,13 @@ export class ExecutionSteps implements NativeSchema {
                 DESCRIPTION: `Script name.`
             },
             values: [parameterValueEmbeddedSchema],
-            targets: [executionTargetsEmbeddedSchema]
+            targets: [executionTargetEmbeddedSchema],
+            status: {
+                type: String,
+                required: true,
+                DESCRIPTION: `Execution Status.`
+            },
+            execError: executionErrorEmbeddedSchema
         },
             {
                 _id: false //This will be an embedded document, so no "_id" field is needed here. 

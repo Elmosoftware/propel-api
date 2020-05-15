@@ -2,11 +2,12 @@
 
 import { Schema } from "mongoose"
 import { NativeSchema } from "./native-schema";
+import { APIError } from "../core/api-error";
 
 /**
  * Represents the errors returned during a script invocation.
  */
-export class ExecutionErrors implements NativeSchema {
+export class ExecutionError implements NativeSchema {
 
     /**
      * Error Timestamp.
@@ -23,7 +24,14 @@ export class ExecutionErrors implements NativeSchema {
      */
     public stack: string[] = [];
 
-    constructor() {
+    constructor(error?: Error | string) {
+        let e: APIError;
+        
+        if (error) {
+            e = new APIError(error);
+            this.message = e.message;
+            this.stack = e.stackArray;
+        }
     }
 
     /**

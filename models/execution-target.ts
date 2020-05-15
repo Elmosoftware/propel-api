@@ -1,12 +1,13 @@
 // @ts-check
 import { Schema } from "mongoose"
 import { NativeSchema } from "./native-schema";
-import { ExecutionErrors } from "./execution-errors";
+import { ExecutionError } from "./execution-error";
+import { ExecutionStatus } from "./execution-status";
 
 /**
  * Results and errors of a script execution on one particular target.
  */
-export class ExecutionTargets implements NativeSchema {
+export class ExecutionTarget implements NativeSchema {
 
     /**
      * Target fully qualified name.
@@ -24,9 +25,14 @@ export class ExecutionTargets implements NativeSchema {
     public execResults: any[] = [];
 
     /**
-     * If true, the entire workflow will be aborted if this step fails. Otherwise, it will continue even after the failure.
+     * Collection of errors as result of this target execution.
      */
-    public execErrors: ExecutionErrors[] = [];
+    public execErrors: ExecutionError[] = [];
+
+    /**
+     * Finished execution status for the step. 
+     */
+    public status: ExecutionStatus = ExecutionStatus.Pending;
 
     constructor() {
     }
@@ -36,7 +42,7 @@ export class ExecutionTargets implements NativeSchema {
      * @implements NativeSchema.getSchema()
      */
     getSchema(): Schema {
-        let executionErrorsEmbeddedSchema = (new ExecutionErrors()).getSchema();
+        let executionErrorEmbeddedSchema = (new ExecutionError()).getSchema();
 
         return new Schema({ 
             FQDN: {
@@ -54,7 +60,12 @@ export class ExecutionTargets implements NativeSchema {
                 required: true,
                 DESCRIPTION: `The collection of results delivered by the script in this invocation.`
             }],
-            execErrors: [executionErrorsEmbeddedSchema]
+            execErrors: [executionErrorEmbeddedSchema],
+            status: {
+                type: String,
+                required: true,
+                DESCRIPTION: `Execution Status.`
+            }
         },
             {
                 _id: false //This will be an embedded document, so no "_id" field is needed here. 

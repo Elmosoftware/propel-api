@@ -3,14 +3,9 @@ import { model, Schema } from "mongoose"
 import { Entity } from "./entity";
 import { NativeModel } from "./native-model";
 import { Workflow } from "./workflow";
-import { ExecutionSteps } from "./execution-steps";
+import { ExecutionStep } from "./execution-step";
 import { User } from "./user";
-
-export enum ExecutionStatus {
-    Success = "SUCCESS",
-    Partial = "PARTIAL",
-    Error = "ERROR"
-}
+import { ExecutionStatus } from "./execution-status";
 
 /**
  * Full log of Workflow execution outcomes.
@@ -45,7 +40,7 @@ export class ExecutionLog extends Entity implements NativeModel {
     /**
      * Details of each one of the steps in the workflow execution.
      */
-    public executionSteps!: ExecutionSteps;
+    public executionSteps: ExecutionStep[] = [];
 
     constructor() {
         super();
@@ -57,7 +52,7 @@ export class ExecutionLog extends Entity implements NativeModel {
      */
     getModel(): any {
         let s: Schema = super.getSchema();
-        let executionStepsEmbeddedSchema = (new ExecutionSteps()).getSchema();
+        let executionStepsEmbeddedSchema = (new ExecutionStep()).getSchema();
 
         //Adding model fields:
         s.add({
