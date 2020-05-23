@@ -1,0 +1,60 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "API - Debug APP",
+      "program": "${workspaceFolder}/propel-api/index.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": [
+        "${workspaceFolder}/propel-api/dist/**/*.js"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "API - Debug ALL Test",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": [
+        "${workspaceFolder}/propel-api/dist/**/*.js"
+      ],
+      "cwd": "${workspaceFolder}/propel-api",
+      "windows": {
+        "args": [
+          "--inspect-brk",
+          "${workspaceRoot}/propel-api/node_modules/jest/bin/jest.js",
+          "./dist",
+          "--runInBand"   
+        ],
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "API - Debug current opened Test",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": [
+        "${workspaceFolder}/propel-api/dist/**/*.js"
+      ],
+      "cwd": "${workspaceFolder}/propel-api",
+      "windows": {
+        "args": [
+          "--inspect-brk",
+          "${workspaceRoot}/propel-api/node_modules/jest/bin/jest.js",
+          "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
+          "--runInBand",
+          "--detectOpenHandles"   
+        ],
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}

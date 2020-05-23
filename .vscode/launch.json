@@ -7,29 +7,50 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug APP",
-      "program": "${workspaceFolder}/index.ts",
-      "preLaunchTask": "tsc: build - tsconfig.json",
+      "name": "propel-api - Debug APP",
+      "program": "${workspaceFolder}/propel-api/index.ts",
+      "preLaunchTask": "propel-api - Build",
       "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
+        "${workspaceFolder}/propel-api/dist/**/*.js"
       ],
       "console": "integratedTerminal"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug ALL Test",
-      "preLaunchTask": "tsc: build - tsconfig.json",
+      "name": "propel-api - Debug ALL Test",
+      "preLaunchTask": "propel-api - Build",
       "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
+        "${workspaceFolder}/propel-api/dist/**/*.js"
       ],
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/propel-api",
       "windows": {
         "args": [
           "--inspect-brk",
-          "${workspaceRoot}/node_modules/jest/bin/jest.js",
+          "${workspaceRoot}/propel-api/node_modules/jest/bin/jest.js",
           "./dist",
           "--runInBand"   
+        ],
+      },
+      "console": "externalTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "propel-api - Debug current opened Test",
+      "preLaunchTask": "propel-api - Build",
+      "outFiles": [
+        "${workspaceFolder}/propel-api/dist/**/*.js"
+      ],
+      "cwd": "${workspaceFolder}/propel-api",
+      "windows": {
+        "args": [
+          "--inspect-brk",
+          "${workspaceRoot}/propel-api/node_modules/jest/bin/jest.js",
+          "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
+          "--runInBand",
+          "--detectOpenHandles"   
         ],
       },
       "console": "integratedTerminal",
@@ -38,16 +59,36 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug current opened Test",
-      "preLaunchTask": "tsc: build - tsconfig.json",
+      "name": "propel-shared - Debug ALL Test",
+      "preLaunchTask": "propel-shared - Build",
       "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
+        "${workspaceFolder}/propel-shared/dist/**/*.js"
       ],
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/propel-shared",
       "windows": {
         "args": [
           "--inspect-brk",
-          "${workspaceRoot}/node_modules/jest/bin/jest.js",
+          "${workspaceRoot}/propel-shared/node_modules/jest/bin/jest.js",
+          "./dist",
+          "--runInBand"   
+        ],
+      },
+      "console": "externalTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "propel-shared - Debug current opened Test",
+      "preLaunchTask": "propel-shared - Build",
+      "outFiles": [
+        "${workspaceFolder}/propel-shared/dist/**/*.js"
+      ],
+      "cwd": "${workspaceFolder}/propel-shared",
+      "windows": {
+        "args": [
+          "--inspect-brk",
+          "${workspaceRoot}/propel-shared/node_modules/jest/bin/jest.js",
           "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
           "--runInBand",
           "--detectOpenHandles"   
