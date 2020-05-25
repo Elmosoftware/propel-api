@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 
 import { Disposable, Resettable } from "../core/object-pool";
 import { Utils } from "../../propel-shared/utils/utils";
-import { logger } from "../services/logger-service";
+import { logger } from "../../propel-shared/services/logger-service";
 
 /**
  * All posible status values for a script invocation.

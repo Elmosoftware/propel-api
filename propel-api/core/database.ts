@@ -6,9 +6,9 @@ import { buildSchema } from "graphql";
 import { cfg } from "./config";
 import { allModels } from "../models/all-models";
 import { ModelRepository } from "./model-repository";
-import { logger } from "../services/logger-service";
+import { logger } from "../../propel-shared/services/logger-service";
 import { DataService } from "../services/data-service";
-import { APIError } from "./api-error";
+import { PropelError } from "../../propel-shared/core/propel-error";
 
 const mongooseOptions: any = {
     useNewUrlParser: true, //(node:61064) DeprecationWarning: current URL string parser is deprecated.
@@ -16,7 +16,9 @@ const mongooseOptions: any = {
     //After migration to v5.7.7 we are adding the following to avoid other deprecation warnings 
     //as stated in https://mongoosejs.com/docs/deprecations.html:
     useFindAndModify: false,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    autoCreate: false, //Recall to create the collections manually!
+    autoIndex: false //and indexes too :-)
 };
 
 /**
@@ -28,12 +30,6 @@ class Database {
     private _started: boolean = false;
 
     constructor() {
-
-        //Adding specific Mongo DB driver connection options for Prod:
-        if (cfg.isProduction) {
-            mongooseOptions.autoCreate = false;
-            mongooseOptions.autoIndex = false;
-        }
     }
 
     /**
@@ -69,14 +65,14 @@ class Database {
             if (!cfg.isProduction) {
                 console.log("\n --------------- MODELS --------------- ")
                 this._modelRepository.models.forEach(model => {
-                    console.log(`"${model.name}`);  
+                    console.log(`"${model.name}`);
                     console.log(`Fields:${model.fields.map((field) => { return field.name }).join(", ")}`);
                     console.log(`Sub docs populate schema:${JSON.stringify(model.populateSchema)}`);
                     console.log(`Internal fields: ${model.internalFields.join(", ")}`);
                     console.log(`Audit fields: ${model.auditFields.join(", ")}`);
                     console.log("-----------------------------------------")
                 });
-                
+
                 console.log("\n --------------- SCHEMA --------------- ")
                 console.log(this._modelRepository.getGraphQLSchema());
                 console.log("-----------------------------------------")
@@ -86,11 +82,11 @@ class Database {
                     .filter((method) => typeof r[method] === 'function')
                     .map((method) => {
                         let model = method
-                            .replace(/^(insert)/,"")
-                            .replace(/^(update)/,"")
-                            .replace(/^(get)/,"")
-                            .replace(/^(find)/,"")
-                            .replace(/^(delete)/,"");
+                            .replace(/^(insert)/, "")
+                            .replace(/^(update)/, "")
+                            .replace(/^(get)/, "")
+                            .replace(/^(find)/, "")
+                            .replace(/^(delete)/, "");
                         return `${model.toUpperCase()} -> ${method}`;
                     })
                     .sort()
@@ -138,9 +134,9 @@ process will be aborted. Error details: \n${String(error)}.`)
         return this._modelRepository?.getGraphQLResolver();
     }
 
-    private _throwIfNoRepository(): void{
+    private _throwIfNoRepository(): void {
         if (!this._modelRepository) {
-            throw new APIError(`The model repository has not been initialized yet. Please call "Database.start()" first!`);
+            throw new PropelError(`The model repository has not been initialized yet. Please call "Database.start()" first!`);
         }
     }
 }

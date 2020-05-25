@@ -4,7 +4,7 @@ import httpstatus from "http-status-codes";
 
 import { Route } from "./route";
 import { Runner } from "../services/runner-service";
-import { logger } from "../services/logger-service";
+import { logger } from "../../propel-shared/services/logger-service";
 import { APIResponse } from "../core/api-response";
 
 import { Workflow } from "../../propel-shared/models/workflow";

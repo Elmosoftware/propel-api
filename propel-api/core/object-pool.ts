@@ -1,6 +1,6 @@
-import { APIError } from "../core/api-error";
-import { StandardCodes } from "../core/api-error-codes";
-import { logger } from "../services/logger-service";
+import { PropelError } from "../../propel-shared/core/propel-error";
+import { ErrorCodes } from "../../propel-shared/core/error-codes";
+import { logger } from "../../propel-shared/services/logger-service";
 
 /**
  * Implementations can be reseted. Mean to flush all content and restore the state to some default state.
@@ -87,7 +87,7 @@ export class ObjectPool<T extends Resettable & Disposable> implements Disposable
         this._opt = (!options) ? new ObjectPoolOptions() : options;
 
         if (!createInstanceCallback || typeof createInstanceCallback !== "function") {
-            throw new APIError(`The parameter "createInstanceCallback" is required and must be a callback function.
+            throw new PropelError(`The parameter "createInstanceCallback" is required and must be a callback function.
 Received type is ${ typeof createInstanceCallback}, Is a null or undefined reference: ${String(createInstanceCallback == null || createInstanceCallback == undefined)}`);
         }
         this._cb = createInstanceCallback;
@@ -207,8 +207,8 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
             }
             //If the queue is also full of waiting clients, there is no option than throw an error.
             else {
-                reject(new APIError(`ObjectPool memory queue overflow.\n${this._currentStatsText()}`, 
-                    StandardCodes.QueueOverflow));
+                reject(new PropelError(`ObjectPool memory queue overflow.\n${this._currentStatsText()}`, 
+                    ErrorCodes.QueueOverflow));
             }
         });
     }
@@ -249,7 +249,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         })
 
         if (!found) {
-            throw new APIError(`The released object is not part of this pool. The ObjectPool "release" method was invoked with a nul object reference or an object instance that do not correspond anyone already leased.`)
+            throw new PropelError(`The released object is not part of this pool. The ObjectPool "release" method was invoked with a nul object reference or an object instance that do not correspond anyone already leased.`)
         }
 
         //If the object was actually released and not assigned to a queued request:
@@ -292,7 +292,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
 
     reset() {
         if (!this._disposing) {
-            throw new APIError("You can't call reset() without first dispose all object in the object pool.");
+            throw new PropelError("You can't call reset() without first dispose all object in the object pool.");
         }
 
         logger.logInfo(`Object pool is starting or it has been restarted.`)
@@ -325,7 +325,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
     }
 
     private _disposingError(): Error {
-        return new APIError(`ObjectPool is right now disposing objects. The Aquire or Release operations are now forbidden.
+        return new PropelError(`ObjectPool is right now disposing objects. The Aquire or Release operations are now forbidden.
 All the objects in the pool will free his resources and been deleted.`);
     }
 }

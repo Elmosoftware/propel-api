@@ -9,7 +9,7 @@ console.log(`\n     --------------------  Reach your servers! ------------------
 
 //Core Propel API services and helpers:
 import { cfg } from "./core/config";
-import { logger } from "./services/logger-service";
+import { logger } from "../propel-shared/services/logger-service";
 import { cfgVal } from "./validators/config-validator";
 import { webServer } from "./core/web-server";
 import { db } from "./core/database";

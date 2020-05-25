@@ -1,6 +1,6 @@
 import { appendFile, close, unlink } from "fs";
 import { file } from "tmp";
-import { APIError } from "../core/api-error";
+import { PropelError } from "../../propel-shared/core/propel-error";
 
 /**
  * File System utilities.
@@ -110,7 +110,7 @@ export class FileSystemHelper {
     static encodeBase64(ASCIIString: string): string{
         
         if (typeof ASCIIString !== "string") {
-            throw new APIError(`We expect a "string" for the parameter "ASCIIString". Supplied value type: "${typeof ASCIIString}".`)
+            throw new PropelError(`We expect a "string" for the parameter "ASCIIString". Supplied value type: "${typeof ASCIIString}".`)
         }
   
         return Buffer.from(ASCIIString, "utf8").toString("base64");
@@ -123,7 +123,7 @@ export class FileSystemHelper {
     static decodeBase64(base64String: string): string{
         
         if (typeof base64String !== "string") {
-            throw new APIError(`We expect a "string" for the parameter "base64String". Supplied value type: "${typeof base64String}".`)
+            throw new PropelError(`We expect a "string" for the parameter "base64String". Supplied value type: "${typeof base64String}".`)
         }
   
         return Buffer.from(base64String, "base64").toString("ascii");

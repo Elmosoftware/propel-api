@@ -1,6 +1,6 @@
 // @ts-check
 import { Utils } from "../../propel-shared/utils/utils";
-import { APIError } from "./api-error";
+import { PropelError } from "../../propel-shared/core/propel-error";
 import { entityModelConfig } from "./entity-model-config";
 
 /**
@@ -209,7 +209,7 @@ export class EntityField {
                     this._type = fieldSchema.caster.instance;
                 }
                 else {
-                    throw new APIError(`Not able to find the inner instance type inside the array field "${this._name}" on model "${this._modelName}".`)
+                    throw new PropelError(`Not able to find the inner instance type inside the array field "${this._name}" on model "${this._modelName}".`)
                 }
             }
             else {

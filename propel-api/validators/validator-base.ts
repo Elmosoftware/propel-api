@@ -1,5 +1,5 @@
 // @ts-check
-import { APIError } from "../core/api-error";
+import { PropelError } from "../../propel-shared/core/propel-error";
 
 /**
  * Provides basic methods to apply basic validation rules.
@@ -18,11 +18,11 @@ export class ValidatorBase {
         return (this._results.length == 0);
     }
 
-    getErrors(): APIError | null  {
+    getErrors(): PropelError | null  {
         var ret = null;
 
         if (!this.isValid) {
-            ret = new APIError(this._results.join("\n"))
+            ret = new PropelError(this._results.join("\n"))
         }
         
         return ret;

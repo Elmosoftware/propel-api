@@ -4,10 +4,10 @@ import { WorkflowStep } from "../../propel-shared/models/workflow-step";
 import { ParameterValue } from "../../propel-shared/models/parameter-value";
 import { Target } from "../../propel-shared/models/target";
 import { InvocationService, InvocationMessage } from "./invocation-service";
-import { APIError } from "../core/api-error";
+import { PropelError } from "../../propel-shared/core/propel-error";
 import { cfg } from "../core/config";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
-import { StandardCodes } from "../core/api-error-codes";
+import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { ScriptValidator } from "../validators/script-validator";
 import { FileSystemHelper } from "../util/file-system-helper";
 import { ExecutionLog } from "../../propel-shared/models/execution-log";
@@ -158,7 +158,7 @@ export class Runner {
                     })
                     .catch((err) => {
                         //There was some issue trying to aquire an object from the pool:
-                        reject(new APIError(err));
+                        reject(new PropelError(err));
                     })
             }
         });
@@ -223,8 +223,8 @@ export class Runner {
         }
 
         if (!this._scriptVal.isValid) {
-            throw new APIError(`We found one or more errors related to the script "${step.script.name}" parameters and the values assigned to them. Error details:
-${this._scriptVal.getErrors()?.message} `, StandardCodes.WrongParameterData)
+            throw new PropelError(`We found one or more errors related to the script "${step.script.name}" parameters and the values assigned to them. Error details:
+${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         }
 
         return ret;

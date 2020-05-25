@@ -1,7 +1,7 @@
 // @ts-check
 import mongoose from "mongoose";
-import { StandardCodes } from "../core/api-error-codes";
-import { APIError } from "../core/api-error";
+import { ErrorCodes } from "../../propel-shared/core/error-codes";
+import { PropelError } from "../../propel-shared/core/propel-error";
 import { QueryModifier } from "../core/query-modifier";
 import { QueryResults } from "../core/query-results";
 import { EntityModel } from "../core/entity-model";
@@ -82,7 +82,7 @@ export class DataService {
                 if (err) {
                     if (this.isDupKeyError(err)) {
                         //@ts-ignore
-                        err = new APIError(err, StandardCodes.DuplicatedItem)
+                        err = new PropelError(err, ErrorCodes.DuplicatedItem)
                     }
                     reject(err);
                 }
@@ -100,13 +100,13 @@ export class DataService {
     update(document: any) {
 
         if (!document) {
-            throw new APIError(`The method "update" expect a not null reference for the "document" param.Provided value: "${String(document)}".`)
+            throw new PropelError(`The method "update" expect a not null reference for the "document" param.Provided value: "${String(document)}".`)
         }
         else if (!document._id) {
-            throw new APIError(`The method "update" expect a document with an "_id" attribute for the "document" param, (we can't update new documents!).Provided value was: "${JSON.stringify(document)}".`)
+            throw new PropelError(`The method "update" expect a document with an "_id" attribute for the "document" param, (we can't update new documents!).Provided value was: "${JSON.stringify(document)}".`)
         }
         else if (!this.isValidObjectId(document._id)) {
-            throw new APIError(`The method "update" expect a valid ObjectId in the parameter "id". Provided value: "${String(document._id)}".`)
+            throw new PropelError(`The method "update" expect a valid ObjectId in the parameter "id". Provided value: "${String(document._id)}".`)
         }
 
         this._setAuditData(false, document, null);
@@ -117,15 +117,15 @@ export class DataService {
                 if (err) {
                     if (this.isDupKeyError(err)) {
                         //@ts-ignore
-                        err = new APIError(err, StandardCodes.DuplicatedItem)
+                        err = new PropelError(err, ErrorCodes.DuplicatedItem)
                     }
                     reject(err);
                 }
                 else if (this.isVoidWrite(data)) {
-                    let err = new APIError(`The last UPDATE operation affects no documents. Please verify: \n
+                    let err = new PropelError(`The last UPDATE operation affects no documents. Please verify: \n
                     - If The document you try to update no longer exists.
                     - If you have been granted with the necessary permissions.`,
-                        StandardCodes.VoidUpdate
+                        ErrorCodes.VoidUpdate
                     );
                     reject(err);
                 }
@@ -149,7 +149,7 @@ export class DataService {
         if (this._model.internalFields.some((field) => {
             return qm.filterBy.toLowerCase().indexOf(`"${field.toLowerCase()}":`) != -1;
         })) {
-            throw new APIError(`At least one of the following invalid attributes were found in the JSON filter: "${this._model.internalFields.join(", ")}".
+            throw new PropelError(`At least one of the following invalid attributes were found in the JSON filter: "${this._model.internalFields.join(", ")}".
              Those fields are for internal use only and can't appear in user queries.`);
         }
 
@@ -211,10 +211,10 @@ export class DataService {
     delete(id: string) {
 
         if (!id) {
-            throw new APIError(`The method "delete" expect a document id for the "id" param.Provided value was: "${JSON.stringify(id)}".`)
+            throw new PropelError(`The method "delete" expect a document id for the "id" param.Provided value was: "${JSON.stringify(id)}".`)
         }
         else if (!this.isValidObjectId(id)) {
-            throw new APIError(`The method "update" expect a valid ObjectId value for the parameter "id". Provided value: "${String(id)}".`)
+            throw new PropelError(`The method "update" expect a valid ObjectId value for the parameter "id". Provided value: "${String(id)}".`)
         }
 
         return new Promise((resolve, reject) => {
@@ -226,9 +226,9 @@ export class DataService {
                     }
                     else if (this.isVoidWrite(data)) {
                         //The attempt to soft delete a non existent document by Id is not reported as error by Mongoose:
-                        let err = new APIError(`The last DELETE operation affects no documents. This can be caused by the following issues: \n
+                        let err = new PropelError(`The last DELETE operation affects no documents. This can be caused by the following issues: \n
                     - The document you tried to delete no longer exists.
-                    - You are not been granted with the necessary permissions.`, StandardCodes.VoidDelete);
+                    - You are not been granted with the necessary permissions.`, ErrorCodes.VoidDelete);
                         reject(err);
                     }
                     else {

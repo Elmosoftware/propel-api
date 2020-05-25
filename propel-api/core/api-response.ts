@@ -1,5 +1,5 @@
 //@ts-check
-import { APIError } from "./api-error";
+import { PropelError } from "../../propel-shared/core/propel-error";
 import { errorFormatter } from "../schema/error-formatter";
 
 /**
@@ -18,7 +18,7 @@ export class APIResponse{
     public readonly data: any[];
 
     constructor(errors: any[] | any, data: any[] | any){
-        this.errors = this._toArray(errors, (error: any) => errorFormatter.format(new APIError(error)));
+        this.errors = this._toArray(errors, (error: any) => errorFormatter.format(new PropelError(error)));
         this.data = this._toArray(data, (dataItem: any) => dataItem);
     }
 

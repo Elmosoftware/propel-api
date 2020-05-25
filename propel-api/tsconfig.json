@@ -58,7 +58,7 @@
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
   },
   "include": [
-    "**/*", "../propel-shared/test/utils/util.test.ts", "../propel-shared/utils/utils.ts"
+    "**/*", "../propel-shared/test/utils/util.test.ts", "../propel-shared/utils/utils.ts", "../propel-shared/test/core/api-error.test.ts"
   ],
   "exclude": [
     "node_modules",

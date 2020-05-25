@@ -1,6 +1,6 @@
 // @ts-check
 import { Utils } from "../../propel-shared/utils/utils";
-import { APIError } from "./api-error";
+import { PropelError } from "../../propel-shared/core/propel-error";
 import { EntityModel } from "./entity-model";
 import { entityModelConfig } from "./entity-model-config";
 import { Resolver } from "../schema/resolver";
@@ -144,7 +144,7 @@ export class ModelRepository {
             });
         }
         else {
-            throw new APIError(`Database models initialization failed. The parameter "models" is a 
+            throw new PropelError(`Database models initialization failed. The parameter "models" is a 
             null reference or is not an Array`);
         }
     }
