@@ -1,4 +1,4 @@
-import { ValidatorBase } from "./validator-base";
+import { ValidatorBase } from "../../propel-shared/validators/validator-base";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { ParameterValue } from "../../propel-shared/models/parameter-value";
 

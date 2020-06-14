@@ -122,48 +122,6 @@ export class Utils {
     }
 
     /**
-     * Converts the supplied Mongo DB type to his GraphQL equivalent.
-     * @param type Mongo DB type to convert to the GraphQL equivalent.
-     */
-    static mongoToGraphQLTypeConverter(type: string): string {
-
-        let ret = "";
-        type = String(type);
-
-        switch (type) {
-            case "String":
-                ret = "String";
-                break;
-            case "Number":
-                ret = "Int";
-                break;
-            case "Date":
-                ret = "String";
-                break;
-            case "Buffer":
-                ret = "[Int]!"
-                break;
-            case "Boolean":
-                ret = "Boolean";
-                break;
-            case "Mixed":
-                ret = "String";
-                break;
-            case "ObjectID":
-                ret = "ID";
-                break;
-            case "Decimal128":
-                ret = "Float";
-                break;
-            default:
-                throw new Error(`The specified type is not supported by this API. Therefore can't be converted to a GraphQL\n
-                Type specified: "${type}".`)
-        }
-
-        return ret;
-    }
-
-    /**
      * Converts the supplied PowerShell type to his Javascript equivalent.
      * @param type Powershell type full name to convert to the Javascript equivalent.
      */
@@ -227,5 +185,95 @@ export class Utils {
         }
 
         return ret;
+    }
+
+    /**
+     * Return a string composed to as many tabs as specified.
+     * @param numberOfTabs Number of tabs.
+     * @param tabSize Tab spaces to use.
+     */
+    static tabs(numberOfTabs: number, tabSize: number = 2): string {
+        let ret: string = "";
+
+        if (!isNaN(numberOfTabs) && numberOfTabs > 0) {
+            ret = ` `.repeat(numberOfTabs * tabSize);
+        }
+
+        return ret;
+    }
+
+    /**
+     * Takes a Query or Mutation and returns a prettified version.
+     * @param text GraphQL to be prettified.
+     */
+    static gqlPrettifier(text: string): string {
+
+        if (!text) return text
+
+        let state = {
+            tabs: 0,
+            seps: ["\n", "{", "}"],
+            nextSep(): string {
+                //@ts-ignore
+                return this.seps.shift();
+            },
+            resetSep() {
+                this.seps = ["{", "}"]
+            },
+            parentItems: [],
+            parentIndex: 0
+        }
+
+        text = this._prettyRecursive(
+            text.replace(new RegExp('\r?\n\r?\n', 'g'), '\n') //Changing CRLFS by CRs
+            , state)
+            .replace(new RegExp('\n\n', 'g'), '\n') //Removing doble CRs.
+            .trim(); //Removing extra spaces.
+        return text;
+    }
+
+    static _prettyRecursive(text: string, state?: any): string {
+
+        let sep = state.nextSep();
+        let items = text.split(sep);
+        items.forEach((item, index) => {
+            //If is not the first node:
+            if (index > 0) {
+                if (sep == "{") {
+                    state.tabs++;
+                    //If previous is not "{" but "Name{" we add the space before 
+                    //the brace to get: "Name {"
+                    if (items[index - 1]) {
+                        items[index - 1] += " "
+                    }
+                }
+                if (sep == "}") {
+                    state.tabs--;
+                    //Adding the new line and tabs to the previous close brace.
+                    items[index - 1] += `\n${this.tabs(state.tabs)}`
+                }
+            }
+
+            if (item) {
+                //If we not split the line into into open and close braces:
+                if (state.seps.length > 0) {
+                    state.parentItems = items;
+                    state.parentIndex = index;
+                    //Keep splitting!:
+                    items[index] = this._prettyRecursive(item, state);
+                }
+                else {
+                    //Adding new line & tabs:
+                    items[index] = `\n${this.tabs(state.tabs)}${item.trim()}`
+                }
+            }
+
+            //If e already split in both braces, we reset for the next line:
+            if (state.seps.length == 0) {
+                state.resetSep();
+            }
+        });
+
+        return items.join(sep);
     }
 }

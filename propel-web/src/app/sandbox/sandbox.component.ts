@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
-import { CoreService } from "../../services/core.service";
+import { CoreService } from "src/services/core.service";
+import { DataService } from 'src/services/data.service';
+// import { Entity } from "../../../../propel-shared/models/entity";
+import { User } from "../../../../propel-shared/models/user";
+import { QueryModifier } from "../../../../propel-shared/core/query-modifier";
 
 @Component({
   selector: 'app-root',
@@ -14,10 +18,11 @@ export class SandboxComponent implements OnInit {
   selectedItems = [];
   dropdownSettings: IDropdownSettings = {};
 
-  constructor(private core: CoreService) {
+  constructor(private core: CoreService, private data: DataService) {
+
   }
 
-  ngOnInit(){
+  ngOnInit() {
     this.dropdownList = [
       { item_id: 1, item_text: 'Mumbai' },
       { item_id: 2, item_text: 'Bangaluru' },
@@ -66,6 +71,99 @@ export class SandboxComponent implements OnInit {
 
   showToast() {
     this.core.toaster.showError();
+  }
+
+  testGetById() {
+    let ret: User
+
+    this.data.getById(User, "5e7c195b001fa35f5c4db76c")
+      .subscribe(
+        data => {
+          let x = data;
+        },
+        err => {
+          throw err
+        });
+
+    // ret = this.data.create(MyClasesita)
+
+    return ret;
+  }
+
+  testFind() {
+    let ret: User[]
+    let qm: QueryModifier = new QueryModifier();
+    qm.top = 1000;
+    qm.skip = 0;
+    qm.sortBy = "initials";
+    qm.populate = true;
+    qm.filterBy = "{\"picture\": {\"$eq\": null}}"
+
+    this.data.find(User, qm)
+      .subscribe(
+        data => {
+          let x = data;
+        },
+        err => {
+          throw err
+        });
+
+    // ret = this.data.create(MyClasesita)
+
+    return ret;
+  }
+
+  testInsert() {
+
+    let u: User = new User();
+
+    u.email = "spongebob2@hotmail.com"
+    u.initials = "sb2"
+    u.name = "Bob the second"
+
+    this.data.insert<User>(User, u)
+      .subscribe(
+        data => {
+          let x = data;
+        },
+        err => {
+          throw err
+        });
+  }
+
+  testUpdate() {
+
+    let u: User = new User();
+
+    u._id = "5ee3e24f4094354ae4f355ce"
+    u.email = "spongebob2@hotmail.com"
+    u.initials = "sb2"
+    u.name = "Bob the second UPDATED Twice!"
+
+    this.data.update<User>(User, u)
+      .subscribe(
+        data => {
+          let x = data;
+        },
+        err => {
+          throw err
+        });
+  }
+
+  testDelete() {
+
+    let u: User = new User();
+
+    u._id = "5ee3e24f4094354ae4f355ce"
+
+    this.data.delete<User>(User, u)
+      .subscribe(
+        data => {
+          let x = data;
+        },
+        err => {
+          throw err
+        });
   }
 
 }

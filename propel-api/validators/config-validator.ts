@@ -1,5 +1,5 @@
 //@ts-check
-import { ValidatorBase } from "./validator-base";
+import { ValidatorBase } from "../../propel-shared/validators/validator-base";
 
 /**
  * This  class provides a method to validate .env config file.

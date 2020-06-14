@@ -26,6 +26,23 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "propel-api - Build & Run DEV",
+            "type": "shell",
+            "dependsOn":["propel-api - Build"],
+            "options": { 
+                "cwd": "${workspaceFolder}/propel-api"
+            },
+            "command": "node ./dist/propel-api/index.js"
+        }
+        {
+            "label": "propel-web - Build, Run & Watch DEV",
+            "type": "shell",
+            "options": { 
+                "cwd": "${workspaceFolder}/propel-web"
+            },
+            "command": "ng serve --port 8080"
         }
     ]
 }

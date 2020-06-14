@@ -1,5 +1,5 @@
 // @ts-check
-import { PropelError } from "../../propel-shared/core/propel-error";
+import { PropelError } from "../core/propel-error";
 
 /**
  * Provides basic methods to apply basic validation rules.
@@ -14,10 +14,16 @@ export class ValidatorBase {
         this.reset();
     }
     
+    /**
+     * Returns a boolean value indicating if the validator passes successfully all validations.
+     */
     get isValid(): boolean {
         return (this._results.length == 0);
     }
 
+    /**
+     * Returns a single error object encapsulating all teh validation error messages.
+     */
     getErrors(): PropelError | null  {
         var ret = null;
 
@@ -28,16 +34,14 @@ export class ValidatorBase {
         return ret;
     }
 
-    reset() {
+    /**
+     * Reset the validator by cleaning all the error messages.
+     */
+    reset(): void {
         this._results = [];
     }
 
-    //#region Private Members
-    /**
-     * Add and error to the list of error messages found by the validator.
-     * @param {string} errorMsg Error message to add.
-     */
-    _addError(errorMsg: string) {
+    protected _addError(errorMsg: string) {
         this._results.push("- " + errorMsg)
     }
 }

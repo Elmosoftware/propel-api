@@ -2,18 +2,19 @@
 import mongoose from "mongoose";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { PropelError } from "../../propel-shared/core/propel-error";
-import { QueryModifier } from "../core/query-modifier";
+import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { QueryResults } from "../core/query-results";
-import { EntityModel } from "../core/entity-model";
+// import { EntityModel } from "../core/entity-model";
+import { AdapterModel } from "../schema/mongoose-schema-adapter";
 
 /**
  * Data Service
  */
 export class DataService {
 
-    private _model: EntityModel;
+    private _model: AdapterModel;
 
-    constructor(model: EntityModel) {
+    constructor(model: AdapterModel) {
         this._model = model;
     }
 
@@ -75,13 +76,12 @@ export class DataService {
                 document._id = this.getNewobjectId();
             }
 
-            obj = this._model.repository.hydrate(document);
+            obj = this._model.model.hydrate(document);
             obj.isNew = true;
 
             obj.save((err: any, data: any) => {
                 if (err) {
                     if (this.isDupKeyError(err)) {
-                        //@ts-ignore
                         err = new PropelError(err, ErrorCodes.DuplicatedItem)
                     }
                     reject(err);
@@ -113,10 +113,9 @@ export class DataService {
 
         return new Promise((resolve, reject) => {
 
-            this._model.repository.updateOne({ _id: document._id }, document, (err: any, data: any) => {
+            this._model.model.updateOne({ _id: document._id }, document, (err: any, data: any) => {
                 if (err) {
                     if (this.isDupKeyError(err)) {
-                        //@ts-ignore
                         err = new PropelError(err, ErrorCodes.DuplicatedItem)
                     }
                     reject(err);
@@ -146,10 +145,10 @@ export class DataService {
         let filter: any = null;
 
         //We check for no INTERNAL fields included in the JSON filter:
-        if (this._model.internalFields.some((field) => {
+        if (this._model.internalFieldsList.some((field) => {
             return qm.filterBy.toLowerCase().indexOf(`"${field.toLowerCase()}":`) != -1;
         })) {
-            throw new PropelError(`At least one of the following invalid attributes were found in the JSON filter: "${this._model.internalFields.join(", ")}".
+            throw new PropelError(`At least one of the following invalid attributes were found in the JSON filter: "${this._model.internalFieldsList.join(", ")}".
              Those fields are for internal use only and can't appear in user queries.`);
         }
 
@@ -161,8 +160,8 @@ export class DataService {
         }
 
         return new Promise((resolve, reject) => {
-            let query = this._model.repository.find(filter);
-            let countQuery = this._model.repository.countDocuments(filter);
+            let query = this._model.model.find(filter);
+            let countQuery = this._model.model.countDocuments(filter);
 
             if (qm.top > 0) {
                 query.limit(qm.top);
@@ -219,7 +218,7 @@ export class DataService {
 
         return new Promise((resolve, reject) => {
 
-            this._model.repository.updateOne({ _id: id }, { $set: { deletedOn: new Date() } },
+            this._model.model.updateOne({ _id: id }, { $set: { deletedOn: new Date() } },
                 (err: any, data: any) => {
                     if (err) {
                         reject(err);
@@ -250,7 +249,7 @@ export class DataService {
         doc.deletedOn = null;
 
         //If the entity have audit data:
-        if (this._model.auditFields.length > 0) {
+        if (this._model.auditFieldsList.length > 0) {
             if (isNewDoc) {
                 doc.createdOn = new Date();
                 doc.createdBy = (session && session.userId) ? session.userId : null;

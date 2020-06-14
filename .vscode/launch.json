@@ -13,6 +13,7 @@
       "outFiles": [
         "${workspaceFolder}/propel-api/dist/**/*.js"
       ],
+      "cwd": "${workspaceFolder}/propel-api",
       "console": "integratedTerminal"
     },
     {

@@ -4,11 +4,15 @@ import { buildSchema } from "graphql";
 
 //Core Propel API services and helpers:
 import { cfg } from "./config";
-import { allModels } from "../models/all-models";
-import { ModelRepository } from "./model-repository";
 import { logger } from "../../propel-shared/services/logger-service";
+import { schemaRepo } from "../../propel-shared/schema/schema-repository";
+import { MongooseSchemaAdapter, AdapterModel } from "../schema/mongoose-schema-adapter";
+import { GraphQLServerSchemaAdapter } from "../../propel-shared/schema/graphql-server-schema-adapter";
 import { DataService } from "../services/data-service";
 import { PropelError } from "../../propel-shared/core/propel-error";
+import { SchemaDefinition } from "../../propel-shared/schema/schema-definition";
+import { GenericResolver } from "../../propel-shared/schema/generic-resolver";
+import { Resolver } from "../schema/resolver";
 
 const mongooseOptions: any = {
     useNewUrlParser: true, //(node:61064) DeprecationWarning: current URL string parser is deprecated.
@@ -26,10 +30,26 @@ const mongooseOptions: any = {
  */
 class Database {
 
-    private _modelRepository: ModelRepository | null = null;
+    private _gqlAdapter: GraphQLServerSchemaAdapter;
+    private _modelsRepo: AdapterModel[];
     private _started: boolean = false;
+    private _resolver: GenericResolver;
 
     constructor() {
+        this._gqlAdapter = new GraphQLServerSchemaAdapter(schemaRepo);
+        this._resolver = new Resolver()
+        let adapter = new MongooseSchemaAdapter();
+        this._modelsRepo = [];
+
+        if (schemaRepo.count > 0) {
+            //Converting all the schemas to Mongoose models:
+            schemaRepo.entitySchemas.forEach((schema: Readonly<SchemaDefinition>) => {
+                this._modelsRepo.push(adapter.asModel(schema));
+            })
+        }
+        else {
+            throw new PropelError(`Repository has no schemas defined!`);
+        }
     }
 
     /**
@@ -54,51 +74,11 @@ class Database {
         let models: any[] = [];
         let filePath
         if (this._started) {
-            throw new Error("Database has been already started.")
+            throw new PropelError("Database has been already started.")
         }
 
-        try {
-            logger.logInfo("Initializing database models ...")
-            this._modelRepository = new ModelRepository(allModels);
-            logger.logInfo(`\nModels initialized sucessfully. Models found: ${this._modelRepository.count}.`);
-
-            if (!cfg.isProduction) {
-                console.log("\n --------------- MODELS --------------- ")
-                this._modelRepository.models.forEach(model => {
-                    console.log(`"${model.name}`);
-                    console.log(`Fields:${model.fields.map((field) => { return field.name }).join(", ")}`);
-                    console.log(`Sub docs populate schema:${JSON.stringify(model.populateSchema)}`);
-                    console.log(`Internal fields: ${model.internalFields.join(", ")}`);
-                    console.log(`Audit fields: ${model.auditFields.join(", ")}`);
-                    console.log("-----------------------------------------")
-                });
-
-                console.log("\n --------------- SCHEMA --------------- ")
-                console.log(this._modelRepository.getGraphQLSchema());
-                console.log("-----------------------------------------")
-                console.log("\n ------------- RESOLVERS ------------- ")
-                let r = this._modelRepository.getGraphQLResolver();
-                Object.getOwnPropertyNames(r)
-                    .filter((method) => typeof r[method] === 'function')
-                    .map((method) => {
-                        let model = method
-                            .replace(/^(insert)/, "")
-                            .replace(/^(update)/, "")
-                            .replace(/^(get)/, "")
-                            .replace(/^(find)/, "")
-                            .replace(/^(delete)/, "");
-                        return `${model.toUpperCase()} -> ${method}`;
-                    })
-                    .sort()
-                    .forEach((resolver) => {
-                        console.log(resolver);
-                    })
-                console.log("-----------------------------------------\n")
-            }
-        } catch (error) {
-            logger.logError(`There was an error initializing database models, 
-process will be aborted. Error details: \n${String(error)}.`)
-            throw error
+        if (!cfg.isProduction) {
+            this._printDetails();
         }
 
         logger.logInfo("Establishing database conection...");
@@ -111,33 +91,86 @@ process will be aborted. Error details: \n${String(error)}.`)
      * @param {string} modelName Model name to serve
      */
     getService(modelName: string) {
-        this._throwIfNoRepository();
-        //@ts-ignore
-        return new DataService(this._modelRepository.getModelByName(modelName));
+        return new DataService(this._getModelByName(modelName));
     }
 
     /**
      * Returns the schema inferred from the model.
      */
     getGraphQLSchema() {
-        this._throwIfNoRepository();
-        //@ts-ignore
-        return buildSchema(this._modelRepository?.getGraphQLSchema());
+        return buildSchema(this._gqlAdapter.getSchema());
     }
 
     /**
      * Returns the Resolver object for all the Queries and Mutations in the model.
      */
     getGraphQLResolver(): any {
-        this._throwIfNoRepository();
-        //@ts-ignore
-        return this._modelRepository?.getGraphQLResolver();
+        return this._gqlAdapter.getResolver(this._resolver);
     }
 
-    private _throwIfNoRepository(): void {
-        if (!this._modelRepository) {
-            throw new PropelError(`The model repository has not been initialized yet. Please call "Database.start()" first!`);
+    _getModelByName(modelName: string): AdapterModel {
+        let ret = null
+
+        if (modelName && typeof modelName == "string") {
+
+            ret = this._modelsRepo.find((model: AdapterModel) => {
+                return model.name.toLowerCase() == modelName.toLowerCase();
+            })
+
+            if (!ret) {
+                throw new PropelError(`There is no model named "${modelName}".`)
+            }
         }
+        else {
+            throw new Error(`Parameter "modelName" is not from the expected type. Expected type "string" received type "${typeof modelName}".`);
+        }
+
+        return ret;
+    }
+
+    _printDetails() {
+        logger.logInfo(`\nModels initialized sucessfully. Models found: ${this._modelsRepo.length}.`);
+
+        logger.logInfo("\n\n --------------- MODELS --------------- ")
+        this._modelsRepo.forEach((model: AdapterModel) => {
+            console.log(`- ${model.name}`);
+            let fieldslist: string = "";
+            //@ts-ignore
+            for (var key in model.model.schema.tree) {
+                if (fieldslist != "") {
+                    fieldslist += ", "
+                }
+                fieldslist += key
+            }
+
+            logger.logInfo(`Fields:${fieldslist}`);
+            logger.logInfo(`Sub docs populate schema:${JSON.stringify(model.populateSchema)}`);
+            logger.logInfo(`Internal fields: ${model.internalFieldsList.join(", ")}`);
+            logger.logInfo(`Audit fields: ${model.auditFieldsList.join(", ")}`);
+            logger.logInfo("-----------------------------------------")
+        });
+
+        logger.logInfo("\n\n --------------- SCHEMA --------------- ")
+        logger.logInfo(this._gqlAdapter.getSchema());
+
+        logger.logInfo("\n\n ------------- RESOLVERS ------------- ")
+        let r = this.getGraphQLResolver();
+        Object.getOwnPropertyNames(r)
+            .filter((method) => typeof r[method] === 'function')
+            .map((method) => {
+                let model = method
+                    .replace(/^(insert)/, "")
+                    .replace(/^(update)/, "")
+                    .replace(/^(get)/, "")
+                    .replace(/^(find)/, "")
+                    .replace(/^(delete)/, "");
+                return `${model.toUpperCase()} -> ${method}`;
+            })
+            .sort()
+            .forEach((resolver) => {
+                logger.logInfo(resolver);
+            })
+        logger.logInfo("-----------------------------------------\n")
     }
 }
 

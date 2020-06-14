@@ -10,11 +10,6 @@ export class Entity {
      */
     public _id: string = "";
 
-    /**
-     * This is an internal field used for the soft deletion feature. 
-     */
-    public deletedOn: Date | null = null;
-
     constructor() {
     }
 }
