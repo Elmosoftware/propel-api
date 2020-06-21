@@ -20,6 +20,13 @@ class InvocationServicePool implements Disposable, Resettable {
     }
 
     /**
+     * Implementation of Disposable.isDisposed attribute.
+     */
+    get isDisposed() : boolean {
+        return this._pool.isDisposed;
+    }
+
+    /**
      * Get an object from the pool.
      */
     aquire(): Promise<InvocationService> {

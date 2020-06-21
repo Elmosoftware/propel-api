@@ -2,7 +2,7 @@ import { join } from "path";
 
 import { cfg } from "../core/config";
 import { pool } from "../services/invocation-service-pool";
-import { FileSystemHelper } from "../util/file-system-helper";
+import { SystemHelper } from "../util/system-helper";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { logger } from "../../propel-shared/services/logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
@@ -33,7 +33,7 @@ export class InferenceService {
                 .then((invsvc: InvocationService) => {
                     //Sadly for thsi we will need to persist the script in the file system, so firts 
                     //step is to create a temp file with the script content.
-                    FileSystemHelper.createTempFile("infer-", "ps1", scriptBody)
+                    SystemHelper.createTempFile("infer-", "ps1", scriptBody)
                         .then((fileName) => {
                             let command = join(cfg.rootFolder, cfg.PSScriptsFolder, "get-parameters.ps1");
                             let params = [
@@ -80,7 +80,7 @@ export class InferenceService {
                                     pool.release(invsvc);
 
                                     //Deleting temp files:
-                                    FileSystemHelper.delete(fileName)
+                                    SystemHelper.delete(fileName)
                                         .then(() => {
                                             //Temp file deleted successfully!
                                         })

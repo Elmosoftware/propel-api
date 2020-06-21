@@ -13,21 +13,24 @@ import { ToastrModule } from 'ngx-toastr';
 
 //Services
 import { CoreService } from './services/core.service';
-import { NavigationService } from './services/navigation-service';
-import { ErrorHandlerService } from "./services/error-handler-service";
-import { ToasterService } from './services/toaster-service';
+import { NavigationService } from './services/navigation.service';
+import { ErrorHandlerService } from "./services/error-handler.service";
+import { ToasterService } from './services/toaster.service';
 import { DataService } from './services/data.service';
 
 //Components
 import { HomeComponent } from './app/home/home.component';
 import { SandboxComponent } from './app/sandbox/sandbox.component';
 import { RootComponent } from './app/root/root.component';
+import { RunComponent } from './app/run/run.component';
+import { RunnerService } from './services/runner.service';
 
 @NgModule({
   declarations: [
     RootComponent,
     HomeComponent,
-    SandboxComponent
+    SandboxComponent,
+    RunComponent
   ],
   imports: [
     BrowserModule,
@@ -50,6 +53,7 @@ import { RootComponent } from './app/root/root.component';
     NavigationService,
     ToasterService,
     DataService,
+    RunnerService,
     CoreService
   ],
   bootstrap: [RootComponent]

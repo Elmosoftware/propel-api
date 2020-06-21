@@ -7,6 +7,7 @@ import { logger } from "../../../propel-shared/services/logger-service";
  */
 export const enum PAGES {
     Home = "home",
+    Run = "run",
     Sandbox = "sandbox"
 }
 
@@ -40,6 +41,10 @@ export class NavigationService {
 
     toHome(): void {
         this.router.navigate([this.getRelativePath(PAGES.Home)]);
+    }
+    
+    toRun(workflowId: string): void {
+        this.router.navigate([this.getRelativePath(PAGES.Run), workflowId]);
     }
 
     toSandbox(): void {

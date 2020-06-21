@@ -5,6 +5,7 @@ import { promisify } from "util";
 
 //Express App & Middlewares dependencies:
 import express from "express";
+import expressWs from "express-ws";
 import bodyParser from "body-parser";
 import cors from "cors";
 
@@ -22,6 +23,7 @@ class WebServer {
 
     constructor() {
         this.app = express();
+        expressWs(this.app)
         this.router = new Router(this.app);
     }
 

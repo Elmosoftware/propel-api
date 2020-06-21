@@ -40,5 +40,11 @@ export enum ExecutionStatus {
      * The step or target was skipped based on his enable attribute.
      * Applies to: Steps and Targets.
      */
-    Skipped = "SKIPPED"
+    Skipped = "SKIPPED",
+
+    /**
+     * The user cancelled the execution. This aborts any step not already executed at the moment 
+     * the cancel signal was sent.
+     */
+    CancelledByUser = "CANCELLED"
 }

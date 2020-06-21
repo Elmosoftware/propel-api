@@ -1,7 +1,7 @@
 // @ts-check
 import { Target } from "../../../propel-shared/models/target";
 import { Script } from "../../../propel-shared/models/script";
-import { FileSystemHelper } from "../../util/file-system-helper";
+import { SystemHelper } from "../../util/system-helper";
 import { Workflow } from "../../../propel-shared/models/workflow";
 import { WorkflowStep } from "../../../propel-shared/models/workflow-step";
 
@@ -70,6 +70,18 @@ export class TestingWorkflows {
         return ret;
     }
 
+    get ScriptNoParamsNoTargetMediumOneResultNoThrow(): Script {
+        let ret: Script = new Script();
+
+        ret.name = "NOPARAMS-NOTARGET-MEDIUM-1RESULT-NOTHROW"
+        ret.description = "Script with no parameters, not targetting servers, medium executions and returning 1 result. No throwing error."
+        ret.isTargettingServers = false;
+        ret.parameters = [];
+        ret.code = this._getEncodedScriptCode(ret.name, "", "MEDIUM", 1, false)
+
+        return ret;
+    }
+
     get ScriptNoParamsNoTargetUltraFastThreeResultsThrow(): Script {
         let ret: Script = new Script();
 
@@ -90,6 +102,18 @@ export class TestingWorkflows {
         ret.isTargettingServers = true;
         ret.parameters = [];
         ret.code = this._getEncodedScriptCode(ret.name, "", "ULTRAFAST", 2, false)
+
+        return ret;
+    }
+
+    get ScriptNoParamsTargetFastTwoResultsNoThrow(): Script {
+        let ret: Script = new Script();
+
+        ret.name = "NOPARAMS-NOTARGET-FAST-2RESULTS-NOTHROW"
+        ret.description = "Script with no parameters, targetting servers, fast execution and returning 2 results. No throwing error."
+        ret.isTargettingServers = true;
+        ret.parameters = [];
+        ret.code = this._getEncodedScriptCode(ret.name, "", "FAST", 2, false)
 
         return ret;
     }
@@ -238,11 +262,68 @@ export class TestingWorkflows {
         return ret;
     }
 
+    get Worflow_S2EnabledTargetDisabledFast(): Workflow{
+        let ret: Workflow = new Workflow();
+
+        ret.name = "Worflow_S2EnabledTargetEnabledFast"
+        ret.description = "Workflow with Step 1:ScriptNoParamsTargetFastTwoResultsNoThrow, Step 2:ScriptNoParamsTargetUltraFastTwoResultsNoThrow."
+
+        let step: WorkflowStep = new WorkflowStep();
+        step.name = "STEP #1 FAST"
+        step.abortOnError = true;
+        step.enabled = true
+        step.script = this.ScriptNoParamsTargetFastTwoResultsNoThrow;
+        step.targets = [this.Target01Enabled]
+        step.values = []
+
+        ret.steps.push(step);
+
+        step = new WorkflowStep();
+        step.name = "STEP #2 ULTRAFAST"
+        step.abortOnError = true;
+        step.enabled = true
+        step.script = this.ScriptNoParamsTargetUltraFastTwoResultsNoThrow;
+        step.targets = [this.Target02Enabled];
+        step.values = []
+
+        ret.steps.push(step);
+
+        return ret;
+    }
+
+    get Worflow_S2EnabledNoParamNoTargetNoThrowMediumDuration(): Workflow{
+        let ret: Workflow = new Workflow();
+
+        ret.name = "Worflow_S1EnabledNoParamNoTargetNoThrowMediumDuration"
+        ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetMediumThreeResultsNoThrow and Step 2: ."
+
+        let step1: WorkflowStep = new WorkflowStep();
+        step1.name = "STEP #1"
+        step1.abortOnError = true;
+        step1.enabled = true
+        step1.script = this.ScriptNoParamsNoTargetMediumThreeResultsNoThrow;
+        step1.targets = []
+        step1.values = []
+
+        ret.steps.push(step1);
+
+        let step2: WorkflowStep = new WorkflowStep();
+        step2.name = "STEP #2"
+        step2.abortOnError = true;
+        step2.enabled = true
+        step2.script = this.ScriptNoParamsNoTargetMediumOneResultNoThrow;
+        step2.targets = []
+        step2.values = []
+
+        ret.steps.push(step2);
+
+        return ret;
+    }
 
     private _getEncodedScriptCode(scriptName: string, paramsDef: string, durationType: string, 
         resultCount: number = 1, mustThrow: boolean = false): string {
 
-        return FileSystemHelper.encodeBase64(`
+        return SystemHelper.encodeBase64(`
 <#
 Here description
 #>

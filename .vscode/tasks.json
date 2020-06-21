@@ -35,7 +35,7 @@
                 "cwd": "${workspaceFolder}/propel-api"
             },
             "command": "node ./dist/propel-api/index.js"
-        }
+        },
         {
             "label": "propel-web - Build, Run & Watch DEV",
             "type": "shell",

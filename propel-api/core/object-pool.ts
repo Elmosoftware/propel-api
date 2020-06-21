@@ -24,6 +24,11 @@ export interface Disposable {
      * Aynchronous disposing of open handles.
      */
     dispose(): Promise<any>;
+
+    /**
+     * Boolean value that indicates if the instance is already disposed
+     */
+    isDisposed: boolean;
 }
 
 /**
@@ -77,6 +82,7 @@ export class ObjectPool<T extends Resettable & Disposable> implements Disposable
     private _opt: ObjectPoolOptions;
     private _cb: Function;
     private _disposing: boolean = false;
+    private _isDisposed: boolean = false;
 
     /**
      * Creates a new pool of T objects.
@@ -170,6 +176,13 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
     }
 
     /**
+     * Implementation of Disposable.isDisposed attribute.
+     */
+    get isDisposed() : boolean {
+        return this._isDisposed;
+    }
+
+    /**
      * Allows to aquire a resource from the list of available resource in the pool.
      * If there is no resource available and there is space to grow, the pool will create a
      * new resource.
@@ -234,9 +247,14 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
 
         this._lockedRepo.forEach((item, i) => {
             if (item === object) {
-                //If there is a pending request queued:
-                if (this.queueSize > 0) {
-                    //We extract and invoke the resolve function passing as argument the object:
+                
+                //If the object we received is already disposed, we can't use it again.
+                if (object.isDisposed) {
+                    this._lockedRepo.splice(i, 1); //Dropping it.
+                    released = false;
+                }
+                else if (this.queueSize > 0) {//If there is a pending request queued:
+                    //We extract and invoke the resolve function passing as argument for the object:
                     (this._requestQueue.shift() as Function)(item);
                 }
                 else {
@@ -252,7 +270,8 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
             throw new PropelError(`The released object is not part of this pool. The ObjectPool "release" method was invoked with a nul object reference or an object instance that do not correspond anyone already leased.`)
         }
 
-        //If the object was actually released and not assigned to a queued request:
+        //If the object was actually released and not assigned to a queued request we will add it 
+        //to the list of available objects in the pool:
         if (released) {
             this._availableRepo.push(object);
         }
@@ -286,7 +305,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         })
 
         this._availableRepo = []
-
+        this._isDisposed = true;
         return Promise.all(dispositions);
     }
 

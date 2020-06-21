@@ -1,0 +1,6 @@
+.console {
+    border: 1p solid steelblue;
+    background-color: slategray;
+    font-family: monospace, 'Courier New';
+    font-size: .9rem;
+}

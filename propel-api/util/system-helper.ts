@@ -1,11 +1,12 @@
 import { appendFile, close, unlink } from "fs";
 import { file } from "tmp";
+import { exec } from "child_process";
 import { PropelError } from "../../propel-shared/core/propel-error";
 
 /**
  * File System utilities.
  */
-export class FileSystemHelper {
+export class SystemHelper {
 
     constructor(){
     }
@@ -127,5 +128,22 @@ export class FileSystemHelper {
         }
   
         return Buffer.from(base64String, "base64").toString("ascii");
+    }
+
+    /**
+     * Kills a process on a Windows OSby using the "taskkill" command.
+     * @param processId Process Id
+     */
+    static killProcess(processId: number): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            exec(`taskkill /PID ${processId} /t /f`, (error, stdout) => {
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    resolve(stdout);
+                }
+            });
+        })
     }
 }

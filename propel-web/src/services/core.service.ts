@@ -2,9 +2,10 @@ import { Injectable, NgZone } from '@angular/core';
 
 import { PropelAppError } from "../core/propel-app-error";
 import { logger } from "../../../propel-shared/services/logger-service";
-import { ErrorHandlerService } from "./error-handler-service";
-import { NavigationService } from "./navigation-service";
-import { ToasterService } from "./toaster-service";
+import { ErrorHandlerService } from "./error-handler.service";
+import { NavigationService } from "./navigation.service";
+import { ToasterService } from "./toaster.service";
+import { RunnerService } from './runner.service';
 
 /**
  * This core class help inject common services to the app. 
@@ -16,32 +17,37 @@ import { ToasterService } from "./toaster-service";
   providedIn: 'root'
 })
 export class CoreService {
-  
+
   constructor(
     private injZone: NgZone,
     private injErr: ErrorHandlerService,
     private injNav: NavigationService,
-    private injToast: ToasterService) {
+    private injToast: ToasterService,
+    private injRun: RunnerService) {
     logger.logInfo("CoreService instance created")
     this._init()
   }
 
-  get zone() :NgZone {
+  get zone(): NgZone {
     return this.injZone;
   }
 
-  get navigation() :NavigationService {
+  get navigation(): NavigationService {
     return this.injNav;
   }
 
-  get toaster() :ToasterService {
+  get toaster(): ToasterService {
     return this.injToast;
   }
-  
+
+  get runner(): RunnerService {
+    return this.injRun;
+  }
+
   private _init() {
     this.injErr.getErrorHandlerSubscription()
       .subscribe((error: PropelAppError) => {
         this.injToast.showError(error);
-    })
+      })
   }
 }

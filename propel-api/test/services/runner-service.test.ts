@@ -169,4 +169,77 @@ describe("Runner Class - execute()", () => {
             })
 
     }, 15000);
+    test(`User cancellation test`, (done) => {
+
+        let w = testingWorkflows.Worflow_S2EnabledTargetDisabledFast;
+
+        setTimeout(() => {
+            //1st step will take 3s to complete, so we will sed the cancel signal 1s after 
+            //the execution started:
+            runner.cancelExecution(); 
+        }, 1000);
+
+        runner.execute(w)
+            .then((log: ExecutionLog) => {
+                expect(log.status).toEqual(ExecutionStatus.CancelledByUser);
+                expect(log.startedAt).not.toBe(null);
+                expect(log.endedAt).not.toBe(null);
+                expect(log.executionSteps.length).toEqual(w.steps.length);
+
+                //1st Step:
+                expect(log.executionSteps[0].execError).toBe(null);
+                expect(log.executionSteps[0].status).toEqual(ExecutionStatus.Success);
+                expect(log.executionSteps[0].targets.length).toEqual(1); //Localhost!
+                expect(log.executionSteps[0].targets[0].execErrors.length).toEqual(0);
+                expect(log.executionSteps[0].targets[0].execResults.length).toBeGreaterThan(0);
+                expect(log.executionSteps[0].targets[0].status).toEqual(ExecutionStatus.Success);
+
+                //2nd Step:
+                expect(log.executionSteps[1].execError).toBe(null);
+                expect(log.executionSteps[1].status).toEqual(ExecutionStatus.CancelledByUser);
+
+                done();
+            })
+            .catch((err) => {
+                //IMPORTANT: Is not expected an error in this call!!!!
+                expect(err).toEqual("Is not expected an error in this call!!!!")
+            })
+
+    }, 15000);
+    test(`User Killing execution test`, (done) => {
+
+        let w = testingWorkflows.Worflow_S2EnabledTargetDisabledFast;
+
+        setTimeout(() => {
+            //We will kill the execution after two seconds.
+            runner.cancelExecution(true); 
+        }, 2000);
+
+        runner.execute(w)
+            .then((log: ExecutionLog) => {
+                expect(log.status).toEqual(ExecutionStatus.CancelledByUser);
+                expect(log.startedAt).not.toBe(null);
+                expect(log.endedAt).not.toBe(null);
+                expect(log.executionSteps.length).toEqual(w.steps.length);
+
+                //1st Step:
+                expect(log.executionSteps[0].execError).toBe(null);
+                expect(log.executionSteps[0].status).toEqual(ExecutionStatus.Success);
+                expect(log.executionSteps[0].targets.length).toEqual(1); //Localhost!
+                expect(log.executionSteps[0].targets[0].execErrors.length).toEqual(0);
+                expect(log.executionSteps[0].targets[0].execResults.length).toBeGreaterThan(0);
+                expect(log.executionSteps[0].targets[0].status).toEqual(ExecutionStatus.Success);
+
+                //2nd Step:
+                expect(log.executionSteps[1].execError).toBe(null);
+                expect(log.executionSteps[1].status).toEqual(ExecutionStatus.CancelledByUser);
+
+                done();
+            })
+            .catch((err) => {
+                //IMPORTANT: Is not expected an error in this call!!!!
+                expect(err).toEqual("Is not expected an error in this call!!!!")
+            })
+
+    }, 15000);
 })

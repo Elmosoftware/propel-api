@@ -3,13 +3,14 @@ import { Workflow } from "../../propel-shared/models/workflow";
 import { WorkflowStep } from "../../propel-shared/models/workflow-step";
 import { ParameterValue } from "../../propel-shared/models/parameter-value";
 import { Target } from "../../propel-shared/models/target";
-import { InvocationService, InvocationMessage } from "./invocation-service";
+import { InvocationService } from "./invocation-service";
+import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/invocation-message";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { cfg } from "../core/config";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { ScriptValidator } from "../validators/script-validator";
-import { FileSystemHelper } from "../util/file-system-helper";
+import { SystemHelper } from "../util/system-helper";
 import { ExecutionLog } from "../../propel-shared/models/execution-log";
 import { ExecutionStep } from "../../propel-shared/models/execution-step";
 import { ExecutionTarget } from "../../propel-shared/models/execution-target";
@@ -27,12 +28,17 @@ export class Runner {
     private _scriptVal: ScriptValidator;
     private _localTarget: Target;
     private _execLog: ExecutionLog | undefined;
+    private _cancelExecution: boolean;
+    private _currentInvocation: InvocationService | null;
+    private _stats!: ExecutionStats;
 
     constructor() {
         this._scriptVal = new ScriptValidator();
         this._localTarget = new Target();
         this._localTarget.FQDN = "localhost"
         this._localTarget.friendlyName = this._localTarget.FQDN;
+        this._cancelExecution = false;
+        this._currentInvocation = null;
     }
 
     /**
@@ -60,21 +66,36 @@ export class Runner {
         
         let abort: boolean = false;
         this._cb = subscriptionCallback;
+        this._cancelExecution = false;
+        //Creating stats:
+        this._stats = new ExecutionStats();
+        this._stats.workflowName = workflow.name;
+        this._stats.totalSteps = workflow.steps.length;
+        //Creating execution log:
         this._execLog = new ExecutionLog();
         this._execLog.startedAt = new Date();
         this._execLog.workflow = workflow;
 
-        await Utils.asyncForEach(workflow.steps, async (step: WorkflowStep) => {
+        await Utils.asyncForEach(workflow.steps, async (step: WorkflowStep, i: number) => {
             let argsList: string[] = this._buildArgumentList(step);
-            let scriptCode: string = FileSystemHelper.decodeBase64(step.script.code);
+            let scriptCode: string = SystemHelper.decodeBase64(step.script.code);
             let execStep: ExecutionStep = new ExecutionStep();
             
+            //Updating Execution log:
             execStep.stepName = step.name;
             execStep.scriptName = step.script.name;
             execStep.values = step.values;
             this._execLog?.executionSteps.push(execStep);
 
-            if (abort) {
+            //Updating stats:
+            this._stats.currentStep = i + 1;
+            this._stats.stepName = step.name;
+
+            if (this._cancelExecution) {
+                abort = true //Next steps,(if any), will be aborted.
+                execStep.status = ExecutionStatus.CancelledByUser;
+            }
+            else if (abort) {
                 execStep.status = ExecutionStatus.Aborted;
             }
             else if (!step.enabled) {
@@ -83,7 +104,7 @@ export class Runner {
             else {
 
                 if (!step.script.isTargettingServers) {
-                    step.targets.push(this.localTarget);
+                    step.targets = [this.localTarget];
                 }
 
                 try {
@@ -104,6 +125,14 @@ export class Runner {
         this._execLog.status = this._summaryStatus(this._execLog.executionSteps);
         this._execLog.endedAt = new Date();
         return this._execLog;
+    }
+
+    cancelExecution(killProcessIfRunning: boolean = false): void {
+        this._cancelExecution = true;
+        if (killProcessIfRunning && this._currentInvocation && 
+            this._currentInvocation.status == InvocationStatus.Running) {
+            this._currentInvocation?.disposeSync();
+        }
     }
 
     private _executeOnAllTargets(scriptCode: string, argsList: string[], targets: Target[]) {
@@ -131,10 +160,14 @@ export class Runner {
                 pool.aquire()
                     .then((invsvc: InvocationService) => {
 
+                        this._currentInvocation = invsvc;
+                        
                         //Subscribe to the STDOUT event listener:
                         invsvc.addSTDOUTEventListener((msg: InvocationMessage) => {
                             //TODO: ADD here info related to the script, server, etc...
                             if (this._cb) {
+                                msg.source = target.friendlyName;
+                                msg.context = this._stats;
                                 this._cb(msg);
                             }
                         })
@@ -145,19 +178,23 @@ export class Runner {
                             .then((data: any[]) => {
                                 et.status = ExecutionStatus.Success;
                                 et.execResults = data;
+                                this._currentInvocation = null;
                                 resolve(et);
                             })
                             .catch((err) => {
                                 et.status = ExecutionStatus.Faulty
                                 et.execErrors.push(new ExecutionError(err));
+                                this._currentInvocation = null;
                                 resolve(et);
                             })
                             .finally(() => {
+                                this._currentInvocation = null;
                                 pool.release(invsvc);
                             })
                     })
                     .catch((err) => {
                         //There was some issue trying to aquire an object from the pool:
+                        this._currentInvocation = null;
                         reject(new PropelError(err));
                     })
             }
@@ -171,18 +208,26 @@ export class Runner {
 
         execs.forEach((item) => {
 
-            //If there is at least one aborted item, we will summarize the status as "Aborted".
-            if (item.status && item.status == ExecutionStatus.Aborted) {
+            //If the user cancel the execution, the summary state must indicate that.
+            if (item.status && item.status == ExecutionStatus.CancelledByUser) {
+                ret = ExecutionStatus.CancelledByUser;
+            }
+
+            //If there is at least one aborted item, we will summarize the status as "Aborted". At 
+            //least that statuswas caused by a user cancellation.
+            if (ret != ExecutionStatus.CancelledByUser && item.status && 
+                item.status == ExecutionStatus.Aborted) {
                 ret = ExecutionStatus.Aborted;
             }
 
-            //If there is no Aborted items, but there is at least one Faulty, we 
-            //will summarize the status as "Faulty":
-            if (ret != ExecutionStatus.Aborted && item.status && item.status == ExecutionStatus.Faulty) {
+            //If execution wasn't cancelled and there is no Aborted items, but there is at least 
+            //one Faulty, we will summarize the status as "Faulty":
+            if (ret != ExecutionStatus.CancelledByUser && ret != ExecutionStatus.Aborted && 
+                item.status && item.status == ExecutionStatus.Faulty) {
                 ret = ExecutionStatus.Faulty;
             }
 
-            //If the execution was skipped for the current item, we will increase the counter:
+            //If the execution was skipped item, we will increase the counter:
             if (item.status && item.status == ExecutionStatus.Skipped) {
                 skippedCount++;
             }
@@ -190,7 +235,7 @@ export class Runner {
 
         //If the item execution was successful, but all the items has been skipped, we 
         //will summarize the status as "Skipped":
-        if (skippedCount && skippedCount == execs.length && ret == ExecutionStatus.Success) {
+        if (ret == ExecutionStatus.Success && skippedCount && skippedCount == execs.length) {
             ret = ExecutionStatus.Skipped;
         }
     
@@ -257,5 +302,22 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         //nothing will run!!! :-)
 
         return ret;
+    }
+}
+
+class ExecutionStats {
+
+    public currentStep: number = 0;
+
+    public totalSteps: number = 0;
+
+    public stepName: string = "";
+
+    public workflowName: string = "";
+
+    public startTimestamp: Date = new Date();
+
+    constructor() {
+
     }
 }

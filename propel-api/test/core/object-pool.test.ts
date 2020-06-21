@@ -12,9 +12,13 @@ class TestPool implements Resettable, Disposable {
     }
 
     disposeSync() {
+        this.isDisposed = true;
     }
 
+    public isDisposed: boolean = false;
+
     dispose(): Promise<any> {
+        this.isDisposed = true;
         return Promise.resolve("Disposing!!!!");
     }
 }
@@ -250,6 +254,48 @@ describe("ObjectPool Class - Usage", () => {
             });
         });
     }, 10000);
+    test(`releasing a disposed object"`, (done) => {
+        pool.aquire().then((o: TestPool) => {
+            expect(pool.availableCount).toEqual(0)
+            expect(pool.lockedCount).toEqual(1)
+            expect(pool.availableToGrow).toEqual(2)
+            expect(pool.createdCount).toEqual(1)
+
+            o.disposeSync();
+            pool.release(o);
+
+            expect(pool.availableCount).toEqual(0)
+            expect(pool.lockedCount).toEqual(0)
+            expect(pool.availableToGrow).toEqual(3)
+            expect(pool.createdCount).toEqual(0)
+
+            done();
+        })
+    })
+    test(`releasing a disposed object and aquiring a new one"`, (done) => {
+        pool.aquire().then((o: TestPool) => {
+            expect(pool.availableCount).toEqual(0)
+            expect(pool.lockedCount).toEqual(1)
+            expect(pool.availableToGrow).toEqual(2)
+            expect(pool.createdCount).toEqual(1)
+
+            o.disposeSync();
+            pool.release(o);
+
+            expect(pool.availableCount).toEqual(0)
+            expect(pool.lockedCount).toEqual(0)
+            expect(pool.availableToGrow).toEqual(3)
+            expect(pool.createdCount).toEqual(0)
+
+            pool.aquire().then((o: TestPool) => {
+                expect(pool.availableCount).toEqual(0)
+                expect(pool.lockedCount).toEqual(1)
+                expect(pool.availableToGrow).toEqual(2)
+                expect(pool.createdCount).toEqual(1)
+                done();
+            });               
+        });
+    });
 });
 
 describe("ObjectPool Class - Disposition", () => {
