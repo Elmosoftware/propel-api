@@ -7,6 +7,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { ErrorHandler } from "@angular/core";
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
+//Angular Material Components:
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 // 3rd party libraries:
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 import { ToastrModule } from 'ngx-toastr';
@@ -17,20 +25,26 @@ import { NavigationService } from './services/navigation.service';
 import { ErrorHandlerService } from "./services/error-handler.service";
 import { ToasterService } from './services/toaster.service';
 import { DataService } from './services/data.service';
+import { DialogService } from "./services/dialog.service";
+import { RunnerService } from './services/runner.service';
 
 //Components
 import { HomeComponent } from './app/home/home.component';
 import { SandboxComponent } from './app/sandbox/sandbox.component';
 import { RootComponent } from './app/root/root.component';
 import { RunComponent } from './app/run/run.component';
-import { RunnerService } from './services/runner.service';
+import { NavigationBarComponent } from './app/navigation-bar/navigation-bar.component';
+
+//Dialogs
+import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
 
 @NgModule({
   declarations: [
     RootComponent,
     HomeComponent,
     SandboxComponent,
-    RunComponent
+    RunComponent,
+    NavigationBarComponent
   ],
   imports: [
     BrowserModule,
@@ -45,7 +59,13 @@ import { RunnerService } from './services/runner.service';
       disableTimeOut: false,
       timeOut: 5000
     }),
-    HttpClientModule
+    HttpClientModule,
+    MatSlideToggleModule,
+    MatTabsModule,
+    MatTooltipModule,
+    MatDialogModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     ErrorHandlerService,
@@ -54,7 +74,11 @@ import { RunnerService } from './services/runner.service';
     ToasterService,
     DataService,
     RunnerService,
+    DialogService,
     CoreService
+  ],
+  entryComponents: [
+    StandardDialogComponent
   ],
   bootstrap: [RootComponent]
 })

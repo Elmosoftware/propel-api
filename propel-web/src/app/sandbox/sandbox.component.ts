@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { CoreService } from "src/services/core.service";
 import { DataService } from 'src/services/data.service';
-// import { Entity } from "../../../../propel-shared/models/entity";
 import { User } from "../../../../propel-shared/models/user";
 import { QueryModifier } from "../../../../propel-shared/core/query-modifier";
+import {ThemePalette} from '@angular/material/core';
+import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +18,23 @@ export class SandboxComponent implements OnInit {
   dropdownList = [];
   selectedItems = [];
   dropdownSettings: IDropdownSettings = {};
+  dropdownList2 = [];
+  selectedItems2 = [];
+  dropdownSettings2: IDropdownSettings = {};
+
+  color: ThemePalette = 'accent';
+  checked = false;
+  disabled = false;
+  rangeValue = 30;
+
+  get rangeMode(): string {
+    if (this.rangeValue == 100) {
+      return "determinate"
+    }
+    else {
+      return "indeterminate"
+    }
+  }
 
   constructor(private core: CoreService, private data: DataService) {
 
@@ -50,6 +68,28 @@ export class SandboxComponent implements OnInit {
       itemsShowLimit: 10,
       allowSearchFilter: true
     };
+    //For the single mode demo:
+    this.dropdownList2 = [
+      { item_id: 1, item_text: 'Item 1' },
+      { item_id: 2, item_text: 'Item 2' },
+      { item_id: 3, item_text: 'Item 3' },
+      { item_id: 4, item_text: 'Item 4' },
+      { item_id: 5, item_text: 'Item 5' },
+      { item_id: 6, item_text: 'Item 6' },
+      { item_id: 7, item_text: 'Item 7' }
+    ];
+    this.dropdownSettings2 = {
+      singleSelection: true,
+      idField: 'item_id',
+      textField: 'item_text',
+      selectAllText: 'Select All',
+      unSelectAllText: 'UnSelect All',
+      itemsShowLimit: 10,
+      allowSearchFilter: true
+    };
+    this.selectedItems2 = [
+      // { item_id: 1, item_text: 'Item 1' }
+    ];
   }
 
   onItemSelect(item: any) {
@@ -69,8 +109,20 @@ export class SandboxComponent implements OnInit {
     throw new Error("ERROR TEST from Sandbox component.")
   }
 
-  showToast() {
+  showToastError() {
     this.core.toaster.showError();
+  }
+
+  showToastInfo() {
+    this.core.toaster.showInformation("This is the information message we would like to show to the user.");
+  }
+
+  showToastWarning() {
+    this.core.toaster.showWarning("This is the warning message to be displayed.")
+  }
+
+  showToastSuccess() {
+    this.core.toaster.showSuccess("The operation was successfully finished!")
   }
 
   testGetById() {
@@ -164,6 +216,30 @@ export class SandboxComponent implements OnInit {
         err => {
           throw err
         });
+  }
+
+  showLongConfirmationDialog() {
+    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Confirmación de cambio de contraseña",
+      `Si confirmas tu intención de cambiar tu contraseña de acceso, se te enviará un correo 
+      a <i>micorreo@email.com</i> con las instrucciones detalladas para crear tu nueva contraseña.
+      <p class="mt-2 mb-0">Recuerda que el mensaje de cambio de contraseña tiene un tiempo de validez, pasado el cual, el correo
+       ya no será válido y deberás volver a iniciar el proceso.</p>`,
+      "Si, deseo cambiar mi contraseña", "No, continuaré con la actual")).subscribe(result => {
+        alert(`Result is: "${String(result)}"`);
+      }, err => {
+        throw err
+      });
+  }
+  
+  showShortConfirmationDialog() {
+    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration( 
+        "Confirmation required",
+        `Do you confirm the action?`)
+      ).subscribe(result => {
+        alert(`Result is: "${String(result)}"`);
+      }, err => {
+        throw err
+      });
   }
 
 }

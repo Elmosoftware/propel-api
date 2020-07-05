@@ -1,0 +1,48 @@
+.toast-container .ngx-toastr {
+    box-shadow: none;
+    color: var(--colors-primary);
+    padding: 15px 20px 15px 50px;
+    width: 450px;
+    background-position: left 11px top 18px;
+    background-size: 30px;
+}
+
+.toast-container .ngx-toastr:hover {
+    box-shadow: 0 0 12px var(--colors-soft-border);
+    opacity: 1;
+    cursor: pointer;
+}
+
+.toast-title {
+    font-size: 1.4rem;
+}
+
+.toast-message {
+    padding-top: 10px;
+}
+
+.ngx-toastr {
+    background-color: transparent;
+}
+
+.toast-success {
+    font-size: 1rem;
+    color: var(--colors-white) !important;
+    background-color: var(--colors-info);
+}
+
+.toast-error {
+    font-size: 1rem;
+    background-color: var(--colors-danger);
+}
+
+.toast-info {
+    font-size: 1rem;
+    color: var(--colors-white) !important;
+    background-color: var(--colors-info);
+}
+
+.toast-warning {
+    font-size: 1rem;
+    background-color: var(--colors-warning);
+}

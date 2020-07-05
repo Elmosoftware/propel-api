@@ -6,6 +6,7 @@ import { ErrorHandlerService } from "./error-handler.service";
 import { NavigationService } from "./navigation.service";
 import { ToasterService } from "./toaster.service";
 import { RunnerService } from './runner.service';
+import { DialogService } from "./dialog.service";
 
 /**
  * This core class help inject common services to the app. 
@@ -23,7 +24,8 @@ export class CoreService {
     private injErr: ErrorHandlerService,
     private injNav: NavigationService,
     private injToast: ToasterService,
-    private injRun: RunnerService) {
+    private injRun: RunnerService,
+    private injDlg: DialogService) {
     logger.logInfo("CoreService instance created")
     this._init()
   }
@@ -42,6 +44,10 @@ export class CoreService {
 
   get runner(): RunnerService {
     return this.injRun;
+  }
+
+  get dialog(): DialogService {
+    return this.injDlg;
   }
 
   private _init() {

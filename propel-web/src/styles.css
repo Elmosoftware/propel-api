@@ -1,1 +1,124 @@
-/* You can add global styles to this file, and also import other style files */
+@import "./assets/css/overrides/bootstrap-overrides.css";
+@import "./assets/css/overrides/ngx-toaster-overrides.css";
+@import "./assets/css/overrides/ng-multiselect-dropdown-overrides.css";
+@import "./assets/css/overrides/angular-material-overrides.css";
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+
+/* 
+  GENERAL STYLING
+  ==========================================================
+*/
+
+:root {
+    /* Main colors */
+    --colors-background: #eef4f9;
+    --colors-primary: #123441;
+    --colors-highlight: #328aab;
+    --colors-soft-border: #ced4da;
+    --colors-white: #ffff;
+    --colors-disabled: #92b0bb;
+    --colors-danger: #ff7878;
+    --colors-warning: #ffe89e;
+    --colors-info: var(--colors-highlight);
+    /* Primary buttons */
+    --btn-primary-color: #fff;
+    --btn-primary-border: 2px solid var(--colors-primary);
+    --btn-primary-hover-background: #a5b3c8;
+    --btn-primary-focus-background: var(--btn-primary-hover-background);
+    --btn-primary-focus-border: 2px solid var(--btn-primary-hover-background); 
+     /* #7e98c0; */
+    /* Secondary buttons */
+    --btn-secondary-background: #6c757d;
+    --btn-secondary-border: 2px solid var(--btn-secondary-background);
+    --btn-secondary-hover-background: #919da7;
+    --btn-secondary-focus-color: #ffffff;
+    --btn-secondary-focus-background: var(--btn-secondary-hover-background); /* #53575b;*/
+    --btn-secondary-focus-border: 2px solid var(--btn-secondary-hover-background);
+    --btn-secondary-active-background: #545b62;
+    /* Badges */
+    --badge-primary-color: #f0f0f0;
+    --badge-primary-background: #328AAB;
+    --badge-secondary-color: var(--colors-primary);
+    --badge-secondary-background: #2B9DC6;
+    /* Lists */
+    --list-color: #fff;
+    --list-background: #fff;
+    --list-border: 1px solid var(--colors-soft-border);
+  }
+  
+html, body { height: 100%; } /* Added by Angular material */
+
+body{
+    font-family: "Roboto", "Trebuchet MS", sans-serif;
+    background-color: var(--colors-background);
+    color: var(--colors-primary);
+    margin: 0; /* Added by Angular material */
+}
+
+/* 
+  DIALOGS
+  ==========================================================
+*/
+
+.dialogTitle{
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: 20px 20px 15px 20px;
+    background-color: var(--colors-info);
+}
+  
+.dialogText{
+    font-size: 1em;
+    padding: 20px 20px 20px 20px;
+}
+  
+.dialogActions{
+    padding: 20px 20px 20px 20px;
+}
+
+.close-anchor {
+    color: var(--colors-primary);
+}
+
+.close-anchor:hover {
+    color: var(--colors-white);
+}
+
+/* Spinner */
+
+.spinner-custom mat-progress-spinner:nth-child(1) {
+    position: relative !important;
+    top: 5.13rem !important;
+    left: -0.12rem !important;
+}
+
+.spinner-custom mat-progress-spinner:nth-child(1) > svg > circle {
+    /* fill: yellow !important; */
+    /* stroke-dasharray: 252px !important;
+    stroke-width: 10% !important;
+    r: 40 !important; */
+    animation-duration: 12000ms !important;
+    -webkit-animation-duration: 12000ms !important;
+}
+
+.spinner-custom mat-progress-spinner:nth-child(2) > svg > circle {
+    /* fill: var(--colors-background) !important; */
+    fill: var(--colors-disabled);
+    /* stroke-dasharray: 252px !important;
+    stroke-width: 10% !important;
+    r: 40 !important; */
+    /* animation-duration: 11000ms !important;
+    -webkit-animation-duration: 11000ms !important; */
+}
+
+.spinner-custom div {
+    position: relative;
+    top: -3.6rem;
+    left: 0.6rem;
+    max-width: 61px;
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--colors-white);
+}
+
+

@@ -9,3 +9,10 @@
     font-weight: 300;
 }
 
+.search-input {
+    max-width: 200px;
+}
+
+.search-btn {
+    border: none;
+}
