@@ -9,14 +9,12 @@ export class WebsocketService<T> {
   }
 
   connect(): Observable<T> {
-    this._socket = webSocket({
-      url: this.url //"ws://localhost:3000/api/run/dddd"
-      // ,
-      // deserializer: (data) => {
-      //     console.log(data);
-      //  }
-    });
-    return this._socket
+    if (!this._socket || this._socket.closed) {
+      this._socket = webSocket({
+        url: this.url
+      });
+    }
+    return this._socket;
   }
 
   close(): void {

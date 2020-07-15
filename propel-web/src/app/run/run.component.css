@@ -1,6 +1,21 @@
 .console {
-    border: 1p solid steelblue;
-    background-color: slategray;
     font-family: monospace, 'Courier New';
     font-size: .9rem;
+    background-color: var(--colors-primary);
+    color: var(--accent-lighter-color);
+    height: 300px;
+    max-height: 800px;
+    overflow-y: scroll;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.simpleList {
+    border: none;
+    background-color: transparent;
+}
+
+.overflowEllipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

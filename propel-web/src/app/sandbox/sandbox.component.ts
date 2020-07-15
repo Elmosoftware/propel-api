@@ -36,6 +36,10 @@ export class SandboxComponent implements OnInit {
     }
   }
 
+  get tooltipSample(): string {
+    return `Current time:${(new Date()).toLocaleTimeString()}`;
+  }
+
   constructor(private core: CoreService, private data: DataService) {
 
   }

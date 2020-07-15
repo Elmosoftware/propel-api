@@ -18,7 +18,10 @@
     --colors-white: #ffff;
     --colors-disabled: #92b0bb;
     --colors-danger: #ff7878;
+    /* --colors-danger-darker: #ff5b5b; */
+    --colors-danger-darker: #f54a44;
     --colors-warning: #ffe89e;
+    --colors-warning-dark: #e8ca51;
     --colors-info: var(--colors-highlight);
     /* Primary buttons */
     --btn-primary-color: #fff;
@@ -26,7 +29,6 @@
     --btn-primary-hover-background: #a5b3c8;
     --btn-primary-focus-background: var(--btn-primary-hover-background);
     --btn-primary-focus-border: 2px solid var(--btn-primary-hover-background); 
-     /* #7e98c0; */
     /* Secondary buttons */
     --btn-secondary-background: #6c757d;
     --btn-secondary-border: 2px solid var(--btn-secondary-background);
@@ -35,6 +37,12 @@
     --btn-secondary-focus-background: var(--btn-secondary-hover-background); /* #53575b;*/
     --btn-secondary-focus-border: 2px solid var(--btn-secondary-hover-background);
     --btn-secondary-active-background: #545b62;
+    /* Danger buttons */
+    --btn-danger-color: #fff;
+    --btn-danger-border: 2px solid var(--colors-danger);
+    --btn-danger-hover-background: var(--colors-danger-darker);
+    --btn-danger-focus-background: var(--colors-danger-darker);
+    --btn-danger-focus-border: 2px solid var(--colors-danger-darker); 
     /* Badges */
     --badge-primary-color: #f0f0f0;
     --badge-primary-background: #328AAB;
@@ -53,6 +61,18 @@ body{
     background-color: var(--colors-background);
     color: var(--colors-primary);
     margin: 0; /* Added by Angular material */
+}
+
+.title {
+    font-size: 2rem;
+}
+
+.subtitle {
+    font-size: 1.5rem;
+}
+
+.text-mini {
+    font-size: 0.7rem;
 }
 
 /* 

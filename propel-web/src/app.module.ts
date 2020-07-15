@@ -37,6 +37,8 @@ import { NavigationBarComponent } from './app/navigation-bar/navigation-bar.comp
 
 //Dialogs
 import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
+import { ConsoleLineComponent } from './app/console-line/console-line.component';
+import { StatusIconComponent } from './app/status-icon/status-icon.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +46,9 @@ import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-
     HomeComponent,
     SandboxComponent,
     RunComponent,
-    NavigationBarComponent
+    NavigationBarComponent,
+    ConsoleLineComponent,
+    StatusIconComponent
   ],
   imports: [
     BrowserModule,

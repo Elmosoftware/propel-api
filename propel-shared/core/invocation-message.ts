@@ -1,3 +1,6 @@
+import { ExecutionLog } from "../models/execution-log";
+import { ExecutionStep } from "../models/execution-step";
+
 /**
  * All posible status values for a script invocation.
  */
@@ -9,7 +12,10 @@ export enum InvocationStatus {
     Stopped = "STOPPED",
     Failed = "FAILED",
     Killed = "KILLED",
-    Disposed = "DISPOSED"
+    Disposed = "DISPOSED",
+    Finished = "FINISHED",
+    UserActionCancel = "CANCEL",
+    UserActionKill = "KILL"
 }
 
 /**
@@ -42,20 +48,45 @@ export class InvocationMessage {
      * Context of the execution. here the message can provide additional information related 
      * to the execution progress or any other. 
      */
-    public context: any;
+    public context: ExecutionStats;
 
-    constructor(status: InvocationStatus, message: string, source?:string, context?: any) {
+    /**
+     * Execution log. This will be included only when the status is "Finished".
+     */
+    public log: ExecutionLog | null;
+
+    constructor(status: InvocationStatus, message: string, source?:string, 
+        context?: ExecutionStats, log?: ExecutionLog) {
+
         this.status = status;
         this.message = message;
         this.source = (source) ? source : "";
-        this.context = context;
+        this.context = (context) ? context : new ExecutionStats();
+        this.log = (log) ? log : null;
         this.timestamp = new Date();
     }
 
-    /**
-     * Returns a plain text version of the message that can be used for logging purposes.
-     */
-    toString() {
-        return `${this.timestamp.toISOString()} -> ${(this.message) ? this.message : "(" + this.status.toString() + ")"}.`
+    // /**
+    //  * Returns a plain text version of the message that can be used for logging purposes.
+    //  */
+    // toString() {
+    //     return `${this.timestamp.toISOString()} -> ${(this.message) ? this.message : "(" + this.status.toString() + ")"}.`
+    // }
+}
+
+
+export class ExecutionStats {
+
+    public currentStep: number = 0;
+
+    public totalSteps: number = 0;
+
+    public steps: ExecutionStep[] = [];
+
+    public workflowName: string = "";
+
+    public startTimestamp: Date = new Date();
+
+    constructor() {
     }
 }

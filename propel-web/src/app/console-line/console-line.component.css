@@ -1,0 +1,7 @@
+.controlMessage {
+    color: var(--colors-warning);
+}
+
+.errorMessage {
+    color: var(--colors-danger);
+}

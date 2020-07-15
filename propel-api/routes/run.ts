@@ -4,9 +4,10 @@ import express from "express";
 import { Route } from "./route";
 import { Runner } from "../services/runner-service";
 import { APIResponse } from "../core/api-response";
-
 import { Workflow } from "../../propel-shared/models/workflow";
-import { ExecutionLog } from "../../propel-shared/models/execution-log";
+import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/invocation-message";
+import { logger } from "../../propel-shared/services/logger-service";
+import { Utils } from "../../propel-shared/utils/utils";
 
 //==============================================================
 //REMOVE THIS AS SOON THE UI is ready:
@@ -47,7 +48,7 @@ export class RunRouter implements Route {
             //and take 30sec to complete:
             workflow = TEST.Worflow_S2EnabledNoParamNoTargetNoThrowMediumDuration;
             //Uncomment below line to test with a workflow that throw an error:
-            // workflow = TEST.Worflow_S1EnabledNoParamNoTargetThrow;
+            //workflow = TEST.Worflow_S1EnabledNoParamNoTargetThrow;
             //==============================================================
 
             let runner = new Runner();
@@ -56,13 +57,13 @@ export class RunRouter implements Route {
             }
 
             runner.execute(workflow, subsCallback)
-                .then((execLog: ExecutionLog) => {
+                .then((msg: InvocationMessage) => {
 
                     /*
                         TODO: Here we will need to persist the Execution log.
                     */
 
-                    ws.send(JSON.stringify(new APIResponse(null, execLog)));
+                    ws.send(JSON.stringify(msg));
                 })
                 .catch((err) => {
                     ws.send(JSON.stringify(new APIResponse(err, null)));
@@ -71,15 +72,23 @@ export class RunRouter implements Route {
                     ws.close()
                 })
 
-                ws.on('message', (message) => {
-                    console.log(`Received from client:${message}`);
-                    if (message == "STOP") {
-                        console.log("The user cancelled the execution.")
+                ws.on('message', (message: string) => {
+                    //Disregard any non-JSON message:
+                    if (!Utils.isValidJSON(message)) return;
+
+                    let m: InvocationMessage = JSON.parse(message);
+                    logger.logInfo(`User sent action "${m.status}" during the execution of workflow "${workflow._id}".`);
+
+                    if (m.status == InvocationStatus.UserActionCancel) {
+                        logger.logInfo(`Cancelling workflow execution before next step.`)
                         runner.cancelExecution();
                     }
-                    else if (message == "KILL") {
-                        console.log("The user KILLED the execution!!!!!!.")
+                    else if (m.status == InvocationStatus.UserActionKill) {
+                        logger.logInfo(`Cancelling workflow execution immediattely.`)
                         runner.cancelExecution(true);
+                    }
+                    else {
+                        logger.logWarn(`Unknown user action, it will be ignored.`);
                     }
                 });
         })

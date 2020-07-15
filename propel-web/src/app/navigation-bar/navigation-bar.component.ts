@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+
 import { CoreService } from 'src/services/core.service';
 
 @Component({
@@ -17,5 +18,4 @@ export class NavigationBarComponent implements OnInit {
   goToHome() {
     this.core.navigation.toHome();
   }
-
 }

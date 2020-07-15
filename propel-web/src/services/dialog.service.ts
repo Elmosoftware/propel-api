@@ -12,7 +12,7 @@ import { StandardDialogComponent, StandardDialogConfiguration } from "../app/dia
 export class DialogService {
 
     constructor(public dialog: MatDialog) {
-        logger.logInfo("CoreService instance created")
+        logger.logInfo("DialogService instance created")
     }
 
     showConfirmDialog(options: StandardDialogConfiguration): Observable<any> {

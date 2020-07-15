@@ -118,6 +118,7 @@
         </strong></p>
       <button type="button" class="btn btn-primary">Primary</button>
       <button type="button" class="btn btn-secondary">Secondary</button>
+      <button type="button" class="btn btn-danger">Danger</button>
     </div>
     <div>
       <p><strong>
@@ -296,6 +297,8 @@
         matTooltipPosition="above">Primary</button>
       <button type="button" class="btn btn-secondary" matTooltip="Info about the action"
         matTooltipPosition="right">Secondary</button>
+      <button type="button" class="btn btn-danger" [matTooltip]="tooltipSample"
+        matTooltipPosition="right">Programmatic tooltip</button>
       <p><strong>
           <h4>Dialogs:</h4>
         </strong></p>
@@ -396,7 +399,8 @@
         <p>Third try</p>
         <div class="d-flex flex-row">
           <div class="mb-1">
-            <mat-progress-spinner mode="indeterminate" color="accent" value="100" diameter="22" strokeWidth="4"></mat-progress-spinner>
+            <mat-progress-spinner mode="indeterminate" color="accent" value="100" diameter="22" strokeWidth="4">
+            </mat-progress-spinner>
           </div>
           <div class="mb-1">
             <span class="p-1">Progress of the activity that is in progress 25%</span>
@@ -446,6 +450,43 @@
         </div>
         <input type="range" min=0 max=100 [(ngModel)]="rangeValue">
       </div>
+
+      <div>
+        <p><strong>
+            <h3>Propel Icons:</h3>
+          </strong></p>
+        <ul class="list-group">
+          <li class="list-group-item">PENDING:
+            <app-status-icon size="small" status="PENDING"></app-status-icon>
+            <app-status-icon size="big" status="PENDING"></app-status-icon>
+          </li>
+          <li class="list-group-item">FAULTY:
+            <app-status-icon size="small" status="FAULTY"></app-status-icon>
+            <app-status-icon size="big" status="FAULTY"></app-status-icon>
+          </li>
+          <li class="list-group-item">SUCCESS:
+            <app-status-icon size="small" status="SUCCESS"></app-status-icon>
+            <app-status-icon size="big" status="SUCCESS"></app-status-icon>
+          </li>
+          <li class="list-group-item">ABORTED:
+            <app-status-icon size="small" status="ABORTED"></app-status-icon>
+            <app-status-icon size="big" status="ABORTED"></app-status-icon>
+          </li>
+          <li class="list-group-item">CANCELLED:
+            <app-status-icon size="small" status="CANCELLED"></app-status-icon>
+            <app-status-icon size="big" status="CANCELLED"></app-status-icon>
+          </li>
+          <li class="list-group-item">SKIPPED:
+            <app-status-icon size="small" status="SKIPPED"></app-status-icon>
+            <app-status-icon size="big" status="SKIPPED"></app-status-icon>
+          </li>
+          <li class="list-group-item">RUNNING:
+            <app-status-icon size="small" status="RUNNING"></app-status-icon>
+            <app-status-icon size="big" status="RUNNING"></app-status-icon>
+          </li>
+        </ul>
+      </div>
+
       <p class="my-4"><strong>
           <h2>EOF!!!</h2>
         </strong></p>

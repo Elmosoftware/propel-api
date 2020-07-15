@@ -1,0 +1,12 @@
+<i [matTooltip]="tooltip" [matTooltipPosition]="tooltipPosition" class="fas" [ngClass]="{
+    'fa-3x': size == 'big',
+    'icon': status !== 'RUNNING',
+    'icon-3x': status !== 'RUNNING' && size == 'big',
+    'icon-3x-spin': status == 'RUNNING' && size == 'big',
+    'fa-spinner fa-pulse': status == 'RUNNING',
+    'fa-pause-circle icon-hold': (status == 'PENDING' || status == 'NOTSTARTED' ),
+    'fa-times-circle icon-error': (status == 'FAULTY' || status == 'FAILED'),
+    'fa-check-circle icon-success': status == 'SUCCESS',
+    'fa-ban': (status == 'ABORTED' || status == 'CANCELLED'),
+    'fa-share': status == 'SKIPPED'
+}"></i>

@@ -13,4 +13,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  testWorkflow() {
+    this.core.navigation.toRun("Testing workflow");
+  }
 }

@@ -159,11 +159,11 @@ export class TestingWorkflows {
     get Worflow_S1EnabledNoParamNoTargetThrow(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret.name = "Worflow_S1NoParamNoTargetThrow"
+        ret.name = "Test Worflow with a single step NoParams No Target throwing error"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetUltraFastThreeResultsThrow."
 
         let step1: WorkflowStep = new WorkflowStep();
-        step1.name = "STEP #1"
+        step1.name = "Mi quis hendrerit dolor magna eget est lorem ipsum. Morbi quis commodo odio aenean sed."
         step1.abortOnError = true;
         step1.enabled = true
         step1.script = this.ScriptNoParamsNoTargetUltraFastThreeResultsThrow;
@@ -294,11 +294,11 @@ export class TestingWorkflows {
     get Worflow_S2EnabledNoParamNoTargetNoThrowMediumDuration(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret.name = "Worflow_S1EnabledNoParamNoTargetNoThrowMediumDuration"
+        ret.name = "Test Worflow with 2 steps enaled NoParams NoTargets No Errors Medium Duration"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetMediumThreeResultsNoThrow and Step 2: ."
 
         let step1: WorkflowStep = new WorkflowStep();
-        step1.name = "STEP #1"
+        step1.name = "Arcu non sodales neque sodales ut etiam sit amet."
         step1.abortOnError = true;
         step1.enabled = true
         step1.script = this.ScriptNoParamsNoTargetMediumThreeResultsNoThrow;
@@ -308,7 +308,7 @@ export class TestingWorkflows {
         ret.steps.push(step1);
 
         let step2: WorkflowStep = new WorkflowStep();
-        step2.name = "STEP #2"
+        step2.name = "Pharetra vel turpis nunc eget lorem dolor sed. Id volutpat lacus laoreet non. Accumsan lacus vel facilisis volutpat est."
         step2.abortOnError = true;
         step2.enabled = true
         step2.script = this.ScriptNoParamsNoTargetMediumOneResultNoThrow;

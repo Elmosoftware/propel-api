@@ -28,6 +28,10 @@ const routes: Routes = [
   {
     path: PAGES.Sandbox,
     component: SandboxComponent
+  },
+  {
+    path: '**',
+    component: HomeComponent
   }
 ];
 

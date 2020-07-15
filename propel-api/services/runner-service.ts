@@ -4,7 +4,7 @@ import { WorkflowStep } from "../../propel-shared/models/workflow-step";
 import { ParameterValue } from "../../propel-shared/models/parameter-value";
 import { Target } from "../../propel-shared/models/target";
 import { InvocationService } from "./invocation-service";
-import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/invocation-message";
+import { InvocationMessage, InvocationStatus, ExecutionStats } from "../../propel-shared/core/invocation-message";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { cfg } from "../core/config";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
@@ -62,15 +62,25 @@ export class Runner {
      * @param workflow The workflow to execute.
      * @param subscriptionCallback A callback function to get any realtime message during the execution.
      */
-    async execute(workflow: Workflow, subscriptionCallback?: Function): Promise<ExecutionLog> {
+    async execute(workflow: Workflow, subscriptionCallback?: Function): Promise<InvocationMessage> {
         
         let abort: boolean = false;
         this._cb = subscriptionCallback;
         this._cancelExecution = false;
+
         //Creating stats:
         this._stats = new ExecutionStats();
         this._stats.workflowName = workflow.name;
         this._stats.totalSteps = workflow.steps.length;
+        this._stats.steps = workflow.steps.map((step) => {
+            let ret = new ExecutionStep();
+
+            ret.stepName = step.name;
+            ret.status = ExecutionStatus.Pending;
+
+            return ret;
+        });
+
         //Creating execution log:
         this._execLog = new ExecutionLog();
         this._execLog.startedAt = new Date();
@@ -89,7 +99,7 @@ export class Runner {
 
             //Updating stats:
             this._stats.currentStep = i + 1;
-            this._stats.stepName = step.name;
+            this._stats.steps[i].status = ExecutionStatus.Running;
 
             if (this._cancelExecution) {
                 abort = true //Next steps,(if any), will be aborted.
@@ -120,18 +130,40 @@ export class Runner {
                     abort = true;
                 }
             }
+
+            this._stats.steps[i].status = execStep.status;
         })
 
         this._execLog.status = this._summaryStatus(this._execLog.executionSteps);
         this._execLog.endedAt = new Date();
-        return this._execLog;
+
+        return new InvocationMessage(InvocationStatus.Finished, "","", 
+            this._stats, this._execLog);
     }
 
+    /**
+     * Calling this method will cancel the workflow execution.
+     * @param killProcessIfRunning If this parameter is true, the execution will be stopped 
+     * immediattely by killing execution process.
+     * if this paramter is false, the execution will be cancelled as soon the current step is done 
+     * by preventing next steps to start. 
+     */
     cancelExecution(killProcessIfRunning: boolean = false): void {
         this._cancelExecution = true;
         if (killProcessIfRunning && this._currentInvocation && 
             this._currentInvocation.status == InvocationStatus.Running) {
             this._currentInvocation?.disposeSync();
+        }
+    }
+
+    /**
+     * Allows to send a message to the client.
+     * @param msg Message to send.
+     */
+    sendMessage(msg: InvocationMessage) {
+        if (this._cb) {
+            msg.context = this._stats;
+            this._cb(msg);
         }
     }
 
@@ -164,12 +196,8 @@ export class Runner {
                         
                         //Subscribe to the STDOUT event listener:
                         invsvc.addSTDOUTEventListener((msg: InvocationMessage) => {
-                            //TODO: ADD here info related to the script, server, etc...
-                            if (this._cb) {
-                                msg.source = target.friendlyName;
-                                msg.context = this._stats;
-                                this._cb(msg);
-                            }
+                            msg.source = target.friendlyName;
+                            this.sendMessage(msg);
                         })
 
                         //Invoke the Script:
@@ -286,7 +314,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
                 we will hit the local host even when a target is defined.
          */
         if (target && cfg.isProduction) {
-            //Also, need to be an script that is actually targetting a remote server:
+            //Also, need to be an script that is actually targetting a remote server :-)
             if (target !== this.localTarget) {
                 ret += ` -ComputerName ${target.FQDN}`
             }
@@ -298,26 +326,9 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
             ret += ` -ArgumentList ${argList.join(" ")}`
         }
 
-        ret += `\n` //Recall we are entering our commands via STDIN. If you don't hit enter at the end, 
+        ret += `\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
 
         return ret;
-    }
-}
-
-class ExecutionStats {
-
-    public currentStep: number = 0;
-
-    public totalSteps: number = 0;
-
-    public stepName: string = "";
-
-    public workflowName: string = "";
-
-    public startTimestamp: Date = new Date();
-
-    constructor() {
-
     }
 }

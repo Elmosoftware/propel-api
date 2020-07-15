@@ -37,10 +37,20 @@ export class PropelAppError extends PropelError {
             })
         }
 
-        if (typeof error == "object" && error.name && error.name == "HttpErrorResponse") {
-            this.httpStatus = ((error as any).status) ? (error as any).status.toString() : "";
-            this.httpStatusText = ((error as any).statusText) ? (error as any).statusText.toString() : "";
-            this.url = ((error as any).url) ? (error as any).url.toString() : "";
+        if (typeof error == "object") {
+            
+            if(error.name && error.name == "HttpErrorResponse") {
+                this.httpStatus = ((error as any).status) ? (error as any).status.toString() : "";
+                this.httpStatusText = ((error as any).statusText) ? (error as any).statusText.toString() : "";
+                this.url = ((error as any).url) ? (error as any).url.toString() : "";
+            }
+            else if ((error as any).srcElement && (error as any).srcElement instanceof WebSocket) {
+                this.url = ((error as any).srcElement.url) ? String((error as any).srcElement.url) : "";
+                this.httpStatus = ((error as any).srcElement.readyState) ? String((error as any).srcElement.readyState) : "";
+                if (error instanceof CloseEvent) {
+                    this.httpStatusText = `Websocket connection closed unexpectedly. Code:${error.code}.`;
+                }
+            }
 
             //If the error is related to some request that went wrong, we note this to the user:
             if (!userMessage) {

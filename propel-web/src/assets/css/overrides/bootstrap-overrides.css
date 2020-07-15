@@ -125,6 +125,40 @@ button:focus {
     box-shadow: none;
 }
 
+/* Danger button */
+
+.btn-danger {
+    color: var(--btn-danger-color);
+    background-color: var(--colors-danger);
+    border: var(--btn-danger-border)
+}
+  
+.btn-danger:hover {
+    /* color: var(--colors-danger); */
+    background-color: var(--btn-danger-hover-background);
+    border-color: transparent;
+}
+
+.btn-danger:focus, .btn-danger.focus {
+    /* color: var(--colors-danger); */
+    background-color: var(--btn-danger-focus-background);
+    border: var(--btn-danger-focus-border);
+    box-shadow: none;
+}
+
+.btn-danger:not(:disabled):not(.disabled):active, .btn-danger:not(:disabled):not(.disabled).active,
+.show > .btn-danger.dropdown-toggle {
+    /* color: var(--colors-danger); */
+    background-color: var(--colors-danger);
+    border-color: transparent;
+}
+
+.btn-danger:not(:disabled):not(.disabled):active:focus, .btn-danger:not(:disabled):not(.disabled).active:focus,
+.show > .btn-danger.dropdown-toggle:focus {
+    box-shadow: none;
+}
+
+
 /* Badges */
 
 .badge-primary {

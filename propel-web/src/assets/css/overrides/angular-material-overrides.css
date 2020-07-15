@@ -549,7 +549,7 @@ body {
 body {
   --warn-color: var(--colors-danger);
   --warn-lighter-color: #ffd7d7;
-  --warn-darker-color: #ff5b5b;
+  --warn-darker-color: var(--colors-danger-darker);
   --text-warn-color: rgba(18, 52, 65, 0.87);
   --text-warn-lighter-color: rgba(18, 52, 65, 0.87);
   --text-warn-darker-color: rgba(18, 52, 65, 0.87); }
