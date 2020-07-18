@@ -5,6 +5,7 @@
     <p><strong>
         <h2>Test Logo</h2>
       </strong></p>
+      <hr>
     <img src="../../assets/img/logo2.svg" alt="Propel" class="d-inline-block" style="width: 21rem;">
     <img src="../../assets/img/logo2-white.svg" alt="Propel" class="d-inline-block" style="width: 21rem;">
 
@@ -13,6 +14,7 @@
     <p><strong>
         <h2>Functionality Test:</h2>
       </strong></p>
+      <hr>
     <button type="button" class="btn-secondary" (click)="goToHome()">Go to Home!!!</button><button type="button"
       class="btn-secondary" (click)="throwErrorTest()">Test ERRRRRROR!</button>
     <button type="button" class="btn-secondary" (click)="showToastError()">Show toaster Error</button>
@@ -30,7 +32,8 @@
     <p><strong>
         <h2>Typography:</h2>
       </strong></p>
-
+      <hr>
+    
     <div>
       <p><strong>
           <h3>Headings:</h3>
@@ -62,7 +65,8 @@
     <p><strong>
         <h2>Dependencies:</h2>
       </strong></p>
-    <div>
+      <hr>
+      <div>
       <p><strong>
           <h3>Bootstrap NavBar:</h3>
         </strong></p>
@@ -116,9 +120,18 @@
       <p><strong>
           <h3>Bootstrap Buttons:</h3>
         </strong></p>
-      <button type="button" class="btn btn-primary">Primary</button>
-      <button type="button" class="btn btn-secondary">Secondary</button>
-      <button type="button" class="btn btn-danger">Danger</button>
+      <p><strong>
+          <h4>Buttons enabled:</h4>
+        </strong></p>
+      <button type="button" class="btn btn-primary mx-2">Primary</button>
+      <button type="button" class="btn btn-secondary mx-2">Secondary</button>
+      <button type="button" class="btn btn-danger mx-2">Danger</button>
+      <p><strong>
+          <h4>Buttons disabled:</h4>
+        </strong></p>
+      <button type="button" class="btn btn-primary mx-2" disabled>Primary</button>
+      <button type="button" class="btn btn-secondary mx-2" disabled>Secondary</button>
+      <button type="button" class="btn btn-danger mx-2" disabled>Danger</button>
     </div>
     <div>
       <p><strong>
@@ -237,15 +250,16 @@
     </div>
     <div>
       <p><strong>
-          <h3>Font Awesome:</h3>
+          <h2>Font Awesome:</h2>
         </strong></p>
+        <hr>
       <p>Here Font awesome fab:<i class="fab fa-500px fa-3x"></i></p>
     </div>
-    <div>
+    <!-- <div>
       <p><strong>
-          <h3>ng-multiselect-dropdown in multiple selection mode:</h3>
+          <h2>ng-multiselect-dropdown in multiple selection mode:</h2>
         </strong></p>
-      <!--  Place [settings] always before [data]: -->
+        <hr>
       <ng-multiselect-dropdown class="dropdown" [placeholder]="'custom placeholder'" [settings]="dropdownSettings"
         [data]="dropdownList" [(ngModel)]="selectedItems" (onSelect)="onItemSelect($event)"
         (onSelectAll)="onSelectAll($event)">
@@ -253,16 +267,17 @@
       <p><strong>
           <h3>ng-multiselect-dropdown in single selection mode:</h3>
         </strong></p>
-      <!--  Place [settings] always before [data]: -->
       <ng-multiselect-dropdown [placeholder]="'custom placeholder'" [settings]="dropdownSettings2"
         [data]="dropdownList2" [(ngModel)]="selectedItems2" (onSelect)="onItemSelect($event)"
         (onSelectAll)="onSelectAll($event)">
       </ng-multiselect-dropdown>
-    </div>
+      <span>Selected item: {{ (selectedItems2 && selectedItems2.length) ? selectedItems2[0].item_text : 0 }}</span>
+    </div> -->
     <div>
       <p><strong>
-          <h3>Angular Material:</h3>
+          <h2>Angular Material:</h2>
         </strong></p>
+        <hr>
       <p><strong>
           <h4>Slide toggle Primary:</h4>
         </strong></p>
@@ -453,8 +468,9 @@
 
       <div>
         <p><strong>
-            <h3>Propel Icons:</h3>
+            <h2>Propel Icons:</h2>
           </strong></p>
+          <hr>
         <ul class="list-group">
           <li class="list-group-item">PENDING:
             <app-status-icon size="small" status="PENDING"></app-status-icon>
@@ -485,6 +501,80 @@
             <app-status-icon size="big" status="RUNNING"></app-status-icon>
           </li>
         </ul>
+      </div>
+
+      <div>
+        <p><strong>
+            <h2>Reactive Forms sample: </h2>
+          </strong>
+        </p>
+
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="testWithData" 
+            name="testWithData" [(ngModel)]="testWithData"
+            (change)="testWithDataChanged()">
+          <label class="custom-control-label" for="testWithData">Test with data, (like an update form)</label>
+        </div>
+        <hr>
+
+        <form [formGroup]="sampleForm" (ngSubmit)="sampleFormSubmit()">
+          <div class="form-group">
+            <label for="name" class="data-required">Name</label>
+            <input type="text" class="form-control" id="name" aria-describedby="name"
+              placeholder="Enter your name (min: 3 chars, max: 10 chars)" formControlName="name" required>
+            <small *ngIf="getErrorText(this.sampleForm.controls.name)"
+              class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.name) }}</small>
+            <small class="form-text text-muted">Current control status:
+              {{ sampleFormOrControlStatus(this.sampleForm.controls.name) }}</small>
+          </div>
+          <div class="form-group">
+            <label class="data-required mr-2">Disabled</label>
+              <mat-slide-toggle color="primary" id="enabled" formControlName="enabled">
+            </mat-slide-toggle>
+            <label class="ml-2">Enabled</label>
+            <small *ngIf="getErrorText(this.sampleForm.controls.enabled)"
+              class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.enabled) }}</small>
+            <small class="form-text text-muted">Current control status: {{ sampleFormOrControlStatus(this.sampleForm.controls.enabled) }}</small>
+          </div>            
+          <div class="form-group">
+            <label class="data-required mr-2" for="simpleSelect">Selection of simple value</label>
+            <ng-select [items]="countries"
+                   [selectOnTab]="true"
+                   bindValue="_id"
+                   bindLabel="name"
+                   labelForId="simpleSelect"
+                   [compareWith]="compareFn"
+                   placeholder="Select a country"
+                   formControlName="country">
+            </ng-select>
+            <small *ngIf="getErrorText(this.sampleForm.controls.country)"
+              class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.country) }}</small>
+            <small class="form-text text-muted">Current control status: {{ sampleFormOrControlStatus(this.sampleForm.controls.country) }}</small>
+          </div>
+          <div class="form-group">
+            <label class="mr-2" for="multipleSelect">Selection of multiple values</label>
+            <ng-select [items]="allColors"
+                   [multiple]="true"
+                   labelForId="multipleSelect"
+                   [closeOnSelect]="false"
+                   [clearSearchOnAdd]="true"
+                   [searchable]="true"
+                   bindValue="_id"
+                   bindLabel="name"
+                   clearAllText="Clear"
+                   [compareWith]="compareFn"
+                   placeholder="Select all the colors"
+                   formControlName="colors">
+            </ng-select>
+            <small *ngIf="getErrorText(this.sampleForm.controls.colors)"
+              class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.colors) }}</small>
+            <small class="form-text text-muted">Current control status: {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
+          </div>
+          <button class="btn btn-primary" type="submit" [disabled]="!sampleForm.valid">Save</button>
+          <br>
+          <span>Current form status: {{ sampleFormOrControlStatus(sampleForm) }}</span><br>
+          <span>Current form value: {{ sampleForm.value | json }}</span>
+        </form>
       </div>
 
       <p class="my-4"><strong>

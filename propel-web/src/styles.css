@@ -1,7 +1,7 @@
 @import "./assets/css/overrides/bootstrap-overrides.css";
 @import "./assets/css/overrides/ngx-toaster-overrides.css";
-@import "./assets/css/overrides/ng-multiselect-dropdown-overrides.css";
 @import "./assets/css/overrides/angular-material-overrides.css";
+@import "./assets/css/overrides/ng-select-overrides.css";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
 
 /* 
@@ -13,8 +13,12 @@
     /* Main colors */
     --colors-background: #eef4f9;
     --colors-primary: #123441;
-    --colors-highlight: #328aab;
+    --colors-soft-primary: #507f92;
+    --colors-highlight: #43a1c5;
+    --colors-soft-highlight: #8ccfe7;
+    --colors-dark-highlight: #487e92;
     --colors-soft-border: #ced4da;
+    --colors-dark-border: #6c757d;
     --colors-white: #ffff;
     --colors-disabled: #92b0bb;
     --colors-danger: #ff7878;
@@ -29,20 +33,28 @@
     --btn-primary-hover-background: #a5b3c8;
     --btn-primary-focus-background: var(--btn-primary-hover-background);
     --btn-primary-focus-border: 2px solid var(--btn-primary-hover-background); 
+    --btn-primary-disabled-background: var(--colors-soft-primary);
+    --btn-primary-disabled-border: 2px solid var(--btn-primary-disabled-background); 
     /* Secondary buttons */
-    --btn-secondary-background: #6c757d;
+    --btn-secondary-background: var(--colors-dark-border);
     --btn-secondary-border: 2px solid var(--btn-secondary-background);
     --btn-secondary-hover-background: #919da7;
     --btn-secondary-focus-color: #ffffff;
-    --btn-secondary-focus-background: var(--btn-secondary-hover-background); /* #53575b;*/
+    --btn-secondary-focus-background: var(--btn-secondary-hover-background);
     --btn-secondary-focus-border: 2px solid var(--btn-secondary-hover-background);
     --btn-secondary-active-background: #545b62;
+    --btn-secondary-disabled-background: #6c757d;
+    --btn-secondary-disabled-border: 2px solid var(--btn-secondary-disabled-background); 
+    
     /* Danger buttons */
     --btn-danger-color: #fff;
     --btn-danger-border: 2px solid var(--colors-danger);
     --btn-danger-hover-background: var(--colors-danger-darker);
     --btn-danger-focus-background: var(--colors-danger-darker);
     --btn-danger-focus-border: 2px solid var(--colors-danger-darker); 
+    --btn-danger-disabled-background: #dc3545;
+    --btn-danger-disabled-border: 2px solid var(--btn-danger-disabled-background); 
+
     /* Badges */
     --badge-primary-color: #f0f0f0;
     --badge-primary-background: #328AAB;
@@ -73,6 +85,43 @@ body{
 
 .text-mini {
     font-size: 0.7rem;
+}
+
+/* 
+  FORMS
+  ==========================================================
+*/
+
+input::placeholder {
+    color: var(--colors-soft-primary) !important;
+    font-size: .75rem !important;
+    font-style: italic !important;
+}
+
+.data-required::before{
+    font-family: "Font Awesome 5 Free";
+    content: "\f12a";
+    font-weight: 900;
+    font-size: 0.9rem;
+    display: inline-block;
+    color: var(--colors-danger-darker);
+    margin-right: 4px;;
+}
+
+.data-invalid-message {
+    color: var(--colors-danger-darker);
+    font-style: italic;
+    font-size: 0.7rem;
+}
+
+.data-invalid-message::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f057";
+    font-style: normal;
+    font-size: 0.8rem;
+    display: inline-block;
+    font-weight: 900;
+    margin-right: 4px;
 }
 
 /* 
@@ -140,5 +189,3 @@ body{
     font-size: 1.4rem;
     color: var(--colors-white);
 }
-
-

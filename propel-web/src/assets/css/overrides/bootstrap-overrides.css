@@ -92,6 +92,12 @@ button:focus {
     box-shadow: none;
 }
 
+.btn-primary.disabled, .btn-primary:disabled {
+    color: var(--colors-white);
+    background-color: var(--btn-primary-disabled-background);
+    border: var(--btn-primary-disabled-border);
+}
+
 /* Secondary button */
 
 .btn-secondary {
@@ -123,6 +129,12 @@ button:focus {
 .btn-secondary:not(:disabled):not(.disabled):active:focus, .btn-secondary:not(:disabled):not(.disabled).active:focus,
 .show > .btn-secondary.dropdown-toggle:focus {
     box-shadow: none;
+}
+
+.btn-secondary.disabled, .btn-secondary:disabled {
+    color: var(--colors-white);
+    background-color: var(--btn-secondary-disabled-background);
+    border: var(--btn-secondary-disabled-border);
 }
 
 /* Danger button */
@@ -158,6 +170,11 @@ button:focus {
     box-shadow: none;
 }
 
+.btn-danger.disabled, .btn-danger:disabled {
+    color: var(--colors-white);
+    background-color: var(--btn-danger-disabled-background);
+    border: var(--btn-danger-disabled-border);
+}
 
 /* Badges */
 
@@ -175,9 +192,11 @@ button:focus {
 
 .form-control {
     color: var(--colors-primary);
+    border: 1px solid var(--colors-soft-border);    
 }
 
 .form-control:focus {
+    color: var(--colors-primary);
     border-color: var(--colors-highlight);
     box-shadow: none;
 }

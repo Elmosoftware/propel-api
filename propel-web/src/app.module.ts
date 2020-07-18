@@ -2,7 +2,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { ErrorHandler } from "@angular/core";
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -16,7 +16,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // 3rd party libraries:
-import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { ToastrModule } from 'ngx-toastr';
 
 //Services
@@ -55,7 +55,8 @@ import { StatusIconComponent } from './app/status-icon/status-icon.component';
     BrowserAnimationsModule,
     AppRoutingModule,
     FormsModule,
-    NgMultiSelectDropDownModule.forRoot(),
+    ReactiveFormsModule,
+    NgSelectModule,
     ToastrModule.forRoot({
       maxOpened: 5,
       closeButton: true,
