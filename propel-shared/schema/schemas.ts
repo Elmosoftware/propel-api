@@ -68,7 +68,6 @@ class Schemas {
                 new SchemaField("lastUpdateOn", `Last update timestamp (UTC).`,
                     {
                         type: Date,
-                        isRequired: true,
                         isAudit: true
                     })
             ])
