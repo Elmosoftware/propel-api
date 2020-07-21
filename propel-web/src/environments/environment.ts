@@ -3,7 +3,11 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  appName: "Propel Dev",
+  appVersion: "1.0.0",
+  appURL: "http://localhost:8080",
+  apiURL: "http://localhost:3000/api/"
 };
 
 /*

@@ -71,6 +71,7 @@ export class RunComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.core.setPageTitle(this.route.snapshot.data);
     this.model = [];
     this.pushMessageToUI(InvocationStatus.NotStarted, "Starting... please wait.")
     this.startExecution(this.route.snapshot.paramMap.get("id"));

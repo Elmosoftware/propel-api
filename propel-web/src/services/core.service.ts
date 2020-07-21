@@ -1,4 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
+import { Title } from '@angular/platform-browser'
 
 import { PropelAppError } from "../core/propel-app-error";
 import { logger } from "../../../propel-shared/services/logger-service";
@@ -7,6 +8,8 @@ import { NavigationService } from "./navigation.service";
 import { ToasterService } from "./toaster.service";
 import { RunnerService } from './runner.service';
 import { DialogService } from "./dialog.service";
+import { DataService } from "./data.service";
+import { environment } from "../environments/environment";
 
 /**
  * This core class help inject common services to the app. 
@@ -21,11 +24,13 @@ export class CoreService {
 
   constructor(
     private injZone: NgZone,
+    private injTitle: Title,
     private injErr: ErrorHandlerService,
     private injNav: NavigationService,
     private injToast: ToasterService,
     private injRun: RunnerService,
-    private injDlg: DialogService) {
+    private injDlg: DialogService,
+    private injData: DataService) {
     logger.logInfo("CoreService instance created")
     this._init()
   }
@@ -48,6 +53,28 @@ export class CoreService {
 
   get dialog(): DialogService {
     return this.injDlg;
+  }
+
+  get data(): DataService {
+    return this.injData;
+  }
+
+  getPageTitle(): string {
+    return this.injTitle.getTitle();
+  }
+
+  setPageTitle(value: any | string, showVersion: boolean = false) {
+    let title: string = ""
+    let ver: boolean = showVersion;
+
+    if (value && value.title) {
+      title = String(value.title);
+    }
+    else if (typeof value == "string") {
+      title = value;
+    }
+
+    this.injTitle.setTitle(`${environment.appName} v${environment.appVersion}${(title) ? " - " + title : ""}`);
   }
 
   private _init() {
