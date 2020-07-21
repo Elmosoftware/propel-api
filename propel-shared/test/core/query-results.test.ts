@@ -2,14 +2,14 @@ import { QueryResults } from "../../core/query-results";
 
 describe("QueryResults Class - Valid and Missing Parameters", () => {
     test(`No parameters specified, (all defaults)`, () => {
-        let qr = new QueryResults(null);
+        let qr = new QueryResults<any>(null);
 
         expect(qr.data).toEqual([]);
         expect(qr.count).toEqual(0);
         expect(qr.totalCount).toEqual(0);
     })
     test(`Only parameter "data" valid but empty`, () => {
-        let qr = new QueryResults(new Array());
+        let qr = new QueryResults<any>(new Array());
 
         expect(qr.data).toEqual([]);
         expect(qr.count).toEqual(0);
@@ -26,7 +26,7 @@ describe("QueryResults Class - Valid and Missing Parameters", () => {
             name: "name2"
         }
         ]
-        let qr = new QueryResults(data);
+        let qr = new QueryResults<any>(data);
 
         expect(qr.data).toEqual(data);
         expect(qr.count).toEqual(2);
@@ -43,7 +43,7 @@ describe("QueryResults Class - Valid and Missing Parameters", () => {
             name: "name2"
         }
         ]
-        let qr = new QueryResults(data, 25);
+        let qr = new QueryResults<any>(data, 25);
 
         expect(qr.data).toEqual(data);
         expect(qr.count).toEqual(2);

@@ -2,18 +2,18 @@
 /**
  * Results fetched from a DataService fetch data operation  
  */
-export class QueryResults{
+export class QueryResults<T>{
 
-    public readonly data: object[];
+    public readonly data: T[];
     public readonly count: number;
     public readonly totalCount: number;
 
     /**
      * Class constructor
-     * @param {Array | object} data Fetched results
+     * @param {T[]} data Fetched results
      * @param {number} totalCount Total amount of results, (only for paginated results).
      */
-    constructor(data: any, totalCount?: number) {
+    constructor(data: T[] | T , totalCount?: number) {
 
         if (data) {
             if (!Array.isArray(data)) {

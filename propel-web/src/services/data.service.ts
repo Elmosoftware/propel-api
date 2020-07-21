@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+
 import { Entity } from "../../../propel-shared/models/entity";
 import { Observable } from 'rxjs';
 import { QueryModifier } from '../../../propel-shared/core/query-modifier';
+import { QueryResults } from "../../../propel-shared/core/query-results";
 import { schemaRepo } from "../../../propel-shared/schema/schema-repository";
 import { GraphQLClientSchemaAdapter } from "../../../propel-shared/schema/graphql-client-schema-adapter";
 
@@ -25,10 +28,16 @@ export class DataService {
    * @param entityType Entity type.
    * @param id Unique identifier.
    */
-  getById<T extends Entity>(entityType: { new (): T }, id: string ): Observable<T> {
-    return this.http.post<T>("http://localhost:3000/api/data", 
-    this._gqlAdapter.buildGetByIdQuery<T>(entityType, id, []), 
+  getById<T extends Entity>(entityType: { new(): T }, id: string): Observable<QueryResults<T>> {
+    return this.http.post<QueryResults<T>>("http://localhost:3000/api/data",
+      this._gqlAdapter.buildGetByIdQuery<T>(entityType, id, []),
       { headers: this.buildAPIHeaders() })
+      .pipe(
+        map(data => {
+          let ret: QueryResults<T> = data.data[Object.keys(data.data)[0]];
+          return ret;
+        })
+      );
   }
 
   /**
@@ -36,10 +45,16 @@ export class DataService {
    * @param entityType Entity type.
    * @param qm Query modifier, (allows to specify filter, sorting, pagination, etc).
    */
-  find<T extends Entity>(entityType: { new (): T }, qm: QueryModifier ): Observable<T[]> {
-    return this.http.post<T[]>("http://localhost:3000/api/data", 
+  find<T extends Entity>(entityType: { new (): T }, qm: QueryModifier ): Observable<QueryResults<T>> {
+    return this.http.post<QueryResults<T>>("http://localhost:3000/api/data", 
     this._gqlAdapter.buildFindQuery<T>(entityType, qm, []), 
       { headers: this.buildAPIHeaders() })
+      .pipe(
+        map(data => {
+            let ret: QueryResults<T> = data.data[Object.keys(data.data)[0]];
+            return ret;
+        })
+    );
   }
 
   /**
@@ -47,10 +62,16 @@ export class DataService {
    * @param entityType Entity type.
    * @param entity Instance to persist.
    */
-  insert<T extends Entity>(entityType: { new (): T }, entity: T): Observable<string> {
-    return this.http.post<string>("http://localhost:3000/api/data", 
-    this._gqlAdapter.buildInsertMutation<T>(entityType, entity), 
+  insert<T extends Entity>(entityType: { new(): T }, entity: T): Observable<string> {
+    return this.http.post<string>("http://localhost:3000/api/data",
+      this._gqlAdapter.buildInsertMutation<T>(entityType, entity),
       { headers: this.buildAPIHeaders() })
+      .pipe(
+        map((data: any) => {
+          let ret: string = data.data[Object.keys(data.data)[0]];
+          return ret;
+        })
+      );
   }
 
   /**
@@ -62,6 +83,12 @@ export class DataService {
     return this.http.post<string>("http://localhost:3000/api/data", 
     this._gqlAdapter.buildUpdateMutation<T>(entityType, entity), 
       { headers: this.buildAPIHeaders() })
+      .pipe(
+        map((data: any) => {
+          let ret: string = data.data[Object.keys(data.data)[0]];
+          return ret;
+        })
+      );
   }
 
   /**

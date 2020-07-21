@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
-import { QueryResults } from "../core/query-results";
+import { QueryResults } from "../../propel-shared/core/query-results";
 // import { EntityModel } from "../core/entity-model";
 import { AdapterModel } from "../schema/mongoose-schema-adapter";
 
