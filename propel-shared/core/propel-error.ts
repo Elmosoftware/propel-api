@@ -21,17 +21,27 @@ export class PropelError extends Error {
             Value provided was of type "${typeof error}", with value "${error}" `)
         }
 
-        if (errorCode && typeof errorCode != "object") {
-            throw new Error(`APIError class constructor optional paramater "errorCode" requires a "Code" object. 
-            Value provided was of type "${typeof errorCode}", with value "${errorCode}" `)
-        }
-
         super(((error as Error).message) ? (error as Error).message : String(error));
-        this.name = this.parseName(error);
-        this.message = this.parseMessage(error);
-        this.stack = this.parseStack(error);
-        this.stackArray = this.parseStackArray(error);
-        this.errorCode = this.parseErrorCode(errorCode);
+        
+        if (error instanceof PropelError) {
+            this.message = error.message;
+            this.name = error.name;
+            this.stack = error.stack;
+            this.stackArray = error.stackArray;
+            this.errorCode = error.errorCode;
+        }
+        else {
+            if (errorCode && typeof errorCode != "object") {
+                throw new Error(`APIError class constructor optional paramater "errorCode" requires a "Code" object. 
+            Value provided was of type "${typeof errorCode}", with value "${errorCode}" `)
+            }
+
+            this.name = this.parseName(error);
+            this.message = this.parseMessage(error);
+            this.stack = this.parseStack(error);
+            this.stackArray = this.parseStackArray(error);
+            this.errorCode = this.parseErrorCode(errorCode);
+        }
     }
 
     public readonly stackArray: string[];

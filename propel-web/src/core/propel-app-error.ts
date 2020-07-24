@@ -14,50 +14,61 @@ export class PropelAppError extends PropelError {
 
         this.timestamp = new Date()
 
-        if (typeof error != "string") {
-            this.error = error;
-        }
+        // if (typeof error != "string") {
+        //     this.error = error;
+        // }
 
         this.location = location.href;
 
         //Filling Inner exceptions recursively:
         this._FillInnerExceptions(error)
 
-        //We need now to check for user error codes. If the code is in the error:
-        if ((error as PropelError).errorCode) {
-            userMessage = (error as PropelError).errorCode.userMessage;
-        }
-        else {
-            //We must check on the inner exceptions for user error codes:
-            this.innerExceptions.forEach(inner => {
-                if ((inner as PropelError).errorCode) {
-                    userMessage = (inner as PropelError).errorCode.userMessage;
-                    return;
-                }
-            })
-        }
+        // //We need now to check for user error codes. If the code is in the error:
+        // if ((error as PropelError).errorCode) {
+        //     userMessage = (error as PropelError).errorCode.userMessage;
+        // }
+        // else {
+        //     //We must check on the inner exceptions for user error codes:
+        //     this.innerExceptions.forEach(inner => {
+        //         if ((inner as PropelError).errorCode) {
+        //             userMessage = (inner as PropelError).errorCode.userMessage;
+        //             return;
+        //         }
+        //     })
+        // }
 
         if (typeof error == "object") {
-            
-            if(error.name && error.name == "HttpErrorResponse") {
+            if (error.name && error.name == "HttpErrorResponse") {
                 this.httpStatus = ((error as any).status) ? (error as any).status.toString() : "";
                 this.httpStatusText = ((error as any).statusText) ? (error as any).statusText.toString() : "";
                 this.url = ((error as any).url) ? (error as any).url.toString() : "";
+                this.isHTTPError = true;
+
+                //The HTTPErrorResponse object store the error sent in the body of the response in the 
+                //"error" property In our case this must be an APIResponse object with all the error details.
+                if ((error as any).error && (error as any).error && (error as any).error.errors) {
+                    (error as any).error.errors.forEach((e) => {
+                         if (e.errorCode) {
+                            userMessage = (e.errorCode as Code).userMessage;
+                        }
+                    });
+                }
             }
             else if ((error as any).srcElement && (error as any).srcElement instanceof WebSocket) {
                 this.url = ((error as any).srcElement.url) ? String((error as any).srcElement.url) : "";
                 this.httpStatus = ((error as any).srcElement.readyState) ? String((error as any).srcElement.readyState) : "";
+                this.isWSError = true;
                 if (error instanceof CloseEvent) {
                     this.httpStatusText = `Websocket connection closed unexpectedly. Code:${error.code}.`;
                 }
-            }
+            }          
 
-            //If the error is related to some request that went wrong, we note this to the user:
-            if (!userMessage) {
-                userMessage = "There was a connectivity error, please retry the operation in a few minutes."
-            }
+            // //If the error is related to some request that went wrong, we note this to the user:
+            // if (!userMessage) {
+            //     userMessage = "There was a connectivity error, please retry the operation later."
+            // }
         }
-        
+
         this.userMessage = userMessage;
     }
 
@@ -97,14 +108,19 @@ export class PropelAppError extends PropelError {
     public readonly userMessage: string;
 
     /**
-     * Indicates if the error is related to some possible user action.
-     */
-    public readonly isUserError: boolean;
-
-    /**
      * List of inner exceptions.
      */
     public readonly innerExceptions: any[] = [];
+
+    /**
+     * Indicates if the source of the errors is related to HTTP protocol:
+     */
+    public readonly isHTTPError: boolean = false;
+
+    /**
+     * Indicates if the source of the errors is related to Websocket protocol:
+     */
+    public readonly isWSError: boolean = false;
 
     private _FillInnerExceptions(e) {
         if (e.error) {
