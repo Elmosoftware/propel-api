@@ -3,7 +3,7 @@ import express from "express";
 
 import { Route } from "./route";
 import { Runner } from "../services/runner-service";
-import { APIResponse } from "../core/api-response";
+import { APIResponse } from "../../propel-shared/core/api-response";
 import { Workflow } from "../../propel-shared/models/workflow";
 import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/invocation-message";
 import { logger } from "../../propel-shared/services/logger-service";

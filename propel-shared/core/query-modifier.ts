@@ -3,7 +3,7 @@ import { QueryValidator } from "../validators/query-validator";
 const DEFAULT_TOP = 0;
 const DEFAULT_SKIP = 0;
 const DEFAULT_SORTBY = "";
-const DEFAULT_FILTERBY = "{}";
+const DEFAULT_FILTERBY = {};
 
 /**
  * Query options that allows to modify the results by specifying sorting, filtering, pagination, etc. 
@@ -29,7 +29,7 @@ export class QueryModifier {
     /**
      * Filter condition
      */
-    public filterBy: string;
+    public filterBy: any;
 
     /**
      * Indicates if we need to fully populate the entity.

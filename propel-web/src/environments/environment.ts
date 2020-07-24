@@ -7,7 +7,12 @@ export const environment = {
   appName: "Propel Dev",
   appVersion: "1.0.0",
   appURL: "http://localhost:8080",
-  apiURL: "http://localhost:3000/api/"
+  api: {
+    url: "http://localhost:3000/api/",
+    endpoint: {
+      data: "data/"
+    }
+  }
 };
 
 /*

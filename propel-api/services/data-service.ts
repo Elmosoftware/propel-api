@@ -3,9 +3,8 @@ import mongoose from "mongoose";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
-import { QueryResults } from "../../propel-shared/core/query-results";
-// import { EntityModel } from "../core/entity-model";
 import { AdapterModel } from "../schema/mongoose-schema-adapter";
+import { APIResponse } from "../../propel-shared/core/api-response";
 
 /**
  * Data Service
@@ -65,12 +64,11 @@ export class DataService {
      * 
      * @param {any} document Entity document
      */
-    add(document: any) {
-        this._setAuditData(true, document, null);
-
+    add(document: any): Promise<APIResponse<any>> {
         return new Promise((resolve, reject) => {
 
             let obj = null;
+            this._setAuditData(true, document, null);
 
             if (!this.isValidObjectId(document._id)) {
                 document._id = this.getNewobjectId();
@@ -84,10 +82,10 @@ export class DataService {
                     if (this.isDupKeyError(err)) {
                         err = new PropelError(err, ErrorCodes.DuplicatedItem)
                     }
-                    reject(err);
+                    reject(new APIResponse<any>(err, null));
                 }
                 else {
-                    resolve(data._id);
+                    resolve(new APIResponse<any>(null, data._id));
                 }
             })
         })
@@ -97,41 +95,45 @@ export class DataService {
      * Update an existing Entity document.
      * @param {any} document Entity Document updated data.
      */
-    update(document: any) {
-
-        if (!document) {
-            throw new PropelError(`The method "update" expect a not null reference for the "document" param.Provided value: "${String(document)}".`)
-        }
-        else if (!document._id) {
-            throw new PropelError(`The method "update" expect a document with an "_id" attribute for the "document" param, (we can't update new documents!).Provided value was: "${JSON.stringify(document)}".`)
-        }
-        else if (!this.isValidObjectId(document._id)) {
-            throw new PropelError(`The method "update" expect a valid ObjectId in the parameter "id". Provided value: "${String(document._id)}".`)
-        }
-
-        this._setAuditData(false, document, null);
-
+    update(document: any): Promise<APIResponse<any>> {
         return new Promise((resolve, reject) => {
+            let e: PropelError | null = null;
 
-            this._model.model.updateOne({ _id: document._id }, document, (err: any, data: any) => {
-                if (err) {
-                    if (this.isDupKeyError(err)) {
-                        err = new PropelError(err, ErrorCodes.DuplicatedItem)
+            if (!document) {
+                e = new PropelError(`The method "update" expect a not null reference for the "document" param.Provided value: "${String(document)}".`)
+            }
+            else if (!document._id) {
+                e = new PropelError(`The method "update" expect a document with an "_id" attribute for the "document" param, (we can't update new documents!).Provided value was: "${JSON.stringify(document)}".`)
+            }
+            else if (!this.isValidObjectId(document._id)) {
+                e = new PropelError(`The method "update" expect a valid ObjectId in the parameter "id". Provided value: "${String(document._id)}".`)
+            }
+
+            if (e) {
+                reject(new APIResponse<any>(e, null));
+            }
+            else {
+                this._setAuditData(false, document, null);
+                this._model.model.updateOne({ _id: document._id }, document, (err: any, data: any) => {
+                    if (err) {
+                        if (this.isDupKeyError(err)) {
+                            err = new PropelError(err, ErrorCodes.DuplicatedItem)
+                        }
+                        reject(new APIResponse<any>(err, null));
                     }
-                    reject(err);
-                }
-                else if (this.isVoidWrite(data)) {
-                    let err = new PropelError(`The last UPDATE operation affects no documents. Please verify: \n
+                    else if (this.isVoidWrite(data)) {
+                        let err = new PropelError(`The last UPDATE operation affects no documents. Please verify: \n
                     - If The document you try to update no longer exists.
                     - If you have been granted with the necessary permissions.`,
-                        ErrorCodes.VoidUpdate
-                    );
-                    reject(err);
-                }
-                else {
-                    resolve(document._id);
-                }
-            })
+                            ErrorCodes.VoidUpdate
+                        );
+                        reject(new APIResponse<any>(err, null));
+                    }
+                    else {
+                        resolve(new APIResponse<any>(null, document._id));
+                    }
+                })
+            }
         })
     }
 
@@ -139,66 +141,78 @@ export class DataService {
      * Fecth documents with different options.
      * @param {any} queryModifier Query optons that includes Paging, sorting , filtering, etc...
      */
-    find(queryModifier: any) {
-
-        let qm = new QueryModifier(queryModifier);
-        let filter: any = null;
-
-        //We check for no INTERNAL fields included in the JSON filter:
-        if (this._model.internalFieldsList.some((field) => {
-            return qm.filterBy.toLowerCase().indexOf(`"${field.toLowerCase()}":`) != -1;
-        })) {
-            throw new PropelError(`At least one of the following invalid attributes were found in the JSON filter: "${this._model.internalFieldsList.join(", ")}".
-             Those fields are for internal use only and can't appear in user queries.`);
-        }
-
-        filter = JSON.parse(qm.filterBy)
-
-        //Whatever is the case, we need to ensure only NOT DELETED documents will be affected:
-        if (this._model.hasInternalField("deletedOn")) {
-            filter.deletedOn = { $eq: null };
-        }
+    find(queryModifier: any): Promise<APIResponse<any>> {
 
         return new Promise((resolve, reject) => {
-            let query = this._model.model.find(filter);
-            let countQuery = this._model.model.countDocuments(filter);
+            let qm = new QueryModifier(queryModifier);
+            let filter: string;
+            let e: PropelError | null = null;
 
-            if (qm.top > 0) {
-                query.limit(qm.top);
-            }
+            if (qm.filterBy) {
+                filter = JSON.stringify(qm.filterBy);
 
-            if (qm.skip > 0) {
-                query.skip(qm.skip);
-            }
-
-            if (qm.isSorted) {
-                query.sort(qm.sortBy);
-            }
-
-            if (qm.populate) {
-                query.populate(this._model.populateSchema)
-            }
-
-            //If results are paginated:
-            if (qm.isPaginated) {
-                //We need to return first the total amount of documents for the specified filter:
-                countQuery.exec((err: any, count: number) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        //If documents total amount is 0, there is no reason to continue:
-                        if (count > 0) {
-                            this._runFetchQuery(query, resolve, reject, count)
-                        }
-                        else {
-                            resolve(new QueryResults(null));
-                        }
-                    }
-                });
+                //We check for no INTERNAL fields included in the JSON filter:
+                if (this._model.internalFieldsList.some((field) => {
+                    return filter.toLowerCase().indexOf(`"${field.toLowerCase()}":`) != -1;
+                })) {
+                    e = new PropelError(`At least one of the following invalid attributes were found in the JSON filter: "${this._model.internalFieldsList.join(", ")}".
+Those fields are for internal use only and must not take part on user queries.`);
+                }
             }
             else {
-                this._runFetchQuery(query, resolve, reject)
+                qm.filterBy = {};
+            }
+
+            //Whatever is the case, we need to ensure only NOT DELETED documents will be affected:
+            if (this._model.hasInternalField("deletedOn")) {
+                qm.filterBy.deletedOn = { $eq: null };
+            }
+
+            if (e) {
+                reject(new APIResponse<any>(e, null))
+            }
+            else {
+
+                let query = this._model.model.find(qm.filterBy);
+                let countQuery = this._model.model.countDocuments(qm.filterBy);
+
+                if (qm.top > 0) {
+                    query.limit(qm.top);
+                }
+
+                if (qm.skip > 0) {
+                    query.skip(qm.skip);
+                }
+
+                if (qm.isSorted) {
+                    query.sort(qm.sortBy);
+                }
+
+                if (qm.populate) {
+                    query.populate(this._model.populateSchema)
+                }
+
+                //If results are paginated:
+                if (qm.isPaginated) {
+                    //We need to return first the total amount of documents for the specified filter:
+                    countQuery.exec((err: any, count: number) => {
+                        if (err) {
+                            reject(new APIResponse<any>(err, null));
+                        }
+                        else {
+                            //If documents total amount is 0, there is no reason to continue:
+                            if (count > 0) {
+                                this._runFetchQuery(query, resolve, reject, count)
+                            }
+                            else {
+                                resolve(new APIResponse<any>(null, null, 0));
+                            }
+                        }
+                    });
+                }
+                else {
+                    this._runFetchQuery(query, resolve, reject)
+                }
             }
         })
     }
@@ -207,33 +221,39 @@ export class DataService {
      * Delete the specified document by his ID.
      * @param {string} id Entity unique identifier.
      */
-    delete(id: string) {
-
-        if (!id) {
-            throw new PropelError(`The method "delete" expect a document id for the "id" param.Provided value was: "${JSON.stringify(id)}".`)
-        }
-        else if (!this.isValidObjectId(id)) {
-            throw new PropelError(`The method "update" expect a valid ObjectId value for the parameter "id". Provided value: "${String(id)}".`)
-        }
+    delete(id: string): Promise<APIResponse<any>> {
 
         return new Promise((resolve, reject) => {
+            let e: PropelError | null = null;
 
-            this._model.model.updateOne({ _id: id }, { $set: { deletedOn: new Date() } },
-                (err: any, data: any) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else if (this.isVoidWrite(data)) {
-                        //The attempt to soft delete a non existent document by Id is not reported as error by Mongoose:
-                        let err = new PropelError(`The last DELETE operation affects no documents. This can be caused by the following issues: \n
+            if (!id) {
+                e = new PropelError(`The method "delete" expect a document id for the "id" param.Provided value was: "${JSON.stringify(id)}".`)
+            }
+            else if (!this.isValidObjectId(id)) {
+                e = new PropelError(`The method "update" expect a valid ObjectId value for the parameter "id". Provided value: "${String(id)}".`)
+            }
+
+            if (e) {
+                reject(new APIResponse<any>(e, null));
+            }
+            else {
+                this._model.model.updateOne({ _id: id }, { $set: { deletedOn: new Date() } },
+                    (err: any, data: any) => {
+                        if (err) {
+                            reject(new APIResponse<any>(err, null));
+                        }
+                        else if (this.isVoidWrite(data)) {
+                            //The attempt to soft delete a non existent document by Id is not reported as error by Mongoose:
+                            let err = new PropelError(`The last DELETE operation affects no documents. This can be caused by the following issues: \n
                     - The document you tried to delete no longer exists.
                     - You are not been granted with the necessary permissions.`, ErrorCodes.VoidDelete);
-                        reject(err);
-                    }
-                    else {
-                        resolve(id);
-                    }
-                })
+                            reject(new APIResponse<any>(err, null));
+                        }
+                        else {
+                            resolve(new APIResponse<any>(null, id));
+                        }
+                    })
+            }
         })
     }
 
@@ -273,10 +293,10 @@ export class DataService {
     private _runFetchQuery(query: any, cbResolve: Function, cbReject: Function, totalCount?: number) {
         query.exec((err: any, data: any) => {
             if (err) {
-                cbReject(err);
+                cbReject(new APIResponse<any>(err, null));
             }
             else {
-                cbResolve(new QueryResults(data, totalCount));
+                cbResolve(new APIResponse<any>(null, data, totalCount));
             }
         });
     }

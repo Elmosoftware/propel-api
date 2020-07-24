@@ -8,6 +8,7 @@ import { ThemePalette } from '@angular/material/core';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { Entity, compareEntities } from '../../../../propel-shared/models/entity';
 import { ValidatorsHelper } from 'src/core/validators-helper';
+import { Group } from '../../../../propel-shared/models/group';
 
 // export function NoNameStartingWith(startText: string): ValidatorFn {
 //   return (control: AbstractControl): {[key: string]: any} | null => {
@@ -361,43 +362,54 @@ export class SandboxComponent implements OnInit {
           throw err
         });
 
-    // ret = this.data.create(MyClasesita)
-
     return ret;
   }
 
   testFind() {
-    let ret: User[]
-    let qm: QueryModifier = new QueryModifier();
-    qm.top = 1000;
-    qm.skip = 0;
-    qm.sortBy = "initials";
-    qm.populate = true;
-    qm.filterBy = "{\"picture\": {\"$eq\": null}}"
+    // let ret: User[]
+    // let qm: QueryModifier = new QueryModifier();
+    // qm.top = 1000;
+    // qm.skip = 0;
+    // qm.sortBy = "initials";
+    // qm.populate = true;
+    // qm.filterBy = "{\"picture\": {\"$eq\": null}}"
 
-    this.data.find(User, qm)
-      .subscribe(
-        data => {
-          let x = data;
-        },
-        err => {
-          throw err
-        });
+    // this.data.find(User, qm)
+    //   .subscribe(
+    //     data => {
+    //       let x = data;
+    //     },
+    //     err => {
+    //       throw err
+    //     });
 
     // ret = this.data.create(MyClasesita)
 
-    return ret;
+    let qm: QueryModifier = new QueryModifier();
+    
+    qm.sortBy = "name";
+    qm.populate = true;
+    
+    this.data.find(Group,qm)
+    .subscribe(
+      data => {
+        let x = data;
+      },
+      err => {
+        throw err
+      });
+    // return ret;
   }
 
   testInsert() {
 
     let u: User = new User();
 
-    u.email = "spongebob2@hotmail.com"
-    u.initials = "sb2"
-    u.name = "Bob the second"
+    u.email = "spongebob3@hotmail.com"
+    u.initials = "sb3"
+    u.name = "Bob the third"
 
-    this.data.insert<User>(User, u)
+    this.data.save<User>(User, u)
       .subscribe(
         data => {
           let x = data;
@@ -411,12 +423,12 @@ export class SandboxComponent implements OnInit {
 
     let u: User = new User();
 
-    u._id = "5ee3e24f4094354ae4f355ce"
-    u.email = "spongebob2@hotmail.com"
-    u.initials = "sb2"
-    u.name = "Bob the second UPDATED Twice!"
+    u._id = "5f18eee52dcf570b148586e8"
+    // u.email = "spongebob3@hotmail.com"
+    // u.initials = "sb3"
+    u.name = "Bob the third UPDATED"
 
-    this.data.update<User>(User, u)
+    this.data.save<User>(User, u)
       .subscribe(
         data => {
           let x = data;
@@ -428,11 +440,7 @@ export class SandboxComponent implements OnInit {
 
   testDelete() {
 
-    let u: User = new User();
-
-    u._id = "5ee3e24f4094354ae4f355ce"
-
-    this.data.delete<User>(User, u)
+    this.data.delete<User>(User, "5f18eee52dcf570b148586e8")
       .subscribe(
         data => {
           let x = data;

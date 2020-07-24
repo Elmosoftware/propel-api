@@ -1,5 +1,5 @@
 /**
- * GraphQL Error formatter.
+ * Error formatter.
  */
 class ErrorFormatter {
 
@@ -7,8 +7,8 @@ class ErrorFormatter {
     }
 
     /**
-     * Format the error exactly as it has to be seen in the response.
-     * @param {GraphQLError} e GRaphQL Instance error.
+     * Format the error exactly as it has to be seen in the API Response errors collection.
+     * @param {any} e Error Instance.
      */
     format(e: any): any{
 
@@ -16,17 +16,10 @@ class ErrorFormatter {
         let stackArray: string[] = [];
         let stack: string = "";
 
-        if (e.originalError) {
-            errorCode = (e.originalError.errorCode) ? e.originalError.errorCode : null;
-            stackArray = (e.originalError.stackArray) ? e.originalError.stackArray : [];
-            stack = (e.originalError.stack) ? e.originalError.stack : "";
-        }
-        else {
-            errorCode = (e.errorCode) ? e.errorCode : null;
-            stackArray = (e.stackArray) ? e.stackArray : [];
-            stack = (e.stack) ? e.stack : "";
-        }
-
+        errorCode = (e.errorCode) ? e.errorCode : null;
+        stackArray = (e.stackArray) ? e.stackArray : [];
+        stack = (e.stack) ? e.stack : "";
+        
         if (stackArray.length == 0 && stack) {
             stackArray.push(stack);
         }
@@ -35,9 +28,7 @@ class ErrorFormatter {
             name: e.name,
             message: e.message,
             stack: stackArray,
-            errorCode: errorCode,
-            locations: e.locations,
-            path: e.path
+            errorCode: errorCode
         }
     }
 }

@@ -58,7 +58,7 @@
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
   },
   "include": [
-    "**/*", "../propel-shared/test/utils/util.test.ts", "../propel-shared/utils/utils.ts", "../propel-shared/test/core/api-error.test.ts", "../propel-shared/validators/query-validator.ts", "../propel-shared/validators/validator-base.ts", "../propel-shared/core/query-modifier.ts", "../propel-shared/test/core/query-modifier.test.ts", "../propel-shared/test/test-schemas.ts"
+    "**/*", "../propel-shared/test/utils/util.test.ts", "../propel-shared/utils/utils.ts", "../propel-shared/test/core/api-error.test.ts", "../propel-shared/validators/query-validator.ts", "../propel-shared/validators/validator-base.ts", "../propel-shared/core/query-modifier.ts", "../propel-shared/test/core/query-modifier.test.ts", "../propel-shared/test/test-schemas.ts", "../propel-shared/test/core/api-response.test.ts", "../propel-shared/core/api-response.ts"
   ],
   "exclude": [
     "node_modules",

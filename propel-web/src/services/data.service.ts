@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map } from 'rxjs/operators';
 
 import { Entity } from "../../../propel-shared/models/entity";
 import { Observable } from 'rxjs';
 import { QueryModifier } from '../../../propel-shared/core/query-modifier';
-import { QueryResults } from "../../../propel-shared/core/query-results";
-import { schemaRepo } from "../../../propel-shared/schema/schema-repository";
-import { GraphQLClientSchemaAdapter } from "../../../propel-shared/schema/graphql-client-schema-adapter";
+import { environment } from 'src/environments/environment';
+import { APIResponse } from "../../../propel-shared/core/api-response";
+import { APIRequest, APIRequestAction } from "../../../propel-shared/core/api-request";
 
 /**
  * Data service
@@ -17,44 +16,46 @@ import { GraphQLClientSchemaAdapter } from "../../../propel-shared/schema/graphq
 })
 export class DataService {
 
-  private _gqlAdapter: GraphQLClientSchemaAdapter;
-
   constructor(private http: HttpClient) { 
-    this._gqlAdapter = new GraphQLClientSchemaAdapter(schemaRepo);
+
   }
 
   /**
    * Retrieves and entity by his id.
    * @param entityType Entity type.
    * @param id Unique identifier.
+   * @param populate Boolean value that indicates if subdocuments will be populated. true by default.
    */
-  getById<T extends Entity>(entityType: { new(): T }, id: string): Observable<QueryResults<T>> {
-    return this.http.post<QueryResults<T>>("http://localhost:3000/api/data",
-      this._gqlAdapter.buildGetByIdQuery<T>(entityType, id, []),
-      { headers: this.buildAPIHeaders() })
-      .pipe(
-        map(data => {
-          let ret: QueryResults<T> = data.data[Object.keys(data.data)[0]];
-          return ret;
-        })
-      );
+  getById<T extends Entity>(entityType: { new(): T }, id: string, populate: boolean = true): Observable<APIResponse<T>> {
+      let url: string = this.buildURL(entityType);
+      let req: APIRequest = new APIRequest();
+      let qm: QueryModifier = null;
+
+      if (!populate) {
+        qm = new QueryModifier();
+        qm.populate = false;
+      }
+
+      req.action = APIRequestAction.Find;
+      req.entity = id;
+      req.qm = qm;
+
+    return this.http.post<APIResponse<T>>(url, req, { headers: this.buildHeaders() })
   }
 
   /**
-   * Retrieves all teh entities of the specified type based on the supplied query modifier.
+   * Retrieves all the entities of the specified type based on the supplied query modifier.
    * @param entityType Entity type.
    * @param qm Query modifier, (allows to specify filter, sorting, pagination, etc).
    */
-  find<T extends Entity>(entityType: { new (): T }, qm: QueryModifier ): Observable<QueryResults<T>> {
-    return this.http.post<QueryResults<T>>("http://localhost:3000/api/data", 
-    this._gqlAdapter.buildFindQuery<T>(entityType, qm, []), 
-      { headers: this.buildAPIHeaders() })
-      .pipe(
-        map(data => {
-            let ret: QueryResults<T> = data.data[Object.keys(data.data)[0]];
-            return ret;
-        })
-    );
+  find<T extends Entity>(entityType: { new (): T }, qm: QueryModifier ): Observable<APIResponse<T>> {
+    let url: string = this.buildURL(entityType);
+    let req: APIRequest = new APIRequest();
+    
+    req.action = APIRequestAction.Find;
+    req.qm = qm;
+
+    return this.http.post<APIResponse<T>>(url, req, { headers: this.buildHeaders() });
   }
 
   /**
@@ -62,44 +63,29 @@ export class DataService {
    * @param entityType Entity type.
    * @param entity Instance to persist.
    */
-  insert<T extends Entity>(entityType: { new(): T }, entity: T): Observable<string> {
-    return this.http.post<string>("http://localhost:3000/api/data",
-      this._gqlAdapter.buildInsertMutation<T>(entityType, entity),
-      { headers: this.buildAPIHeaders() })
-      .pipe(
-        map((data: any) => {
-          let ret: string = data.data[Object.keys(data.data)[0]];
-          return ret;
-        })
-      );
+  save<T extends Entity>(entityType: { new(): T }, entity: T): Observable<APIResponse<string>> {
+    let url: string = this.buildURL(entityType);
+    let req: APIRequest = new APIRequest();
+    
+    req.action = APIRequestAction.Save;
+    req.entity = entity;
+
+    return this.http.post<APIResponse<string>>(url, req, { headers: this.buildHeaders() });
   }
 
   /**
-   * Updates an existing entity.
-   * @param entityType Entity type
-   * @param entity Entity to update.
-   */
-  update<T extends Entity>(entityType: { new (): T }, entity: T): Observable<string> {
-    return this.http.post<string>("http://localhost:3000/api/data", 
-    this._gqlAdapter.buildUpdateMutation<T>(entityType, entity), 
-      { headers: this.buildAPIHeaders() })
-      .pipe(
-        map((data: any) => {
-          let ret: string = data.data[Object.keys(data.data)[0]];
-          return ret;
-        })
-      );
-  }
-
-  /**
-   * Delete the supplied entity.
+   * Delete the supplied entity by his id.
    * @param entityType Entity type.
-   * @param entity Entity to delete.
+   * @param id Entity id to delete.
    */
-  delete<T extends Entity>(entityType: { new (): T }, entity: T): Observable<string> {
-    return this.http.post<string>("http://localhost:3000/api/data", 
-    this._gqlAdapter.buildDeleteMutation<T>(entityType, entity), 
-      { headers: this.buildAPIHeaders() })
+  delete<T extends Entity>(entityType: { new (): T }, id: string): Observable<APIResponse<string>> {
+    let url: string = this.buildURL(entityType);
+    let req: APIRequest = new APIRequest();
+    
+    req.action = APIRequestAction.Delete;
+    req.entity = id;
+
+    return this.http.post<APIResponse<string>>(url, req, { headers: this.buildHeaders() });
   }
 
   /**
@@ -110,8 +96,11 @@ export class DataService {
     return new entityType();
   }
 
-  private buildAPIHeaders(): HttpHeaders {
+  private buildURL<T extends Entity>(entityType: { new (): T }) {
+    return `${environment.api.url}${environment.api.endpoint.data}${entityType.name.toLowerCase()}`
+  }
 
+  private buildHeaders(): HttpHeaders {
     let ret: HttpHeaders = new HttpHeaders()
       .set("Content-Type", "application/json");
 

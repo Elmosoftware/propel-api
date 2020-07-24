@@ -5,7 +5,7 @@ import httpstatus from "http-status-codes";
 import { Route } from "./route";
 import { InferenceService } from "../services/inference-service";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
-import { APIResponse } from "../core/api-response";
+import { APIResponse } from "../../propel-shared/core/api-response";
 
 /**
  * Script parameters inference endpoint. Allows to the API to support parameters inference 
