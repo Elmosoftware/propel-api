@@ -19,7 +19,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ToastrModule } from 'ngx-toastr';
 
-//Services
+//Services & Others
 import { CoreService } from './services/core.service';
 import { NavigationService } from './services/navigation.service';
 import { ErrorHandlerService } from "./services/error-handler.service";
@@ -27,18 +27,21 @@ import { ToasterService } from './services/toaster.service';
 import { DataService } from './services/data.service';
 import { DialogService } from "./services/dialog.service";
 import { RunnerService } from './services/runner.service';
-
-//Components
-import { HomeComponent } from './app/home/home.component';
-import { SandboxComponent } from './app/sandbox/sandbox.component';
-import { RootComponent } from './app/root/root.component';
-import { RunComponent } from './app/run/run.component';
-import { NavigationBarComponent } from './app/navigation-bar/navigation-bar.component';
+import { LoaderInterceptor } from './core/loader-interceptor';
+import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
 
 //Dialogs
 import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
 import { ConsoleLineComponent } from './app/console-line/console-line.component';
 import { StatusIconComponent } from './app/status-icon/status-icon.component';
+
+//Components
+import { NavigationBarComponent } from './app/navigation-bar/navigation-bar.component';
+import { HomeComponent } from './app/home/home.component';
+import { SandboxComponent } from './app/sandbox/sandbox.component';
+import { RootComponent } from './app/root/root.component';
+import { RunComponent } from './app/run/run.component';
+import { TargetComponent } from './app/target/target.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +51,8 @@ import { StatusIconComponent } from './app/status-icon/status-icon.component';
     RunComponent,
     NavigationBarComponent,
     ConsoleLineComponent,
-    StatusIconComponent
+    StatusIconComponent,
+    TargetComponent
   ],
   imports: [
     BrowserModule,
@@ -62,7 +66,7 @@ import { StatusIconComponent } from './app/status-icon/status-icon.component';
       closeButton: true,
       positionClass: "toast-top-right",
       disableTimeOut: false,
-      timeOut: 5000
+      timeOut: 7000
     }),
     HttpClientModule,
     MatSlideToggleModule,
@@ -80,7 +84,9 @@ import { StatusIconComponent } from './app/status-icon/status-icon.component';
     DataService,
     RunnerService,
     DialogService,
-    CoreService
+    CoreService,
+    { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
+    DataLossPreventionGuard
   ],
   entryComponents: [
     StandardDialogComponent
