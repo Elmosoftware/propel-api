@@ -1,6 +1,6 @@
 <div mat-dialog-title class="dialogTitle d-flex justify-content-between">
     <span>{{data.title}}</span>
-    <a class="ml-2 close-anchor" href="javascript:void(0)" (click)="closeDlg(undefined)">
+    <a class="ml-2 close-anchor" href="javascript:void(0)" (click)="closeDlg(0)">
         <i class="fas fa-times"></i></a></div>
 <div mat-dialog-content [innerHTML]="data.content" class="dialogText"></div>
 <div mat-dialog-actions>
@@ -8,14 +8,4 @@
         <button class="btn btn-primary mr-1" (click)="closeDlg(1)">{{data.firstButtonText}}</button>
         <button class="btn btn-secondary" (click)="closeDlg(2)">{{data.secondButtonText}}</button>
     </div>
-    <!-- <div class="container dialogActions">
-        <div class="row justify-content-between">
-            <div class="col-auto">
-                <button class="btn btn-primary" (click)="closeDlg(1)">{{data.firstButtonText}}</button>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-secondary" (click)="closeDlg(2)">{{data.secondButtonText}}</button>
-            </div>
-        </div>
-    </div> -->
 </div>

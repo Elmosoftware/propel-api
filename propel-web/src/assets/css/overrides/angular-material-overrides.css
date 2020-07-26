@@ -1187,10 +1187,10 @@ th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
 .mat-dialog-container {
   box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
   background: var(--colors-white) !important;
-  /* color: rgba(18, 52, 65, 0.87);  */
   color: var(--colors-primary) !important; 
   border-radius: 14px !important;
   padding: 0px !important;
+  overflow: hidden !important;
 }
 
 .mat-divider {

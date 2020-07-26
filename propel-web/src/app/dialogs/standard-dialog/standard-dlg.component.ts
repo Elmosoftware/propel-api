@@ -1,5 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { DialogResult } from 'src/core/dialog-result';
 
 @Component({
   selector: 'app-standard-dialog',
@@ -16,26 +17,26 @@ export class StandardDialogComponent implements OnInit {
   }
 
   closeDlg(id): void {
-    this.dialogRef.close(id);
+    this.dialogRef.close(new DialogResult<any>(id, null));
   }
 
   onNoClick(): void {
-    this.dialogRef.close(null);
+    this.dialogRef.close(new DialogResult<any>(0, null));
   }
 }
 
 export class StandardDialogConfiguration {
 
-    constructor(title:string, content:string, firstButtonText?:string, secondButtonText?:string) { 
-      this.title = (title) ? title : "Confiration required";
-      this.content = (content) ? content : "Are you sure to continue?";
-      this.firstButtonText = (firstButtonText) ? firstButtonText : "Ok";
-      this.secondButtonText = (secondButtonText) ? secondButtonText : "Cancel";
-    }
-  
-    title: string;
-    content: string;
-    firstButtonText: string;
-    secondButtonText: string;
+  constructor(title: string, content: string, firstButtonText?: string, secondButtonText?: string) {
+    this.title = (title) ? title : "Confiration required";
+    this.content = (content) ? content : "Are you sure to continue?";
+    this.firstButtonText = (firstButtonText) ? firstButtonText : "Ok";
+    this.secondButtonText = (secondButtonText) ? secondButtonText : "Cancel";
   }
-  
+
+  title: string;
+  content: string;
+  firstButtonText: string;
+  secondButtonText: string;
+}
+

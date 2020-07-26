@@ -16,3 +16,8 @@
 .search-btn {
     border: none;
 }
+
+.bar {
+    height: 6px;
+    background-color: var(--colors-primary);
+}

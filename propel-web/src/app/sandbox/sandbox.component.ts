@@ -9,6 +9,8 @@ import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard
 import { Entity, compareEntities } from '../../../../propel-shared/models/entity';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { Group } from '../../../../propel-shared/models/group';
+import { DialogResult } from 'src/core/dialog-result';
+import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
 
 // export function NoNameStartingWith(startText: string): ValidatorFn {
 //   return (control: AbstractControl): {[key: string]: any} | null => {
@@ -456,8 +458,9 @@ export class SandboxComponent implements OnInit {
       a <i>micorreo@email.com</i> con las instrucciones detalladas para crear tu nueva contraseña.
       <p class="mt-2 mb-0">Recuerda que el mensaje de cambio de contraseña tiene un tiempo de validez, pasado el cual, el correo
        ya no será válido y deberás volver a iniciar el proceso.</p>`,
-      "Si, deseo cambiar mi contraseña", "No, continuaré con la actual")).subscribe(result => {
-        alert(`Result is: "${String(result)}"`);
+      "Si, deseo cambiar mi contraseña", "No, continuaré con la actual"))
+      .subscribe((result: DialogResult<any>) => {
+        alert(`Result is: "${JSON.stringify(result)}".`);
       }, err => {
         throw err
       });
@@ -467,12 +470,23 @@ export class SandboxComponent implements OnInit {
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration( 
         "Confirmation required",
         `Do you confirm the action?`)
-      ).subscribe(result => {
-        alert(`Result is: "${String(result)}"`);
+      ).subscribe((result: DialogResult<any>) => {
+        alert(`Result is: "${JSON.stringify(result)}".`);
       }, err => {
         throw err
       });
   }
+
+  showEntityDialog() {
+    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(Group, new Group()))
+    .subscribe((results: DialogResult<Group>) => {
+      alert(`Result is: "${JSON.stringify(results)}".`);
+    },
+      err => {
+        throw err
+      });
+  }
+
 }
 
 class SampleData {

@@ -1,11 +1,19 @@
 import { ValidatorFn, AbstractControl } from '@angular/forms';
 
+/**
+ * Reactive Froms validation helper.
+ */
 export class ValidatorsHelper {
 
     constructor() {
-
     }
 
+    /**
+     * Prevents to have less that the specified amount of items in an array property.
+     * Is identical to "min" validator, but only for arrays in order to have specific 
+     * array error messages.
+     * @param min Minimum amount of items required.
+     */
     static minItems(min: number): ValidatorFn {
         return (control: AbstractControl): {[key: string]: any} | null => {
           let ret: any = null;
@@ -24,6 +32,12 @@ export class ValidatorsHelper {
         };
       }
     
+    /**
+     * Enforce to have no more than the specified amount of items in an array property.
+     * Is identical to "max" validator, but only for arrays in order to have specific 
+     * array error messages.
+     * @param max Maximum amount of items allowed.
+     */
       static maxItems(max: number): ValidatorFn {
         return (control: AbstractControl): {[key: string]: any} | null => {
           let ret: any = null;
@@ -41,7 +55,32 @@ export class ValidatorsHelper {
           return ret;
         };
       }
+
+      /**
+       * Validator specific for Fully qualified domain names.
+       */
+      static FQDN(): ValidatorFn {
+        return (control: AbstractControl): {[key: string]: any} | null => {
+          let ret: any = null;
+          let expression: RegExp = /^([a-zA-Z0-9._-])+$/ig
+
+          if (!expression.test(String(control.value))) {
+            ret = {
+              'FQDN': {
+                value: control.value 
+              }
+            }
+          }
+
+          return ret;
+        };
+      }
     
+      /**
+       * Returns the validation error text for the supplied control.
+       * Thi methis returns an empty string if "control" is a null reference or is not invalid.
+       * @param control Control
+       */
       static getErrorText(control: AbstractControl): string {
         let ret: string = "";
         
@@ -80,6 +119,9 @@ export class ValidatorsHelper {
             ret = `You can select a maximum of ${control.errors.maxItems.requiredLength} items from the list.
             (Need to remove at least ${control.errors.maxItems.actualLength - control.errors.maxItems.requiredLength} items).`
           }      
+        }
+        else if (control.errors.FQDN && control.touched) {
+          ret = "The fully Qualified Domain Name entered, doesn't seem to be valid. Please check that meets the required format. (e.g.: myserver.mydomain.com)"
         }
     
         return ret;

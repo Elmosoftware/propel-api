@@ -1,0 +1,56 @@
+<div class="container mt-2">
+    <form [formGroup]="fh.form" (ngSubmit)="save()">
+        <div class="form-group">
+            <label for="FQDN" class="data-required">Fully Qualified Domain Name</label>
+            <input type="text" class="form-control" id="FQDN" aria-describedby="FQDN"
+                placeholder="Enter the server full name, (e.g.: myserver.mydomain.com)" formControlName="FQDN" required>
+            <app-validation-message [control]="fh.form.controls.FQDN"></app-validation-message>            
+        </div>
+        <div class="form-group">
+            <label for="friendlyName" class="data-required">Friendly name</label>
+            <input type="text" class="form-control" id="friendlyName" aria-describedby="friendlyName"
+                placeholder="Enter a friendly name, (usually a shorter one)." formControlName="friendlyName" required>
+            <app-validation-message [control]="fh.form.controls.friendlyName"></app-validation-message>            
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" aria-describedby="description"
+                placeholder="Enter here some brief description of the server, something that could help to identify his purpose easily."
+                rows="3" formControlName="description"></textarea>
+            <app-validation-message [control]="fh.form.controls.description"></app-validation-message>            
+        </div>
+        <div class="form-group">
+            <label class="mr-2" for="groups">Groups</label>
+            <button class="btn btn-primary plus-button-small" type="button" [disabled]="fh.form.disabled" (click)="addGroup()">
+                <i class="fas fa-plus"></i>
+            </button>
+            <ng-select #groups [items]="allGroups" [multiple]="true" labelForId="groups" [closeOnSelect]="false"
+                [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name" clearAllText="Clear"
+                [compareWith]="compareFn"
+                placeholder="Select all the applicable groups for this server. If not there, you can create a new one."
+                formControlName="groups">
+            </ng-select>
+            <app-validation-message [control]="fh.form.controls.groups"></app-validation-message>            
+        </div>
+        <div class="form-group">
+            <label class="mr-2 w-100">Availability</label>
+            <div class="d-flex justify-content-center">
+                <label class="mr-2 mt-1 text-mini">Disabled for now</label>
+                <mat-slide-toggle color="primary" id="enabled" formControlName="enabled">
+                </mat-slide-toggle>
+                <label class="ml-2 mt-1 text-mini">Ready to use.</label>
+            </div>
+            <app-validation-message [control]="fh.form.controls.enabled"></app-validation-message>            
+        </div>
+        <div class="form-group">
+            <hr class="my-4">
+            <div class="d-flex">
+                <div class="mr-auto">
+                    <button *ngIf="showAddNewButton" class="btn btn-secondary" type="button" (click)="newItem()">Add new</button>
+                </div>                
+                <button class="btn btn-primary ml-2" type="submit" [disabled]="!fh.form.valid">Save</button>
+                <button class="btn btn-primary ml-2" type="button" [disabled]="fh.form.pristine" (click)="fh.resetForm()">Cancel</button>
+            </div>
+        </div>
+    </form>
+</div>

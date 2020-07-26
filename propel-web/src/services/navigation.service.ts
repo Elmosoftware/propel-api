@@ -8,7 +8,8 @@ import { logger } from "../../../propel-shared/services/logger-service";
 export const enum PAGES {
     Home = "home",
     Run = "run",
-    Sandbox = "sandbox"
+    Sandbox = "sandbox",
+    Target = "target"
 }
 
 /**
@@ -22,29 +23,15 @@ export class NavigationService {
     private _requestCounter: number = 0;
     private httpRequestCountEmitter$: EventEmitter<number> = new EventEmitter<number>();
 
+    /**
+     * Returns the amount of requests currently in progress.
+     */
     get requestCounter(): number {
         return this._requestCounter;
     }
 
     constructor(private router: Router) {
         logger.logInfo("Navigationservice instance created")
-    }
-
-    parsePageURL(url: UrlSegment): PAGES {
-
-        if (url && url.path) {
-            switch (url.path.toLowerCase()) {
-                case PAGES.Home:
-                    return PAGES.Home
-                case PAGES.Sandbox:
-                    return PAGES.Sandbox
-                default:
-                    throw new Error(`Page "${url.path.toLowerCase()}" is not been defined yet in PAGES enumeration.`)
-            }
-        }
-        else {
-            throw new Error(`Invalid URL segment sent.`);
-        }
     }
 
     httpReqStarted() {
@@ -61,16 +48,39 @@ export class NavigationService {
         this.httpRequestCountEmitter$.emit(this._requestCounter);
     }
 
+    /**
+     * Subscribe to the request count event emitter.
+     */
     getHttpRequestCountSubscription(): EventEmitter<number> {
         return this.httpRequestCountEmitter$;
     }
 
+    /**
+     * Navigate to Home page.
+     */
     toHome(): void {
         this.router.navigate([this.getRelativePath(PAGES.Home)]);
     }
     
+    /**
+     * Navigate to Run page.
+     * @param workflowId Workflow to run
+     */
     toRun(workflowId: string): void {
         this.router.navigate([this.getRelativePath(PAGES.Run), workflowId]);
+    }
+
+    /**
+     * Allows to create or edit a target.
+     * @param targetId Target to edit.
+     */
+    toTarget(targetId?: string): void {
+        if (targetId) {
+            this.router.navigate([this.getRelativePath(PAGES.Target), targetId]);
+        }
+        else {
+            this.router.navigate([this.getRelativePath(PAGES.Target)]);
+        }
     }
 
     toSandbox(): void {

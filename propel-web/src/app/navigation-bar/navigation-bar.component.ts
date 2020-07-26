@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
 
@@ -9,13 +10,24 @@ import { CoreService } from 'src/services/core.service';
 })
 export class NavigationBarComponent implements OnInit {
 
-  constructor(private core: CoreService) {
+  constructor(private core: CoreService, private route: ActivatedRoute) {
   }
 
+  loading: boolean;
+
   ngOnInit(): void {
+
+    this.core.navigation.getHttpRequestCountSubscription()
+      .subscribe((counter: number) => {
+          this.loading = counter > 0;
+      })
   }
 
   goToHome() {
     this.core.navigation.toHome();
+  }
+
+  goToTarget() {
+    this.core.navigation.toTarget();
   }
 }

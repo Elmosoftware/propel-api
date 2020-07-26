@@ -146,13 +146,11 @@ button:focus {
 }
   
 .btn-danger:hover {
-    /* color: var(--colors-danger); */
     background-color: var(--btn-danger-hover-background);
     border-color: transparent;
 }
 
 .btn-danger:focus, .btn-danger.focus {
-    /* color: var(--colors-danger); */
     background-color: var(--btn-danger-focus-background);
     border: var(--btn-danger-focus-border);
     box-shadow: none;
@@ -160,7 +158,6 @@ button:focus {
 
 .btn-danger:not(:disabled):not(.disabled):active, .btn-danger:not(:disabled):not(.disabled).active,
 .show > .btn-danger.dropdown-toggle {
-    /* color: var(--colors-danger); */
     background-color: var(--colors-danger);
     border-color: transparent;
 }
@@ -199,6 +196,10 @@ button:focus {
     color: var(--colors-primary);
     border-color: var(--colors-highlight);
     box-shadow: none;
+}
+
+.form-control:disabled, .form-control[readonly] {
+    background-color: var(--colors-soft-disabled);
 }
 
 .custom-control-input:checked ~ .custom-control-label::before {

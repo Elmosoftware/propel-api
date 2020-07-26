@@ -21,6 +21,7 @@
     --colors-dark-border: #6c757d;
     --colors-white: #ffff;
     --colors-disabled: #92b0bb;
+    --colors-soft-disabled: #bbd3dc;
     --colors-danger: #ff7878;
     /* --colors-danger-darker: #ff5b5b; */
     --colors-danger-darker: #f54a44;
@@ -66,7 +67,9 @@
     --list-border: 1px solid var(--colors-soft-border);
   }
   
-html, body { height: 100%; } /* Added by Angular material */
+html, body { 
+    height: 100%; 
+} /* Added by Angular material */
 
 body{
     font-family: "Roboto", "Trebuchet MS", sans-serif;
@@ -84,7 +87,7 @@ body{
 }
 
 .text-mini {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
 }
 
 /* 
@@ -92,7 +95,22 @@ body{
   ==========================================================
 */
 
+hr {
+    border-color: var(--colors-primary);
+    border-width: medium;
+}
+
 input::placeholder {
+    color: var(--colors-soft-primary) !important;
+    font-size: .75rem !important;
+    font-style: italic !important;
+}
+
+input:disabled {
+    background-color: var(--colors-soft-disabled);
+}
+
+textarea::placeholder {
     color: var(--colors-soft-primary) !important;
     font-size: .75rem !important;
     font-style: italic !important;
@@ -122,6 +140,12 @@ input::placeholder {
     display: inline-block;
     font-weight: 900;
     margin-right: 4px;
+}
+
+.plus-button-small{
+    font-size: .5rem;
+    padding: 0px 3px;
+    margin-bottom: 1px;
 }
 
 /* 

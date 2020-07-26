@@ -18,7 +18,7 @@ export class LoaderInterceptor implements HttpInterceptor {
         return next.handle(req)
             .pipe(
                 //Coment out below line to test delaying requests:
-                delay(3000),
+                // delay(2000),
                 finalize(() => {
                     this.nav.httpReqEnded();
                 })

@@ -17,7 +17,7 @@
           <a class="nav-link" href="#">Script</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Target</a>
+          <a class="nav-link" href="javascript:void(0)" (click)="goToTarget()">Target</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">History</a>
@@ -43,3 +43,6 @@
       </div>
     </div>
   </nav>
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" color="accent"></mat-progress-bar>
+  <div class="bar"></div>
+            <!-- <mat-progress-bar mode="determinate" color="" value="100"></mat-progress-bar> -->

@@ -4,6 +4,8 @@ import { PAGES } from "./services/navigation.service";
 import { SandboxComponent } from './app/sandbox/sandbox.component';
 import { HomeComponent } from './app/home/home.component';
 import { RunComponent } from './app/run/run.component';
+import { TargetComponent } from './app/target/target.component';
+import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
 
 const routes: Routes = [
   {
@@ -15,15 +17,31 @@ const routes: Routes = [
     path: PAGES.Home,
     component: HomeComponent,
     data: {
-      title: "Inicio"
+      title: "Home"
     }
   },
   {
     path: `${PAGES.Run}/:id`,
     component: RunComponent,
     data: {
-      title: "Inicio"
+      title: "Run"
     }
+  },
+  {
+    path: PAGES.Target,
+    component: TargetComponent,
+    data: {
+      title: "New Target"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: `${PAGES.Target}/:id`,
+    component: TargetComponent,
+    data: {
+      title: "Editing Target"
+    },
+    canDeactivate: [DataLossPreventionGuard]
   },
   {
     path: PAGES.Sandbox,
