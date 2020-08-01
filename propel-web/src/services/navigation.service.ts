@@ -9,7 +9,8 @@ export const enum PAGES {
     Home = "home",
     Run = "run",
     Sandbox = "sandbox",
-    Target = "target"
+    Target = "target",
+    Script = "script"
 }
 
 /**
@@ -80,6 +81,19 @@ export class NavigationService {
         }
         else {
             this.router.navigate([this.getRelativePath(PAGES.Target)]);
+        }
+    }
+
+    /**
+     * Allows to create or edit a script.
+     * @param scriptId Script to edit.
+     */
+    toScript(scriptId?: string): void {
+        if (scriptId) {
+            this.router.navigate([this.getRelativePath(PAGES.Script), scriptId]);
+        }
+        else {
+            this.router.navigate([this.getRelativePath(PAGES.Script)]);
         }
     }
 

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { WebsocketService } from './websocket.service';
 import { Observable } from 'rxjs';
 import { InvocationMessage, InvocationStatus } from '../../../propel-shared/core/invocation-message';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class RunnerService {
    * @param workflowId Workflow ID
    */
   execute(workflowId: string): Observable<InvocationMessage> {
-    this._socket = new WebsocketService<any>("ws://localhost:3000/api/run/dddd");
+    this._socket = new WebsocketService<any>(this.buildURL(workflowId));
     return this._socket.connect();
   }
 
@@ -36,5 +37,9 @@ export class RunnerService {
       m = new InvocationMessage((kill) ? InvocationStatus.UserActionKill : InvocationStatus.UserActionCancel, "");
       this._socket.send(m);
     }
+  }
+
+  private buildURL(workflowId: string) {
+    return `ws://${environment.api.url}${environment.api.endpoint.run}${workflowId}`
   }
 }

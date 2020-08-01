@@ -2,6 +2,7 @@
 @import "./assets/css/overrides/ngx-toaster-overrides.css";
 @import "./assets/css/overrides/angular-material-overrides.css";
 @import "./assets/css/overrides/ng-select-overrides.css";
+@import "./assets/css/overrides/prism-overrides.css";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
 
 /* 
@@ -63,7 +64,7 @@
     --badge-secondary-background: #2B9DC6;
     /* Lists */
     --list-color: #fff;
-    --list-background: #fff;
+    --list-background: #e0ecf7;
     --list-border: 1px solid var(--colors-soft-border);
   }
   
@@ -186,22 +187,12 @@ textarea::placeholder {
 }
 
 .spinner-custom mat-progress-spinner:nth-child(1) > svg > circle {
-    /* fill: yellow !important; */
-    /* stroke-dasharray: 252px !important;
-    stroke-width: 10% !important;
-    r: 40 !important; */
     animation-duration: 12000ms !important;
     -webkit-animation-duration: 12000ms !important;
 }
 
 .spinner-custom mat-progress-spinner:nth-child(2) > svg > circle {
-    /* fill: var(--colors-background) !important; */
     fill: var(--colors-disabled);
-    /* stroke-dasharray: 252px !important;
-    stroke-width: 10% !important;
-    r: 40 !important; */
-    /* animation-duration: 11000ms !important;
-    -webkit-animation-duration: 11000ms !important; */
 }
 
 .spinner-custom div {
@@ -212,4 +203,12 @@ textarea::placeholder {
     font-weight: 500;
     font-size: 1.4rem;
     color: var(--colors-white);
+}
+
+/* Prism */
+
+.token.dark-string
+{
+    color: #8DBF2A;
+    font-weight: 500;
 }

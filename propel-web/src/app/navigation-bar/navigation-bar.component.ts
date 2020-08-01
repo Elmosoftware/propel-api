@@ -30,4 +30,8 @@ export class NavigationBarComponent implements OnInit {
   goToTarget() {
     this.core.navigation.toTarget();
   }
+
+  goToScript() {
+    this.core.navigation.toScript();
+  }
 }

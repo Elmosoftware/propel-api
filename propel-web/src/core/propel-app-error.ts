@@ -11,31 +11,11 @@ export class PropelAppError extends PropelError {
         super(error, errorCode);
 
         let userMessage: string = "";
-
-        this.timestamp = new Date()
-
-        // if (typeof error != "string") {
-        //     this.error = error;
-        // }
-
+        this.timestamp = new Date();
         this.location = location.href;
 
         //Filling Inner exceptions recursively:
         this._FillInnerExceptions(error)
-
-        // //We need now to check for user error codes. If the code is in the error:
-        // if ((error as PropelError).errorCode) {
-        //     userMessage = (error as PropelError).errorCode.userMessage;
-        // }
-        // else {
-        //     //We must check on the inner exceptions for user error codes:
-        //     this.innerExceptions.forEach(inner => {
-        //         if ((inner as PropelError).errorCode) {
-        //             userMessage = (inner as PropelError).errorCode.userMessage;
-        //             return;
-        //         }
-        //     })
-        // }
 
         if (typeof error == "object") {
             if (error.name && error.name == "HttpErrorResponse") {
@@ -62,11 +42,6 @@ export class PropelAppError extends PropelError {
                     this.httpStatusText = `Websocket connection closed unexpectedly. Code:${error.code}.`;
                 }
             }          
-
-            // //If the error is related to some request that went wrong, we note this to the user:
-            // if (!userMessage) {
-            //     userMessage = "There was a connectivity error, please retry the operation later."
-            // }
         }
 
         this.userMessage = userMessage;

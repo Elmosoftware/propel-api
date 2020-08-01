@@ -1,0 +1,172 @@
+<div class="container-fluid mt-2">
+    <mat-tab-group [selectedIndex]="activeTab" (selectedIndexChange)="activeTabChanged($event)"
+        backgroundColor="primary" color="primary">
+        <mat-tab label="Details" [disabled]="isTabDisabled(0)">
+            <div class="mt-2">
+                <form [formGroup]="fh.form">
+                    <div class="form-group">
+                        <label for="name" class="data-required">Script name</label>
+                        <input type="text" class="form-control" id="name" aria-describedby="name"
+                            placeholder="Enter the script name." formControlName="name" required>
+                        <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" aria-describedby="description"
+                            placeholder="Try to briefly describe the script intention and his relevant details."
+                            rows="4" formControlName="description"></textarea>
+                        <app-validation-message [control]="fh.form.controls.description"></app-validation-message>
+                    </div>
+                    <div class="form-group">
+                        <label class="mr-2 w-100">Is targetting&nbsp;&hellip;</label>
+                        <div class="d-flex justify-content-center">
+                            <label class="mr-2 mt-1 text-mini">Servers, (like Web servers, Database servers,
+                                etc.)</label>
+                            <mat-slide-toggle color="primary" id="isTargettingServers"
+                                formControlName="isTargettingServers">
+                            </mat-slide-toggle>
+                            <label class="ml-2 mt-1 text-mini">Services, (like Web services, LDAP queries to AD, etc.)
+                            </label>
+                        </div>
+                        <app-validation-message [control]="fh.form.controls.isTargettingServers">
+                        </app-validation-message>
+                    </div>
+                    <div class="form-group">
+                        <label class="mr-2" for="category">Category</label>
+                        <button class="btn btn-primary plus-button-small" type="button" [disabled]="fh.form.disabled"
+                            (click)="addCategory()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <ng-select #category [items]="allCategories" [multiple]="false" labelForId="category"
+                            [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id"
+                            bindLabel="name" clearAllText="Clear" [compareWith]="compareFn"
+                            placeholder="Select the script category that fits or create a new one."
+                            formControlName="category">
+                        </ng-select>
+                        <app-validation-message [control]="fh.form.controls.category"></app-validation-message>
+                    </div>
+                    <div class="form-group">
+                        <label class="mr-2 w-100">Impact</label>
+                        <div class="d-flex justify-content-center">
+                            <label class="mr-2 mt-1 text-mini">This script is going to change some state, data or
+                                configuration.</label>
+                            <mat-slide-toggle color="primary" id="readonly" formControlName="readonly">
+                            </mat-slide-toggle>
+                            <label class="ml-2 mt-1 text-mini">This script is not changing any state, just reads
+                                informations.</label>
+                        </div>
+                        <app-validation-message [control]="fh.form.controls.readonly"></app-validation-message>
+                    </div>
+                    <div class="form-group">
+                        <hr class="my-4">
+                        <div class="d-flex">
+                            <div class="mr-auto">
+                            </div>
+                            <button class="btn btn-primary ml-2" type="button" [disabled]="!readyForNextTab()"
+                                (click)="next()">Move to next</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </mat-tab>
+        <mat-tab label="Code" [disabled]="isTabDisabled(1)">
+            <div class="row justify-content-center mt-2 mr-0">
+                <div class="col">
+                    <app-file-dropper (filesDropped)="handleFileDrop($event)" [progress]="uploadProgress"
+                        [enabled]="uploadEnabled"></app-file-dropper>
+                </div>
+            </div>
+            <div class="row justify-content-center mr-0" *ngIf="invalidFileMessage">
+                <div class="col col-lg-8">
+                    <div class="alert alert-dismissible fade show alert-danger" role="alert">
+                        <strong>A problem was found with the recent upload operation</strong>.
+                        <p>
+                            {{ invalidFileMessage }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="scriptCode" class="row mt-2 mr-0">
+                <div class="col-lg"><pre class="language-powershell code-viewer"><code [innerHtml]="highlightedCode">
+                </code></pre></div>
+                <div class="col-lg mt-2" [ngClass]="{
+                    'col-lg-12': scriptParameters.length == 0
+                }">
+                    <div *ngIf="scriptParameters && scriptParameters.length > 0; else noParams">
+                        <app-script-parameters [parameters]="scriptParameters"></app-script-parameters>
+                    </div>
+                    <ng-template #noParams>
+                        <div *ngIf="!invalidFileMessage" class="alert alert-dismissible fade show alert-info" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <strong>Seems like the script has no parameters defined.</strong> At least we couldn't
+                            identify any.
+                            <p>
+                                If this is not expected, please verify the script integrity before to continue.
+                            </p>
+                        </div>
+                    </ng-template>
+                </div>
+            </div>
+            <div class="form-group">
+                <hr class="my-4">
+                <div class="d-flex">
+                    <button class="btn btn-primary" type="button" (click)="back()">Back to previous</button>
+                    <div class="mr-auto">
+                    </div>
+                    <button class="btn btn-primary" type="button" [disabled]="!readyForNextTab()" (click)="next()">Move
+                        to next</button>
+                </div>
+            </div>
+        </mat-tab>
+        <mat-tab label="Finish" [disabled]="isTabDisabled(2)">
+            <div class="mt-2">
+                <div *ngIf="!completed; else completedForm">
+                    <div class="row justify-content-center mr-0">
+                        <div class="col col-lg-8">
+                            <div class="alert alert-dismissible fade show alert-info" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                                <strong>You are almost done!</strong>
+                                <p>
+                                    You can go back to double check everything or click the below button to save your changes.
+                                </p>
+                            </div>
+                        </div>
+                    </div>                    
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-primary" type="button" (click)="save()">Save</button>
+                    </div>
+                </div>
+                <ng-template #completedForm>
+                    <div class="row justify-content-center mr-0">
+                        <div class="col col-lg-8">
+                            <div class="alert alert-dismissible fade show alert-info" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                                <strong>Your changes has been saved successfully!</strong>
+                                <p>
+                                    If you want to add another script, you can click the below button.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-primary" type="button" (click)="addAnother()">Add another script</button>
+                    </div>          
+                </ng-template>
+                <div class="form-group">
+                    <hr class="my-4">
+                    <div class="d-flex">
+                        <button class="btn btn-primary" type="button" (click)="back()" [disabled]="completed">Back to previous</button>
+                        <div class="mr-auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+</div>

@@ -6,6 +6,7 @@ import { HomeComponent } from './app/home/home.component';
 import { RunComponent } from './app/run/run.component';
 import { TargetComponent } from './app/target/target.component';
 import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
+import { ScriptComponent } from './app/script/script.component';
 
 const routes: Routes = [
   {
@@ -40,6 +41,22 @@ const routes: Routes = [
     component: TargetComponent,
     data: {
       title: "Editing Target"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: PAGES.Script,
+    component: ScriptComponent,
+    data: {
+      title: "New Script"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: `${PAGES.Script}/:id`,
+    component: ScriptComponent,
+    data: {
+      title: "Editing Script"
     },
     canDeactivate: [DataLossPreventionGuard]
   },

@@ -394,8 +394,7 @@ class Schemas {
                     }),
                 new SchemaField("defaultValue", `The parameter default value.`,
                     {
-                        type: String,
-                        isRequired: true
+                        type: String
                     }),
                 new SchemaField("hasDefault", `Indicates if the parameter has set a default value.`,
                     {

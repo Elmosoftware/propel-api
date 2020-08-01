@@ -29,6 +29,7 @@ import { DialogService } from "./services/dialog.service";
 import { RunnerService } from './services/runner.service';
 import { LoaderInterceptor } from './core/loader-interceptor';
 import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
+import { PSParametersInferrerService } from "./services/ps-parameters-inferrer.service";
 
 //Dialogs
 import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
@@ -44,6 +45,9 @@ import { RunComponent } from './app/run/run.component';
 import { TargetComponent } from './app/target/target.component';
 import { EntityDialogComponent } from './app/dialogs/entity-group-dlg/entity-dlg.component';
 import { ValidationMessageComponent } from './app/validation-message/validation-message.component';
+import { ScriptComponent } from './app/script/script.component';
+import { FileDropperComponent } from './app/file-dropper/file-dropper.component';
+import { ScriptParametersComponent } from './app/script-parameters/script-parameters.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +60,10 @@ import { ValidationMessageComponent } from './app/validation-message/validation-
     StatusIconComponent,
     TargetComponent,
     EntityDialogComponent,
-    ValidationMessageComponent
+    ValidationMessageComponent,
+    ScriptComponent,
+    FileDropperComponent,
+    ScriptParametersComponent
   ],
   imports: [
     BrowserModule,
@@ -90,7 +97,8 @@ import { ValidationMessageComponent } from './app/validation-message/validation-
     DialogService,
     CoreService,
     { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
-    DataLossPreventionGuard
+    DataLossPreventionGuard,
+    PSParametersInferrerService
   ],
   entryComponents: [
     StandardDialogComponent

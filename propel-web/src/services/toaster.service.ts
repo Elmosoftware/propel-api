@@ -2,6 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { PropelAppError } from "../core/propel-app-error";
 import { logger } from "../../../propel-shared/services/logger-service";
+import { PropelError } from '../../../propel-shared/core/propel-error';
 
 const STDERRMSG = "Something wrong happened. Please retry the operation later.";
 
@@ -38,8 +39,16 @@ export class ToasterService {
                         title = "Please verify ..."
                     }
                     else if (typeof messageOrError == "object" && (messageOrError as PropelAppError).isHTTPError) {
-                        messageOrError = "Please verify your internet connectivity. We have issues connecting to remote server.";
-                        title = "Connectivity issue ..."
+                        let err: PropelAppError = (messageOrError as PropelAppError);
+
+                        if (Number(err.httpStatus) == 400) {
+                            messageOrError = "Seems like the last operation failed because of the provided data. Please verify the submitted data and do the required changes before to retry.";
+                            title = "Data issues ..."
+                        }
+                        else {
+                            messageOrError = "Please verify your internet connectivity. We have issues connecting to remote server.";
+                            title = "Connectivity issue ..."
+                        }                        
                     }
                     else if (typeof messageOrError == "object" && (messageOrError as PropelAppError).isWSError) {
                         messageOrError = "We got disconnected unexpectedly. The operation will continue anyway, please check later the results.";

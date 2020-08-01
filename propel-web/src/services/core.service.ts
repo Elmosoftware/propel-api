@@ -1,5 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Title } from '@angular/platform-browser'
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { PropelAppError } from "../core/propel-app-error";
 import { logger } from "../../../propel-shared/services/logger-service";
@@ -10,6 +12,10 @@ import { RunnerService } from './runner.service';
 import { DialogService } from "./dialog.service";
 import { DataService } from "./data.service";
 import { environment } from "../environments/environment";
+import { StandardDialogConfiguration } from 'src/app/dialogs/standard-dialog/standard-dlg.component';
+import { FormHandler } from 'src/core/form-handler';
+import { DialogResult } from 'src/core/dialog-result';
+import { PSParametersInferrerService } from './ps-parameters-inferrer.service';
 
 /**
  * This core class help inject common services to the app. 
@@ -30,7 +36,8 @@ export class CoreService {
     private injToast: ToasterService,
     private injRun: RunnerService,
     private injDlg: DialogService,
-    private injData: DataService) {
+    private injData: DataService,
+    private injInfer: PSParametersInferrerService) {
     logger.logInfo("CoreService instance created")
     this._init()
   }
@@ -59,6 +66,10 @@ export class CoreService {
     return this.injData;
   }
 
+  get psParametersinferrer(): PSParametersInferrerService {
+    return this.injInfer;
+  }
+
   getPageTitle(): string {
     return this.injTitle.getTitle();
   }
@@ -75,6 +86,33 @@ export class CoreService {
     }
 
     this.injTitle.setTitle(`${environment.appName} v${environment.appVersion}${(title) ? " - " + title : ""}`);
+  }
+
+  /**
+   * If the form is dirty, calling this method when a page redirection occurs will display a 
+   * dialog so the user can choose if is ok the data to be discarded.
+   * @param fh FormHandler instance with the current form status.
+   */
+  dataChanged(fh: FormHandler<any>): boolean | Observable<boolean> | Promise<boolean> {
+
+    //If some of the data has been modified but not saved yet:
+    if (fh && fh.form && fh.form.dirty) {
+
+      return this.injDlg.showConfirmDialog(new StandardDialogConfiguration(
+        "Changes will be discarded!",
+        `You have unsaved changes that will be lost if you continue.`,
+        "Yes, please discard this changes", "No, i would like to continue editing."))
+        .pipe(
+          map((value: DialogResult<any>) => {
+            //If the user clicks first button, means we can deactivate the component even loosing data:
+            return (value.button == 1)
+          })
+        );
+    }
+    else {
+      //If there is no modified data, we can deactivate the component safely:
+      return true;
+    }
   }
 
   private _init() {

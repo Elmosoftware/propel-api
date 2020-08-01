@@ -77,25 +77,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
   compareFn: Function = compareEntities;
 
   dataChanged(): boolean | Observable<boolean> | Promise<boolean> {
-
-    //If some of the data has been modified but not saved yet:
-    if (this.fh.form.dirty) {
-
-      return this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
-        "Changes will be discarded!",
-        `You have unsaved changes that will be lost if you continue.`,
-        "Yes, please discard this changes", "No, i would like to continue editing."))
-        .pipe(
-          map((value: DialogResult<any>) => {
-            //If the user clicks first button, means we can deactivate the component even loosing data:
-            return (value.button == 1)
-          })
-        );
-    }
-    else {
-      //If there is no modified data, we can deactivate the component safely:
-      return true;
-    }
+    return this.core.dataChanged(this.fh);
   }
 
   ngOnInit(): void {

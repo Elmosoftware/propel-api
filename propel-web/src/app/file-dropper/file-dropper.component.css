@@ -1,0 +1,47 @@
+.file-dropper-dropZone {
+    background-image: url(../../assets/img/pslogo.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    min-height: 200px;
+    max-height: 200px;
+    min-width: 200px;
+    max-width: fit-content;
+    overflow: hidden;
+}
+
+.file-dropper-icon{
+    position: relative;
+    top: 12px;
+    margin: auto;
+}
+
+.file-dropper-message {
+    position: relative;
+    bottom: -90px;
+}
+
+.file-dropper-progress{
+    position: relative;
+    top: 13px;
+    margin: auto;
+}
+
+.file-dropper-progress-message {
+    font-size: .75rem;
+    position: relative;
+    bottom: -25px;
+}
+
+.file-dropper-disabled{
+    filter: grayscale(1) opacity(0.5);
+}
+
+.file-dropper-active {
+    cursor: crosshair;
+}
+
+.file-dropper-inactive{
+    filter: brightness(.95);
+    opacity: .7;
+}

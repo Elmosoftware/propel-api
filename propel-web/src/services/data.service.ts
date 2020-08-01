@@ -7,6 +7,7 @@ import { QueryModifier } from '../../../propel-shared/core/query-modifier';
 import { environment } from 'src/environments/environment';
 import { APIResponse } from "../../../propel-shared/core/api-response";
 import { APIRequest, APIRequestAction } from "../../../propel-shared/core/api-request";
+import { logger } from '../../../propel-shared/services/logger-service';
 
 /**
  * Data service
@@ -17,7 +18,7 @@ import { APIRequest, APIRequestAction } from "../../../propel-shared/core/api-re
 export class DataService {
 
   constructor(private http: HttpClient) { 
-
+    logger.logInfo("DataService instance created")
   }
 
   /**
@@ -97,7 +98,7 @@ export class DataService {
   }
 
   private buildURL<T extends Entity>(entityType: { new (): T }) {
-    return `${environment.api.url}${environment.api.endpoint.data}${entityType.name.toLowerCase()}`
+    return `http://${environment.api.url}${environment.api.endpoint.data}${entityType.name.toLowerCase()}`
   }
 
   private buildHeaders(): HttpHeaders {

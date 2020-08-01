@@ -1,0 +1,31 @@
+<div class="container d-flex justify-content-center">
+    <div class="row align-items-center file-dropper-dropZone"
+        [ngClass]="{
+            'file-dropper-active': (isHover && enabled), 
+            'file-dropper-inactive': (!isHover && enabled), 
+            'file-dropper-disabled': !enabled
+        }">
+        <div *ngIf="uploadInProgress; else noProgress" [@ResetingForm]="!isReseting ? 'start' : 'finish'"
+            (@ResetingForm.done)="autoResetDone($event)" class="col text-center">
+            <progress class="progress file-dropper-progress is-success" min=1 max=100 value="{{ progress }}"></progress>
+            <div class="file-dropper-progress-message">{{ progress }}% completed.</div>
+        </div>
+        <ng-template #noProgress>
+            <div *ngIf="enabled; else notEnabled" class="col text-center">
+                <div *ngIf="isHover; else notHover">
+                    <!-- <i class="fas fa-5x fa-angle-double-up file-dropper-icon"></i> -->
+                    <div class="file-dropper-message text-mini">Drop it now!</div>
+                </div>
+                <ng-template #notHover>
+                    <div class="file-dropper-message text-mini">Drop your script here!</div>
+                </ng-template>
+            </div>
+            <ng-template #notEnabled>
+                <div class="col text-center">
+                    <!-- <i class="fas fa-5x fa-ban file-dropper-icon"></i> -->
+                    <div class="file-dropper-message text-mini">You can't drop files right now.</div>
+                </div>
+            </ng-template>
+        </ng-template>
+    </div>
+</div>
