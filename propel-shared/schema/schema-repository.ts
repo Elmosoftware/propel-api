@@ -8,25 +8,30 @@ import { schemas } from "./schemas";
  */
 export class SchemaRepository {
 
-    private _entitySchemas: Readonly<SchemaDefinition>[] = [];
+    private _schemas: Readonly<SchemaDefinition>[] = [];
 
     constructor(s: Readonly<SchemaDefinition>[] | SchemaDefinition[]) {
-        this._entitySchemas = s;
+        this._schemas = s;
     }
 
     /**
-     * Schema collection.
+     * Retrieves a collection of all the Entity schemas.
      */
     get entitySchemas(): Readonly<SchemaDefinition>[] {
-        return this._entitySchemas;
+        return this._schemas.filter((s: Readonly<SchemaDefinition>) => s.isEntity)
     }
 
-    getEntitySchemaByName(name: string): Readonly<SchemaDefinition> {
-        let ret = this._entitySchemas.find((s) => s.name.toLowerCase() == name.toLowerCase());
+    /**
+     * Return the requested schema. If the nam doesn't exists an error will be throw.
+     * @param name Name of the schema to find.
+     */
+    getSchemaByName(name: string): Readonly<SchemaDefinition> {
 
-        if (!ret) {
-            throw new PropelError(`There is no schema with name "${name}".`);
-        }
+        let ret: Readonly<SchemaDefinition> | undefined;
+
+        ret = this._schemas.find((s) => s.name.toLowerCase() == name.toLowerCase());
+
+        if (!ret) throw new PropelError(`There is no schema with name "${name}".`);
 
         return ret;
     }
@@ -35,8 +40,8 @@ export class SchemaRepository {
      * Returns the amount of schemas stored in the repository.
      */
     get count(): number {
-        return this._entitySchemas.length;
+        return this._schemas.length;
     }
 }
 
-export let schemaRepo: SchemaRepository = new SchemaRepository(schemas.getEntitySchemas());
+export let schemaRepo: SchemaRepository = new SchemaRepository(schemas.getSchemas());

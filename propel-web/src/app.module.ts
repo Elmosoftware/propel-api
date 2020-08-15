@@ -48,6 +48,8 @@ import { ValidationMessageComponent } from './app/validation-message/validation-
 import { ScriptComponent } from './app/script/script.component';
 import { FileDropperComponent } from './app/file-dropper/file-dropper.component';
 import { ScriptParametersComponent } from './app/script-parameters/script-parameters.component';
+import { QuickTaskComponent } from './app/quick-task/quick-task.component';
+import { WorkflowStepComponent } from './app/workflow-step/workflow-step.component';
 
 @NgModule({
   declarations: [
@@ -63,7 +65,9 @@ import { ScriptParametersComponent } from './app/script-parameters/script-parame
     ValidationMessageComponent,
     ScriptComponent,
     FileDropperComponent,
-    ScriptParametersComponent
+    ScriptParametersComponent,
+    QuickTaskComponent,
+    WorkflowStepComponent
   ],
   imports: [
     BrowserModule,

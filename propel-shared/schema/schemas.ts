@@ -6,7 +6,25 @@ import { SchemaField } from "./schema-field";
  */
 class Schemas {
 
+    private _allSchemas: Readonly<SchemaDefinition>[];
+
     constructor() {
+        //We will only exclude entity and auditedEntity on the all Schemas list: 
+        this._allSchemas = [
+            this.user,
+            this.category,
+            this.group,
+            this.script,
+            this.target,
+            this.workflow,
+            this.executionLog,
+            this.scriptParameter,
+            this.parameterValue,
+            this.workflowStep,
+            this.executionError,
+            this.executionTarget,
+            this.executionStep
+        ]
     }
 
     //#region Base schema definition
@@ -271,6 +289,11 @@ class Schemas {
                         type: Boolean,
                         isRequired: true
                     }),
+                new SchemaField("isQuickTask", `Indicate if this is a quick task.`,
+                    {
+                        type: Boolean,
+                        isRequired: true
+                    }),
                 new SchemaField("category", `Workflow category.`,
                     {
                         type: this.category,
@@ -320,8 +343,8 @@ class Schemas {
                     }),
                 new SchemaField("user", `User that starts the execution.`,
                     {
-                        type: this.user,
-                        isRequired: true
+                        type: this.user
+                        //isRequired: true   <--- Need to set this back as soon User management is implemented
                     }),
                 new SchemaField("executionSteps", `Execution details of each one of the Workflow steps.`,
                     {
@@ -423,6 +446,11 @@ class Schemas {
                 new SchemaField("value", `Parameter value`,
                     {
                         type: String
+                    }),
+                new SchemaField("nativeType", `Native Javascript type`,
+                    {
+                        type: String,
+                        isRequired: true
                     })
             ])
             .setDescription("Represent the value assigned to one script parameter for a specific task or workflow step")
@@ -518,9 +546,7 @@ class Schemas {
                     }),
                 new SchemaField("execResults", `The collection of results delivered by the script in this invocation.`,
                     {
-                        type: String,
-                        isArray: true,
-                        isRequired: true
+                        type: String
                     }),
                 new SchemaField("execErrors", `Collection of errors that occurred during the script invocation on one particular target.`,
                     {
@@ -581,26 +607,12 @@ class Schemas {
 
     //#endregion
 
+
     /**
-     * Return the collection of entity schemas, (excluding base schemas):
+     * Return the collection of schemas, (excluding base schemas):
      */
-    getEntitySchemas(): Readonly<SchemaDefinition>[] {
-        return [
-            //User:
-            this.user,
-            //Category:
-            this.category,
-            //Group:
-            this.group,
-            //Script:
-            this.script,
-            //Target:
-            this.target,
-            //Workflow:
-            this.workflow,
-            //ExecutionLog:     
-            this.executionLog
-        ]
+    getSchemas(): Readonly<SchemaDefinition>[] {
+        return this._allSchemas;
     }
 }
 

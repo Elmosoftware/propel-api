@@ -1,15 +1,14 @@
-import { FormGroup, AbstractControl, FormControl } from '@angular/forms';
-import { ValidatorsHelper } from "../core/validators-helper";
+import { FormGroup, FormControl } from '@angular/forms';
 import { schemaRepo } from "../../../propel-shared/schema/schema-repository";
 import { SchemaDefinition } from '../../../propel-shared/schema/schema-definition';
-import { Entity } from '../../../propel-shared/models/entity';
 
 /**
  * Utility class helping with common operation with Reactive Forms.
  */
-export class FormHandler<T extends Entity> {
+export class FormHandler<T> {
 
     private originalValue: T;
+    private schemaDef: Readonly<SchemaDefinition>;
     private _form: FormGroup
 
     /**
@@ -26,22 +25,27 @@ export class FormHandler<T extends Entity> {
         return this._form.getRawValue();
     }
 
+    get hasId(): boolean {
+        return this.schemaDef.isEntity;
+    }
+
     /**
      * Constructor.
      * @param entityType Type for the form data. Must inherit from *"Entity"*.
      * @param form Formgroup to handle.
      */
     constructor(entityType: { new (): T }, form: FormGroup) {
-        
-        let schemaDef: Readonly<SchemaDefinition> = schemaRepo.getEntitySchemaByName(entityType.name); 
+        // this.schemaDef = schemaRepo.getEntitySchemaByName(entityType.name); 
+        this.schemaDef = schemaRepo.getSchemaByName(entityType.name); 
         this._form = form;
 
-        //Because T extends Entity, we can add here the ID safely:
-        this._form.addControl("_id", new FormControl("", []));
+        if (this.schemaDef.isEntity) {
+            this._form.addControl("_id", new FormControl("", []));
+        }
 
         //If the schema has audit fields, we can add them here too:
-        if (schemaDef.auditFieldsList.length > 0) {
-            schemaDef.auditFieldsList.forEach((field) => {
+        if (this.schemaDef.auditFieldsList.length > 0) {
+            this.schemaDef.auditFieldsList.forEach((field) => {
                 this._form.addControl(field, new FormControl({ value: "", disabled: true }, []));
             })
         }
@@ -61,17 +65,27 @@ export class FormHandler<T extends Entity> {
     /**
      * Set the entity id. This need to be called after save the entity data in order to allow 
      * edit the just created entity.
+     * If the item has no id, no action is done neither an error will be throw.
      * @param id Entity Id
      */
     setId(id: string): void {
-        this.form.controls._id.patchValue(id);
+        if (this.hasId) {
+            this.form.controls._id.patchValue(id);
+        }        
     }
 
     /**
      * Returns the entity ID.
+     * If there is no id and empty string will be always returned.
      */
     getId(): string {
-        return this.form.controls._id.value;
+        let ret: string =  "";
+
+        if (this.hasId) {
+            ret = this.form.controls._id.value;
+        }
+
+        return ret;        
     }
 
     /**

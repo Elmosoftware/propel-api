@@ -1,0 +1,99 @@
+<div class="container mt-2">
+    <form [formGroup]="fh.form">
+        <div *ngIf="!isQuickTask; else noQuickTask" class="form-group">
+            <label for="name" class="data-required">Name</label>
+            <input type="text" class="form-control" id="name" aria-describedby="name" placeholder="Enter the step name."
+                formControlName="name" required>
+            <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
+            <!-- DEBUG -->
+            <!-- <small class="form-text text-muted">Current control status:
+                {{ sampleFormOrControlStatus(fh.form.controls.name) }}</small> -->
+            <!-- DEBUG -->
+        </div>
+        <ng-template #noQuickTask>
+            <div class="subtitle my-2">{{ fh.form.controls.name.value }}</div>
+        </ng-template>
+        <div class="form-group">
+            <label class="data-required mr-2" for="script">Script to execute</label>
+            <ng-select #script [items]="allScripts" [multiple]="false" labelForId="script" [closeOnSelect]="true"
+                [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name" clearAllText="Clear"
+                [compareWith]="compareFn" (change)="scriptChanged($event)"
+                placeholder="Select the script you want to execute." formControlName="script">
+            </ng-select>
+            <app-validation-message [control]="fh.form.controls.script">
+            </app-validation-message>
+            <!-- DEBUG -->
+            <!-- <small class="form-text text-muted">Current control status:
+                {{ sampleFormOrControlStatus(fh.form.controls.script) }}</small> -->
+            <!-- DEBUG -->
+        </div>
+        <div class="form-group">
+            <label class="mr-2" for="targets">Targets</label>
+            <ng-select #targets [items]="allTargets" [multiple]="true" labelForId="targets" [closeOnSelect]="false"
+                [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="friendlyName"
+                clearAllText="Clear" [compareWith]="compareFn" placeholder="Select all the targets you want to hit."
+                formControlName="targets">
+            </ng-select>
+            <!-- DEBUG -->
+            <!-- <small class="form-text text-muted">Current control status:
+                {{ sampleFormOrControlStatus(fh.form.controls.targets) }}</small> -->
+            <!-- DEBUG -->
+            <app-validation-message [control]="fh.form.controls.targets">
+            </app-validation-message>
+        </div>
+        <div *ngIf="selectedScript">
+            <div class="form-group">
+                <hr class="my-4">
+            </div>
+            <label class="mb-2"><strong>Parameter values:</strong></label>            
+            <div *ngIf="selectedScript.parameters && selectedScript.parameters.length > 0; else noParams">
+                <div formArrayName="values" *ngFor="let child of parameterValues.controls; let i=index">
+                    <ng-container [formGroupName]="i" [ngSwitch]="child.controls.nativeType.value">
+                        <label [for]="i">${{child.controls.name.value}}</label>
+                        <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
+                        <div *ngSwitchCase="'Boolean'" class="form-group">
+                            <div class="d-flex justify-content-center">
+                                <label class="mr-2 mt-1 text-mini">$false</label>
+                                <mat-slide-toggle color="primary" [id]="i" formControlName="value">
+                                </mat-slide-toggle>
+                                <label class="ml-2 mt-1 text-mini">$true</label>
+                            </div>
+                        </div>
+                        <div *ngSwitchDefault class="form-group">
+                            <div *ngIf="!hasValidSet(child.controls.name.value); else withValidSet">
+                                <input type="text" [id]="i" class="form-control" 
+                                    formControlName="value"
+                                    [placeholder]="getPlaceHolderText(child.controls.nativeType.value)">
+                            </div>
+                            <ng-template #withValidSet>
+                                <ng-select [items]="getValidSet(child.controls.name.value)" 
+                                    [multiple]="false"
+                                    bindValue="value" 
+                                    bindLabel="label" 
+                                    [labelForId]="i" 
+                                    [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true" 
+                                    clearAllText="Clear" placeholder="This parameter has a valid set of values defined. Please select one from this list." 
+                                    formControlName="value"
+                                    (change)="validSetValueChanged($event)">
+                                </ng-select>
+                            </ng-template>
+                            
+            <!-- DEBUG -->
+            <!-- <small class="form-text text-muted">Current control status:
+                {{ sampleFormOrControlStatus(child.controls.value) }}</small> -->
+            <!-- DEBUG -->
+                        </div>
+                        <app-validation-message [control]="child.controls.value">
+                        </app-validation-message>
+                    </ng-container>
+                </div>
+            </div>
+            <ng-template #noParams>
+                <div class="ml-2">The script has no parameters defined.</div>
+            </ng-template>
+        </div>
+        <!-- <pre>Is a quick task: {{ isQuickTask }}</pre>
+        <pre>Is Form Valid: {{ fh.form.valid }}</pre>
+        <pre>{{fh.form.value | json }}</pre> -->
+    </form>
+</div>

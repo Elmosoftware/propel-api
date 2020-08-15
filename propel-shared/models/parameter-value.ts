@@ -15,6 +15,11 @@ export class ParameterValue {
      */
     public value: string = "";
 
+    /**
+     * Parameter native Javascript type.
+     */
+    public nativeType: string = "";
+
     constructor() {
     }
 }

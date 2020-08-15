@@ -91,12 +91,23 @@ export class CoreService {
   /**
    * If the form is dirty, calling this method when a page redirection occurs will display a 
    * dialog so the user can choose if is ok the data to be discarded.
-   * @param fh FormHandler instance with the current form status.
+   * @param dirtiness FormHandler instance with the current form status.
    */
-  dataChanged(fh: FormHandler<any>): boolean | Observable<boolean> | Promise<boolean> {
+  dataChanged(dirtiness: FormHandler<any> | boolean): boolean | Observable<boolean> | Promise<boolean> {
+    
+    //If we pass a value that evaluates to false, we will not display the dialog:
+    let showDlg: boolean = Boolean(dirtiness);
+    let form = (dirtiness as FormHandler<any>).form;
+
+    //If we pass a form, we will show the dialog only is the form is dirty.
+    //If we pass a Boolean true value, we will show the dialog always:
+    if (showDlg && form && !form.dirty) {
+      showDlg = false;
+    }
 
     //If some of the data has been modified but not saved yet:
-    if (fh && fh.form && fh.form.dirty) {
+    // if (dirtiness && dirtiness.form && dirtiness.form.dirty) {
+    if (showDlg) {
 
       return this.injDlg.showConfirmDialog(new StandardDialogConfiguration(
         "Changes will be discarded!",

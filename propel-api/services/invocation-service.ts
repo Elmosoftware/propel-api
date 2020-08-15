@@ -84,7 +84,7 @@ export class InvocationService implements Disposable, Resettable {
      * @param command Command to execute. It can be a commandlet, script block or a full path to a script.
      * @param params Optional execution arguments.
      */
-    invoke(command: string, params?: any[]): Promise<any> {
+    invoke(command: string, params?: any[]): Promise<any[]> {
 
         this._emit(InvocationStatus.Preparing);
 
@@ -204,6 +204,11 @@ export class InvocationService implements Disposable, Resettable {
 
     private _emit(status: InvocationStatus, message?: string) {
         this._invocationStatus = status;
+        
+        if (message) {
+            message = Utils.removeANSIEscapeCodes(message);
+        }
+        
         this._eventEmitter.emit("data", new InvocationMessage(status, (message) ? message : ""));
     }
 }

@@ -51,27 +51,26 @@ export class InvocationMessage {
     public context: ExecutionStats;
 
     /**
-     * Execution log. This will be included only when the status is "Finished".
+     * Execution log. This will be included only when the invocation status is "Finished".
      */
-    public log: ExecutionLog | null;
+    public logId: string;
+
+    /**
+     * Execution log Status. This will be included only when the invocation status is "Finished".
+     */
+    public logStatus: string;
 
     constructor(status: InvocationStatus, message: string, source?:string, 
-        context?: ExecutionStats, log?: ExecutionLog) {
+        context?: ExecutionStats, logId: string = "", logStatus: string = "") {
 
         this.status = status;
         this.message = message;
         this.source = (source) ? source : "";
         this.context = (context) ? context : new ExecutionStats();
-        this.log = (log) ? log : null;
+        this.logId = logId;
+        this.logStatus = logStatus;
         this.timestamp = new Date();
     }
-
-    // /**
-    //  * Returns a plain text version of the message that can be used for logging purposes.
-    //  */
-    // toString() {
-    //     return `${this.timestamp.toISOString()} -> ${(this.message) ? this.message : "(" + this.status.toString() + ")"}.`
-    // }
 }
 
 

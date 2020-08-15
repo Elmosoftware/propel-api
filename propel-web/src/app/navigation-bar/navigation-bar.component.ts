@@ -34,4 +34,8 @@ export class NavigationBarComponent implements OnInit {
   goToScript() {
     this.core.navigation.toScript();
   }
+
+  goToQuickTask() {
+    this.core.navigation.toQuickTask();
+  }
 }

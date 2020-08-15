@@ -33,15 +33,22 @@ export class ToasterService {
 
         this.zone.run(() => {
             try {
-                if (typeof messageOrError == "object") {
-                    if (typeof messageOrError == "object" && (messageOrError as PropelAppError).userMessage) {
-                        messageOrError = (messageOrError as PropelAppError).userMessage;
-                        title = "Please verify ..."
-                    }
-                    else if (typeof messageOrError == "object" && (messageOrError as PropelAppError).isHTTPError) {
-                        let err: PropelAppError = (messageOrError as PropelAppError);
+                let e: PropelAppError;
+                let isWarning: boolean = false;
 
-                        if (Number(err.httpStatus) == 400) {
+                if (typeof messageOrError == "object") {
+
+                    e = Object.assign({}, (messageOrError as PropelAppError));
+
+                    if (e.userMessage) {
+                        messageOrError = e.userMessage;
+                        title = "Please verify ...";
+                        isWarning = (e.errorCode && e.errorCode.isWarning);
+                    }
+                    else if (e.isHTTPError) {
+                        // let err: PropelAppError = (messageOrError as PropelAppError);
+
+                        if (Number(e.httpStatus) == 400) {
                             messageOrError = "Seems like the last operation failed because of the provided data. Please verify the submitted data and do the required changes before to retry.";
                             title = "Data issues ..."
                         }
@@ -50,7 +57,7 @@ export class ToasterService {
                             title = "Connectivity issue ..."
                         }                        
                     }
-                    else if (typeof messageOrError == "object" && (messageOrError as PropelAppError).isWSError) {
+                    else if (e.isWSError) {
                         messageOrError = "We got disconnected unexpectedly. The operation will continue anyway, please check later the results.";
                         title = "Connectivity issue ..."
                     }
@@ -59,7 +66,12 @@ export class ToasterService {
                     messageOrError = STDERRMSG;
                 }
 
-                this.toastr.error(String(messageOrError), title);
+                if (isWarning) {
+                    this.toastr.warning(String(messageOrError), title);
+                }
+                else {
+                    this.toastr.error(String(messageOrError), title);
+                }               
             } catch (error) {
                 logger.logWarn(`There was an error preventing to display a toaster. Error details: "${String(error)}".`)
             }

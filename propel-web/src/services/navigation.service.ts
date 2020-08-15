@@ -10,7 +10,8 @@ export const enum PAGES {
     Run = "run",
     Sandbox = "sandbox",
     Target = "target",
-    Script = "script"
+    Script = "script",
+    QuickTask = "quick-task"
 }
 
 /**
@@ -95,6 +96,13 @@ export class NavigationService {
         else {
             this.router.navigate([this.getRelativePath(PAGES.Script)]);
         }
+    }
+
+    /**
+     * Navigate to Quick Task page.
+     */
+    toQuickTask(): void {
+        this.router.navigate([this.getRelativePath(PAGES.QuickTask)]);
     }
 
     toSandbox(): void {

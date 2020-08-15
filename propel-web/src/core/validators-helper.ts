@@ -1,4 +1,5 @@
 import { ValidatorFn, AbstractControl } from '@angular/forms';
+import * as moment from 'moment';
 
 /**
  * Reactive Froms validation helper.
@@ -75,7 +76,47 @@ export class ValidatorsHelper {
           return ret;
         };
       }
-    
+
+      /**
+       * Validator specific for only number fields.
+       */
+      static anyNumber(): ValidatorFn {
+        return (control: AbstractControl): {[key: string]: any} | null => {
+          let ret: any = null;
+
+          if (!(!isNaN(parseFloat(control.value)) && isFinite(control.value))) {
+            ret = {
+              'anyNumber': {
+                value: control.value 
+              }
+            }
+          }
+
+          return ret;
+        };
+      }
+     
+      /**
+       * Validator specific for date fields in format ISO8601.
+       */
+      static anyDate(): ValidatorFn {
+        return (control: AbstractControl): {[key: string]: any} | null => {
+          let ret: any = null;
+          let d = moment(control.value)
+
+          if(control.value && !d.isValid()) {
+            ret = {
+              'anyDate': {
+                value: control.value,
+                invalidAt: d.invalidAt() 
+              }
+            }
+          }
+
+          return ret;
+        };
+      }
+
       /**
        * Returns the validation error text for the supplied control.
        * Thi methis returns an empty string if "control" is a null reference or is not invalid.
@@ -92,6 +133,12 @@ export class ValidatorsHelper {
         //Standard Validators:
         if (control.errors.required) {
           ret = `This information is required in order to continue.`; 
+        }
+        else if (control.errors.min && control.touched) {
+          ret = `The minimum allowed value for this field is "${control.errors.min.min}".`
+        }
+        else if (control.errors.max && control.touched) {
+          ret = `The maximum allowed value for this field is "${control.errors.max.max}".`
         }
         else if (control.errors.minlength && control.touched) {
           ret = `This must be at least ${control.errors.minlength.requiredLength} characters long. 
@@ -122,6 +169,12 @@ export class ValidatorsHelper {
         }
         else if (control.errors.FQDN && control.touched) {
           ret = "The fully Qualified Domain Name entered, doesn't seem to be valid. Please check that meets the required format. (e.g.: myserver.mydomain.com)"
+        }
+        else if (control.errors.anyNumber && control.touched) {
+          ret = "Only numeric values are allowed."
+        }
+        else if (control.errors.anyDate && control.touched) {
+          ret = "The date is not valid, Please recall dates need to be in ISO-8601 format."
         }
     
         return ret;

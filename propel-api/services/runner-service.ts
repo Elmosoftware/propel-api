@@ -17,6 +17,10 @@ import { ExecutionTarget } from "../../propel-shared/models/execution-target";
 import { Utils } from "../../propel-shared/utils/utils";
 import { ExecutionStatus } from "../../propel-shared/models/execution-status";
 import { ExecutionError } from "../../propel-shared/models/execution-error";
+import { db } from "../core/database";
+import { DataService } from "../services/data-service";
+import { APIResponse } from "../../propel-shared/core/api-response";
+import { logger } from "../../propel-shared/services/logger-service";
 
 /**
  * This class responsibility is everything related to run a specified workflow and 
@@ -65,6 +69,7 @@ export class Runner {
     async execute(workflow: Workflow, subscriptionCallback?: Function): Promise<InvocationMessage> {
         
         let abort: boolean = false;
+        let resultsMessage: InvocationMessage;
         this._cb = subscriptionCallback;
         this._cancelExecution = false;
 
@@ -112,9 +117,14 @@ export class Runner {
                 execStep.status =  ExecutionStatus.Skipped;
             }
             else {
-
                 if (!step.script.isTargettingServers) {
-                    step.targets = [this.localTarget];
+                    //We don't expect any targets here, but anyway we are going to double check
+                    //and correct if needed:
+                    if (step.targets.length > 0) {
+                        step.targets.splice(0, step.targets.length);
+                    }
+
+                    step.targets.push(this.localTarget);
                 }
 
                 try {
@@ -136,9 +146,28 @@ export class Runner {
 
         this._execLog.status = this._summaryStatus(this._execLog.executionSteps);
         this._execLog.endedAt = new Date();
+        
+        try {
+            resultsMessage = new InvocationMessage(InvocationStatus.Finished, "","", this._stats);
+            resultsMessage.logStatus = this._execLog.status;
+            resultsMessage.logId = (await this.saveExecutionLog(this._execLog)).data[0]; 
+            this._execLog._id = resultsMessage.logId;
+        } catch (error) {
+            if (error.errors && error.errors.length > 0) {
+                error = error.errors[0]
+            }
+            let e = new PropelError(error, ErrorCodes.saveLogFailed);
+            logger.logError(e);
+            resultsMessage = new InvocationMessage(InvocationStatus.Failed, 
+                e.errorCode.userMessage, "", this._stats, "", ExecutionStatus.Faulty);
+        }
 
-        return new InvocationMessage(InvocationStatus.Finished, "","", 
-            this._stats, this._execLog);
+        return resultsMessage;
+    }
+
+    async saveExecutionLog(log: ExecutionLog): Promise<APIResponse<string>> {
+        let svc: DataService = db.getService("ExecutionLog");
+        return svc.add(log);
     }
 
     /**
@@ -205,13 +234,13 @@ export class Runner {
                         invsvc.invoke(this._buildCommand(scriptCode, argsList, target))
                             .then((data: any[]) => {
                                 et.status = ExecutionStatus.Success;
-                                et.execResults = data;
+                                et.execResults = JSON.stringify(data);
                                 this._currentInvocation = null;
                                 resolve(et);
                             })
                             .catch((err) => {
                                 et.status = ExecutionStatus.Faulty
-                                et.execErrors.push(new ExecutionError(err));
+                                et.execErrors.push(new ExecutionError(this.formatError(err)));
                                 this._currentInvocation = null;
                                 resolve(et);
                             })
@@ -227,6 +256,16 @@ export class Runner {
                     })
             }
         });
+    }
+
+    private formatError(e: Error | string): Error | string {
+        if (e && e instanceof Error) {
+            e.message = Utils.removeANSIEscapeCodes(e.message);
+            return e;
+        }
+        else {
+            return Utils.removeANSIEscapeCodes(String(e));
+        }
     }
 
     private _summaryStatus(execs: Array<any>): ExecutionStatus{
@@ -279,8 +318,10 @@ export class Runner {
         if (step.script.parameters.length > 0) {
 
             step.script.parameters.forEach((param: ScriptParameter) => {
-                let suppliedParam: ParameterValue | undefined = step.values.find((sp) => sp.name = param.name);
+                let suppliedParam: ParameterValue | undefined = step.values.find((sp) => sp.name == param.name);
                 let value: string = "$null";
+                let prefix: string = "";
+                let sufix: string = "";
 
                 this._scriptVal.validateParameter(param, suppliedParam);
 
@@ -291,7 +332,12 @@ export class Runner {
                     value = param.defaultValue;
                 }
 
-                ret.push(`(${value})`)
+                if (param.nativeType == "String") {
+                    prefix = `"`;
+                    sufix = `"`;
+                }
+
+                ret.push(`${prefix}${value}${sufix}`)
             })
         }
 
@@ -323,7 +369,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         ret += ` -ScriptBlock $codeBlock`
 
         if (argList && argList.length > 0) {
-            ret += ` -ArgumentList ${argList.join(" ")}`
+            ret += ` -ArgumentList ${argList.join(", ")}`
         }
 
         ret += `\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 

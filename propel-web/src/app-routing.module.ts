@@ -7,6 +7,7 @@ import { RunComponent } from './app/run/run.component';
 import { TargetComponent } from './app/target/target.component';
 import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
 import { ScriptComponent } from './app/script/script.component';
+import { QuickTaskComponent } from './app/quick-task/quick-task.component';
 
 const routes: Routes = [
   {
@@ -57,6 +58,14 @@ const routes: Routes = [
     component: ScriptComponent,
     data: {
       title: "Editing Script"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: PAGES.QuickTask,
+    component: QuickTaskComponent,
+    data: {
+      title: "New Quick task"
     },
     canDeactivate: [DataLossPreventionGuard]
   },

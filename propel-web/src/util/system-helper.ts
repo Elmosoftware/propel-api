@@ -1,4 +1,5 @@
 import { PropelAppError } from "../core/propel-app-error";
+import { generate } from "shortid";
 
 /**
  * File System utilities.
@@ -32,5 +33,12 @@ export class SystemHelper {
         }
   
         return window.atob(base64String);
+    }
+
+    /**
+     * Returns a short and unique identifier.
+     */
+    static getUniqueId(): string{
+        return generate();
     }
 }

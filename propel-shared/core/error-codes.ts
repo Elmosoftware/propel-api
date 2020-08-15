@@ -58,6 +58,16 @@ Please check if the workflow need to be remediated in order to supply the right 
         `AT least one script parameter has set a wrong value for his type. 
 This could happen when a script is updated with breaking changes. Please review and remediate the Workflow.`);
     }
+
+    /**
+     * Saving some log information failed. This is not critical.
+     */
+    static get saveLogFailed(): Code {
+        return new Code("SAVE_LOG_FAILED",
+            `An error prevent the log information to be saved, but the underlying operation was completed. This is not critical.`,
+        `Some issue prevent the log to be saved, but the operation was able to complete. Please contact the site administrator about this.`,
+        true);
+    }
 }
 
 /**
@@ -69,13 +79,15 @@ export class Code {
      * @param {string} key Unique error code
      * @param {string} description Error description 
      */
-    constructor(key: string = "", description: string = "", userMessage: string = "") {
+    constructor(key: string = "", description: string = "", userMessage: string = "", isWarning: boolean = false) {
         this.key = key;
         this.description = description;
         this.userMessage = userMessage;
+        this.isWarning = isWarning;
     }
 
     public readonly key: string;
     public readonly description: string;
     public readonly userMessage: string;
+    public readonly isWarning: boolean;
 }

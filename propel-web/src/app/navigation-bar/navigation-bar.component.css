@@ -21,3 +21,7 @@
     height: 6px;
     background-color: var(--colors-primary);
 }
+
+.no-wrap-links {
+    white-space: nowrap !important;
+}

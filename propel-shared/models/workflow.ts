@@ -27,6 +27,12 @@ export class Workflow extends AuditedEntity {
     public isPrivate: boolean = false
 
     /**
+     * Boolean value indicating if this is a quick task.
+     * Quick tasks are not intended to endure, they are like "one time only" Workflows.
+     */
+    public isQuickTask: boolean = false
+
+    /**
      * Woekflow category.
      */
     public category!: Category;

@@ -18,9 +18,9 @@ export class ExecutionTarget {
     public name: string = "";
 
     /**
-     * The collection of results delivered by the script in this invocation.
+     * Stringified collection of results delivered by the script in this invocation.
      */
-    public execResults: any[] = [];
+    public execResults: string = "";
 
     /**
      * Collection of errors as result of this target execution.

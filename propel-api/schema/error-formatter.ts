@@ -27,7 +27,8 @@ class ErrorFormatter {
         return {
             name: e.name,
             message: e.message,
-            stack: stackArray,
+            stack: stack,
+            stackArray: stackArray,
             errorCode: errorCode
         }
     }

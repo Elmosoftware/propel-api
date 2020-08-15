@@ -170,6 +170,12 @@ export class Utils {
             case "System.Object[]":
                 ret = "Array";
                 break;
+            case "System.String[]":
+                ret = "Array";
+                break;
+            case "System.Int32[]":
+                ret = "Array";
+                break;
             case "System.Array":
                 ret = "Array";
                 break;
@@ -200,5 +206,17 @@ export class Utils {
         }
 
         return ret;
+    }
+
+    
+
+    static removeANSIEscapeCodes(s: string): string {
+        let removeAnsiPattern = [
+            '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
+            '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))'
+        ].join('|');
+        let reg = new RegExp(removeAnsiPattern, "g");
+
+        return s.replace(reg, "");        
     }
 }

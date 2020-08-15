@@ -89,7 +89,7 @@ export class RunComponent implements OnInit {
         },
         () => {
           if (this.hasMessages) {
-            this.workflowStatus = this.lastMessage.log.status;
+            this.workflowStatus = this.lastMessage.logStatus;
           }
           else {
             this.workflowStatus = "SUCCESS";

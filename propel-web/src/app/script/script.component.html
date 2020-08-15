@@ -20,12 +20,15 @@
                     <div class="form-group">
                         <label class="mr-2 w-100">Is targetting&nbsp;&hellip;</label>
                         <div class="d-flex justify-content-center">
-                            <label class="mr-2 mt-1 text-mini">Servers, (like Web servers, Database servers,
-                                etc.)</label>
+                            <label class="mr-2 mt-1 text-mini">
+                                Services, (like Web services, LDAP queries to AD, etc.)
+                            </label>
                             <mat-slide-toggle color="primary" id="isTargettingServers"
                                 formControlName="isTargettingServers">
                             </mat-slide-toggle>
-                            <label class="ml-2 mt-1 text-mini">Services, (like Web services, LDAP queries to AD, etc.)
+                            <label class="ml-2 mt-1 text-mini">
+                                Servers, (like Web servers, Database servers,
+                                etc.)
                             </label>
                         </div>
                         <app-validation-message [control]="fh.form.controls.isTargettingServers">
