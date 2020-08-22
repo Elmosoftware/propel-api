@@ -16,7 +16,7 @@ import { Category } from '../../../../propel-shared/models/category';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 
 const NAME_MIN: number = 3;
-const NAME_MAX: number = 25;
+const NAME_MAX: number = 50;
 const TARGETS_MAX: number = 10;
 
 @Component({

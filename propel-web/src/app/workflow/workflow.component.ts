@@ -21,7 +21,7 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { Target } from '../../../../propel-shared/models/target';
 
 const NAME_MIN: number = 3;
-const NAME_MAX: number = 25;
+const NAME_MAX: number = 50;
 const DESCRIPTION_MAX: number = 512;
 const STEPS_MAX: number = 10;
 

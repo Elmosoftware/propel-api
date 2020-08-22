@@ -27,7 +27,7 @@ enum Tabs {
 }
 
 const NAME_MIN: number = 3;
-const NAME_MAX: number = 25;
+const NAME_MAX: number = 50;
 const DESCRIPTION_MAX: number = 512;
 const FILE_EXT: string = "ps1"
 const MAX_FILE_SIZE: number = 2097152
