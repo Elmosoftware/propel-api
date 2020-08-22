@@ -112,22 +112,6 @@ export class QueryValidator extends ValidatorBase {
             ret = `We expected an Object instance for the "filterBy" query modifier.
             Supplied parameter type is "${typeof value}".`;
         } 
-        // else if (value == "") {
-        //     ret = `We expected a not null or empty String for the "filterBy" query modifier.
-        //     Supplied parameter value is "${value}".`;
-        // } else if (!(value.trim().startsWith("{") && value.trim().endsWith("}"))) {
-        //     ret = `We expected a valid JSON string value for the "filterBy" query modifier.
-        //     Supplied parameter value is "${value}".`;
-        // } else {
-        //     try {
-        //         let obj = JSON.parse(value);
-        //     } catch (error) {
-        //         ret = `We expected a valid JSON string value for the "filterBy" query modifier.
-        //     Supplied parameter value is "${value}".
-        //     We got the following error when trying to parse it as json: 
-        //     ${(error && error.message) ? error.message : String(error)}`;
-        //     }
-        // }
 
         if (ret) {
             super._addError(ret);

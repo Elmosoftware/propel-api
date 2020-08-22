@@ -14,6 +14,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {DragDropModule} from '@angular/cdk/drag-drop';
 
 // 3rd party libraries:
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -33,8 +34,7 @@ import { PSParametersInferrerService } from "./services/ps-parameters-inferrer.s
 
 //Dialogs
 import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
-import { ConsoleLineComponent } from './app/console-line/console-line.component';
-import { StatusIconComponent } from './app/status-icon/status-icon.component';
+import { WorkflowStepDialogComponent } from './app/dialogs/workflow-step-dlg/workflow-step-dlg.component';
 
 //Components
 import { NavigationBarComponent } from './app/navigation-bar/navigation-bar.component';
@@ -50,6 +50,9 @@ import { FileDropperComponent } from './app/file-dropper/file-dropper.component'
 import { ScriptParametersComponent } from './app/script-parameters/script-parameters.component';
 import { QuickTaskComponent } from './app/quick-task/quick-task.component';
 import { WorkflowStepComponent } from './app/workflow-step/workflow-step.component';
+import { WorkflowComponent } from './app/workflow/workflow.component';
+import { ConsoleLineComponent } from './app/console-line/console-line.component';
+import { StatusIconComponent } from './app/status-icon/status-icon.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +70,9 @@ import { WorkflowStepComponent } from './app/workflow-step/workflow-step.compone
     FileDropperComponent,
     ScriptParametersComponent,
     QuickTaskComponent,
-    WorkflowStepComponent
+    WorkflowStepComponent,
+    WorkflowComponent,
+    WorkflowStepDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -89,7 +94,8 @@ import { WorkflowStepComponent } from './app/workflow-step/workflow-step.compone
     MatTooltipModule,
     MatDialogModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    DragDropModule
   ],
   providers: [
     ErrorHandlerService,
@@ -105,7 +111,8 @@ import { WorkflowStepComponent } from './app/workflow-step/workflow-step.compone
     PSParametersInferrerService
   ],
   entryComponents: [
-    StandardDialogComponent
+    StandardDialogComponent,
+    WorkflowStepDialogComponent
   ],
   bootstrap: [RootComponent]
 })

@@ -151,20 +151,20 @@ export class ValidatorsHelper {
         //Custom Validators:
         else if (control.errors.minItems && control.touched) {
           if (control.errors.minItems.requiredLength == 1) {
-            ret = "You need to select at least 1 item from the list."
+            ret = "You need to add at least 1 item to the list."
           }
           else {
-            ret = `You need to select at least ${control.errors.minItems.requiredLength} items from the list.
+            ret = `You need to add at least ${control.errors.minItems.requiredLength} items to the list.
             (${control.errors.minItems.requiredLength - control.errors.minItems.actualLength} extra item(s) needed).`
           }      
         }
         else if (control.errors.maxItems && control.touched) {
           if (control.errors.maxItems.requiredLength == 1) {
-            ret = "You can't select more than one item in this list."
+            ret = "You can't add more than one item to this list."
           }
           else {
-            ret = `You can select a maximum of ${control.errors.maxItems.requiredLength} items from the list.
-            (Need to remove at least ${control.errors.maxItems.actualLength - control.errors.maxItems.requiredLength} items).`
+            ret = `You can add a maximum of ${control.errors.maxItems.requiredLength} items to the list.
+            You Need to remove at least ${control.errors.maxItems.actualLength - control.errors.maxItems.requiredLength} item(s).`
           }      
         }
         else if (control.errors.FQDN && control.touched) {

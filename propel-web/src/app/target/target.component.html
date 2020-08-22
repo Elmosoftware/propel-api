@@ -21,7 +21,7 @@
         </div>
         <div class="form-group">
             <label class="mr-2" for="groups">Groups</label>
-            <button class="btn btn-primary plus-button-small" type="button" [disabled]="fh.form.disabled" (click)="addGroup()">
+            <button class="btn btn-primary button-icon-small" type="button" [disabled]="fh.form.disabled" (click)="addGroup()">
                 <i class="fas fa-plus"></i>
             </button>
             <ng-select #groups [items]="allGroups" [multiple]="true" labelForId="groups" [closeOnSelect]="false"

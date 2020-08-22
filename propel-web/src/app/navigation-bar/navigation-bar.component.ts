@@ -38,4 +38,8 @@ export class NavigationBarComponent implements OnInit {
   goToQuickTask() {
     this.core.navigation.toQuickTask();
   }
+
+  goToWorkflow() {
+    this.core.navigation.toWorkflow();
+  }
 }

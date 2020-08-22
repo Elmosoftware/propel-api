@@ -38,18 +38,8 @@ describe("QueryModifier Class - Invalid Parameters", () => {
     })
     test(`"filterBy" with invalid type`, () => {
         expect(() => {
-            new QueryModifier({ filterBy: 1 });
-        }).toThrow(`We expected a String for the "filterBy" query modifier`);
-    })
-    test(`"filterBy" with a non empty JSON string value`, () => {
-        expect(() => {
-            new QueryModifier({ filterBy: "[]"});
-        }).toThrow(`We expected a valid JSON string value for the "filterBy" query modifier`);
-    })
-    test(`"filterBy" with a non JSON string value`, () => {
-        expect(() => {
-            new QueryModifier({ filterBy: "{ \"invalid\" }"});
-        }).toThrow(`We got the following error when trying to parse it as json`);
+            new QueryModifier({filterBy: "invalid filter"});
+        }).toThrow(`We expected an Object instance for the "filterBy" query modifier`);
     })
 });
 
@@ -61,23 +51,24 @@ describe("QueryModifier Class - Valid and Missing Parameters", () => {
         expect(qm.skip).toEqual(0);
         expect(qm.sortBy).toEqual("");
         expect(qm.populate).toBe(true);
-        expect(qm.filterBy).toEqual("{}");
+        expect(qm.filterBy).toEqual({});
     })
 
     test(`All parameters specified, (no defaults)`, () => {
+        let f = {attr1: true}
         let qm = new QueryModifier({
             top: 100,
             skip: 50,
             sortBy: "field1 field2",
             populate: false,
-            filterBy: "{\"attr1\":23, \"attr2\":{\"attr2_1\":true,\"attr2_2\":\"Name\"}}"
+            filterBy: f
         });
         
         expect(qm.top).toEqual(100);
         expect(qm.skip).toEqual(50);
         expect(qm.sortBy).toEqual("field1 field2");
         expect(qm.populate).toBe(false);
-        expect(qm.filterBy).toEqual("{\"attr1\":23, \"attr2\":{\"attr2_1\":true,\"attr2_2\":\"Name\"}}");
+        expect(qm.filterBy).toBe(f);
     })
 });
 
@@ -128,7 +119,7 @@ describe("QueryModifier Class - Calculated Parameters", () => {
     })
     test(`Filtering attribute`, () => {
         let qm = new QueryModifier({
-            filterBy: `{ "id": "test" }`
+            filterBy: { id: "test" }
         });
 
         expect(qm.isPaginated).toBe(false);

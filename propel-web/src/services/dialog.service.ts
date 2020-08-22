@@ -5,11 +5,13 @@ import { MatDialog } from '@angular/material/dialog';
 
 //Shared:
 import { logger } from '../../../propel-shared/services/logger-service';
+import { WorkflowStep } from '../../../propel-shared/models/workflow-step';
 
 //Dialog Components:
 import { DialogResult } from "../core/dialog-result";
 import { StandardDialogComponent, StandardDialogConfiguration } from "../app/dialogs/standard-dialog/standard-dlg.component";
 import { EntityDialogComponent, EntityDialogConfiguration } from "../app/dialogs/entity-group-dlg/entity-dlg.component";
+import { WorkflowStepDialogComponent } from 'src/app/dialogs/workflow-step-dlg/workflow-step-dlg.component';
 
 @Injectable()
 export class DialogService {
@@ -48,8 +50,25 @@ export class DialogService {
         return dialogRef.afterClosed()
             .pipe(
                 map((value) => {
-                    //I find difficult to capture ESC key or a click on the backdrop. Both will 
-                    //close the dialog, so i'm patching here the result object:
+                    if (!value) return new DialogResult<any>(0, null)
+                    else return value;
+                })   
+            )
+    }
+
+    /**
+     * Open a dialog to enable edit a Workflow step.
+     * @param options Step to edit.
+     */
+    showWorkflowStepDialog(options: WorkflowStep): Observable<DialogResult<any>> {
+
+        let dialogRef = this.dialog.open(WorkflowStepDialogComponent, { 
+            data: options, 
+            width: "660px" });
+
+        return dialogRef.afterClosed()
+            .pipe(
+                map((value) => {
                     if (!value) return new DialogResult<any>(0, null)
                     else return value;
                 })   

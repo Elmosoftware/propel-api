@@ -112,7 +112,7 @@ export class CoreService {
       return this.injDlg.showConfirmDialog(new StandardDialogConfiguration(
         "Changes will be discarded!",
         `You have unsaved changes that will be lost if you continue.`,
-        "Yes, please discard this changes", "No, i would like to continue editing."))
+        "Yes, please discard these changes", "No, i would like to continue editing."))
         .pipe(
           map((value: DialogResult<any>) => {
             //If the user clicks first button, means we can deactivate the component even loosing data:

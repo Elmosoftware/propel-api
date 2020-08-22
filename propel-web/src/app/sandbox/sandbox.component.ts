@@ -137,6 +137,10 @@ export class SandboxComponent implements OnInit {
     return `Dynamically set value`;
   }
 
+  get tooltipSampleLong(): string {
+    return "Nulla aliquet porttitor lacus luctus accumsan tortor.\nPellentesque massa placerat duis ultricies lacus sed turpis tincidunt id.\nFermentum leo vel orci porta non pulvinar.";
+  }
+
   //#region Reactive Form Sample
 
   countries: Country[] = [

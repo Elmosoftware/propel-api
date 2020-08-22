@@ -58,6 +58,7 @@ export class WorkflowStepComponent implements OnInit {
   }
 
   constructor(private core: CoreService) {
+
     this.fh = new FormHandler(WorkflowStep, new FormGroup({
       name: new FormControl("", [
         Validators.required,
@@ -90,15 +91,18 @@ export class WorkflowStepComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    forkJoin([
-      this.refreshScripts(),
-      this.refreshTargets()
-    ])
-      .subscribe((results) => {
-        this.allScripts = results[0].data;
-        this.allTargets = results[1].data;
-        this.setValue(this.step);
-      });
+    //Doing this with a timeout to avoid the "ExpressionChangedAfterItHasBeenCheckedError" error:
+    setTimeout(() => {
+      forkJoin([
+        this.refreshScripts(),
+        this.refreshTargets()
+      ])
+        .subscribe((results) => {
+          this.allScripts = results[0].data;
+          this.allTargets = results[1].data;
+          this.setValue(this.step);
+        });
+    });
   }
 
   refreshScripts() {
@@ -107,16 +111,22 @@ export class WorkflowStepComponent implements OnInit {
     return this.core.data.find(Script, qm);
   }
 
-  getScriptFromCache(id:string): Script | undefined {
+  refreshTargets() {
+    let qm: QueryModifier = new QueryModifier();
+    qm.sortBy = "friendlyName";
+    return this.core.data.find(Target, qm);
+  }
+
+  getScriptFromCache(id: string): Script | undefined {
     return this.allScripts.find((script: Script) => {
       return script._id == String(id);
     });
   }
 
-  refreshTargets() {
-    let qm: QueryModifier = new QueryModifier();
-    qm.sortBy = "friendlyName";
-    return this.core.data.find(Target, qm);
+  getTargetFromCache(id: string): Target | undefined {
+    return this.allTargets.find((target: Target) => {
+      return target._id == String(id);
+    });
   }
 
   setValue(value?: WorkflowStep) {
@@ -134,7 +144,7 @@ export class WorkflowStepComponent implements OnInit {
       }
     }
     else if (typeof value.script == "string") {
-        value.script = this.getScriptFromCache(value.script);
+      value.script = this.getScriptFromCache(value.script);
     }
 
     this.step = value;
@@ -142,15 +152,30 @@ export class WorkflowStepComponent implements OnInit {
 
     this.fh.form.statusChanges
       .subscribe((value: string) => {
-        let status = new WorkflowStepComponentStatus(
+
+        let status: WorkflowStepComponentStatus;
+        let step = Object.assign({}, this.fh.value)
+
+        //We need to convert back boolean values to PowerShell Booleans:
+        if (step.values) {
+          step.values.forEach((item, i) => {
+            if (item.nativeType == "Boolean") {
+              step.values[i].value = (item.value) ? "$true" : "$false";
+            }
+          })
+        }
+
+        status = new WorkflowStepComponentStatus(
           Boolean(value.toLowerCase() == "valid"),
           this.fh.form.dirty,
-          Object.assign({}, this.fh.value),
-          (this.selectedScript) ? this.selectedScript.category : null);
+          step,
+          (this.selectedScript) ? this.selectedScript.category : null,
+          (this.selectedScript) ? this.selectedScript.name : "",
+          this.getselectedTargetNames());
         this.change.emit(status);
       })
-      
-      this.fh.setValue(value);
+
+    this.fh.setValue(value);
   }
 
   /**
@@ -163,8 +188,6 @@ export class WorkflowStepComponent implements OnInit {
 
     //Every time the selected script changed, we need to review the 
     //targets validators and control value:
-    this.fh.form.controls.targets.disable({ onlySelf: true, emitEvent: false })
-
     if (this.selectedScript) {
       //If the script is targetting servers, we need to ensure at least one:
       if (this.selectedScript.isTargettingServers) {
@@ -172,26 +195,39 @@ export class WorkflowStepComponent implements OnInit {
           ValidatorsHelper.minItems(1),
           ValidatorsHelper.maxItems(TARGETS_MAX)
         ])
-        this.fh.form.controls.targets.enable({ onlySelf: true, emitEvent: false })
       }
-      else{
+      else {
         this.fh.form.controls.targets.clearValidators();
         this.fh.form.controls.targets.patchValue([]);
       }
     }
+
+    this.enableOrDisableTargets();
     this.fh.form.updateValueAndValidity();
     this.initializeParameters();
   }
 
-  validSetValueChanged($event) {
-    let x = $event
+  enableOrDisableTargets() {
+    //Disabling on the next cycle of the loop in order to avoid issues when 
+    //displaying this component inside a dialog:
+    setTimeout(() => {
+      if (this.selectedScript && this.selectedScript.isTargettingServers) {
+        this.fh.form.controls.targets.enable({ onlySelf: true, emitEvent: false })
+      }
+      else {
+        this.fh.form.controls.targets.disable({ onlySelf: true, emitEvent: false })
+      }
+    });
   }
 
   private initializeParameters() {
 
     let newValues: ParameterValue[] = [];
+
     //Removing all the controls for the parameter values:
-    (this.fh.form.controls.values as FormArray).controls.splice(0, (this.fh.form.controls.values as FormArray).controls.length)
+    (this.fh.form.controls.values as FormArray).controls.splice(0, (this.fh.form.controls.values as FormArray).controls.length);
+    this.fh.form.controls.values.reset();
+    this.fh.form.updateValueAndValidity();
 
     //If there is no selected script or it has no parameters:
     if (!this.selectedScript || !this.selectedScript.parameters || this.selectedScript.parameters.length == 0) {
@@ -210,7 +246,7 @@ export class WorkflowStepComponent implements OnInit {
           return item.name == p.name;
         });
       }
-     
+
       //If the parameter value exists:
       if (pv) {
         //We need to verify validity. If is not the same type, we need to fix it:
@@ -220,7 +256,7 @@ export class WorkflowStepComponent implements OnInit {
         }
       }
       else { //If the parameter values doesn't exists, we will create it with the script parameter 
-      //default value:
+        //default value:
         pv = new ParameterValue();
         pv.name = p.name;
         pv.nativeType = p.nativeType
@@ -240,10 +276,10 @@ export class WorkflowStepComponent implements OnInit {
       switch (p.nativeType) {
         case "Number":
           vfns.push(ValidatorsHelper.anyNumber());
-          break;      
+          break;
         case "Date":
           vfns.push(ValidatorsHelper.anyDate());
-          break;      
+          break;
         case "Boolean":
           //Because of the slide toggle control, we need to convert the 
           //string PowerShell Boolean value to a native Javascript Boolean value:
@@ -251,7 +287,7 @@ export class WorkflowStepComponent implements OnInit {
             //@ts-ignore
             pv.value = (p.defaultValue == "$true");
           }
-          break;      
+          break;
         default:
           break;
       }
@@ -276,23 +312,23 @@ export class WorkflowStepComponent implements OnInit {
   getPlaceHolderText(nativeType: string) {
 
     let ret: string = ""
-    
+
     switch (nativeType) {
       case "String":
         ret = "Any text is accepted here.";
-        break;      
+        break;
       case "Number":
         ret = "Please enter any number here.";
-        break;      
+        break;
       case "Date":
         ret = `Please enter a valid date here. Format must be ISO-8601. e.g.: "YYYY-MM-DDThh:mm:ss" time must be 24hs format.`
-        break;      
+        break;
       case "Array":
         ret = `You can specify multiple values here separated by a comma. e.g.: Value 1, Value 2, Value 3.`
-        break;      
+        break;
       case "Object":
         ret = `This value will be passed literally to the script, watch out for any typos.`
-        break;           
+        break;
       default:
         break;
     }
@@ -300,7 +336,7 @@ export class WorkflowStepComponent implements OnInit {
     return ret;
   }
 
-  tryGetParameter(paramName: string): ScriptParameter | null  {
+  tryGetParameter(paramName: string): ScriptParameter | null {
 
     let ret: ScriptParameter = null;
 
@@ -319,10 +355,24 @@ export class WorkflowStepComponent implements OnInit {
     let param: ScriptParameter;
 
     param = this.tryGetParameter(paramName);
-    
+
     if (param && param.description) {
-      ret = param.description;        
+      ret = param.description;
     }
+
+    return ret;
+  }
+
+  getselectedTargetNames(): string[] {
+    let ret: string[] = [];
+
+    this.fh.form.controls.targets.value.forEach((id: string) => {
+      let target: Target = this.getTargetFromCache(id);
+
+      if (target) {
+        ret.push(target.friendlyName);
+      }
+    })
 
     return ret;
   }
@@ -341,7 +391,7 @@ export class WorkflowStepComponent implements OnInit {
 
     return ret;
   }
-  
+
   getValidSet(paramName: string): any[] {
     return this.validSets[paramName];
   }
@@ -366,13 +416,18 @@ export class WorkflowStepComponent implements OnInit {
 export class WorkflowStepComponentStatus {
   readonly isValid: boolean;
   readonly isDirty: boolean;
-  readonly data?: WorkflowStep;
+  readonly step?: WorkflowStep;
   readonly category?: Category;
+  readonly scriptName?: string;
+  readonly targetNames?: string[];
 
-  constructor(isValid: boolean, isDirty: boolean, step?: WorkflowStep, category?: Category) {
+  constructor(isValid: boolean, isDirty: boolean, step?: WorkflowStep,
+    category?: Category, scriptName?: string, targetNames?: string[]) {
     this.isValid = isValid,
     this.isDirty = isDirty;
-    this.data = step;
+    this.step = step;
     this.category = category;
+    this.scriptName = scriptName;
+    this.targetNames = (targetNames) ? targetNames : [];
   }
 }

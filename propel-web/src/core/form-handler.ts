@@ -25,6 +25,17 @@ export class FormHandler<T> {
         return this._form.getRawValue();
     }
 
+    /**
+     * Return the values that was set before any change made in the form by the user.
+     */
+    get previousValue(): T {
+        return this.originalValue;
+    }
+
+    /**
+     * Returns a boolean value that indicates if T is an entity. (Mean, has an ID that identifies 
+     * it uniquely in the Databse storage system).
+     */
     get hasId(): boolean {
         return this.schemaDef.isEntity;
     }
@@ -57,7 +68,8 @@ export class FormHandler<T> {
      */
     setValue(value: T): void {
         this.originalValue = value;
-        this.form.patchValue(Object.assign({}, value));
+        // this.form.patchValue(Object.assign({}, value));
+        this.form.patchValue(value);
         this.form.markAsPristine();
         this.form.markAsUntouched();
     }

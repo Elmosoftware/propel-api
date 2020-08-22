@@ -49,20 +49,19 @@
             <div *ngIf="selectedScript.parameters && selectedScript.parameters.length > 0; else noParams">
                 <div formArrayName="values" *ngFor="let child of parameterValues.controls; let i=index">
                     <ng-container [formGroupName]="i" [ngSwitch]="child.controls.nativeType.value">
-                        <label [for]="i">${{child.controls.name.value}}</label>
+                        <label>${{child.controls.name.value}}</label>
                         <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
                         <div *ngSwitchCase="'Boolean'" class="form-group">
                             <div class="d-flex justify-content-center">
                                 <label class="mr-2 mt-1 text-mini">$false</label>
-                                <mat-slide-toggle color="primary" [id]="i" formControlName="value">
+                                <mat-slide-toggle color="primary" formControlName="value">
                                 </mat-slide-toggle>
                                 <label class="ml-2 mt-1 text-mini">$true</label>
                             </div>
                         </div>
                         <div *ngSwitchDefault class="form-group">
                             <div *ngIf="!hasValidSet(child.controls.name.value); else withValidSet">
-                                <input type="text" [id]="i" class="form-control" 
-                                    formControlName="value"
+                                <input type="text" class="form-control" formControlName="value"
                                     [placeholder]="getPlaceHolderText(child.controls.nativeType.value)">
                             </div>
                             <ng-template #withValidSet>
@@ -70,14 +69,11 @@
                                     [multiple]="false"
                                     bindValue="value" 
                                     bindLabel="label" 
-                                    [labelForId]="i" 
                                     [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true" 
                                     clearAllText="Clear" placeholder="This parameter has a valid set of values defined. Please select one from this list." 
-                                    formControlName="value"
-                                    (change)="validSetValueChanged($event)">
+                                    formControlName="value">
                                 </ng-select>
                             </ng-template>
-                            
             <!-- DEBUG -->
             <!-- <small class="form-text text-muted">Current control status:
                 {{ sampleFormOrControlStatus(child.controls.value) }}</small> -->

@@ -44,7 +44,6 @@ export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
     this.core.data.save(Workflow, this._createWorkflowFromStep(this.status))
       .subscribe((data: APIResponse<string>) => {
         this.completed = true;
-        this.core.toaster.showSuccess("Task was created succesfully. Preparing to run ...");
         this.core.navigation.toRun(data.data[0]);
       },
       (err) => {
@@ -55,22 +54,22 @@ export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
   private _createWorkflowFromStep(status: WorkflowStepComponentStatus): Workflow {
     let ret = new Workflow();
 
-    ret.name = status.data.name;
+    ret.name = status.step.name;
     ret.isQuickTask = true;
     ret.isPrivate = true;
     //@ts-ignore
     ret.category = status.category._id;
 
-    //We need to convert back boolean values to PowerShell Booleans:
-    if(status.data.values) {
-      status.data.values.forEach((item, i) => {
-        if (item.nativeType == "Boolean") {
-          status.data.values[i].value = (item.value) ? "$true" : "$false";
-        }
-      })
-    }
+    // //We need to convert back boolean values to PowerShell Booleans:
+    // if(status.data.values) {
+    //   status.data.values.forEach((item, i) => {
+    //     if (item.nativeType == "Boolean") {
+    //       status.data.values[i].value = (item.value) ? "$true" : "$false";
+    //     }
+    //   })
+    // }
 
-    ret.steps.push(status.data);
+    ret.steps.push(status.step);
 
     return ret;
   }

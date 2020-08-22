@@ -143,10 +143,30 @@ textarea::placeholder {
     margin-right: 4px;
 }
 
-.plus-button-small{
+.button-icon-small{
     font-size: .5rem;
     padding: 0px 3px;
     margin-bottom: 1px;
+}
+
+.button-icon-medium{
+    font-size: 1rem;
+    padding: 0px 4px;
+    margin-bottom: 1px;
+}
+
+.drag-drop-cursor {
+    cursor: grab;
+}
+
+.drag-drop-cursor:active {
+    cursor: grabbing;
+}
+
+.drag-drop-container{
+    border-width: 3px;
+    border-style: dashed;
+    border-color: var(--accent-lighter-color);
 }
 
 /* 
@@ -212,3 +232,10 @@ textarea::placeholder {
     color: #8DBF2A;
     font-weight: 500;
 }
+
+/* Tooltips */
+
+.tooltipsWithBreakLines {
+    white-space: pre-line !important;
+}
+

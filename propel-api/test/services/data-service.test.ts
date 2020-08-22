@@ -1,4 +1,5 @@
 import { DataService } from "../../services/data-service";
+import { APIResponse } from "../../../propel-shared/core/api-response";
 
 function getModel(inheritFromEntityBase = false) {
 
@@ -24,39 +25,66 @@ function getModel(inheritFromEntityBase = false) {
 }
 
 describe("DataService Class - update()", () => {
-    test(`Must Throw if document is a Null reference"`, () => {
+    test(`Must Throw if document is a Null reference"`, (done) => {
 
         let m = getModel(false)
         //@ts-ignore
         let ds = new DataService(m)
 
-        expect(() => {
-            ds.update(null);
-        }).toThrow(`The method "update" expect a not null reference for the "document" param`);
+        ds.update(null)
+            .then((data: any) => {
+                expect(data).toBe(null); //We dont expect a call here.
+                done();
+            })
+            .catch((e: APIResponse<any>) => {
+                expect(e.errors.length).toBeGreaterThan(0);
+                expect(e.errors[0].message).toContain(`The method "update" expect a not null reference for the "document" param`);
+                done()
+            })
     }),
-    test(`Must Throw if document doesn't have an "_id" property"`, () => {
+    test(`Must Throw if document doesn't have an "_id" property"`, (done) => {
 
         let m = getModel(false)
         //@ts-ignore
         let ds = new DataService(m)
 
-        expect(() => {
-            ds.update({
-                attr1: "Hello",
-                attr2: "world"
-            });
-        }).toThrow(`The method "update" expect a document with an "_id" attribute`);
+        ds.update({
+            attr1: "Hello",
+            attr2: "world"
+        })
+            .then((data: any) => {
+                expect(data).toBe(null); //We dont expect a call here.
+                done();
+            })
+            .catch((e: APIResponse<any>) => {
+                expect(e.errors.length).toBeGreaterThan(0);
+                expect(e.errors[0].message).toContain(`The method "update" expect a document with an "_id" attribute`);
+                done()
+            })
     }),
-    test(`Must Throw if document doesn't have a valid ObjectId value in the "_id" property"`, () => {
+    test(`Must Throw if document doesn't have a valid ObjectId value in the "_id" property"`, (done) => {
 
         let m = getModel(false)
         //@ts-ignore
         let ds = new DataService(m)
 
-        expect(() => {
-            ds.update({
-                _id: "invalid id"
-            });
-        }).toThrow(`The method "update" expect a valid ObjectId in the parameter "id"`);
+        ds.update({
+            _id: "invalid id"
+        })
+            .then((data: any) => {
+                expect(data).toBe(null); //We dont expect a call here.
+                done();
+            })
+            .catch((e: APIResponse<any>) => {
+                expect(e.errors.length).toBeGreaterThan(0);
+                expect(e.errors[0].message).toContain(`The method "update" expect a valid ObjectId in the parameter "id"`);
+                done()
+            })
+
+        // expect(() => {
+        //     ds.update({
+        //         _id: "invalid id"
+        //     });
+        // }).toThrow(`The method "update" expect a valid ObjectId in the parameter "id"`);
     })
 });

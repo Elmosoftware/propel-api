@@ -1,6 +1,7 @@
 import { Injectable, EventEmitter } from "@angular/core";
 import { Router, UrlSegment } from '@angular/router';
 import { logger } from "../../../propel-shared/services/logger-service";
+import { Workflow } from '../../../propel-shared/models/workflow';
 
 /**
  * This enums all the Pages in the app.
@@ -11,7 +12,8 @@ export const enum PAGES {
     Sandbox = "sandbox",
     Target = "target",
     Script = "script",
-    QuickTask = "quick-task"
+    QuickTask = "quick-task",
+    Workflow = "workflow"
 }
 
 /**
@@ -103,6 +105,19 @@ export class NavigationService {
      */
     toQuickTask(): void {
         this.router.navigate([this.getRelativePath(PAGES.QuickTask)]);
+    }
+
+    /**
+     * Allows to create or edit a workflow.
+     * @param workflowId Script to edit.
+     */
+    toWorkflow(workflowId?: string): void {
+        if (workflowId) {
+            this.router.navigate([this.getRelativePath(PAGES.Workflow), workflowId]);
+        }
+        else {
+            this.router.navigate([this.getRelativePath(PAGES.Workflow)]);
+        }
     }
 
     toSandbox(): void {

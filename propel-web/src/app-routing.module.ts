@@ -8,6 +8,7 @@ import { TargetComponent } from './app/target/target.component';
 import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
 import { ScriptComponent } from './app/script/script.component';
 import { QuickTaskComponent } from './app/quick-task/quick-task.component';
+import { WorkflowComponent } from './app/workflow/workflow.component';
 
 const routes: Routes = [
   {
@@ -66,6 +67,22 @@ const routes: Routes = [
     component: QuickTaskComponent,
     data: {
       title: "New Quick task"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: PAGES.Workflow,
+    component: WorkflowComponent,
+    data: {
+      title: "New Workflow"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: `${PAGES.Workflow}/:id`,
+    component: WorkflowComponent,
+    data: {
+      title: "Editing Workflow"
     },
     canDeactivate: [DataLossPreventionGuard]
   },
