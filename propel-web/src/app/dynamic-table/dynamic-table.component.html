@@ -1,0 +1,36 @@
+<!-- Using hidden instead of ngIf here to avoid paginator issue https://github.com/angular/components/issues/10205 -->
+<div [hidden]="!data">
+    <div [hidden]="!showFilter">
+        <div class="input-group mb-1">
+            <div class="w-25 d-sm-block d-none"></div>
+            <input type="text" class="form-control search-input" aria-label="Search" (keyup)="applyFilter()"
+                placeholder="Filter results by ..." [(ngModel)]="filter">
+            <div class="input-group-append">
+                <button class="btn btn-secondary" (click)="removeFilter()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="w-25 d-sm-block d-none"></div>
+        </div>
+    </div>
+    <div [hidden]="!noMatches">
+        <div class="alert fade show alert-info" role="alert">
+            <strong>No matches!</strong> We were not able to find any match for "{{filter}}".
+        </div>
+    </div>
+    <div [hidden]="noMatches">
+        <div class="d-flex flex-column" style="overflow-x: auto; overflow-y: hidden">
+            <table mat-table [dataSource]="dataSource" matSort class="table">
+                <ng-container *ngFor="let column of columns" [matColumnDef]="column">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> {{column}} </th>
+                    <td mat-cell *matCellDef="let element"> {{element[column]}} </td>
+                </ng-container>
+        
+                <tr mat-header-row *matHeaderRowDef="columns"></tr>
+                <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+            </table>
+        </div>
+        <mat-paginator [ngClass]="{'d-none': !showPaginator, 'd-block': showPaginator}"
+            [pageSizeOptions]="paginatorPageSizeOptions" showFirstLastButtons></mat-paginator>
+    </div>
+</div>

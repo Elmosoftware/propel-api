@@ -1,0 +1,26 @@
+.second-level-expansion-header {
+    height: 40px !important;
+}
+
+.content-container {
+    overflow: auto;
+}
+
+.compact-list {
+    padding: 0.5rem 0.5rem !important;
+    border: none !important;
+    display: list-item;
+    list-style-type: upper-roman !important;
+}
+
+.step-header {
+    background-color: var(--colors-highlight);
+}
+
+.target-header {
+    background-color: var(--colors-dark-highlight);
+}
+
+:host /deep/ .errors-header th {
+    background-color: var(--colors-danger) !important;
+}

@@ -14,7 +14,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {DragDropModule} from '@angular/cdk/drag-drop';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule } from '@angular/material/sort';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 // 3rd party libraries:
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -53,6 +57,8 @@ import { WorkflowStepComponent } from './app/workflow-step/workflow-step.compone
 import { WorkflowComponent } from './app/workflow/workflow.component';
 import { ConsoleLineComponent } from './app/console-line/console-line.component';
 import { StatusIconComponent } from './app/status-icon/status-icon.component';
+import { ResultsComponent } from './app/results/results.component';
+import { DynamicTableComponent } from './app/dynamic-table/dynamic-table.component';
 
 @NgModule({
   declarations: [
@@ -72,7 +78,9 @@ import { StatusIconComponent } from './app/status-icon/status-icon.component';
     QuickTaskComponent,
     WorkflowStepComponent,
     WorkflowComponent,
-    WorkflowStepDialogComponent
+    WorkflowStepDialogComponent,
+    ResultsComponent,
+    DynamicTableComponent
   ],
   imports: [
     BrowserModule,
@@ -95,7 +103,11 @@ import { StatusIconComponent } from './app/status-icon/status-icon.component';
     MatDialogModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
-    DragDropModule
+    DragDropModule,
+    MatExpansionModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule
   ],
   providers: [
     ErrorHandlerService,

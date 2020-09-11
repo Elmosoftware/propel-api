@@ -13,7 +13,8 @@ export const enum PAGES {
     Target = "target",
     Script = "script",
     QuickTask = "quick-task",
-    Workflow = "workflow"
+    Workflow = "workflow",
+    Results = "results"
 }
 
 /**
@@ -72,6 +73,14 @@ export class NavigationService {
      */
     toRun(workflowId: string): void {
         this.router.navigate([this.getRelativePath(PAGES.Run), workflowId]);
+    }
+
+    /**
+     * Navigate to the Execution Results page.
+     * @param executionLogId Log id.
+     */
+    toResults(executionLogId: string): void {
+        this.router.navigate([this.getRelativePath(PAGES.Results), executionLogId]);
     }
 
     /**

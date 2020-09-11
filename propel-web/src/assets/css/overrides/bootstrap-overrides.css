@@ -189,7 +189,8 @@ button:focus {
 
 .form-control {
     color: var(--colors-primary);
-    border: 1px solid var(--colors-soft-border);    
+    border: 1px solid var(--colors-soft-border);   
+    height: auto;
 }
 
 .form-control:focus {
@@ -236,17 +237,21 @@ button:focus {
 
 .table {
     color: var(--colors-primary);
+    margin-bottom: 0;
 }
 
 .table th, .table td {
     vertical-align: top;
-    border-top: 1px solid #dee2e6;
+    border-top: none;
 }
 
 .table thead th {
+    font-size: 1em;
     font-weight: 400;
+    vertical-align: middle;
     color: var(--colors-white);
     background-color: var(--colors-primary);
+    border-bottom: none;
 }
 
 /* Alerts */

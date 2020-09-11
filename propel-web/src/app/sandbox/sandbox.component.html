@@ -5,7 +5,7 @@
     <p><strong>
         <h2>Test Logo</h2>
       </strong></p>
-      <hr>
+    <hr>
     <img src="../../assets/img/logo2.svg" alt="Propel" class="d-inline-block" style="width: 21rem;">
     <img src="../../assets/img/logo2-white.svg" alt="Propel" class="d-inline-block" style="width: 21rem;">
 
@@ -14,7 +14,7 @@
     <p><strong>
         <h2>Functionality Test:</h2>
       </strong></p>
-      <hr>
+    <hr>
     <button type="button" class="btn-secondary" (click)="goToHome()">Go to Home!!!</button><button type="button"
       class="btn-secondary" (click)="throwErrorTest()">Test ERRRRRROR!</button>
     <button type="button" class="btn-secondary" (click)="showToastError()">Show toaster Error</button>
@@ -32,8 +32,8 @@
     <p><strong>
         <h2>Typography:</h2>
       </strong></p>
-      <hr>
-    
+    <hr>
+
     <div>
       <p><strong>
           <h3>Headings:</h3>
@@ -65,8 +65,8 @@
     <p><strong>
         <h2>Dependencies:</h2>
       </strong></p>
-      <hr>
-      <div>
+    <hr>
+    <div>
       <p><strong>
           <h3>Bootstrap NavBar:</h3>
         </strong></p>
@@ -252,32 +252,14 @@
       <p><strong>
           <h2>Font Awesome:</h2>
         </strong></p>
-        <hr>
+      <hr>
       <p>Here Font awesome fab:<i class="fab fa-500px fa-3x"></i></p>
     </div>
-    <!-- <div>
-      <p><strong>
-          <h2>ng-multiselect-dropdown in multiple selection mode:</h2>
-        </strong></p>
-        <hr>
-      <ng-multiselect-dropdown class="dropdown" [placeholder]="'custom placeholder'" [settings]="dropdownSettings"
-        [data]="dropdownList" [(ngModel)]="selectedItems" (onSelect)="onItemSelect($event)"
-        (onSelectAll)="onSelectAll($event)">
-      </ng-multiselect-dropdown>
-      <p><strong>
-          <h3>ng-multiselect-dropdown in single selection mode:</h3>
-        </strong></p>
-      <ng-multiselect-dropdown [placeholder]="'custom placeholder'" [settings]="dropdownSettings2"
-        [data]="dropdownList2" [(ngModel)]="selectedItems2" (onSelect)="onItemSelect($event)"
-        (onSelectAll)="onSelectAll($event)">
-      </ng-multiselect-dropdown>
-      <span>Selected item: {{ (selectedItems2 && selectedItems2.length) ? selectedItems2[0].item_text : 0 }}</span>
-    </div> -->
     <div>
       <p><strong>
           <h2>Angular Material:</h2>
         </strong></p>
-        <hr>
+      <hr>
       <p><strong>
           <h4>Slide toggle Primary:</h4>
         </strong></p>
@@ -312,15 +294,16 @@
         matTooltipPosition="above">Primary</button>
       <button type="button" class="btn btn-secondary" matTooltip="Info about the action"
         matTooltipPosition="right">Secondary</button>
-      <button type="button" class="btn btn-danger" [matTooltip]="tooltipSample"
-        matTooltipPosition="right">Programmatic tooltip</button>
+      <button type="button" class="btn btn-danger" [matTooltip]="tooltipSample" matTooltipPosition="right">Programmatic
+        tooltip</button>
       <button type="button" class="btn" matTooltip="{{tooltipSampleLong}}" matTooltipClass="tooltipsWithBreakLines"
-        matTooltipPosition="right">Programmatic long text  with break lines tooltip</button>
+        matTooltipPosition="right">Programmatic long text with break lines tooltip</button>
       <p><strong>
           <h4>Dialogs:</h4>
         </strong></p>
       <button type="button" class="btn-secondary" (click)="showLongConfirmationDialog()">Show Long Confirmation</button>
-      <button type="button" class="btn-secondary" (click)="showShortConfirmationDialog()">Show Short Confirmation</button>
+      <button type="button" class="btn-secondary" (click)="showShortConfirmationDialog()">Show Short
+        Confirmation</button>
       <button type="button" class="btn-secondary" (click)="showEntityDialog()">Show Entity Dialog</button>
 
       <p class="my-4"><strong>
@@ -470,37 +453,58 @@
 
       <div>
         <p><strong>
-            <h2>Propel Icons:</h2>
+          <app-status-icon size="big" status="SUCCESS"></app-status-icon><h2>Propel Icons:</h2>
           </strong></p>
-          <hr>
+        <hr>
         <ul class="list-group">
           <li class="list-group-item">PENDING:
             <app-status-icon size="small" status="PENDING"></app-status-icon>
             <app-status-icon size="big" status="PENDING"></app-status-icon>
+            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+              <app-status-icon size="small" iconStyle="dark" status="PENDING"></app-status-icon>
+            </div>                        
           </li>
           <li class="list-group-item">FAULTY:
             <app-status-icon size="small" status="FAULTY"></app-status-icon>
             <app-status-icon size="big" status="FAULTY"></app-status-icon>
+            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+              <app-status-icon size="small" iconStyle="dark" status="FAULTY"></app-status-icon>
+            </div>  
           </li>
           <li class="list-group-item">SUCCESS:
             <app-status-icon size="small" status="SUCCESS"></app-status-icon>
             <app-status-icon size="big" status="SUCCESS"></app-status-icon>
+            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+              <app-status-icon size="small" iconStyle="dark" status="SUCCESS"></app-status-icon>
+            </div>  
           </li>
           <li class="list-group-item">ABORTED:
             <app-status-icon size="small" status="ABORTED"></app-status-icon>
             <app-status-icon size="big" status="ABORTED"></app-status-icon>
+            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+              <app-status-icon size="small" iconStyle="dark" status="ABORTED"></app-status-icon>
+            </div>  
           </li>
           <li class="list-group-item">CANCELLED:
             <app-status-icon size="small" status="CANCELLED"></app-status-icon>
             <app-status-icon size="big" status="CANCELLED"></app-status-icon>
+            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+              <app-status-icon size="small" iconStyle="dark" status="CANCELLED"></app-status-icon>
+            </div>  
           </li>
           <li class="list-group-item">SKIPPED:
             <app-status-icon size="small" status="SKIPPED"></app-status-icon>
             <app-status-icon size="big" status="SKIPPED"></app-status-icon>
+            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+              <app-status-icon size="small" iconStyle="dark" status="SKIPPED"></app-status-icon>
+            </div>  
           </li>
           <li class="list-group-item">RUNNING:
             <app-status-icon size="small" status="RUNNING"></app-status-icon>
             <app-status-icon size="big" status="RUNNING"></app-status-icon>
+            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+              <app-status-icon size="small" iconStyle="dark" status="RUNNING"></app-status-icon>
+            </div>  
           </li>
         </ul>
       </div>
@@ -512,9 +516,8 @@
         </p>
 
         <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="testWithData" 
-            name="testWithData" [(ngModel)]="testWithData"
-            (change)="testWithDataChanged()">
+          <input type="checkbox" class="custom-control-input" id="testWithData" name="testWithData"
+            [(ngModel)]="testWithData" (change)="testWithDataChanged()">
           <label class="custom-control-label" for="testWithData">Test with data, (like an update form)</label>
         </div>
         <hr>
@@ -531,52 +534,127 @@
           </div>
           <div class="form-group">
             <label class="data-required mr-2">Disabled</label>
-              <mat-slide-toggle color="primary" id="enabled" formControlName="enabled">
+            <mat-slide-toggle color="primary" id="enabled" formControlName="enabled">
             </mat-slide-toggle>
             <label class="ml-2">Enabled</label>
             <small *ngIf="getErrorText(this.sampleForm.controls.enabled)"
               class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.enabled) }}</small>
-            <small class="form-text text-muted">Current control status: {{ sampleFormOrControlStatus(this.sampleForm.controls.enabled) }}</small>
-          </div>            
+            <small class="form-text text-muted">Current control status:
+              {{ sampleFormOrControlStatus(this.sampleForm.controls.enabled) }}</small>
+          </div>
           <div class="form-group">
             <label class="data-required mr-2" for="simpleSelect">Selection of simple value</label>
-            <ng-select [items]="countries"
-                   [selectOnTab]="true"
-                   bindValue="_id"
-                   bindLabel="name"
-                   labelForId="simpleSelect"
-                   [compareWith]="compareFn"
-                   placeholder="Select a country"
-                   formControlName="country">
+            <ng-select [items]="countries" [selectOnTab]="true" bindValue="_id" bindLabel="name"
+              labelForId="simpleSelect" [compareWith]="compareFn" placeholder="Select a country"
+              formControlName="country">
             </ng-select>
             <small *ngIf="getErrorText(this.sampleForm.controls.country)"
               class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.country) }}</small>
-            <small class="form-text text-muted">Current control status: {{ sampleFormOrControlStatus(this.sampleForm.controls.country) }}</small>
+            <small class="form-text text-muted">Current control status:
+              {{ sampleFormOrControlStatus(this.sampleForm.controls.country) }}</small>
           </div>
           <div class="form-group">
             <label class="mr-2" for="multipleSelect">Selection of multiple values</label>
-            <ng-select [items]="allColors"
-                   [multiple]="true"
-                   labelForId="multipleSelect"
-                   [closeOnSelect]="false"
-                   [clearSearchOnAdd]="true"
-                   [searchable]="true"
-                   bindValue="_id"
-                   bindLabel="name"
-                   clearAllText="Clear"
-                   [compareWith]="compareFn"
-                   placeholder="Select all the colors"
-                   formControlName="colors">
+            <ng-select [items]="allColors" [multiple]="true" labelForId="multipleSelect" [closeOnSelect]="false"
+              [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name" clearAllText="Clear"
+              [compareWith]="compareFn" placeholder="Select all the colors" formControlName="colors">
             </ng-select>
             <small *ngIf="getErrorText(this.sampleForm.controls.colors)"
               class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.colors) }}</small>
-            <small class="form-text text-muted">Current control status: {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
+            <small class="form-text text-muted">Current control status:
+              {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
           </div>
           <button class="btn btn-primary" type="submit" [disabled]="!sampleForm.valid">Save</button>
           <br>
           <span>Current form status: {{ sampleFormOrControlStatus(sampleForm) }}</span><br>
           <span>Current form value: {{ sampleForm.value | json }}</span>
         </form>
+      </div>
+
+      <div>
+        <p><strong>
+            <h2>Material Accordion: </h2>
+          </strong>
+        </p>
+
+        <div>
+          <button class="btn btn-primary" type="button" (click)="expandAll()">Expand All</button>
+          <button class="btn btn-primary" type="button" (click)="collapseAll()">Collapse All</button>
+        </div>
+
+        <!-- displaymode "flat": No spaces between rows. "default": With a space between rows. -->
+        <mat-accordion multi displayMode="default" togglePosition="before" #accordion>
+          <!-- #enddocregion multi -->
+          <mat-expansion-panel expanded="true">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Personal data
+              </mat-panel-title>
+              <mat-panel-description>
+                Type your name and age
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            This is the content
+          </mat-expansion-panel>
+          <!-- #docregion disabled -->
+          <mat-expansion-panel disabled>
+            <!-- #enddocregion disabled -->
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Destination
+              </mat-panel-title>
+              <mat-panel-description>
+                Type the country name
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            This is content 2
+          </mat-expansion-panel>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Day of the trip
+              </mat-panel-title>
+              <mat-panel-description>
+                Inform the date you wish to travel
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            This is content 3
+          </mat-expansion-panel>
+        </mat-accordion>
+
+      </div>
+
+      <div>
+        <p><strong>
+            <h2>Material Table: </h2>
+          </strong>
+        </p>
+        <div class="d-flex mb-4">
+          <input type="text" class="form-control" placeholder="Enter the amount of results for the table"
+            [(ngModel)]="tableTotalResults">
+          <button class="btn btn-secondary" (click)="totalResultsChange()">
+            Apply
+          </button>
+        </div>
+        <div class="d-flex mb-4">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" [(ngModel)]="showFilter" id="showFilterCheckbox"
+              name="showFilterCheckbox">
+            <label class="custom-control-label" for="showFilterCheckbox">Show filter controls</label>
+          </div>
+        </div>
+        <div class="d-flex mb-4">
+          <label for="excludedFieldsListTextBox">List of excluded fields</label>
+          <input type="text" class="form-control" [(ngModel)]="excludedFieldsList" 
+            id="excludedFieldsListTextBox" placeholder="Enter here a comma separated list of fields to exclude.">
+        </div>
+        <div class="d-flex mb-4">
+          <label for="sortedColumnsListTextBox">Column order</label>
+          <input type="text" class="form-control" [(ngModel)]="sortedColumnsList" 
+            id="sortedColumnsListTextBox" placeholder="Enter here a comma separated list of the columns as you wish to be presented.">
+        </div>
+        <app-dynamic-table [data]="targetResultsTable.originalData" [show-filter]="showFilter" 
+          [excluded-fields]="excludedFieldsList" [column-order]="sortedColumnsList"></app-dynamic-table>
       </div>
 
       <p class="my-4"><strong>

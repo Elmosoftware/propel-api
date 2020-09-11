@@ -89,13 +89,12 @@ export class RunComponent implements OnInit {
           this.processError(err);
         },
         () => {
-          if (this.hasMessages) {
-            this.workflowStatus = this.lastMessage.logStatus;
-          }
-          else {
-            this.workflowStatus = "SUCCESS";
-          }
-          this.scrollDown()
+          this.workflowStatus = this.lastMessage.logStatus;
+          this.scrollDown();
+          this.core.toaster.showInformation("Showing results soon...", "Execution is done.")
+          setTimeout(() => {
+            this.core.navigation.toResults(this.lastMessage.logId);
+          }, 500);
         });
   }
 

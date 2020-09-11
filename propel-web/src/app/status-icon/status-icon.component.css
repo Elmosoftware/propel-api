@@ -1,7 +1,6 @@
 
 .icon {
     font-weight: 600;
-    /* background-color: var(--colors-primary); */
     color: var(--colors-background);
     border: 1px solid var(--colors-background);
     background-color: var(--colors-primary);
@@ -10,6 +9,7 @@
     padding-top: 2px;
     height: 22px;
     width: 22px;
+    font-size: 1rem;
 }
 
 .icon-3x {
@@ -17,38 +17,39 @@
     padding-top: 4px;
     height: 58px;
     width: 58px;
+    font-size: 3rem;
 }
 
 .icon-3x-spin {
     margin-top: 7px;
 }
 
+.dark-style {
+    color: var(--colors-primary);
+    border: 1px solid var(--colors-primary);
+}
+
+.dark-style-light {
+    color: var(--colors-white);
+}
+
+.dark-style-spin {
+    color: var(--colors-white);
+    border: none;
+}
+
 .icon-success {
-    /* color: var(--colors-highlight);
-    border: 1px solid var(--colors-highlight); */
-    /* color: var(--colors-background);
-    border: 1px solid var(--colors-background) */
     background-color: var(--colors-highlight);
 }
-/* 
-.rest {
-    background-color: var(--colors-primary);
-} */
 
 .icon-hold {
-    /* color: var(--colors-disabled);
-    border: 1px solid var(--colors-disabled) */
     background-color: var(--colors-disabled);
 }
 
 .icon-warn {
-    /* color: var(--colors-warning);
-    border: 1px solid var(--colors-warning) */
     background-color: var(--colors-warning-dark);
 }
 
 .icon-error {
-    /* color: var(--colors-danger);
-    border: 1px solid var(--colors-danger); */
     background-color: var(--colors-danger);
 }

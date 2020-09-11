@@ -8,5 +8,8 @@
     'fa-times-circle icon-error': (status == 'FAULTY' || status == 'FAILED'),
     'fa-check-circle icon-success': status == 'SUCCESS',
     'fa-ban': (status == 'ABORTED' || status == 'CANCELLED'),
-    'fa-share': status == 'SKIPPED'
+    'fa-share': status == 'SKIPPED',
+    'dark-style': iconStyle == 'dark',
+    'dark-style-spin': iconStyle == 'dark' && status == 'RUNNING',
+    'dark-style-light': iconStyle == 'dark' && (status == 'ABORTED' || status == 'CANCELLED' || status == 'SKIPPED')
 }"></i>

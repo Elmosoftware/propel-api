@@ -5,6 +5,11 @@ export enum IconSizes {
   Big = "big"
 }
 
+export enum IconStyle {
+  Light = "light",
+  Dark = "dark"
+}
+
 @Component({
   selector: 'app-status-icon',
   templateUrl: './status-icon.component.html',
@@ -21,6 +26,11 @@ export class StatusIconComponent implements OnInit {
    * A tooltip text that helps the user to clarify the symbolism.
    */
   @Input() tooltipText: string;
+
+  /**
+   * Icon style. It change the icon representation to match better the background.
+   */
+  @Input() iconStyle: string = IconStyle.Light;
 
   /**
    * Tooltip text positioning, you can choose between:

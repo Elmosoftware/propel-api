@@ -11,18 +11,11 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { Group } from '../../../../propel-shared/models/group';
 import { DialogResult } from 'src/core/dialog-result';
 import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
-
-// export function NoNameStartingWith(startText: string): ValidatorFn {
-//   return (control: AbstractControl): {[key: string]: any} | null => {
-//     let ret: any = null;
-
-//     if(String(control.value).startsWith(startText)) {
-//       ret = {'nonamestartingwith': {value: control.value, startText: startText}}
-//     }
-
-//     return ret;
-//   };
-// }
+import { MatAccordion } from '@angular/material/expansion';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { Utils } from '../../../../propel-shared/utils/utils';
 
 @Component({
   selector: 'app-root',
@@ -31,94 +24,9 @@ import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dl
 })
 export class SandboxComponent implements OnInit {
 
-  // minItems(min: number): ValidatorFn {
-  //   return (control: AbstractControl): {[key: string]: any} | null => {
-  //     let ret: any = null;
-
-  //     if (control.value && Array.isArray(control.value) && control.value.length < min) {
-  //       ret = {
-  //         'minItems': {
-  //           value: control.value, 
-  //           requiredLength: min, 
-  //           actualLength:control.value.length 
-  //         }
-  //       }
-  //     }
-  
-  //     return ret;
-  //   };
-  // }
-
-  // maxItems(max: number): ValidatorFn {
-  //   return (control: AbstractControl): {[key: string]: any} | null => {
-  //     let ret: any = null;
-
-  //     if (control.value && Array.isArray(control.value) && control.value.length > max) {
-  //       ret = {
-  //         'maxItems': {
-  //           value: control.value, 
-  //           requiredLength: max, 
-  //           actualLength:control.value.length 
-  //         }
-  //       }
-  //     }
-  
-  //     return ret;
-  //   };
-  // }
-
-  // getValidationErrors(control: AbstractControl): string {
-  //   let ret: string = "";
-    
-  //   if (!control) return ret;
-  //   if (!control.invalid) return ret;
-  //   if (!control.errors) return ret;
-  //   if(!(control.dirty || control.touched)) return ret;
-    
-  //   //Standard Validators:
-  //   if (control.errors.required) {
-  //     ret = `This information is required in order to continue.`; 
-  //   }
-  //   else if (control.errors.minlength && control.touched) {
-  //     ret = `This must be at least ${control.errors.minlength.requiredLength} characters long. 
-  //     (${control.errors.minlength.requiredLength - control.errors.minlength.actualLength} more needed).`
-  //   }
-  //   else if (control.errors.maxlength && control.touched) {
-  //     ret = `This can't be longer than ${control.errors.maxlength.requiredLength}. 
-  //     (Need to remove at least ${control.errors.maxlength.actualLength - control.errors.maxlength.requiredLength} characters).`
-  //   }
-  //   //Custom Validators:
-  //   else if (control.errors.minItems && control.touched) {
-  //     if (control.errors.minItems.requiredLength == 1) {
-  //       ret = "You need to select at least 1 item from the list."
-  //     }
-  //     else {
-  //       ret = `You need to select at least ${control.errors.minItems.requiredLength} items from the list.
-  //       (${control.errors.minItems.requiredLength - control.errors.minItems.actualLength} extra item(s) needed).`
-  //     }      
-  //   }
-  //   else if (control.errors.maxItems && control.touched) {
-  //     if (control.errors.maxItems.requiredLength == 1) {
-  //       ret = "You can't select more than one item in this list."
-  //     }
-  //     else {
-  //       ret = `You can select a maximum of ${control.errors.maxItems.requiredLength} items from the list.
-  //       (Need to remove at least ${control.errors.maxItems.actualLength - control.errors.maxItems.requiredLength} items).`
-  //     }      
-  //   }
-
-  //   return ret;
-  // }
+  @ViewChild(MatAccordion) accordion: MatAccordion;
 
   title = 'propel-web';
-
-  // dropdownList = [];
-  // selectedItems = [];
-  // dropdownSettings: IDropdownSettings = {};
-  // dropdownList2 = [];
-  // selectedItems2 = [];
-  // dropdownSettings2: IDropdownSettings = {};
-
   color: ThemePalette = 'accent';
   checked = false;
   disabled = false;
@@ -170,17 +78,6 @@ export class SandboxComponent implements OnInit {
 
   ]
   
-  // simpleSelectDropdownSettings: IDropdownSettings = {
-  //   singleSelection: true,
-  //   idField: '_id',
-  //   textField: 'name',
-  //   selectAllText: 'Select All',
-  //   unSelectAllText: 'UnSelect All',
-  //   itemsShowLimit: 10,
-  //   allowSearchFilter: true,
-  //   closeDropDownOnSelection: true
-  // };
-
   testWithData: boolean = false;
 
   sampleData: SampleData = new SampleData();
@@ -241,96 +138,58 @@ export class SandboxComponent implements OnInit {
   }
   //#endregion
 
+  //#region MatTable Sample
+
+  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
+  @ViewChild(MatSort, {static: true}) sort: MatSort;
+
+  tableTotalResults: number = 10;
+  targetResultsTable: TargetResultsTable;
+  tableFilterBy: string = "";
+  showFilter: boolean = true;
+  excludedFieldsList: string;
+  sortedColumnsList: string
+
+  applyFilter() {
+    this.targetResultsTable.applyFilter(this.tableFilterBy);
+  }
+
+  removeFilter() {
+    this.tableFilterBy = "";
+    this.targetResultsTable.removeFilter();
+  }
+
+  totalResultsChange() {
+    let sampleData = [];
+
+    for (let index = 0; index < this.tableTotalResults; index++) {
+      sampleData.push({
+        i: index + 1,
+        first: "Mark",
+        last: "Otto",
+        handle: "@mdo-rtyui_tytyruwiiiw_dgfgrgstatta",
+        ind: index + 1,
+        text: `This is the ${(index+1).toString()}`,
+        date: new Date((new Date()).getTime() + (86400000 * (index+1))),
+        bol: Boolean((index+1) % 4),
+        longText: "This is a random long text to verify how the table accomodate on long content in cells."
+      });
+    }
+
+    this.targetResultsTable = new TargetResultsTable(JSON.stringify(sampleData));
+    this.targetResultsTable.dataSource.paginator = this.paginator;
+    this.targetResultsTable.dataSource.sort = this.sort;
+  }
+  //#end region
+
   constructor(private core: CoreService, private data: DataService) {
 
   }
 
   ngOnInit() {
-    // this.dropdownList = [
-    //   { item_id: 1, item_text: 'Mumbai' },
-    //   { item_id: 2, item_text: 'Bangaluru' },
-    //   { item_id: 3, item_text: 'Pune' },
-    //   { item_id: 4, item_text: 'Manhattan' },
-    //   { item_id: 5, item_text: 'New Mangosta' },
-    //   { item_id: 6, item_text: 'Cachimoro' },
-    //   { item_id: 7, item_text: 'Fakturi mehta' },
-    //   { item_id: 8, item_text: 'Caranagui also tirugi' },
-    //   { item_id: 9, item_text: 'Jolofitegi garasuchi tol' },
-    //   { item_id: 10, item_text: 'Carendra' },
-    //   { item_id: 11, item_text: 'Chroma Chroma Chrome' },
-    //   { item_id: 12, item_text: 'New Delhi' }
-    // ];
-    // this.selectedItems = [
-    //   { item_id: 3, item_text: 'Pune' },
-    //   { item_id: 4, item_text: 'Navsari' }
-    // ];
-    // this.dropdownSettings = {
-    //   singleSelection: false,
-    //   idField: 'item_id',
-    //   textField: 'item_text',
-    //   selectAllText: 'Select All',
-    //   unSelectAllText: 'UnSelect All',
-    //   itemsShowLimit: 10,
-    //   allowSearchFilter: true
-    // };
-    // //For the single mode demo:
-    // this.dropdownList2 = [
-    //   { item_id: 1, item_text: 'Item 1' },
-    //   { item_id: 2, item_text: 'Item 2' },
-    //   { item_id: 3, item_text: 'Item 3' },
-    //   { item_id: 4, item_text: 'Item 4' },
-    //   { item_id: 5, item_text: 'Item 5' },
-    //   { item_id: 6, item_text: 'Item 6' },
-    //   { item_id: 7, item_text: 'Item 7' }
-    // ];
-    // this.dropdownSettings2 = {
-    //   singleSelection: true,
-    //   idField: 'item_id',
-    //   textField: 'item_text',
-    //   selectAllText: 'Select All',
-    //   unSelectAllText: 'UnSelect All',
-    //   itemsShowLimit: 10,
-    //   allowSearchFilter: true
-    // };
-    // this.selectedItems2 = [
-    //   // { item_id: 1, item_text: 'Item 1' }
-    // ];
-
-    //========================================================
-
-  //   setTimeout(() => {
-    
-  //     this.sampleData = new SampleData();
-
-  //     this.sampleData.name = "ValidName";
-  //     this.sampleData.enabled = true;
-  //     this.sampleData.country = this.countries[5];
-
-  //   // this.sampleForm.removeControl("country");
-  //   // this.sampleForm.registerControl("country", new FormControl(this.sampleData.country, [
-  //   //   Validators.required
-  //   // ]))
-  //   // this.sampleForm.controls.country.patchValue(this.sampleData.country);
-  //   // this.sampleForm.controls.country.patchValue([]);
-  //     // this.sampleForm.controls.country.patchValue(this.sampleData.country);
-  //     this.sampleForm.patchValue(this.sampleData);
-  //     this.sampleForm.controls.country.patchValue(this.sampleData.country._id);
-
-  //  }, 2000);
-
-    //========================================================
-
     this.testWithDataChanged();
+    this.totalResultsChange()
   }
-
-  // onItemSelect(item: any) {
-  //   console.log("onItemSelect")
-  //   console.log(item);
-  // }
-  // onSelectAll(items: any) {
-  //   console.log("onSelectAll")
-  //   console.log(items);
-  // }
 
   goToHome() {
     this.core.navigation.toHome();
@@ -372,25 +231,6 @@ export class SandboxComponent implements OnInit {
   }
 
   testFind() {
-    // let ret: User[]
-    // let qm: QueryModifier = new QueryModifier();
-    // qm.top = 1000;
-    // qm.skip = 0;
-    // qm.sortBy = "initials";
-    // qm.populate = true;
-    // qm.filterBy = "{\"picture\": {\"$eq\": null}}"
-
-    // this.data.find(User, qm)
-    //   .subscribe(
-    //     data => {
-    //       let x = data;
-    //     },
-    //     err => {
-    //       throw err
-    //     });
-
-    // ret = this.data.create(MyClasesita)
-
     let qm: QueryModifier = new QueryModifier();
     
     qm.sortBy = "name";
@@ -404,7 +244,6 @@ export class SandboxComponent implements OnInit {
       err => {
         throw err
       });
-    // return ret;
   }
 
   testInsert() {
@@ -430,8 +269,6 @@ export class SandboxComponent implements OnInit {
     let u: User = new User();
 
     u._id = "5f18eee52dcf570b148586e8"
-    // u.email = "spongebob3@hotmail.com"
-    // u.initials = "sb3"
     u.name = "Bob the third UPDATED"
 
     this.data.save<User>(User, u)
@@ -491,6 +328,14 @@ export class SandboxComponent implements OnInit {
       });
   }
 
+  expandAll() {
+    this.accordion.openAll();
+  }
+
+  collapseAll() {
+    this.accordion.closeAll();
+  }
+
 }
 
 class SampleData {
@@ -520,4 +365,94 @@ class Color extends Entity {
   constructor() {
     super()
   }
+}
+
+// class TableDataSample {
+//   readonly id: number;
+//   readonly text: string;
+//   readonly date: Date;
+//   readonly bol: boolean;
+//   readonly longText: string;
+
+//   constructor(id: number) {
+//     this.id = id;
+//     this.text = `This is the ${id.toString()}`;
+//     this.date = new Date((new Date()).getTime() + (86400000 * id));
+//     this.bol = Boolean(id % 3);
+//     this.longText = "This is a random long text to verify how the table accomodate on long content in cells."
+//   }
+// }
+
+class TargetResultsTable {
+
+  readonly isValidJSON: boolean;
+  readonly columns: string[];
+  readonly dataSource: MatTableDataSource<any>;
+  originalData: any[];
+  currentFilterTerm: string = "";
+
+  get noData(): boolean {
+    return this.dataSource && this.dataSource.data && this.dataSource.data.length == 0;
+  }
+
+  get noMatches(): boolean {
+    return this.currentFilterTerm && this.dataSource.filteredData 
+      && this.dataSource.filteredData.length == 0
+  }
+
+  applyFilter(term: string) {
+    this.currentFilterTerm = term;
+    this.dataSource.filter = this.currentFilterTerm.trim().toLowerCase();
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
+
+  removeFilter() {
+    this.currentFilterTerm = "";
+    this.applyFilter(this.currentFilterTerm);
+  }
+
+  getValue(dataItemOrIndex: any | number, columnNameOrIndex: string | number) {
+
+
+  }
+
+  constructor(rawData: string) {
+
+    let parsedData: any;
+    this.columns = [];
+    this.originalData = [];
+    this.isValidJSON = Utils.isValidJSON(rawData);
+
+    if(this.isValidJSON) {
+      parsedData = JSON.parse(rawData);
+
+      if (!Array.isArray(parsedData)) {
+        parsedData = [parsedData];
+      }
+      
+      if(parsedData.length > 0) {
+        //Analyzing the first element of the array in order to figure out what we are dealing with;
+        if (typeof parsedData[0] == "object") {
+          Object.keys(parsedData[0]).forEach((prop: string) => {
+            this.columns.push(prop);
+          });
+        }
+        else {
+          this.columns.push("Results");
+        }
+      }
+    }
+    else {
+      parsedData = [{
+        Results: this.dataSource.toString()
+      }]
+      this.columns.push("Results");
+    }
+
+    this.dataSource = new MatTableDataSource(parsedData);
+    this.originalData = parsedData;
+  }  
 }

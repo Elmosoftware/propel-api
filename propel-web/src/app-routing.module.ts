@@ -9,6 +9,7 @@ import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
 import { ScriptComponent } from './app/script/script.component';
 import { QuickTaskComponent } from './app/quick-task/quick-task.component';
 import { WorkflowComponent } from './app/workflow/workflow.component';
+import { ResultsComponent } from './app/results/results.component';
 
 const routes: Routes = [
   {
@@ -85,6 +86,13 @@ const routes: Routes = [
       title: "Editing Workflow"
     },
     canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: `${PAGES.Results}/:id`,
+    component: ResultsComponent,
+    data: {
+      title: "Displaying execution results"
+    }
   },
   {
     path: PAGES.Sandbox,
