@@ -1,6 +1,9 @@
 import { ValidatorFn, AbstractControl } from '@angular/forms';
 import * as moment from 'moment';
 
+import { UIHelper } from 'src/util/ui-helper';
+import { Utils } from '../../../propel-shared/utils/utils';
+
 /**
  * Reactive Froms validation helper.
  */
@@ -117,6 +120,23 @@ export class ValidatorsHelper {
         };
       }
 
+      static searchableText(): ValidatorFn {
+        return (control: AbstractControl): {[key: string]: any} | null => {
+          let ret: any = null;
+
+          if (control.value && !Utils.isQuotedString(control.value) &&
+            UIHelper.tokenizeAndStem(control.value).length == 0) {
+            ret = {
+              'searchableText': {
+                value: control.value
+              }
+            }
+          }
+
+          return ret;
+        };
+      }
+
       /**
        * Returns the validation error text for the supplied control.
        * Thi methis returns an empty string if "control" is a null reference or is not invalid.
@@ -175,6 +195,9 @@ export class ValidatorsHelper {
         }
         else if (control.errors.anyDate && control.touched) {
           ret = "The date is not valid, Please recall dates need to be in ISO-8601 format."
+        }
+        else if (control.errors.searchableText && control.touched) {
+          ret = "We didnt find any searchable words in the supplied text. If you want to do a strict search, please surround the text by quotes."
         }
     
         return ret;

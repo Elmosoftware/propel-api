@@ -34,16 +34,18 @@
           Browse
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="#">Workflows</a>
-          <a class="dropdown-item" href="#">Scripts</a>
-          <a class="dropdown-item" href="#">Targets</a>
+          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseWorkflows()">Workflows</a>
+          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseScripts()">Scripts</a>
+          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseTargets()">Targets</a>
         </div>
       </li>
     </ul>
-    <div class="input-group input-group-md justify-content-sm-start justify-content-md-end mb-2 mb-sm-2 mb-md-0">
-      <input type="text" class="form-control search-input" placeholder="Search" aria-label="Search">
+    <div *ngIf="!isSearchPage()" class="input-group input-group-md justify-content-sm-start justify-content-md-end mb-2 mb-sm-2 mb-md-0">
+      <input type="text" class="form-control search-input" placeholder="Search" aria-label="Search"
+        [(ngModel)]="searchTerm" (keyup.enter)="goToSearch()">
       <div class="input-group-append">
-        <button class="btn btn-secondary search-btn">
+        <button class="btn btn-secondary search-btn" [disabled]="searchTerm.length < 3" 
+          (click)="goToSearch()">
           <i class="fas fa-search"></i>
         </button>
       </div>

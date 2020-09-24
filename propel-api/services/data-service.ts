@@ -172,8 +172,19 @@ Those fields are for internal use only and must not take part on user queries.`)
                 reject(new APIResponse<any>(e, null))
             }
             else {
+                let projection: any = null;
 
-                let query = this._model.model.find(qm.filterBy);
+                //If it's a text search, we add a projection to calculate the text scores:
+                if (qm.isTextSearch) {
+                    projection = { 
+                        score: { 
+                            $meta: "textScore" 
+                        } 
+                    }
+                }
+
+                // let query = this._model.model.find(qm.filterBy);
+                let query = this._model.model.find(qm.filterBy, projection);
                 let countQuery = this._model.model.countDocuments(qm.filterBy);
 
                 if (qm.top > 0) {
@@ -186,6 +197,11 @@ Those fields are for internal use only and must not take part on user queries.`)
 
                 if (qm.isSorted) {
                     query.sort(qm.sortBy);
+                }
+                //If the query is not sorted and is a text search, we will sort by default by the 
+                //text score, (so more meaningful results are showing first):
+                else if(qm.isTextSearch) {
+                    query.sort(projection);
                 }
 
                 if (qm.populate) {

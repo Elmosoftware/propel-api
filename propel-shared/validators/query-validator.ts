@@ -29,7 +29,6 @@ export class QueryValidator extends ValidatorBase {
         else {
             this._validatePagination(queryModifier.skip, queryModifier.top);
             this._validatePopulate(queryModifier.populate);
-            this._validateSorting(queryModifier.sortBy);
             this._validateFiltering(queryModifier.filterBy);
         }
 
@@ -81,21 +80,6 @@ export class QueryValidator extends ValidatorBase {
         if (!(typeof populate === "boolean")) {
             ret = `We expected a Boolean for the "populate" query modifier.
             Supplied parameter type is "${typeof populate}".`;
-        }
-
-        if (ret) {
-            super._addError(ret);
-        }
-
-        return this;
-    }
-
-    _validateSorting(value: any) {
-        let ret = "";
-
-        if (!(typeof value === "string")) {
-            ret = `We expected a String for the "sortBy" query modifier.
-            Supplied parameter type is "${typeof value}".`;
         }
 
         if (ret) {

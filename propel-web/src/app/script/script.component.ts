@@ -255,7 +255,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
     this.core.data.save(Script, script)
       .subscribe((results: APIResponse<string>) => {
-        this.core.toaster.showSuccess("Changes has been saved succesfully.");
+        this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.completed = true
         this.fh.setId(results.data[0]);
         this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 

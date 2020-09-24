@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
+import { SearchType } from '../search/search.component';
+import { PAGES } from 'src/services/navigation.service';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -14,6 +16,7 @@ export class NavigationBarComponent implements OnInit {
   }
 
   loading: boolean;
+  searchTerm: string = "";
 
   ngOnInit(): void {
 
@@ -41,5 +44,27 @@ export class NavigationBarComponent implements OnInit {
 
   goToWorkflow() {
     this.core.navigation.toWorkflow();
+  }
+
+  goToSearch(){
+    if (this.searchTerm.length < 3)  return;
+    this.core.navigation.toSearch(SearchType.Workflows, this.searchTerm);
+    this.searchTerm = "";
+  }
+
+  goToBrowseWorkflows() {
+    this.core.navigation.toBrowseWorkflows();
+  }
+
+  goToBrowseScripts() {
+    this.core.navigation.toBrowseScripts();
+  }
+
+  goToBrowseTargets() {
+    this.core.navigation.toBrowseTargets();
+  }
+
+  isSearchPage(): boolean {
+    return this.core.navigation.currentPage() == PAGES.Search;
   }
 }

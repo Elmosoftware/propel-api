@@ -9,14 +9,11 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { Group } from '../../../../propel-shared/models/group';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
-import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { DialogResult } from 'src/core/dialog-result';
 import { FormHandler } from "../../core/form-handler";
 import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
-import { Category } from '../../../../propel-shared/models/category';
 
 const FRIENDLY_NAME_MIN: number = 3;
 const FRIENDLY_NAME_MAX: number = 25;
@@ -155,7 +152,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
   save() {
     this.core.data.save(Target, this.fh.value)
       .subscribe((results: APIResponse<string>) => {
-        this.core.toaster.showSuccess("Changes has been saved succesfully.");
+        this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.fh.setId(results.data[0]);
         this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
         //will allow the "Cancel" button to come back to this version.

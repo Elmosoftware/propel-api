@@ -152,7 +152,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
     }
 
     /**
-     * Current amount of aquire request that has been queud and are waiting for released objects.
+     * Current amount of aquire request that have been queud and are waiting for released objects.
      */
     get queueSize(): number {
         return this._requestQueue.length;
@@ -314,7 +314,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
             throw new PropelError("You can't call reset() without first dispose all object in the object pool.");
         }
 
-        logger.logInfo(`Object pool is starting or it has been restarted.`)
+        logger.logInfo(`Object pool is starting or it have been restarted.`)
         this._initialize();
         logger.logInfo(`Object pool started successfully.`)
     }

@@ -360,7 +360,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
 
     this.core.data.save(Workflow, this.fh.value)
       .subscribe((results: APIResponse<string>) => {
-        this.core.toaster.showSuccess("Changes has been saved succesfully.");
+        this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.fh.setId(results.data[0]);
         this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
         //will allow the "Cancel" button to come back to this version.

@@ -56,7 +56,7 @@ export class ConsoleLineComponent implements OnInit {
         break;
       case InvocationStatus.Killed:
       case InvocationStatus.Disposed:
-        ret = "Execution has been canceled by user request."
+        ret = "Execution have been canceled by user request."
         break;    
       case InvocationStatus.Finished:
         ret = "Finished!"

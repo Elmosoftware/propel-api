@@ -1,0 +1,17 @@
+<ul class="list-group">
+    <li class="list-group-item mx-3" *ngFor="let item of model">
+        <div class="row">
+            <div class="col-auto">
+                <a href="javascript:void(0)" (click)="goToEditTarget(item._id)" [innerHtml]="item.friendlyName"></a>
+            </div>
+            <div class="col-auto">
+                <div class="ml-1 text-muted overflowEllipsis">({{item.FQDN}})</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-auto">
+                <span *ngIf="item.description" class="text-mini description" [innerHtml]="item.description"></span>
+            </div>
+        </div>
+    </li>
+</ul>

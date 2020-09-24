@@ -148,7 +148,7 @@ describe("Runner Class - execute()", () => {
                     expect(runner.executionLog?.executionSteps[1].status).toEqual(ExecutionStatus.Aborted);
                     expect(runner.executionLog?.executionSteps[1].stepName).toEqual(w.steps[1].name);
                     expect(runner.executionLog?.executionSteps[1].targets.length).toEqual(0); //The step was aborted, so no
-                    //targets has been added to the execution. 
+                    //targets have been added to the execution. 
                 }
                 else {
                     expect(msg.logId).not.toBe(null);

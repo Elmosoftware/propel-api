@@ -1,7 +1,8 @@
 import { Injectable, EventEmitter } from "@angular/core";
-import { Router, UrlSegment } from '@angular/router';
+import { Router } from '@angular/router';
+
 import { logger } from "../../../propel-shared/services/logger-service";
-import { Workflow } from '../../../propel-shared/models/workflow';
+import { SearchType } from 'src/app/search/search.component';
 
 /**
  * This enums all the Pages in the app.
@@ -14,7 +15,11 @@ export const enum PAGES {
     Script = "script",
     QuickTask = "quick-task",
     Workflow = "workflow",
-    Results = "results"
+    Results = "results",
+    Search = "search",
+    BrowseWorkflows = "browse-workflows",
+    BrowseScripts = "browse-scripts",
+    BrowseTargets = "browse-targets"
 }
 
 /**
@@ -25,6 +30,7 @@ export const enum PAGES {
 })
 export class NavigationService {
 
+    private _currPageRXP: RegExp;
     private _requestCounter: number = 0;
     private httpRequestCountEmitter$: EventEmitter<number> = new EventEmitter<number>();
 
@@ -36,6 +42,7 @@ export class NavigationService {
     }
 
     constructor(private router: Router) {
+        this._currPageRXP = new RegExp("^/[A-Za-z-]*", "gi");
         logger.logInfo("Navigationservice instance created")
     }
 
@@ -58,6 +65,22 @@ export class NavigationService {
      */
     getHttpRequestCountSubscription(): EventEmitter<number> {
         return this.httpRequestCountEmitter$;
+    }
+
+    /**
+     * Retrieves the name of the current active page.
+     */
+    currentPage(): string {
+        let matches: any;
+        let ret: string = "";
+
+        matches = this.router.url.match(this._currPageRXP);
+
+        if (matches && matches.length > 0) {
+            ret = matches[0].slice(1); //Removing the initial forwardslash.
+        }
+        
+        return ret;
     }
 
     /**
@@ -127,6 +150,33 @@ export class NavigationService {
         else {
             this.router.navigate([this.getRelativePath(PAGES.Workflow)]);
         }
+    }
+
+    /**
+     * Navigate to Search page.
+     */
+    toSearch(type: SearchType = SearchType.Workflows, term: string = "", browse: string = "false"): void {
+        this.router.navigate([this.getRelativePath(PAGES.Search)], {
+            queryParams: { type: type.toString(), term: term, browse: browse }
+        });
+    }
+
+    toBrowseWorkflows(): void {
+        this.router.navigate([this.getRelativePath(PAGES.BrowseWorkflows)], {
+            queryParams: { type: SearchType.Workflows.toString(), term: "", browse: "true" }
+        });
+    }
+
+    toBrowseScripts(): void {
+        this.router.navigate([this.getRelativePath(PAGES.BrowseScripts)], {
+            queryParams: { type: SearchType.Scripts.toString(), term: "", browse: "true" }
+        });
+    }
+
+    toBrowseTargets(): void {
+        this.router.navigate([this.getRelativePath(PAGES.BrowseTargets)], {
+            queryParams: { type: SearchType.Targets.toString(), term: "", browse: "true" }
+        });
     }
 
     toSandbox(): void {

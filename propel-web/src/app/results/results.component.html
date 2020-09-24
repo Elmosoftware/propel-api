@@ -80,7 +80,7 @@
                                     matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                                 <div *ngIf="getResults(step, target).length == 0; else withResults">
                                     <div class="alert fade show alert-info mb-0" role="alert">
-                                        <strong>No results</strong> has been returned by the script.
+                                        <strong>No results</strong> have been returned by the script.
                                     </div>
                                 </div>
                                 <ng-template #withResults>
@@ -108,7 +108,7 @@
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                         <div *ngIf="getResults(step).length == 0; else withContinuousResults">
                             <div class="alert fade show alert-info mb-0" role="alert">
-                                <strong>No results</strong> has been returned by this step in any of the targets.
+                                <strong>No results</strong> have been returned by this step in any of the targets.
                             </div>
                         </div>
                         <ng-template #withContinuousResults>

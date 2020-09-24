@@ -24,7 +24,7 @@ export class QueryModifier {
     /**
      * Sorting condition
      */
-    public sortBy: string;
+    public sortBy: any;
 
     /**
      * Filter condition
@@ -45,7 +45,7 @@ export class QueryModifier {
         this.skip = (modifiers && modifiers.skip) ? modifiers.skip : DEFAULT_SKIP;
         this.sortBy = (modifiers && modifiers.sortBy) ? modifiers.sortBy : DEFAULT_SORTBY;
         this.populate = (modifiers && typeof modifiers.populate == "boolean") ? modifiers.populate : true;
-        this.filterBy = (modifiers && modifiers.filterBy) ? modifiers.filterBy : DEFAULT_FILTERBY;
+        this.filterBy = (modifiers && modifiers.filterBy) ? modifiers.filterBy : Object.assign({}, DEFAULT_FILTERBY);
 
         if (!val.validateQuery(this).isValid) {
             throw val.getErrors();
@@ -54,23 +54,30 @@ export class QueryModifier {
 
     /**
      * Boolean value that indicates if this query modifier includes pagination features, (this mean 
-     * if top or skip has been set).
+     * if top or skip have been set).
      */
-    get isPaginated() {
+    get isPaginated(): boolean {
         return (this.top != DEFAULT_TOP || this.skip != DEFAULT_SKIP);
     }
 
     /**
      * Boolean value indicating if a sorting condition is applied.
      */
-    get isSorted() {
+    get isSorted(): boolean {
         return this.sortBy != DEFAULT_SORTBY;
     }
 
     /**
      * Boolean value indicating if a filter condition is applied.
      */
-    get isFiltered() {
-        return this.filterBy != DEFAULT_FILTERBY;
+    get isFiltered(): boolean {
+        return this.filterBy && Object.keys(this.filterBy).length > 0;
+    }
+
+    /**
+     * Returns a boolean value that indicates if the query is a full text search query.
+     */
+    get isTextSearch(): boolean {
+        return this.isFiltered && this.filterBy.$text !== undefined
     }
 }

@@ -208,8 +208,11 @@ export class Utils {
         return ret;
     }
 
-    
-
+    /**
+     * ANSI escape codes are used in console apps to display colors. This function remove those codes in order 
+     * to get a clean and readeble text string.
+     * @param s String that contins the ANSI escape codes to be removed.
+     */
     static removeANSIEscapeCodes(s: string): string {
         let removeAnsiPattern = [
             '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
@@ -218,5 +221,54 @@ export class Utils {
         let reg = new RegExp(removeAnsiPattern, "g");
 
         return s.replace(reg, "");        
+    }
+
+    /**
+     * Returns a boolean value that indicates if the provided string is quoted.
+     * e.g: 
+     * "\"My cat is white\"" --> will return true.
+     * "'My cat is white'" --> will return true.
+     * "My cat is white" --> will return false.
+     * "\"My cat is white" --> will return false.
+     * "My cat is white\""" --> will return false.
+     * @param s String to verify.
+     */
+    static isQuotedString(s: string): boolean {
+        let ret: boolean;
+
+        ret = Boolean(s) && (
+            (s.startsWith(`"`) && s.endsWith(`"`)) || 
+            (s.startsWith(`'`) && s.endsWith(`'`))
+        )
+        
+        return ret;
+    }
+
+    /**
+     * If the specified string is not quoted, it will add quotes.
+     * @param s String to quote.
+     */
+    static addQuotes(s: string): string {
+        let ret: string = s;
+
+        if (s && !this.isQuotedString(s)) {
+            ret = `"${s}"`;    
+        }
+
+        return ret;
+    }
+
+    /**
+     * If the supplied string is quoted, those quotes will be removed.
+     * @param s String which quotes will be removed.
+     */
+    static removeQuotes(s: string): string {
+        let ret: string = s;
+
+        if (s && this.isQuotedString(s)) {
+            ret = s.slice(1, s.length - 1)   
+        }
+
+        return ret;
     }
 }

@@ -311,3 +311,127 @@ describe("Utils Class - removeEmptyLines() Only last lines", () => {
         expect(Utils.removeEmptyLines("\n\n\n")).toEqual("");
     })
 })
+
+describe("Utils Class - isQuotedString()", () => {
+
+    test(`isQuotedString(null)`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString(null)).toEqual(false);
+    })
+    test(`isQuotedString(undefined)`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString(undefined)).toEqual(false);
+    })
+    test(`isQuotedString("Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString("Hello world")).toEqual(false);
+    })
+    test(`isQuotedString("Hello"world")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString("Hello\"world")).toEqual(false);
+    })
+    test(`isQuotedString("'Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString("'Hello world")).toEqual(false);
+    })
+    test(`isQuotedString("Hello world'")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString("Hello world'")).toEqual(false);
+    })
+    test(`isQuotedString(""Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString("\"Hello world")).toEqual(false);
+    })
+    test(`isQuotedString("Hello world"")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString("Hello world\"")).toEqual(false);
+    })
+    test(`isQuotedString("'Hello world'")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString("'Hello world'")).toEqual(true);
+    })
+    test(`isQuotedString(""Hello world2"")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString("\"Hello world\"")).toEqual(true);
+    })
+})
+
+describe("Utils Class - addQuotes()", () => {
+
+    test(`addQuotes(null)`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes(null)).toBe(null);
+    })
+    test(`addQuotes(undefined)`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes(undefined)).toBe(undefined);
+    })
+    test(`addQuotes("Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes("Hello world")).toEqual("\"Hello world\"");
+    })
+    test(`addQuotes("Hello"world")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes("Hello\"world")).toEqual("\"Hello\"world\"");
+    })
+    test(`addQuotes("'Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes("'Hello world")).toEqual("\"'Hello world\"");
+    })
+    test(`addQuotes("Hello world'")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes("Hello world'")).toEqual("\"Hello world'\"");
+    })
+    test(`addQuotes(""Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes("\"Hello world")).toEqual("\"\"Hello world\"");
+    })
+    test(`addQuotes(""Hello world"")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes("\"Hello world\"")).toEqual("\"Hello world\"");
+    })
+    test(`addQuotes("'Hello world'")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes("'Hello world'")).toEqual("'Hello world'");
+    })
+})
+
+describe("Utils Class - removeQuotes()", () => {
+
+    test(`removeQuotes(null)`, () => {
+        //@ts-ignore
+        expect(Utils.removeQuotes(null)).toBe(null);
+    })
+    test(`removeQuotes(undefined)`, () => {
+        //@ts-ignore
+        expect(Utils.removeQuotes(undefined)).toBe(undefined);
+    })
+    test(`removeQuotes("Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.removeQuotes("Hello world")).toEqual("Hello world");
+    })
+    test(`addQuotes("Hello"world")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes("Hello\"world")).toEqual("\"Hello\"world\"");
+    })
+    test(`removeQuotes("'Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.removeQuotes("'Hello world")).toEqual("'Hello world");
+    })
+    test(`removeQuotes("Hello world'")`, () => {
+        //@ts-ignore
+        expect(Utils.removeQuotes("Hello world'")).toEqual("Hello world'");
+    })
+    test(`removeQuotes(""Hello world")`, () => {
+        //@ts-ignore
+        expect(Utils.removeQuotes("\"Hello world")).toEqual("\"Hello world");
+    })
+    test(`removeQuotes(""Hello world"")`, () => {
+        //@ts-ignore
+        expect(Utils.removeQuotes("\"Hello world\"")).toEqual("Hello world");
+    })
+    test(`removeQuotes("'Hello world'")`, () => {
+        //@ts-ignore
+        expect(Utils.removeQuotes("'Hello world'")).toEqual("Hello world");
+    })
+})

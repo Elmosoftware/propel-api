@@ -300,7 +300,7 @@ export class Runner {
             }
         })
 
-        //If the item execution was successful, but all the items has been skipped, we 
+        //If the item execution was successful, but all the items have been skipped, we 
         //will summarize the status as "Skipped":
         if (ret == ExecutionStatus.Success && skippedCount && skippedCount == execs.length) {
             ret = ExecutionStatus.Skipped;

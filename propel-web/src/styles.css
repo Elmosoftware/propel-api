@@ -162,6 +162,30 @@ textarea::placeholder {
     padding-bottom: 0px;
 }
 
+.button-circular-small {
+    border-radius: 50% !important;
+    height: 32px;
+    width: 32px;
+    font-size: .8rem;
+    line-height: 0px;
+    padding-left: .52rem;
+}
+
+.button-circular {
+    border-radius: 50% !important;
+    height: 56px;
+    width: 56px;
+    font-size: 2em;
+    line-height: 0px;
+}
+
+.floating-bottom-right {
+    bottom: 1rem;
+    position: fixed;
+    right: 1rem;
+    z-index: 1000;
+}
+
 .drag-drop-cursor {
     cursor: grab;
 }

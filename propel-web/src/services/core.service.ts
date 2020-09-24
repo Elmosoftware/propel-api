@@ -105,7 +105,7 @@ export class CoreService {
       showDlg = false;
     }
 
-    //If some of the data has been modified but not saved yet:
+    //If some of the data have been modified but not saved yet:
     // if (dirtiness && dirtiness.form && dirtiness.form.dirty) {
     if (showDlg) {
 

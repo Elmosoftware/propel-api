@@ -52,7 +52,7 @@ class Database {
     }
 
     /**
-     * returns a readonly boolean value indicating if the Database has been already initialized. 
+     * returns a readonly boolean value indicating if the Database have been already initialized. 
      */
     get started() {
         return this._started;
@@ -65,7 +65,7 @@ class Database {
         let models: any[] = [];
 
         if (this._started) {
-            throw new PropelError("Database has been already started.")
+            throw new PropelError("Database have been already started.")
         }
 
         if (!cfg.isProduction) {

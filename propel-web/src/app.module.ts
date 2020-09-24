@@ -23,6 +23,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 // 3rd party libraries:
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ToastrModule } from 'ngx-toastr';
+import { NgxPageScrollCoreModule } from 'ngx-page-scroll-core';
+import { NgxPageScrollModule } from 'ngx-page-scroll';
 
 //Services & Others
 import { CoreService } from './services/core.service';
@@ -35,6 +37,7 @@ import { RunnerService } from './services/runner.service';
 import { LoaderInterceptor } from './core/loader-interceptor';
 import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
 import { PSParametersInferrerService } from "./services/ps-parameters-inferrer.service";
+import { InfiniteScrollingModule } from './core/infinite-scrolling-module';
 
 //Dialogs
 import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
@@ -59,6 +62,10 @@ import { ConsoleLineComponent } from './app/console-line/console-line.component'
 import { StatusIconComponent } from './app/status-icon/status-icon.component';
 import { ResultsComponent } from './app/results/results.component';
 import { DynamicTableComponent } from './app/dynamic-table/dynamic-table.component';
+import { SearchComponent } from './app/search/search.component';
+import { SearchWorkflowLineComponent } from './app/search-workflow-line/search-workflow-line.component';
+import { SearchScriptLineComponent } from './app/search-script-line/search-script-line.component';
+import { SearchTargetLineComponent } from './app/search-target-line/search-target-line.component';
 
 @NgModule({
   declarations: [
@@ -80,7 +87,11 @@ import { DynamicTableComponent } from './app/dynamic-table/dynamic-table.compone
     WorkflowComponent,
     WorkflowStepDialogComponent,
     ResultsComponent,
-    DynamicTableComponent
+    DynamicTableComponent,
+    SearchComponent,
+    SearchWorkflowLineComponent,
+    SearchScriptLineComponent,
+    SearchTargetLineComponent
   ],
   imports: [
     BrowserModule,
@@ -94,7 +105,7 @@ import { DynamicTableComponent } from './app/dynamic-table/dynamic-table.compone
       closeButton: true,
       positionClass: "toast-top-right",
       disableTimeOut: false,
-      timeOut: 7000
+      timeOut: 3500
     }),
     HttpClientModule,
     MatSlideToggleModule,
@@ -107,7 +118,10 @@ import { DynamicTableComponent } from './app/dynamic-table/dynamic-table.compone
     MatExpansionModule,
     MatTableModule,
     MatSortModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    InfiniteScrollingModule,
+    NgxPageScrollCoreModule,
+    NgxPageScrollModule
   ],
   providers: [
     ErrorHandlerService,

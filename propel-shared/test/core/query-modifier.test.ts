@@ -31,11 +31,6 @@ describe("QueryModifier Class - Invalid Parameters", () => {
             new QueryModifier({ skip: -1});
         }).toThrow(`The pagination parameter "skip" can't be negative`);
     })
-    test(`"sortBy" with invalid type`, () => {
-        expect(() => {
-            new QueryModifier({ sortBy: 1 });
-        }).toThrow(`We expected a String for the "sortBy" query modifier`);
-    })
     test(`"filterBy" with invalid type`, () => {
         expect(() => {
             new QueryModifier({filterBy: "invalid filter"});
@@ -116,6 +111,7 @@ describe("QueryModifier Class - Calculated Parameters", () => {
         expect(qm.isPaginated).toBe(false);
         expect(qm.isSorted).toBe(true);
         expect(qm.isFiltered).toBe(false);
+        expect(qm.isTextSearch).toBe(false);
     })
     test(`Filtering attribute`, () => {
         let qm = new QueryModifier({
@@ -125,5 +121,20 @@ describe("QueryModifier Class - Calculated Parameters", () => {
         expect(qm.isPaginated).toBe(false);
         expect(qm.isSorted).toBe(false);
         expect(qm.isFiltered).toBe(true);
+        expect(qm.isTextSearch).toBe(false);
+    })
+    test(`Filtering attribute for a full text search`, () => {
+        let qm = new QueryModifier({
+            filterBy: {
+                $text: {
+                  $search: "value"
+                }
+              }
+        });
+
+        expect(qm.isPaginated).toBe(false);
+        expect(qm.isSorted).toBe(false);
+        expect(qm.isFiltered).toBe(true);
+        expect(qm.isTextSearch).toBe(true);
     })
 });

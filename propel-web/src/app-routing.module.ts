@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+
 import { PAGES } from "./services/navigation.service";
 import { SandboxComponent } from './app/sandbox/sandbox.component';
 import { HomeComponent } from './app/home/home.component';
@@ -10,6 +11,7 @@ import { ScriptComponent } from './app/script/script.component';
 import { QuickTaskComponent } from './app/quick-task/quick-task.component';
 import { WorkflowComponent } from './app/workflow/workflow.component';
 import { ResultsComponent } from './app/results/results.component';
+import { SearchComponent } from './app/search/search.component';
 
 const routes: Routes = [
   {
@@ -92,6 +94,34 @@ const routes: Routes = [
     component: ResultsComponent,
     data: {
       title: "Displaying execution results"
+    }
+  },
+  {
+    path: PAGES.Search,
+    component: SearchComponent,
+    data: {
+      title: "New Search"
+    }
+  },
+  {
+    path: PAGES.BrowseWorkflows,
+    component: SearchComponent,
+    data: {
+      title: "Browsing Workflows"
+    }
+  },
+  {
+    path: PAGES.BrowseScripts,
+    component: SearchComponent,
+    data: {
+      title: "Browsing Scripts"
+    }
+  },
+  {
+    path: PAGES.BrowseTargets,
+    component: SearchComponent,
+    data: {
+      title: "Browsing Targets"
     }
   },
   {

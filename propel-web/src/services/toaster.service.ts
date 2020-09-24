@@ -67,10 +67,16 @@ export class ToasterService {
                 }
 
                 if (isWarning) {
-                    this.toastr.warning(String(messageOrError), title);
+                    this.toastr.warning(String(messageOrError), title, {
+                        disableTimeOut: false,
+                        timeOut: 7000
+                      });
                 }
                 else {
-                    this.toastr.error(String(messageOrError), title);
+                    this.toastr.error(String(messageOrError), title, {
+                        disableTimeOut: false,
+                        timeOut: 7000
+                      });
                 }               
             } catch (error) {
                 logger.logWarn(`There was an error preventing to display a toaster. Error details: "${String(error)}".`)
