@@ -1,0 +1,99 @@
+<a id="topSearch"></a>
+<div class="container mt-4">
+    <form [formGroup]="fg">
+        <div class="row justify-content-around">
+            <div class="custom-control custom-radio col-auto mx-2">
+                <input type="radio" id="interval1" formControlName="interval" class="custom-control-input"
+                    [value]="intervalTypeEnum.LastHalfHour">
+                <label class="custom-control-label" for="interval1">Last 30min</label>
+            </div>
+            <div class="custom-control custom-radio col-auto mx-2">
+                <input type="radio" id="interval2" formControlName="interval" class="custom-control-input"
+                    [value]="intervalTypeEnum.LastHour">
+                <label class="custom-control-label" for="interval2">Last hour</label>
+            </div>
+            <div class="custom-control custom-radio col-auto mx-2">
+                <input type="radio" id="interval3" formControlName="interval" class="custom-control-input"
+                    [value]="intervalTypeEnum.LastDay">
+                <label class="custom-control-label" for="interval3">Last day</label>
+            </div>
+            <div class="custom-control custom-radio col-auto mx-2">
+                <input type="radio" id="interval4" formControlName="interval" class="custom-control-input"
+                    [value]="intervalTypeEnum.LastWeek">
+                <label class="custom-control-label" for="interval4">Last week</label>
+            </div>
+            <div class="custom-control custom-radio col-auto mx-2">
+                <input type="radio" id="interval5" formControlName="interval" class="custom-control-input"
+                    [value]="intervalTypeEnum.LastMonth">
+                <label class="custom-control-label" for="interval5">Last month</label>
+            </div>
+        </div>
+    </form>
+
+    <!-- Selected value:{{fg.controls.interval.value}} -->
+
+    <div class="mt-4" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+        infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+        <ul class="list-group">
+            <li class="list-group-item mx-3" *ngFor="let item of svcInfScroll.model">
+                <div class="row">
+                    <div class="col-auto">
+                        <app-status-icon size="small" [status]="item.log.status" class="mr-2"></app-status-icon>
+                        <a href="javascript:void(0)" (click)="goToResults(item.log._id)" 
+                            [matTooltip]="item.startDate" matTooltipClass="tooltipsWithBreakLines"
+                            matTooltipPosition="above">{{item.startDateFriendly}}</a>
+                    </div>
+                    <div *ngIf="!item.log.workflow.isQuickTask; else quickTask" class="col-auto">
+                        <a href="javascript:void(0)" (click)="goToEditWorkflow(item.workflow._id)"
+                            [matTooltip]="item.workflowNameTooltip" matTooltipClass="tooltipsWithBreakLines"
+                            matTooltipPosition="above">{{item.workflowName}}</a>
+                    </div>
+                    <ng-template class="col-auto" #quickTask>
+                        <span [matTooltip]="item.workflowNameTooltip" matTooltipClass="tooltipsWithBreakLines"
+                        matTooltipPosition="above">{{item.workflowName}}</span>
+                    </ng-template>
+                    <div class="col-auto ml-auto">
+                        <div class="mx-2 d-inline" [matTooltip]="item.durationTooltip"
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                            <i class="fas fa-stopwatch"></i>
+                            <span class="mx-1">{{item.duration}}</span>
+                        </div>
+                        <div class="mx-2 d-inline" [matTooltip]="item.stepsAmountTooltip"
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                            <i class="fas fa-list-ol"></i>
+                            <span class="mx-1">{{item.stepsAmount}}</span>
+                        </div>
+                        <div class="mx-2 d-inline" [matTooltip]="item.targetsAmountTooltip"
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                            <i class="fas fa-server"></i>
+                            <span class="mx-1">{{item.targetsAmount}}</span>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <button *ngIf="svcInfScroll.lastPageRendered > 1" type="button" pageScroll href="#topSearch"
+            class="btn btn-primary button-circular floating-bottom-right float-bottom-second-line"
+            matTooltip="Click here to go back to the first results." matTooltipPosition="left" (click)="fullScrollUp()">
+            <i class="fas fa-angle-double-up"></i>
+        </button>
+        <button [hidden]="svcInfScroll.lastPageRendered == svcInfScroll.pageCount" type="button" pageScroll
+            href="#bottomSearch" class="btn btn-primary button-circular floating-bottom-right"
+            matTooltip="Click here to jump forward to the last results for this search." matTooltipPosition="left"
+            (click)="fullScrollDown()">
+            <i class="fas fa-angle-double-down"></i>
+        </button>
+    </div>
+    <ng-template #NoData>
+        <div *ngIf="svcInfScroll && this.fg.enabled" class="row justify-content-center mr-0">
+            <div class="col col-lg-8 mt-4">
+                <div class="alert fade show alert-info" role="alert">
+                    <strong>There is no executions on that interval.</strong>&nbsp;Please try with a broader timeframe
+                    or one closer to today.
+                </div>
+            </div>
+        </div>
+    </ng-template>
+</div>
+<a id="bottomSearch"></a>

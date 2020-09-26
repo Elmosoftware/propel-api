@@ -19,7 +19,8 @@ export const enum PAGES {
     Search = "search",
     BrowseWorkflows = "browse-workflows",
     BrowseScripts = "browse-scripts",
-    BrowseTargets = "browse-targets"
+    BrowseTargets = "browse-targets",
+    History = "history"
 }
 
 /**
@@ -177,6 +178,10 @@ export class NavigationService {
         this.router.navigate([this.getRelativePath(PAGES.BrowseTargets)], {
             queryParams: { type: SearchType.Targets.toString(), term: "", browse: "true" }
         });
+    }
+
+    toHistory(): void {
+        this.router.navigate([this.getRelativePath(PAGES.History)]);
     }
 
     toSandbox(): void {

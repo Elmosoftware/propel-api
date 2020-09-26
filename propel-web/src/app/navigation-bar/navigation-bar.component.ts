@@ -64,6 +64,10 @@ export class NavigationBarComponent implements OnInit {
     this.core.navigation.toBrowseTargets();
   }
 
+  goToHistory() {
+    this.core.navigation.toHistory();
+  }
+
   isSearchPage(): boolean {
     return this.core.navigation.currentPage() == PAGES.Search;
   }

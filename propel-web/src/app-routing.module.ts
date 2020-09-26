@@ -12,6 +12,7 @@ import { QuickTaskComponent } from './app/quick-task/quick-task.component';
 import { WorkflowComponent } from './app/workflow/workflow.component';
 import { ResultsComponent } from './app/results/results.component';
 import { SearchComponent } from './app/search/search.component';
+import { HistoryComponent } from './app/history/history.component';
 
 const routes: Routes = [
   {
@@ -122,6 +123,13 @@ const routes: Routes = [
     component: SearchComponent,
     data: {
       title: "Browsing Targets"
+    }
+  },
+  {
+    path: PAGES.History,
+    component: HistoryComponent,
+    data: {
+      title: "Seeing Execution History"
     }
   },
   {

@@ -66,6 +66,7 @@ import { SearchComponent } from './app/search/search.component';
 import { SearchWorkflowLineComponent } from './app/search-workflow-line/search-workflow-line.component';
 import { SearchScriptLineComponent } from './app/search-script-line/search-script-line.component';
 import { SearchTargetLineComponent } from './app/search-target-line/search-target-line.component';
+import { HistoryComponent } from './app/history/history.component';
 
 @NgModule({
   declarations: [
@@ -91,7 +92,8 @@ import { SearchTargetLineComponent } from './app/search-target-line/search-targe
     SearchComponent,
     SearchWorkflowLineComponent,
     SearchScriptLineComponent,
-    SearchTargetLineComponent
+    SearchTargetLineComponent,
+    HistoryComponent
   ],
   imports: [
     BrowserModule,

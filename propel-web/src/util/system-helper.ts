@@ -139,4 +139,13 @@ export class SystemHelper {
 
         return ret;
     }
+
+    /**
+     * Add the specified amount of minutes to the specified date.
+     * @param minutes Minutes to add or subtract, (if the value is negative).
+     * @param date Date to wich we are add the minutes. If not specified, current date and time will be used.
+     */
+    static addMinutes(minutes: number, date = new Date()): Date {
+        return moment(date).add(minutes, "minutes").toDate();
+    }
 }

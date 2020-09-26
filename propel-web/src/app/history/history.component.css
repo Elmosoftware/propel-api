@@ -1,0 +1,9 @@
+/* .type-ind ::before{
+    content: "W";
+    font-weight: 800;
+    font-stretch: ultra-expanded;
+    vertical-align: super;
+    font-size: .7rem;
+    padding-right: .3rem;
+    font-family: math, serif;
+} */
