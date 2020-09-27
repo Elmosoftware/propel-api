@@ -12,12 +12,12 @@
   "author": "JC",
   "license": "ISC",
   "devDependencies": {
-    "@types/jest": "^25.2.2",
-    "@types/node": "^14.0.1",
-    "jest": "^26.0.1",
-    "typescript": "^3.9.2"
+    "@types/jest": "^25.2.3",
+    "@types/node": "^14.11.2",
+    "jest": "^26.4.2",
+    "typescript": "^3.9.7"
   },
   "dependencies": {
-    "tslib": "^2.0.0"
+    "tslib": "^2.0.1"
   }
 }
