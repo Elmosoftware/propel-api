@@ -288,5 +288,29 @@ button:focus {
     opacity: .7;
 }
 
+/* Cards */
 
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: var(--list-background);
+    background-clip: border-box;
+    border: none;
+    border-radius: 10px 10px 0 0;
+}
 
+.card-header {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 0;
+    color: var(--colors-white);
+    background-color: var(--colors-dark-highlight);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+}
+
+.card-header:first-child {
+    border-radius: 10px 10px 0 0;
+}

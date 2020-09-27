@@ -133,16 +133,16 @@
       <button type="button" class="btn btn-secondary mx-2" disabled>Secondary</button>
       <button type="button" class="btn btn-danger mx-2" disabled>Danger</button>
       <p><strong>
-        <h4>Buttons circular:</h4>
-      </strong></p>
-    <button type="button" class="btn btn-primary button-circular-small mx-2"><i class="far fa-bell"></i></button>
-    <button type="button" class="btn btn-primary button-circular mx-2"><i class="far fa-bell"></i></button>
+          <h4>Buttons circular:</h4>
+        </strong></p>
+      <button type="button" class="btn btn-primary button-circular-small mx-2"><i class="far fa-bell"></i></button>
+      <button type="button" class="btn btn-primary button-circular mx-2"><i class="far fa-bell"></i></button>
       <!-- Below button will be floating at the bottom right of the viewport -->
-    <button type="button" class="btn btn-primary button-circular floating-bottom-right"
-      matTooltip="This is an ever visible and floating button!" matTooltipPosition="left">
-      <i class="far fa-bell"></i>
-    </button>
-  </div>
+      <button type="button" class="btn btn-primary button-circular floating-bottom-right"
+        matTooltip="This is an ever visible and floating button!" matTooltipPosition="left">
+        <i class="far fa-bell"></i>
+      </button>
+    </div>
     <div>
       <p><strong>
           <h3>Bootstrap Alerts:</h3>
@@ -257,6 +257,45 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <div>
+      <p><strong>
+          <h3>Bootstrap Cards:</h3>
+        </strong></p>
+      <div class="container">
+        <div class="card-deck mb-3 text-center">
+          <div class="card mb-4 box-shadow">
+            <div class="card-header">
+              <h4 class="my-0 font-weight-normal">Test card header</h4>
+            </div>
+            <div class="card-body">
+              <h1 class="card-title pricing-card-title">$15 <small class="text-muted">/ mo</small></h1>
+              <ul class="list-unstyled mt-3 mb-4">
+                <li>20 users included</li>
+                <li>10 GB of storage</li>
+                <li>Priority email support</li>
+                <li>Help center access</li>
+              </ul>
+              <button type="button" class="btn btn-lg btn-block btn-primary">Get started</button>
+            </div>
+          </div>
+          <div class="card mb-4 box-shadow">
+            <div class="card-header">
+              <h4 class="my-0 font-weight-normal">Enterprise</h4>
+            </div>
+            <div class="card-body">
+              <h1 class="card-title pricing-card-title">$29 <small class="text-muted">/ mo</small></h1>
+              <ul class="list-unstyled mt-3 mb-4">
+                <li>30 users included</li>
+                <li>15 GB of storage</li>
+                <li>Phone and email support</li>
+                <li>Help center access</li>
+              </ul>
+              <button type="button" class="btn btn-lg btn-block btn-primary">Contact us</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div>
       <p><strong>
@@ -463,58 +502,66 @@
 
       <div>
         <p><strong>
-          <app-status-icon size="big" status="SUCCESS"></app-status-icon><h2>Propel Icons:</h2>
+            <app-status-icon size="big" status="SUCCESS"></app-status-icon>
+            <h2>Propel Icons:</h2>
           </strong></p>
         <hr>
         <ul class="list-group">
           <li class="list-group-item">PENDING:
             <app-status-icon size="small" status="PENDING"></app-status-icon>
             <app-status-icon size="big" status="PENDING"></app-status-icon>
-            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+            <div class="d-flex justify-content-center align-items-center"
+              style="background-color: black; height:30px; width:30px;">
               <app-status-icon size="small" iconStyle="dark" status="PENDING"></app-status-icon>
-            </div>                        
+            </div>
           </li>
           <li class="list-group-item">FAULTY:
             <app-status-icon size="small" status="FAULTY"></app-status-icon>
             <app-status-icon size="big" status="FAULTY"></app-status-icon>
-            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+            <div class="d-flex justify-content-center align-items-center"
+              style="background-color: black; height:30px; width:30px;">
               <app-status-icon size="small" iconStyle="dark" status="FAULTY"></app-status-icon>
-            </div>  
+            </div>
           </li>
           <li class="list-group-item">SUCCESS:
             <app-status-icon size="small" status="SUCCESS"></app-status-icon>
             <app-status-icon size="big" status="SUCCESS"></app-status-icon>
-            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+            <div class="d-flex justify-content-center align-items-center"
+              style="background-color: black; height:30px; width:30px;">
               <app-status-icon size="small" iconStyle="dark" status="SUCCESS"></app-status-icon>
-            </div>  
+            </div>
           </li>
           <li class="list-group-item">ABORTED:
             <app-status-icon size="small" status="ABORTED"></app-status-icon>
             <app-status-icon size="big" status="ABORTED"></app-status-icon>
-            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+            <div class="d-flex justify-content-center align-items-center"
+              style="background-color: black; height:30px; width:30px;">
               <app-status-icon size="small" iconStyle="dark" status="ABORTED"></app-status-icon>
-            </div>  
+            </div>
           </li>
           <li class="list-group-item">CANCELLED:
             <app-status-icon size="small" status="CANCELLED"></app-status-icon>
             <app-status-icon size="big" status="CANCELLED"></app-status-icon>
-            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+            <div class="d-flex justify-content-center align-items-center"
+              style="background-color: black; height:30px; width:30px;">
               <app-status-icon size="small" iconStyle="dark" status="CANCELLED"></app-status-icon>
-            </div>  
+            </div>
           </li>
           <li class="list-group-item">SKIPPED:
             <app-status-icon size="small" status="SKIPPED"></app-status-icon>
             <app-status-icon size="big" status="SKIPPED"></app-status-icon>
-            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+            <div class="d-flex justify-content-center align-items-center"
+              style="background-color: black; height:30px; width:30px;">
               <app-status-icon size="small" iconStyle="dark" status="SKIPPED"></app-status-icon>
-            </div>  
+            </div>
           </li>
           <li class="list-group-item">RUNNING:
             <app-status-icon size="small" status="RUNNING"></app-status-icon>
             <app-status-icon size="big" status="RUNNING"></app-status-icon>
-            <div class="d-flex justify-content-center align-items-center" style="background-color: black; height:30px; width:30px;">
+            <div class="d-flex justify-content-center align-items-center"
+              style="background-color: black; height:30px; width:30px;">
               <app-status-icon size="small" iconStyle="dark" status="RUNNING"></app-status-icon>
-            </div>  
+            </div>
           </li>
         </ul>
       </div>
@@ -655,15 +702,15 @@
         </div>
         <div class="d-flex mb-4">
           <label for="excludedFieldsListTextBox">List of excluded fields</label>
-          <input type="text" class="form-control" [(ngModel)]="excludedFieldsList" 
-            id="excludedFieldsListTextBox" placeholder="Enter here a comma separated list of fields to exclude.">
+          <input type="text" class="form-control" [(ngModel)]="excludedFieldsList" id="excludedFieldsListTextBox"
+            placeholder="Enter here a comma separated list of fields to exclude.">
         </div>
         <div class="d-flex mb-4">
           <label for="sortedColumnsListTextBox">Column order</label>
-          <input type="text" class="form-control" [(ngModel)]="sortedColumnsList" 
-            id="sortedColumnsListTextBox" placeholder="Enter here a comma separated list of the columns as you wish to be presented.">
+          <input type="text" class="form-control" [(ngModel)]="sortedColumnsList" id="sortedColumnsListTextBox"
+            placeholder="Enter here a comma separated list of the columns as you wish to be presented.">
         </div>
-        <app-dynamic-table [data]="targetResultsTable.originalData" [show-filter]="showFilter" 
+        <app-dynamic-table [data]="targetResultsTable.originalData" [show-filter]="showFilter"
           [excluded-fields]="excludedFieldsList" [column-order]="sortedColumnsList"></app-dynamic-table>
       </div>
 

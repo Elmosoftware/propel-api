@@ -1,0 +1,14 @@
+.welcome-text {
+    text-transform: uppercase;
+    letter-spacing: 8px;
+}
+
+.not-break {
+    white-space: nowrap;
+}
+
+.capsule {
+    color: var(--btn-primary-color);
+    background-color: var(--colors-primary);
+    border: var(--btn-primary-border);
+}
