@@ -1,0 +1,310 @@
+Text Search
+========================================
+
+db.getCollection('XXXXX').createIndex( 
+	{"name": "text", "description": "text"}, 
+	{"weights": { name: 3, description:1 }} )
+
+Using Natural to tokenize and stemming the search term:
+var natural = require("natural")
+natural.PorterStemmer.tokenizeAndStem("123 a b c is d calamatta e f")
+//["123", "calamatta"] If no results are returned we have 2 options:
+	1- Warn the user to refine the search
+	2- pass the value between quotes to search it lterally
+
+
+How to search:
+
+db.getCollection('XXXXX').find(	{$text: {$search: "Here the tokenized and stemmed words separated by spaces"}}, 
+		{score: {$meta: "textScore"}})
+	.sort({score: {$meta: "textScore"}})
+
+If theuser sent a quoted string:
+
+like ""my quoted string""
+
+1st we remove quotes: "my quoted string"
+2nd search exact matches using: 
+
+.find({$or: [
+                { "field1": new RegExp("my quoted string", "gi")},
+                { "field2": new RegExp("my quoted string", "gi")}
+            ]})
+
+Styling:
+==========================
+Background: #eef4f9
+Complementary: #f9f2ee
+Monochromatic: #aac7e0
+Font color: #123441 or #003e52
+link active: #00839b
+
+
+RUN SCRPT/WORKFLOW - Arch design
+==============================================
+What to do when we receive a request to run a task or workflow?
+
+1 - Retrieve the Workflow/Task
+
+We will describe the steps for a workflow:
+Para cada tarea del workflow, necesitamos determinar si tiene target servers
+Si tiene: Por cada server pedimos al object pool una instancia del invocation service y lo ejecutamos. (En paralelo)
+Si no tiene: Ejecutamos el script una sola sola vez, (pidiendo al object pool una instancia del invocation service)
+
+Cuando la ejec en cada server o standalone termina, devolvemos la instancia al pool
+
+SOLO CUANDO la ejec. en todos los servers termina, pasamos a la siguiente tarea. 
+
+Orden modelos
+============
+Group
+Target
+Task
+WorkflowStep
+Workflow
+
+
+
+
+
+Code decode base64 in Node.JS
+============================================================
+> var coded = Buffer.from("Texto de Prueba!!!", "utf8").toString("base64")
+undefined
+> coded
+'VGV4dG8gZGUgUHJ1ZWJhISEh'
+> Buffer.from(coded, "base64").toString("ascii")
+'Texto de Prueba!!!'
+
+TESTING TASK RUN
+=================================
+
+
+System and user scripts
+Scripts that target servers and scripts that not.
+Scripts read only and scripts that alter, (fictitiously), target state or data.
+Scripts with and without parameters.
+Scripts that execute fast and others that takes longer and even minutes.
+
+
+Nomenclature for Test Scripts:
+
+{SYS|USR}{NOTARGET|TARGET}{READONLY}{NOPARAMS}{SLOW|MEDIUM|FAST}.ps1
+
+Variants:
+
+
+
+SERVER GROUPS
+---------------
+Para los target servers: dar la posibilidad de crear Grupos de Servidores. Que puedan ser referenciados en lugar de los servidores directamente.
+Por ejemplo si tenemos los siguientes servidores:
+S1, S2, S3, S4, S5
+Podemos crear los grupos Finance y RRHH de esta forma:
+
+Finance: S1, S2
+RRHH: S3, S4, S5
+
+Luego estos grupos pueden usarse como targets.
+
+=====================================================================================
+
+Workflows
+---------
+
+Constituidos por pasos que son Job definitions
+Los targets son definidos a nivel de Job, pero al crear un nuevo paso debe mantener los targets seleccionados en el paso anterior.
+La ejecución del workflow será:
+	- En paralelo en los distintos targets
+	- En cada target los pasos se ejecutarán en forma secuencial.
+
+Configuración/atributos a nivel de workflow: 
+____________________________________________
+-Nombre	
+-Descripcion
+-Compartido (indica si otros usuarios van a poder ejecutarlo)
+-Pasos: Coleccion de Jobs con nombre
+
+Configuración/atributos a nivel de paso:
+_________________________________________
+Que hacer si el paso falla? Opciones: Continuar con el siguiente o Abortar el workflow para ese target.
+
+=======================================================================================
+Search
+--------
+Agregar pagina para buscar, seleccionar y lanzar un Workflow. (desde el search box en el menu)
+=======================================================================================
+Scripts
+--------
+
+ABM de Scripts
+	Details Tab:
+		- Name (string)
+		- Description (string)
+		- Require Targets (boolean) Some scripts like the one consuming a Web Service or execute an LDAP query do not need to specify a target.
+		- Category
+		- Type
+			There will be 2 types: 
+				-SYSTEM
+				-USER
+			Type USER is the one created by the regular users. Type SYSTEM are internal scripts from Propel, that are used for internal operations, but they will be available to the users also so they can use them.
+	examples of this type are a Ping script to verify target availability or a Script to wait certain time for time paced actions, (For eample if you create a workflow to put in rotation some servers, you maybe want to wait certain time till check a Load Balancer is picking the right ones).
+		- Is modifying server State or Data?
+	Code Tab:	
+		- Code  (string)
+		It must allow to drop a .ps1 file or to paste directly the code. Figure out if there is a tool or something that allows to color the text based on the 
+	Parameters Tab:
+		- Parameters (array)
+		Parameters can be inferred. So, each time the script change we need to rerun the parameter detection and store the new values
+		These are the parameter attributes:
+		-Name -> (get-command .\testParams.ps1).ParameterSets.Parameters[].Name
+		-Description -> (get-command .\testParams.ps1).ParameterSets.Parameters[].HelpMessage
+		-NativeType -> (get-command .\testParams.ps1).ParameterSets.Parameters[].ParameterType
+		-Type -> The javascript type the Powershell parameter is mapped
+		-Position -> (get-command .\testParams.ps1).ParameterSets.Parameters[].Position
+		-IsRequired -> (get-command .\testParams.ps1).ParameterSets.Parameters[].IsMandatory
+		-ValidValues -> (get-command .\testParams.ps1).ParameterSets.Parameters[0].attributes.ValidValues[]
+		-CanBeNull -> If (get-command .\testParams.ps1).ParameterSets.Parameters[0].attributes contains { TypeId : System.Management.Automation.ValidateNotNullAttribute }
+		-CanBeEmpty -> If (get-command .\testParams.ps1).ParameterSets.Parameters[0].attributes contains { TypeId : System.Management.Automation.ValidateNotNullOrEmptyAttribute }
+
+	
+	Finish
+		- All the details
+ABM de Targets:
+
+
+Target Attributes:
+	- FQDName:	Fully Qualified domain Name that will be used on the invocations.
+	https://support.microsoft.com/en-us/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and
+	Name restrictions:
+		DNS names can contain only alphabetical characters (A-Z), numeric characters (0-9), the minus sign (-), and the period (.). Period characters are allowed only when they are used to delimit the components of domain style names.
+		The first character must be alphabetical or numeric.
+		The last character must not be a minus sign or a period.
+	FriendlyName: A short and easy name to refer the server.
+	Description: A brief description 
+	Group: A name that group servers and later allow to be used instead of FQD or Friendly names to add a group of servers as targets for a Job or workflow and facilitate administration.
+	Tags: Tags allow you to define specific server functions that make it suitable as destination of a specific script. e.g: IIS server, SQL Server Reporting, SQL Server DB Engine, SQL Server Analytics, 
+
+-------------------------------------------------------------------------------------
+
+Add the ability to save a Job as a workflow
+
+======================================================================================
+Inferring script parameters:
+_______________________________
+
+Casting in node-powershell: https://rannn505.gitbook.io/node-powershell/tips#cast-js-to-ps-data-types
+How to infer the params: (get-command .\myscript.ps1).ParameterSets.Parameters | Format-List  
+Powershell common data types (https://ss64.com/ps/syntax-datatypes.html)
+
+Powershell Data Type						Javascript Data Type
+--------------------------------------------------------------------------------------------------
+ [string]    Fixed-length string of Unicode characters		String
+ [char]      A Unicode 16-bit character				String
+ [byte]      An 8-bit unsigned character			Number
+ [int]       32-bit signed integer				Number
+ [long]      64-bit signed integer				Number
+ [bool]      Boolean True/False value				Boolean
+ [decimal]   A 128-bit decimal value				Number
+ [single]    Single-precision 32-bit floating point number	Number
+ [double]    Double-precision 64-bit floating point number	Number
+ [DateTime]  Date and Time					Date Object
+ [array]     An array of values					Array Object
+ [hashtable] Hashtable object					Object
+
+
+Validation Attributes
+-----------------------------------
+
+ValidateCountAttribute	
+Validates that the parameter argument count is in the specified range
+Propel: NOT SUPPORTED, need to be validated inside the script.
+
+ValidateDriveAttribute	
+Validates that the path has an approved root drive
+Propel: NOT SUPPORTED, no action wil be taken if this is present.It can be evaluating only when running on the remote target. 
+
+ValidateLengthAttribute	
+________________________
+Validates that the length of each parameter argument's Length falls in the range specified by MinLength and MaxLength
+Note: Cannot be applied to a parameter that is not a string or string[].
+
+example: 
+	[ValidateLength(2,10)]
+Then: 
+	(get-command .\testParams.ps1).ParameterSets.Parameters[0].attributes
+Returns:
+	MinLength : 2
+	MaxLength : 10
+	TypeId    : System.Management.Automation.ValidateLengthAttribute
+Propel: NOT SUPPORTED, (for now), it must throw a runtime exception based on the configured values for the execution.
+
+ValidateNotNullAttribute
+________________________	
+Validates that the parameters's argument is not null
+
+example: [ValidateNotNull()]
+Then: (get-command .\testParams.ps1).ParameterSets.Parameters[0].attributes
+Returns:
+	TypeId : System.Management.Automation.ValidateNotNullAttribute
+Propel: SUPPORTED!, by the "canBeNull" property.
+
+ValidateNotNullOrEmptyAttribute	
+_______________________________
+Validates that the parameters's argument is not null, is not an empty string, and is not an empty collection.
+
+example: [ValidateNotNullOrEmpty()]
+Then: (get-command .\testParams.ps1).ParameterSets.Parameters[0].attributes
+Returns:
+	TypeId : System.Management.Automation.ValidateNotNullOrEmptyAttribute
+Propel: SUPPORTED! by the "canBeEmpty" property.
+
+ValidateRangeAttribute	
+________________________
+Validates that each parameter argument falls in the range specified by MinRange and MaxRange.
+Must be applied to a int or string parameter.
+
+example: [ValidateRange(0,10)]
+Then: (get-command .\testParams.ps1).ParameterSets.Parameters[0].attributes
+Returns:
+	MinRange : 0
+	MaxRange : 10
+	TypeId   : System.Management.Automation.ValidateRangeAttribute
+Propel: NOT SUPPORTED, (for now), it must throw an exception based on the configured values for the execution.
+
+ValidateSetAttribute
+_____________________	
+Validates that each parameter argument is present in a specified set
+
+example: [ValidateSet('ValidValue1','ValidValue2')]
+Then: (get-command .\testParams.ps1).ParameterSets.Parameters[0].attributes
+Returns:
+	IgnoreCase  : True
+	ValidValues : {ValidValue1, ValidValue2}
+	TypeId      : System.Management.Automation.ValidateSetAttribute
+Propel: SUPPORTED! by providing the set of values in a dropdown.
+
+-----------------------------------------------------------------------------------------------------------
+Integration of all the solution files:
+=========================================
+
+Separate repositories:
+------------------------
+
+Propel
+	propel-core
+		.git
+	propel-api
+		.git
+	propel-web
+		.git
+
+Mono repo:
+----------------------
+
+propel-api ->rename to propel
+	.git
+	core files here
+propel-api
+propel-web
+
