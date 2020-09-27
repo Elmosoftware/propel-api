@@ -157,13 +157,7 @@ export class WorkflowStepComponent implements OnInit {
         let step = Object.assign({}, this.fh.value)
 
         //We need to convert back boolean values to PowerShell Booleans:
-        if (step.values) {
-          step.values.forEach((item, i) => {
-            if (item.nativeType == "Boolean") {
-              step.values[i].value = (item.value) ? "$true" : "$false";
-            }
-          })
-        }
+        this.convertParameterValuesFromJStoPS(step.values);
 
         status = new WorkflowStepComponentStatus(
           Boolean(value.toLowerCase() == "valid"),
@@ -218,6 +212,18 @@ export class WorkflowStepComponent implements OnInit {
         this.fh.form.controls.targets.disable({ onlySelf: true, emitEvent: false })
       }
     });
+  }
+
+  private convertParameterValuesFromJStoPS(values: ParameterValue[]): ParameterValue[]{
+     if (values) {
+      values.forEach((val, i) => {
+        if (val.nativeType == "Boolean") {
+          values[i].value = (val.value) ? "$true" : "$false";
+        }
+      })
+    }
+
+    return values;
   }
 
   private initializeParameters() {
@@ -283,9 +289,9 @@ export class WorkflowStepComponent implements OnInit {
         case "Boolean":
           //Because of the slide toggle control, we need to convert the 
           //string PowerShell Boolean value to a native Javascript Boolean value:
-          if (p.hasDefault) {
+          if (pv.value != "") {
             //@ts-ignore
-            pv.value = (p.defaultValue == "$true");
+            pv.value = Boolean(pv.value == "$true");
           }
           break;
         default:

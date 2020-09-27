@@ -60,15 +60,6 @@ export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
     //@ts-ignore
     ret.category = status.category._id;
 
-    // //We need to convert back boolean values to PowerShell Booleans:
-    // if(status.data.values) {
-    //   status.data.values.forEach((item, i) => {
-    //     if (item.nativeType == "Boolean") {
-    //       status.data.values[i].value = (item.value) ? "$true" : "$false";
-    //     }
-    //   })
-    // }
-
     ret.steps.push(status.step);
 
     return ret;
