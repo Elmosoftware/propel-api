@@ -65,8 +65,10 @@ export class StatusIconComponent implements OnInit {
         ret = "Finished successfully!"
         break;
       case "CANCELLED":   
-      case "ABORTED":
         ret = "Canceled by user."
+        break;
+      case "ABORTED":
+        ret = "Execution was aborted."
         break;
       case "SKIPPED":
         ret = "Skipped."

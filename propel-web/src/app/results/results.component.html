@@ -19,13 +19,14 @@
                     </div>
                 </div>
             </div>
-            <div class="col-auto align-self-center">
-                <div class="row justify-content-center">
+            <!-- <div class="col-auto align-self-center"> -->
+            <div class="col-md-auto col-sm-12">
+                <div class="row justify-content-end">
                     <div class="col-auto align-self-center">
                         <button class="btn btn-primary" type="button" [disabled]="!log" (click)="runAgain()">Run again</button>
                     </div>
                 </div>
-                <div class="row justify-content-center mt-4">
+                <div class="row justify-content-end mt-4">
                     <div class="col-auto">
                         <button class="btn btn-primary button-icon-medium" type="button" (click)="expandAll()"
                             [disabled]="!(collapseStatus == true || collapseStatus == null)">
@@ -68,7 +69,7 @@
                     <!-- Grouped section start -->
                     <mat-accordion multi displayMode="flat" togglePosition="before">
                         <mat-expansion-panel *ngFor="let target of step.targets; let i=index" expanded="true">
-                            <mat-expansion-panel-header class="second-level-expansion-header target-header">
+                            <mat-expansion-panel-header class="target-header">
                                 <mat-panel-title>
                                     <app-status-icon size="small" iconStyle="dark" [status]="target.status" class="mr-2">
                                     </app-status-icon>

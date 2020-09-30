@@ -1,7 +1,3 @@
-.second-level-expansion-header {
-    height: 40px !important;
-}
-
 .content-container {
     overflow: auto;
 }
@@ -15,10 +11,12 @@
 
 .step-header {
     background-color: var(--colors-highlight);
+    height: 47px !important
 }
 
 .target-header {
     background-color: var(--colors-dark-highlight);
+    height: 36px !important
 }
 
 :host /deep/ .errors-header th {
