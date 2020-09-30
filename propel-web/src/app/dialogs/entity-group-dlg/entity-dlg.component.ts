@@ -3,11 +3,10 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { FormHandler } from 'src/core/form-handler';
-import { Group } from '../../../../../propel-shared/models/group';
 import { Entity } from '../../../../../propel-shared/models/entity';
 import { DialogResult } from 'src/core/dialog-result';
 import { PropelError } from '../../../../../propel-shared/core/propel-error';
-import { Category } from '../../../../../propel-shared/models/category';
+import { DataEntity } from 'src/services/data.service';
 
 const GROUP_NAME_MIN: number = 3;
 const GROUP_NAME_MAX: number = 25;
@@ -36,7 +35,7 @@ export class EntityDialogComponent implements OnInit {
 
     switch (this.entityName) {
       case "Group":
-        this.fh = new FormHandler(Group, new FormGroup({
+        this.fh = new FormHandler(DataEntity.Group, new FormGroup({
           name: new FormControl("", [
             Validators.required,
             Validators.minLength(GROUP_NAME_MIN),
@@ -45,7 +44,7 @@ export class EntityDialogComponent implements OnInit {
         }));
         break;
       case "Category":
-        this.fh = new FormHandler(Category, new FormGroup({
+        this.fh = new FormHandler(DataEntity.Category, new FormGroup({
           name: new FormControl("", [
             Validators.required,
             Validators.minLength(CATEGORY_NAME_MIN),

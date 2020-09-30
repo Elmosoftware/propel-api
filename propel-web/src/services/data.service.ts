@@ -9,6 +9,17 @@ import { APIResponse } from "../../../propel-shared/core/api-response";
 import { APIRequest, APIRequestAction } from "../../../propel-shared/core/api-request";
 import { logger } from '../../../propel-shared/services/logger-service';
 
+export enum DataEntity {
+  Category = "Category",
+  Group = "Group",
+  ExecutionLog = "ExecutionLog",
+  Script = "Script",
+  Target = "Target",
+  User = "User",
+  Workflow = "Workflow",
+  NONEXISTINGENTITY = "xxxxxx"
+}
+
 /**
  * Data service
  */
@@ -27,7 +38,7 @@ export class DataService {
    * @param id Unique identifier.
    * @param populate Boolean value that indicates if subdocuments will be populated. true by default.
    */
-  getById<T extends Entity>(entityType: { new(): T }, id: string, populate: boolean = true): Observable<APIResponse<T>> {
+  getById(entityType: DataEntity, id: string, populate: boolean = true): Observable<APIResponse<Entity>> {
       let url: string = this.buildURL(entityType);
       let req: APIRequest = new APIRequest();
       let qm: QueryModifier = null;
@@ -41,7 +52,7 @@ export class DataService {
       req.entity = id;
       req.qm = qm;
 
-    return this.http.post<APIResponse<T>>(url, req, { headers: this.buildHeaders() })
+    return this.http.post<APIResponse<Entity>>(url, req, { headers: this.buildHeaders() })
   }
 
   /**
@@ -49,14 +60,14 @@ export class DataService {
    * @param entityType Entity type.
    * @param qm Query modifier, (allows to specify filter, sorting, pagination, etc).
    */
-  find<T extends Entity>(entityType: { new (): T }, qm: QueryModifier ): Observable<APIResponse<T>> {
+  find(entityType: DataEntity, qm: QueryModifier ): Observable<APIResponse<Entity>> {
     let url: string = this.buildURL(entityType);
     let req: APIRequest = new APIRequest();
     
     req.action = APIRequestAction.Find;
     req.qm = qm;
 
-    return this.http.post<APIResponse<T>>(url, req, { headers: this.buildHeaders() });
+    return this.http.post<APIResponse<Entity>>(url, req, { headers: this.buildHeaders() });
   }
 
   /**
@@ -64,12 +75,12 @@ export class DataService {
    * @param entityType Entity type.
    * @param entity Instance to persist.
    */
-  save<T extends Entity>(entityType: { new(): T }, entity: T): Observable<APIResponse<string>> {
+  save(entityType: DataEntity, doc: any): Observable<APIResponse<string>> {
     let url: string = this.buildURL(entityType);
     let req: APIRequest = new APIRequest();
     
     req.action = APIRequestAction.Save;
-    req.entity = entity;
+    req.entity = doc;
 
     return this.http.post<APIResponse<string>>(url, req, { headers: this.buildHeaders() });
   }
@@ -79,7 +90,7 @@ export class DataService {
    * @param entityType Entity type.
    * @param id Entity id to delete.
    */
-  delete<T extends Entity>(entityType: { new (): T }, id: string): Observable<APIResponse<string>> {
+  delete(entityType: DataEntity, id: string): Observable<APIResponse<string>> {
     let url: string = this.buildURL(entityType);
     let req: APIRequest = new APIRequest();
     
@@ -97,8 +108,8 @@ export class DataService {
     return new entityType();
   }
 
-  private buildURL<T extends Entity>(entityType: { new (): T }) {
-    return `http://${environment.api.url}${environment.api.endpoint.data}${entityType.name.toLowerCase()}`
+  private buildURL(entityType: DataEntity) {
+    return `http://${environment.api.url}${environment.api.endpoint.data}${entityType.toString().toLowerCase()}`
   }
 
   private buildHeaders(): HttpHeaders {

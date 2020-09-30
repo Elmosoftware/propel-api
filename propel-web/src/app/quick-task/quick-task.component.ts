@@ -7,6 +7,7 @@ import { CoreService } from 'src/services/core.service';
 import { WorkflowStepComponentStatus } from '../workflow-step/workflow-step.component';
 import { Workflow } from '../../../../propel-shared/models/workflow';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
+import { DataEntity } from 'src/services/data.service';
 
 @Component({
   selector: 'app-quick-task',
@@ -41,7 +42,7 @@ export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
 
     if (!this.status.isValid) return;
 
-    this.core.data.save(Workflow, this._createWorkflowFromStep(this.status))
+    this.core.data.save(DataEntity.Workflow, this._createWorkflowFromStep(this.status))
       .subscribe((data: APIResponse<string>) => {
         this.completed = true;
         this.core.navigation.toRun(data.data[0]);

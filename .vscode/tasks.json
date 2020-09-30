@@ -32,9 +32,10 @@
             "type": "shell",
             "dependsOn":["propel-api - Build"],
             "options": { 
-                "cwd": "${workspaceFolder}/propel-api"
+                "cwd": "${workspaceFolder}/propel-api/" //workspace mut be this in order 
+                //.env file is grabbed. Because .env file is not copied as part of the build process.
             },
-            "command": "node ./dist/propel-api/index.js"
+            "command": "$env:NODE_ENV='development';node ./dist/propel-api/index.js"
         },
         {
             "label": "propel-web - Build, Run & Watch DEV",
@@ -43,6 +44,51 @@
                 "cwd": "${workspaceFolder}/propel-web"
             },
             "command": "ng serve --port 8080"
+        },
+        {
+            "label": "propel-web - Production Build",
+            "type": "shell",
+            "options": { 
+                "cwd": "${workspaceFolder}/propel-web"
+            },
+            "command": "ng build --prod"
+        },
+        {
+            "label": "Production Build",
+            "type": "gulp",
+            "task": "productionBuild",
+            "problemMatcher": [], 
+            "dependsOn":[
+                "propel-web - Production Build", 
+                "propel-api - Build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/distrib"
+            }
+        },
+        {
+            "label": "Production Install",
+            "type": "shell",
+            "problemMatcher": [], 
+            "options": {
+                "cwd": "${workspaceFolder}/distrib/dist/propel-api"
+            },
+            "command": "npm install",
+            "dependsOn":[
+                "Production Build"
+            ]
+        },
+        {
+            "label": "Production Build, Install & RUN",
+            "type": "shell",
+            "problemMatcher": [], 
+            "options": { 
+                "cwd": "${workspaceFolder}/distrib/dist/propel-api"
+            },
+            "command": "$env:NODE_ENV='production';node index.js",
+            "dependsOn":[
+                "Production Install"
+            ]
         }
     ]
 }

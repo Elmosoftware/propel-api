@@ -14,6 +14,7 @@ import { ScriptParameter } from '../../../../propel-shared/models/script-paramet
 import { SystemHelper } from 'src/util/system-helper';
 import { Category } from '../../../../propel-shared/models/category';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
+import { DataEntity } from 'src/services/data.service';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -59,7 +60,7 @@ export class WorkflowStepComponent implements OnInit {
 
   constructor(private core: CoreService) {
 
-    this.fh = new FormHandler(WorkflowStep, new FormGroup({
+    this.fh = new FormHandler("WorkflowStep", new FormGroup({
       name: new FormControl("", [
         Validators.required,
         Validators.minLength(NAME_MIN),
@@ -98,8 +99,8 @@ export class WorkflowStepComponent implements OnInit {
         this.refreshTargets()
       ])
         .subscribe((results) => {
-          this.allScripts = results[0].data;
-          this.allTargets = results[1].data;
+          this.allScripts = (results[0].data as Script[]);
+          this.allTargets = (results[1].data as Target[]);
           this.setValue(this.step);
         });
     });
@@ -108,13 +109,13 @@ export class WorkflowStepComponent implements OnInit {
   refreshScripts() {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
-    return this.core.data.find(Script, qm);
+    return this.core.data.find(DataEntity.Script, qm);
   }
 
   refreshTargets() {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "friendlyName";
-    return this.core.data.find(Target, qm);
+    return this.core.data.find(DataEntity.Target, qm);
   }
 
   getScriptFromCache(id: string): Script | undefined {

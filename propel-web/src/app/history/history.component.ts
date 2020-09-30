@@ -9,6 +9,7 @@ import { UIHelper } from 'src/util/ui-helper';
 import { InfiniteScrollingService, PagingHelper, SCROLL_POSITION } from 'src/core/infinite-scrolling-module';
 import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
 import { SystemHelper } from 'src/util/system-helper';
+import { DataEntity } from 'src/services/data.service';
 
 export enum IntervalType {
   LastHalfHour = 30,
@@ -84,7 +85,7 @@ export class HistoryComponent implements OnInit {
     };
     qm.sortBy = "-startedAt";    
 
-    this.core.data.find(ExecutionLog, qm)
+    this.core.data.find(DataEntity.ExecutionLog, qm)
       .subscribe((results: APIResponse<ExecutionLog>) => {
 
         let xLog: ExecutionLogExtended[] = results.data.map((l: ExecutionLog) => new ExecutionLogExtended(l))

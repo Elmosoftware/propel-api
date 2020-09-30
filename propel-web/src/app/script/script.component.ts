@@ -17,6 +17,7 @@ import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dl
 import { DialogResult } from 'src/core/dialog-result';
 import { ScriptParameter } from "../../../../propel-shared/models/script-parameter";
 import { SystemHelper } from "../../util/system-helper";
+import { DataEntity } from 'src/services/data.service';
 
 declare var Prism: any;
 
@@ -72,7 +73,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
-    this.fh = new FormHandler(Script, new FormGroup({
+    this.fh = new FormHandler(DataEntity.Script, new FormGroup({
       name: new FormControl("", [
         Validators.required,
         Validators.minLength(NAME_MIN),
@@ -124,7 +125,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
     let id: string = this.route.snapshot.paramMap.get("id");
 
     if (id) {
-      this.core.data.getById(Script, id, false)
+      this.core.data.getById(DataEntity.Script, id, false)
         .subscribe((data: APIResponse<Script>) => {
           if (data.count == 0) {
             this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
@@ -158,7 +159,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
     qm.sortBy = "name";
 
-    this.core.data.find(Category, qm)
+    this.core.data.find(DataEntity.Category, qm)
       .subscribe((results: APIResponse<Category>) => {
         this.allCategories = results.data;
       },
@@ -182,7 +183,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
       .subscribe((dlgResults: DialogResult<Category>) => {
 
         if (!dlgResults.isCancel) {
-          this.core.data.save(Category, dlgResults.value)
+          this.core.data.save(DataEntity.Category, dlgResults.value)
             .subscribe((results: APIResponse<string>) => {
               dlgResults.value._id = results.data[0];
               //Adding in this way for the On Push change detection, 
@@ -253,7 +254,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
     let script: Script = Object.assign({}, this.fh.form.value);
     script.code = SystemHelper.encodeBase64(script.code);
 
-    this.core.data.save(Script, script)
+    this.core.data.save(DataEntity.Script, script)
       .subscribe((results: APIResponse<string>) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.completed = true

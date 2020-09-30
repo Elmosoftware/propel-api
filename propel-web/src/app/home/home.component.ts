@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
+import { DataEntity } from "src/services/data.service";
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
@@ -83,7 +84,7 @@ export class HomeComponent implements OnInit {
     qm.populate = true;
     qm.sortBy = "-startedAt";
 
-    this.core.data.find(ExecutionLog, qm)
+    this.core.data.find(DataEntity.ExecutionLog, qm)
       .subscribe((results: APIResponse<ExecutionLog>) => {
         this.lastResults = results.data;
         this.totalResults = results.totalCount;
@@ -103,7 +104,7 @@ export class HomeComponent implements OnInit {
       isQuickTask: { $eq: false}
     }
 
-    this.core.data.find(Workflow, qm)
+    this.core.data.find(DataEntity.Workflow, qm)
       .subscribe((results: APIResponse<Workflow>) => {
         this.totalWorkflows = results.totalCount;
       },
@@ -119,7 +120,7 @@ export class HomeComponent implements OnInit {
     qm.skip = 0;
     qm.populate = false;
     
-    this.core.data.find(Script, qm)
+    this.core.data.find(DataEntity.Script, qm)
       .subscribe((results: APIResponse<Script>) => {
         this.totalScripts = results.totalCount;
       },
@@ -135,7 +136,7 @@ export class HomeComponent implements OnInit {
     qm.skip = 0;
     qm.populate = false;
     
-    this.core.data.find(Target, qm)
+    this.core.data.find(DataEntity.Target, qm)
       .subscribe((results: APIResponse<Target>) => {
         this.totalTargets = results.totalCount;
       },

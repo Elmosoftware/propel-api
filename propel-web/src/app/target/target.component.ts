@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
 import { DialogResult } from 'src/core/dialog-result';
 import { FormHandler } from "../../core/form-handler";
 import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
+import { DataEntity } from 'src/services/data.service';
 
 const FRIENDLY_NAME_MIN: number = 3;
 const FRIENDLY_NAME_MAX: number = 25;
@@ -36,7 +37,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
-    this.fh = new FormHandler(Target, new FormGroup({
+    this.fh = new FormHandler(DataEntity.Target, new FormGroup({
       FQDN: new FormControl("", [
         Validators.required,
         ValidatorsHelper.FQDN()
@@ -87,7 +88,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     let id: string = this.route.snapshot.paramMap.get("id");
 
     if (id) {
-      this.core.data.getById(Target, id, false)
+      this.core.data.getById(DataEntity.Target, id, false)
         .subscribe((data: APIResponse<Target>) => {
           if (data.count == 0) {
             this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
@@ -111,7 +112,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
     qm.sortBy = "name";
 
-    this.core.data.find(Group, qm)
+    this.core.data.find(DataEntity.Group, qm)
       .subscribe((results: APIResponse<Group>) => {
         this.allGroups = results.data;
       },
@@ -125,7 +126,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
       .subscribe((dlgResults: DialogResult<Group>) => {
 
         if (!dlgResults.isCancel) {
-          this.core.data.save(Group, dlgResults.value)
+          this.core.data.save(DataEntity.Group, dlgResults.value)
             .subscribe((results: APIResponse<string>) => {
               dlgResults.value._id = results.data[0];
               //Adding in this way for the On Push change detection, 
@@ -150,7 +151,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
   }
 
   save() {
-    this.core.data.save(Target, this.fh.value)
+    this.core.data.save(DataEntity.Target, this.fh.value)
       .subscribe((results: APIResponse<string>) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.fh.setId(results.data[0]);

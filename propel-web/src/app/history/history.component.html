@@ -44,7 +44,7 @@
                             matTooltipPosition="above">{{item.startDateFriendly}}</a>
                     </div>
                     <div *ngIf="!item.log.workflow.isQuickTask; else quickTask" class="col-auto">
-                        <a href="javascript:void(0)" (click)="goToEditWorkflow(item.workflow._id)"
+                        <a href="javascript:void(0)" (click)="goToEditWorkflow(item.log.workflow._id)"
                             [matTooltip]="item.workflowNameTooltip" matTooltipClass="tooltipsWithBreakLines"
                             matTooltipPosition="above">{{item.workflowName}}</a>
                     </div>

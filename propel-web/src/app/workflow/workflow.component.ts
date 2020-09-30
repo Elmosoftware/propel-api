@@ -19,6 +19,7 @@ import { WorkflowStepComponentStatus } from '../workflow-step/workflow-step.comp
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { Target } from '../../../../propel-shared/models/target';
+import { DataEntity } from 'src/services/data.service';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -55,7 +56,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
-    this.fh = new FormHandler(Workflow, new FormGroup({
+    this.fh = new FormHandler(DataEntity.Workflow, new FormGroup({
       name: new FormControl("", [
         Validators.required,
         Validators.minLength(NAME_MIN),
@@ -100,7 +101,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
     let id: string = this.route.snapshot.paramMap.get("id");
 
     if (id) {
-      this.core.data.getById(Workflow, id, true)
+      this.core.data.getById(DataEntity.Workflow, id, true)
         .subscribe((data: APIResponse<Workflow>) => {
           if (data.count == 0) {
             this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
@@ -132,7 +133,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
     qm.sortBy = "name";
 
-    this.core.data.find(Category, qm)
+    this.core.data.find(DataEntity.Category, qm)
       .subscribe((results: APIResponse<Category>) => {
         this.allCategories = results.data;
       },
@@ -146,7 +147,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
       .subscribe((dlgResults: DialogResult<Category>) => {
 
         if (!dlgResults.isCancel) {
-          this.core.data.save(Category, dlgResults.value)
+          this.core.data.save(DataEntity.Category, dlgResults.value)
             .subscribe((results: APIResponse<string>) => {
               dlgResults.value._id = results.data[0];
               //Adding in this way for the On Push change detection, 
@@ -358,7 +359,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
 
   save(run: boolean = false): void {
 
-    this.core.data.save(Workflow, this.fh.value)
+    this.core.data.save(DataEntity.Workflow, this.fh.value)
       .subscribe((results: APIResponse<string>) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.fh.setId(results.data[0]);

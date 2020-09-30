@@ -16,6 +16,7 @@ import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { Workflow } from '../../../../propel-shared/models/workflow';
 import { Script } from '../../../../propel-shared/models/script';
 import { Target } from '../../../../propel-shared/models/target';
+import { DataEntity } from 'src/services/data.service';
 
 export enum SearchType {
   Workflows = "workflows",
@@ -198,17 +199,17 @@ export class SearchComponent implements OnInit {
   }
 
   getData(type: SearchType, qm: QueryModifier): Observable<APIResponse<any>> {
-    let entityType;
+    let entityType: DataEntity;
 
     switch (type) {
       case SearchType.Workflows:
-        entityType = Workflow;
+        entityType = DataEntity.Workflow;
         break;
       case SearchType.Scripts:
-        entityType = Script;
+        entityType = DataEntity.Script;
         break;
       case SearchType.Targets:
-        entityType = Target;
+        entityType = DataEntity.Target;
         break;
       default:
         throw new PropelError(`There is no search type define with name ${type}`)

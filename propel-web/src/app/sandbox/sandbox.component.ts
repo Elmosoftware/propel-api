@@ -216,81 +216,81 @@ export class SandboxComponent implements OnInit {
   }
 
   testGetById() {
-    let ret: User
+    // let ret: User
 
-    this.data.getById(User, "5e7c195b001fa35f5c4db76c")
-      .subscribe(
-        data => {
-          let x = data;
-        },
-        err => {
-          throw err
-        });
+    // this.data.getById(User, "5e7c195b001fa35f5c4db76c")
+    //   .subscribe(
+    //     data => {
+    //       let x = data;
+    //     },
+    //     err => {
+    //       throw err
+    //     });
 
-    return ret;
+    // return ret;
   }
 
   testFind() {
-    let qm: QueryModifier = new QueryModifier();
+    // let qm: QueryModifier = new QueryModifier();
     
-    qm.sortBy = "name";
-    qm.populate = true;
+    // qm.sortBy = "name";
+    // qm.populate = true;
     
-    this.data.find(Group,qm)
-    .subscribe(
-      data => {
-        let x = data;
-      },
-      err => {
-        throw err
-      });
+    // this.data.find(Group,qm)
+    // .subscribe(
+    //   data => {
+    //     let x = data;
+    //   },
+    //   err => {
+    //     throw err
+    //   });
   }
 
   testInsert() {
 
-    let u: User = new User();
+    // let u: User = new User();
 
-    u.email = "spongebob3@hotmail.com"
-    u.initials = "sb3"
-    u.name = "Bob the third"
+    // u.email = "spongebob3@hotmail.com"
+    // u.initials = "sb3"
+    // u.name = "Bob the third"
 
-    this.data.save<User>(User, u)
-      .subscribe(
-        data => {
-          let x = data;
-        },
-        err => {
-          throw err
-        });
+    // this.data.save<User>(User, u)
+    //   .subscribe(
+    //     data => {
+    //       let x = data;
+    //     },
+    //     err => {
+    //       throw err
+    //     });
   }
 
   testUpdate() {
 
-    let u: User = new User();
+    // let u: User = new User();
 
-    u._id = "5f18eee52dcf570b148586e8"
-    u.name = "Bob the third UPDATED"
+    // u._id = "5f18eee52dcf570b148586e8"
+    // u.name = "Bob the third UPDATED"
 
-    this.data.save<User>(User, u)
-      .subscribe(
-        data => {
-          let x = data;
-        },
-        err => {
-          throw err
-        });
+    // this.data.save<User>(User, u)
+    //   .subscribe(
+    //     data => {
+    //       let x = data;
+    //     },
+    //     err => {
+    //       throw err
+    //     });
   }
 
   testDelete() {
 
-    this.data.delete<User>(User, "5f18eee52dcf570b148586e8")
-      .subscribe(
-        data => {
-          let x = data;
-        },
-        err => {
-          throw err
-        });
+    // this.data.delete<User>(User, "5f18eee52dcf570b148586e8")
+    //   .subscribe(
+    //     data => {
+    //       let x = data;
+    //     },
+    //     err => {
+    //       throw err
+    //     });
   }
 
   showLongConfirmationDialog() {
