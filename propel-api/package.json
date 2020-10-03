@@ -1,7 +1,8 @@
 {
+  "productName": "Propel",
   "name": "propel-api",
   "version": "1.0.0",
-  "description": "Propel API. Reach your servers!",
+  "description": "Propel. Reach your servers!",
   "main": "index.js",
   "scripts": {
     "build": "tsc",

@@ -1,3 +1,14 @@
+Distribution
+=================================
+
+1st - install node-windows
+
+npm install -g node-windows
+
+2nd - Move to the propel-api dir and run
+	npm link node-windows
+
+
 Text Search
 ========================================
 

@@ -361,7 +361,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
          */
         if (target && cfg.isProduction) {
             //Also, need to be an script that is actually targetting a remote server :-)
-            if (target !== this.localTarget) {
+            if (target.FQDN.toLowerCase() !== this.localTarget.FQDN.toLowerCase()) {
                 ret += ` -ComputerName ${target.FQDN}`
             }
         }
@@ -374,6 +374,9 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
 
         ret += `\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
+
+        logger.logInfo(`Executing:\n${ret}`)
+
 
         return ret;
     }
