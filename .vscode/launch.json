@@ -7,9 +7,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "propel-api - Debug APP",
+      "name": "Debug API",
       "program": "${workspaceFolder}/propel-api/index.ts",
-      "preLaunchTask": "propel-api - Build",
+      "preLaunchTask": "Build API",
       "outFiles": [
         "${workspaceFolder}/propel-api/dist/**/*.js"
       ],
@@ -19,8 +19,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "propel-api - Debug ALL Test",
-      "preLaunchTask": "propel-api - Build",
+      "name": "Debug API Tests",
+      "preLaunchTask": "Build API",
       "outFiles": [
         "${workspaceFolder}/propel-api/dist/**/*.js"
       ],
@@ -39,8 +39,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "propel-api - Debug current opened Test",
-      "preLaunchTask": "propel-api - Build",
+      "name": "Debug API Opened Test",
+      "preLaunchTask": "Build API",
       "outFiles": [
         "${workspaceFolder}/propel-api/dist/**/*.js"
       ],
@@ -60,8 +60,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "propel-shared - Debug ALL Test",
-      "preLaunchTask": "propel-shared - Build",
+      "name": "Debug SHD Test",
+      "preLaunchTask": "Build SHD",
       "outFiles": [
         "${workspaceFolder}/propel-shared/dist/**/*.js"
       ],
@@ -80,8 +80,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "propel-shared - Debug current opened Test",
-      "preLaunchTask": "propel-shared - Build",
+      "name": "Debug SHD Opened Test",
+      "preLaunchTask": "Build SHD",
       "outFiles": [
         "${workspaceFolder}/propel-shared/dist/**/*.js"
       ],

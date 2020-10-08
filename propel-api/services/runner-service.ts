@@ -20,7 +20,7 @@ import { ExecutionError } from "../../propel-shared/models/execution-error";
 import { db } from "../core/database";
 import { DataService } from "../services/data-service";
 import { APIResponse } from "../../propel-shared/core/api-response";
-import { logger } from "../../propel-shared/services/logger-service";
+import { logger } from "./logger-service";
 
 /**
  * This class responsibility is everything related to run a specified workflow and 
@@ -375,8 +375,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         ret += `\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
 
-        logger.logInfo(`Executing:\n${ret}`)
-
+        logger.logDebug(`Executing command:\n${ret}`)
 
         return ret;
     }

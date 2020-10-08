@@ -1,4 +1,5 @@
-import { ObjectPool, ObjectPoolOptions, Resettable, Disposable } from "../../core/object-pool";
+import { ObjectPool, Resettable, Disposable } from "../../core/object-pool";
+import { ObjectPoolOptions } from "../../core/object-pool-options";
 
 let counter: number = 0;
 

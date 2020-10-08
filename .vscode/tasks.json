@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "propel-api - Build",
+            "label": "Build API",
             "type": "typescript",
             "tsconfig": "propel-api/tsconfig.json",
             "problemMatcher": [
@@ -16,7 +16,21 @@
             }
         },
         {
-            "label": "propel-shared - Build",
+            "label": "Test API",
+            "type": "shell",
+            "dependsOn": [
+                "Build API"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/propel-api/"
+            },
+            "command": "npm",
+            "args": [
+                "test"
+            ]
+        },
+        {
+            "label": "Build SHD",
             "type": "typescript",
             "tsconfig": "propel-shared/tsconfig.json",
             "problemMatcher": [
@@ -28,66 +42,93 @@
             }
         },
         {
-            "label": "propel-api - Build & Run DEV",
+            "label": "Test SHD",
             "type": "shell",
-            "dependsOn":["propel-api - Build"],
-            "options": { 
-                "cwd": "${workspaceFolder}/propel-api/" //workspace mut be this in order 
-                //.env file is grabbed. Because .env file is not copied as part of the build process.
+            "dependsOn": [
+                "Build SHD"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/propel-shared/"
+            },
+            "command": "npm",
+            "args": [
+                "test"
+            ]
+        },
+        {
+            "label": "Run API",
+            "type": "shell",
+            "dependsOn": [
+                "Build API"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/propel-api/"
             },
             "command": "$env:NODE_ENV='development';node ./dist/propel-api/index.js"
         },
         {
-            "label": "propel-web - Build, Run & Watch DEV",
+            "label": "Run WEB",
             "type": "shell",
-            "options": { 
+            "options": {
                 "cwd": "${workspaceFolder}/propel-web"
             },
             "command": "ng serve --port 8080"
         },
         {
-            "label": "propel-web - Production Build",
+            "label": "Test WEB",
             "type": "shell",
-            "options": { 
+            "options": {
+                "cwd": "${workspaceFolder}/propel-web/"
+            },
+            "command": "npm",
+            "args": [
+                "test"
+            ]
+        },
+        {
+            "label": "Build PRODUCTION (WEB Only)",
+            "type": "shell",
+            "options": {
                 "cwd": "${workspaceFolder}/propel-web"
             },
             "command": "ng build --prod"
         },
         {
-            "label": "Production Build",
+            "label": "Build PRODUCTION",
+            "group": "build",
             "type": "gulp",
             "task": "productionBuild",
-            "problemMatcher": [], 
-            "dependsOn":[
-                "propel-web - Production Build", 
-                "propel-api - Build"
+            "problemMatcher": [],
+            "dependsOn": [
+                "Build PRODUCTION (WEB Only)",
+                "Build API"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/distrib"
             }
         },
         {
-            "label": "Production Install",
+            "label": "Install Production (npm install only)",
             "type": "shell",
-            "problemMatcher": [], 
+            "problemMatcher": [],
             "options": {
                 "cwd": "${workspaceFolder}/distrib/dist/propel-api"
             },
             "command": "npm install",
-            "dependsOn":[
-                "Production Build"
+            "dependsOn": [
+                "Build PRODUCTION"
             ]
         },
         {
-            "label": "Production Build, Install & RUN",
+            "label": "Run PRODUCTION",
             "type": "shell",
-            "problemMatcher": [], 
-            "options": { 
+            "problemMatcher": [],
+            "options": {
                 "cwd": "${workspaceFolder}/distrib/dist/propel-api"
             },
             "command": "$env:NODE_ENV='production';node index.js",
-            "dependsOn":[
-                "Production Install"
+            "dependsOn": [
+                "Install Production (npm install only)"
             ]
         }
     ]

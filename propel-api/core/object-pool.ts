@@ -1,6 +1,7 @@
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
-import { logger } from "../../propel-shared/services/logger-service";
+import { logger } from "../services/logger-service";
+import { ObjectPoolOptions } from "./object-pool-options";
 
 /**
  * Implementations can be reseted. Mean to flush all content and restore the state to some default state.
@@ -29,42 +30,6 @@ export interface Disposable {
      * Boolean value that indicates if the instance is already disposed
      */
     isDisposed: boolean;
-}
-
-/**
- * Define the options to use for the pool creation. Like how many object the pool will be allowed 
- * to generate. How many of this objects must be created initially, how many object request 
- * can be queued waiting for resources to be released, etc.
- */
-export class ObjectPoolOptions {
-
-    public maxSize: number = ObjectPoolOptions.DEFAULT_MAX_SIZE;
-    public preallocatedSize: number = Math.round(ObjectPoolOptions.DEFAULT_PREALLOCATED_PERC * this.maxSize);
-    public maxQueueSize: number = ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE;
-
-    constructor() {
-    }
-
-    /**
-     * Default max size. This value will be used for @property maxSize if no value is specified.
-     */
-    static get DEFAULT_MAX_SIZE(): number {
-        return 10;
-    }
-
-    /**
-     * Default percentage of the @property maxsize that will be preallocated by default.
-     */
-    static get DEFAULT_PREALLOCATED_PERC(): number {
-        return 0.1;
-    }
-
-    /**
-     * Default @property maxQueueSize value.
-     */
-    static get DEfAULT_MAX_QUEUE_SIZE(): number {
-        return 100;
-    }
 }
 
 /**
@@ -281,7 +246,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         this._dispose()
             .then(() => {})
             .catch((err) => {
-                logger.logWarn(`ObjectPool disposing error. Following details: ${String(err)}`)
+                logger.logError(`ObjectPool disposing error. Following details: ${String(err)}`)
             });
     }
 
@@ -293,7 +258,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         
         let dispositions: Promise<any>[] = [];
 
-        logger.logInfo(`Object pool start disposing objects.\n${this._currentStatsText()}`)
+        logger.logDebug(`Object pool start disposing objects.\n${this._currentStatsText()}`)
         this._disposing = true;
         this._cb = () => {};
         this._requestQueue = [];
@@ -314,9 +279,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
             throw new PropelError("You can't call reset() without first dispose all object in the object pool.");
         }
 
-        logger.logInfo(`Object pool is starting or it have been restarted.`)
         this._initialize();
-        logger.logInfo(`Object pool started successfully.`)
     }
 
     private _initialize() {
@@ -332,6 +295,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         }
         
         this._disposing = false;
+        logger.logDebug(`Object pool was initialized.\n${this._currentStatsText()}`);
     }
 
     private _currentStatsText() :string {

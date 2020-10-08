@@ -1,6 +1,12 @@
 import dotenv from "dotenv"
 
-import { ObjectPoolOptions } from "./object-pool";
+import { ObjectPoolOptions } from "../core/object-pool-options";
+
+export enum LogLevel {
+    Error = "ERROR",
+    Info = "INFO",
+    Debug = "DEBUG"
+}
 
 /**
  * Unified access to the API configuration.
@@ -62,6 +68,18 @@ class Config {
         o.preallocatedSize = Number(process.env.POOL_PRE_ALLOC)
         o.maxQueueSize = Number(process.env.POOL_QUEUE_SIZE)
         return o;
+    }
+
+    get logName(): string {
+        return (process.env.LOGGING_LOG_NAME) ? process.env.LOGGING_LOG_NAME : "";
+    }
+
+    get logSource(): string {
+        return (process.env.LOGGING_SOURCE) ? process.env.LOGGING_SOURCE : "";
+    }
+
+    get logLevel(): LogLevel {
+        return (process.env.LOGGING_LEVEL) ? (process.env.LOGGING_LEVEL as LogLevel) : LogLevel.Error;
     }
 }
 

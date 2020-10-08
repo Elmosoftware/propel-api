@@ -5,7 +5,7 @@ import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/in
 import { Disposable, Resettable } from "../core/object-pool";
 import { Utils } from "../../propel-shared/utils/utils";
 import { SystemHelper } from "../util/system-helper";
-import { logger } from "../../propel-shared/services/logger-service";
+import { logger } from "../services/logger-service";
 import { PropelError } from "../../propel-shared/core/propel-error";
 
 /**

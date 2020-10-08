@@ -8,7 +8,7 @@ import { DataService } from "../services/data-service";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { Workflow } from "../../propel-shared/models/workflow";
 import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/invocation-message";
-import { logger } from "../../propel-shared/services/logger-service";
+import { logger } from "../services/logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 
@@ -46,6 +46,7 @@ export class RunRouter implements Route {
                     }
 
                     //Starting the execution:
+                    logger.logDebug(`Starting execution of Workflow "${(workflow.name) ? workflow.name : "name unavailable" }" with id: "${workflow._id}".`)
                     runner.execute(workflow, subsCallback)
                         .then((msg: InvocationMessage) => {
                             ws.send(JSON.stringify(msg));
@@ -73,11 +74,12 @@ export class RunRouter implements Route {
                             runner.cancelExecution(true);
                         }
                         else {
-                            logger.logWarn(`Unknown user action, it will be ignored.`);
+                            logger.logWarn(`Unknown user action, it will be ignored. Message received: "${message}".`);
                         }
                     });
                 })
                 .catch((err) => {
+                    logger.logError(err);
                     ws.send(JSON.stringify(new APIResponse(err, null)));
                     ws.close();
                 });

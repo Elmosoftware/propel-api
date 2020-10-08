@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 //Core Propel API services and helpers:
 import { cfg } from "./config";
-import { logger } from "../../propel-shared/services/logger-service";
+import { logger } from "../services/logger-service";
 import { schemaRepo } from "../../propel-shared/schema/schema-repository";
 import { MongooseSchemaAdapter, AdapterModel } from "../schema/mongoose-schema-adapter";
 import { DataService } from "../services/data-service";
@@ -106,11 +106,12 @@ class Database {
     }
 
     _printDetails() {
-        logger.logInfo(`\nModels initialized sucessfully. Models found: ${this._modelsRepo.length}.`);
+        let details: string = ""
+        logger.logInfo(`\nModels initialized sucessfully. Models count: ${this._modelsRepo.length}.`);
 
-        logger.logInfo("\n\n --------------- MODELS --------------- ")
+        details = "\n\n --------------- MODELS --------------- "
         this._modelsRepo.forEach((model: AdapterModel) => {
-            console.log(`- ${model.name}`);
+            details += `\n- ${model.name}:\n`;
             let fieldslist: string = "";
             //@ts-ignore
             for (var key in model.model.schema.tree) {
@@ -119,13 +120,14 @@ class Database {
                 }
                 fieldslist += key
             }
-
-            logger.logInfo(`Fields:${fieldslist}`);
-            logger.logInfo(`Sub docs populate schema:${JSON.stringify(model.populateSchema)}`);
-            logger.logInfo(`Internal fields: ${model.internalFieldsList.join(", ")}`);
-            logger.logInfo(`Audit fields: ${model.auditFieldsList.join(", ")}`);
-            logger.logInfo("-----------------------------------------")
+            details += `\tFields:${fieldslist}
+\tSub docs populate schema:${JSON.stringify(model.populateSchema)}
+\tInternal fields: ${model.internalFieldsList.join(", ")}
+\tAudit fields: ${model.auditFieldsList.join(", ")}
+---------------------------------------------------------------------\n`;            
         });
+        
+        logger.logDebug(details);
     }
 }
 

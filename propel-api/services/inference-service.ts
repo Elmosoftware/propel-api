@@ -4,7 +4,7 @@ import { cfg } from "../core/config";
 import { pool } from "../services/invocation-service-pool";
 import { SystemHelper } from "../util/system-helper";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
-import { logger } from "../../propel-shared/services/logger-service";
+import { logger } from "../services/logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
 import { InvocationService } from "./invocation-service";
 

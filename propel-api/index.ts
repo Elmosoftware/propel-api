@@ -9,7 +9,7 @@ console.log(`\n     --------------------  Reach your servers! ------------------
 
 //Core Propel API services and helpers:
 import { cfg } from "./core/config";
-import { logger } from "../propel-shared/services/logger-service";
+import { logger } from "./services/logger-service";
 import { cfgVal } from "./validators/config-validator";
 import { webServer } from "./core/web-server";
 import { db } from "./core/database";
@@ -19,8 +19,11 @@ if (!cfgVal.validate().isValid) {
     //@ts-ignore
     logger.logWarn(`\n\nIMPORTANT: One or more configuration errors prevent the application to start:\n
 Check the details below in order to review and remediate your ".env" file accordingly.\n\n`);
+    logger.logError((cfgVal.getErrors() as Error));
     closeHandler(cfgVal.getErrors(), "Application start");
 }
+
+logger.logInfo("Propel is starting!");
 
 db.start() //Database setup.
     .then((data: any) => {
@@ -34,16 +37,16 @@ db.start() //Database setup.
         webServer.start() //Web Server and routing services start.
             .then(() => {
                 if (cfg.isProduction) {
-                    logger.logWarn(`\n
+                    logger.logInfo(`\n
                 =============================================================
                 CURRENT ENVIRONMENT SETTINGS CORRESPONDS TO: PRODUCTION SITE.
                 =============================================================\n`)
                 }
 
-                logger.logInfo(`Executing on folder: ${__dirname}`);
-                logger.logInfo(`Executing script: ${__filename}`);
-                logger.logInfo(`Server is ready and listening on port:${cfg.port}!`);
-                logger.logInfo(`\n\nPropel API STARTED on "${cfg.environment}" environment.\n`);
+                logger.logDebug(`Executing on folder: "${__dirname}".
+Executing script: "${__filename}".
+Server is ready and listening on port: ${cfg.port}.
+\n\nPropel started on "${cfg.environment}" environment.\n`);
             })
         .catch((err:any) => {
             closeHandler(err)
