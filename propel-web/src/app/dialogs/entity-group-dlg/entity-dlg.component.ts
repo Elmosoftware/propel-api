@@ -20,7 +20,6 @@ const CATEGORY_NAME_MAX: number = 25;
 })
 export class EntityDialogComponent implements OnInit {
 
-  // title: string = ""
   entityName: string = ""
   fh: FormHandler<Entity>;
 
@@ -31,10 +30,14 @@ export class EntityDialogComponent implements OnInit {
   constructor(public dialogRef: MatDialogRef<EntityDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public config: any) {
 
-    this.entityName = config.entityName;
+    if (!config || !config.entityType) {
+      throw new PropelError(`EntityDialog component get a wrong config. Config is null or doesn't have the "entityType" attribute.`);
+    }
 
-    switch (this.entityName) {
-      case "Group":
+    this.entityName = config.entityType;
+
+    switch (config.entityType) {
+      case DataEntity.Group:
         this.fh = new FormHandler(DataEntity.Group, new FormGroup({
           name: new FormControl("", [
             Validators.required,
@@ -43,7 +46,7 @@ export class EntityDialogComponent implements OnInit {
           ])
         }));
         break;
-      case "Category":
+      case DataEntity.Category:
         this.fh = new FormHandler(DataEntity.Category, new FormGroup({
           name: new FormControl("", [
             Validators.required,
@@ -58,7 +61,7 @@ export class EntityDialogComponent implements OnInit {
         */
         
       default:
-        throw new PropelError(`There is no defined dialod for entity "${this.entityName}".`);
+        throw new PropelError(`There is no defined dialog for entity "${config.entityType.toString()}".`);
     }
 
     this.fh.setValue(config.data);
@@ -74,13 +77,11 @@ export class EntityDialogComponent implements OnInit {
 
 export class EntityDialogConfiguration<T extends Entity> {
 
-  constructor(entityType: { new(): T }, data: T) {
+  constructor(entityType: DataEntity, data: T) {
     this.entityType = entityType
-    this.entityName = this.entityType.name;
     this.data = data;
   }
 
-  entityType: { new(): T };
-  entityName: string;
+  entityType: DataEntity;
   data: T;
 }

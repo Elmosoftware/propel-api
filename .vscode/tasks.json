@@ -64,7 +64,8 @@
             "options": {
                 "cwd": "${workspaceFolder}/propel-api/"
             },
-            "command": "$env:NODE_ENV='development';node ./dist/propel-api/index.js"
+            "command": "$env:NODE_ENV='development';node ./dist/propel-api/index.js",
+            "problemMatcher": []
         },
         {
             "label": "Run WEB",
@@ -72,7 +73,8 @@
             "options": {
                 "cwd": "${workspaceFolder}/propel-web"
             },
-            "command": "ng serve --port 8080"
+            "command": "ng serve --port 8080",
+            "problemMatcher": []
         },
         {
             "label": "Test WEB",

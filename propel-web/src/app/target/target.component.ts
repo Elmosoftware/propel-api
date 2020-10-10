@@ -122,7 +122,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
   }
 
   addGroup() {
-    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(Group, new Group()))
+    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(DataEntity.Group, new Group()))
       .subscribe((dlgResults: DialogResult<Group>) => {
 
         if (!dlgResults.isCancel) {

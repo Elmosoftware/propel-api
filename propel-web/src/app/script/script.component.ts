@@ -179,7 +179,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
   }
 
   addCategory() {
-    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(Category, new Category()))
+    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(DataEntity.Category, new Category()))
       .subscribe((dlgResults: DialogResult<Category>) => {
 
         if (!dlgResults.isCancel) {

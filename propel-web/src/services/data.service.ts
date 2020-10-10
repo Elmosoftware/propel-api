@@ -16,8 +16,7 @@ export enum DataEntity {
   Script = "Script",
   Target = "Target",
   User = "User",
-  Workflow = "Workflow",
-  NONEXISTINGENTITY = "xxxxxx"
+  Workflow = "Workflow"
 }
 
 /**

@@ -1,9 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { FormGroup, FormControl, AbstractControl, Validators, ValidatorFn } from "@angular/forms";
 import { CoreService } from "src/services/core.service";
-import { DataService } from 'src/services/data.service';
-import { User } from "../../../../propel-shared/models/user";
-import { QueryModifier } from "../../../../propel-shared/core/query-modifier";
+import { DataService, DataEntity } from 'src/services/data.service';
 import { ThemePalette } from '@angular/material/core';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { Entity, compareEntities } from '../../../../propel-shared/models/entity';
@@ -319,7 +317,7 @@ export class SandboxComponent implements OnInit {
   }
 
   showEntityDialog() {
-    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(Group, new Group()))
+    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(DataEntity.Group, new Group()))
     .subscribe((results: DialogResult<Group>) => {
       alert(`Result is: "${JSON.stringify(results)}".`);
     },
