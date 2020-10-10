@@ -13,6 +13,7 @@ import { WorkflowComponent } from './app/workflow/workflow.component';
 import { ResultsComponent } from './app/results/results.component';
 import { SearchComponent } from './app/search/search.component';
 import { HistoryComponent } from './app/history/history.component';
+import { environment } from './environments/environment';
 
 const routes: Routes = [
   {
@@ -134,7 +135,7 @@ const routes: Routes = [
   },
   {
     path: PAGES.Sandbox,
-    component: SandboxComponent
+    component: ((environment.production)? HomeComponent : SandboxComponent)
   },
   {
     path: '**',
