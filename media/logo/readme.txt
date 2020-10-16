@@ -1,0 +1,1 @@
+Use Inkscape to edit svg files.

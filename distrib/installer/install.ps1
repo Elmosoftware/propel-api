@@ -7,6 +7,7 @@ $installationFolder = "C:\Propel"
 
 $installerFolder = (Get-Location).Path
 $APIFolder = "propel-api"
+$ShellFolder = "propel-shell"
 
 #region Private Methods
 
@@ -79,6 +80,17 @@ function InstallPackages() {
         -Wait `
         -NoNewWindow `
         -ArgumentList "install"
+    [console]::ForegroundColor = "White"
+
+    return $LASTEXITCODE    
+}
+
+function InstallShell() {
+
+    [console]::ForegroundColor = "DarkGray"    
+    Start-Process -FilePath "$InstallerFolder\$ShellFolder\setup.exe" `
+        -Wait `
+        -NoNewWindow
     [console]::ForegroundColor = "White"
 
     return $LASTEXITCODE    
@@ -158,5 +170,9 @@ if((InstallPropelService) -gt 0) {
     ExitByPressingKey "There was an error during Propel Service installation. The process can not continue."
 }
 
-Msg "Installation process is now finished."
+#Installing the Propel frontend app
+Msg "Installing the Propel app..."
+InstallShell
+
+ExitByPressingKey "Installation process is now finished."
 

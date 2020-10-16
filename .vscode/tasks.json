@@ -93,7 +93,23 @@
             "options": {
                 "cwd": "${workspaceFolder}/propel-web"
             },
-            "command": "ng build --prod"
+            "command": "ng build --prod --base-href ./"
+        },
+        {
+            "label": "Build PRODUCTION (Electron Shell Only)",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/propel-web"
+            },
+            "command": "npm",
+            "args": [
+                "run",
+                "electronBuild"
+            ],
+            "problemMatcher": [],
+            "dependsOn":[
+                "Build PRODUCTION (WEB Only)"
+            ]
         },
         {
             "label": "Build PRODUCTION",
@@ -102,7 +118,7 @@
             "task": "productionBuild",
             "problemMatcher": [],
             "dependsOn": [
-                "Build PRODUCTION (WEB Only)",
+                "Build PRODUCTION (Electron Shell Only)",
                 "Build API"
             ],
             "options": {

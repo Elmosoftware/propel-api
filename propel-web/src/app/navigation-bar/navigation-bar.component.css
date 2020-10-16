@@ -1,6 +1,11 @@
-.navbar-logo{
-    width: 3.8rem;
-    margin-right: 4px
+.nav-bar-icon {
+    background-image: url(../../assets/img/logo2-white.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    min-height: 2rem;
+    min-width: 2rem;
+    margin-bottom: -0.4rem;
 }
 
 .navbar-iso{

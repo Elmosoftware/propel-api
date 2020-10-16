@@ -1,0 +1,32 @@
+{
+    "productName": "Propel",
+    "directories": {
+        "output": "../distrib/shell"
+    },
+    "files": [
+        "main.js",
+        "dist",
+        "!node_modules"
+    ],
+    "win": {
+        "icon": "./src/assets/img/logo2.png",
+        "target": [
+            "NSIS"
+        ]
+    },
+    "mac": {
+        "icon": "./src/assets/img/",
+        "target": [
+            "dmg"
+        ]
+    },
+    "linux": {
+        "icon": "./src/assets/img/",
+        "target": [
+            "AppImage"
+        ]
+    },
+    "nsis": {
+        "perMachine": true
+    }
+}

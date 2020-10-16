@@ -1,13 +1,20 @@
 {
+  "productName": "Propel",
   "name": "propel-web",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Propel Frontend project",
+  "author": {
+    "name": "JC"
+  },
+  "main": "main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test --watch=true",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "electronBuild": "electron-builder build"
   },
   "private": true,
   "dependencies": {
@@ -51,6 +58,8 @@
     "@types/stemmer": "^1.0.2",
     "@types/stopword": "^0.3.0",
     "codelyzer": "^5.1.2",
+    "electron": "^10.1.3",
+    "electron-builder": "^22.8.1",
     "jasmine-core": "~3.5.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~5.0.0",
