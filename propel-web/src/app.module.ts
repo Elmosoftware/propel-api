@@ -38,6 +38,7 @@ import { LoaderInterceptor } from './core/loader-interceptor';
 import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
 import { PSParametersInferrerService } from "./services/ps-parameters-inferrer.service";
 import { InfiniteScrollingModule } from './core/infinite-scrolling-module';
+import { APIStatusService } from "./services/api-status.service";
 
 //Dialogs
 import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
@@ -67,6 +68,7 @@ import { SearchWorkflowLineComponent } from './app/search-workflow-line/search-w
 import { SearchScriptLineComponent } from './app/search-script-line/search-script-line.component';
 import { SearchTargetLineComponent } from './app/search-target-line/search-target-line.component';
 import { HistoryComponent } from './app/history/history.component';
+import { OfflineComponent } from './app/offline/offline.component';
 
 @NgModule({
   declarations: [
@@ -93,7 +95,8 @@ import { HistoryComponent } from './app/history/history.component';
     SearchWorkflowLineComponent,
     SearchScriptLineComponent,
     SearchTargetLineComponent,
-    HistoryComponent
+    HistoryComponent,
+    OfflineComponent
   ],
   imports: [
     BrowserModule,
@@ -136,7 +139,8 @@ import { HistoryComponent } from './app/history/history.component';
     CoreService,
     { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
     DataLossPreventionGuard,
-    PSParametersInferrerService
+    PSParametersInferrerService,
+    APIStatusService
   ],
   entryComponents: [
     StandardDialogComponent,

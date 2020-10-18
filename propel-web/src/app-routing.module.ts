@@ -14,6 +14,7 @@ import { ResultsComponent } from './app/results/results.component';
 import { SearchComponent } from './app/search/search.component';
 import { HistoryComponent } from './app/history/history.component';
 import { environment } from './environments/environment';
+import { OfflineComponent } from './app/offline/offline.component';
 
 const routes: Routes = [
   {
@@ -131,6 +132,13 @@ const routes: Routes = [
     component: HistoryComponent,
     data: {
       title: "Seeing Execution History"
+    }
+  },
+  {
+    path: PAGES.Offline,
+    component: OfflineComponent,
+    data: {
+      title: "There are connectivity issues"
     }
   },
   {

@@ -1,0 +1,23 @@
+.api-down-image {
+    background-image: url(../../assets/img/offline-svc.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    min-height: 5rem;
+    min-width: 5rem;
+    border: none;
+}
+
+.retry-button {
+    width: 35%;
+}
+
+.vertical-center {
+    margin-bottom: 0; 
+    min-height: 100%;
+    min-height: 100vh;
+    display: flex; 
+    align-items : center;
+    width: 100%;
+    justify-content : center;
+}

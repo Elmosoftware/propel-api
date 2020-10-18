@@ -20,7 +20,8 @@ export const enum PAGES {
     BrowseWorkflows = "browse-workflows",
     BrowseScripts = "browse-scripts",
     BrowseTargets = "browse-targets",
-    History = "history"
+    History = "history",
+    Offline = "offline"
 }
 
 /**
@@ -182,6 +183,10 @@ export class NavigationService {
 
     toHistory(): void {
         this.router.navigate([this.getRelativePath(PAGES.History)]);
+    }
+
+    toOffline(): void {
+        this.router.navigate([this.getRelativePath(PAGES.Offline)]);
     }
 
     toSandbox(): void {

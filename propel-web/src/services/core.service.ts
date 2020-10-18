@@ -16,6 +16,8 @@ import { StandardDialogConfiguration } from 'src/app/dialogs/standard-dialog/sta
 import { FormHandler } from 'src/core/form-handler';
 import { DialogResult } from 'src/core/dialog-result';
 import { PSParametersInferrerService } from './ps-parameters-inferrer.service';
+import { APIStatusService } from './api-status.service';
+import { ConnectivityService, ConnectivityStatus } from './connectivity.service';
 
 /**
  * This core class help inject common services to the app. 
@@ -37,8 +39,11 @@ export class CoreService {
     private injRun: RunnerService,
     private injDlg: DialogService,
     private injData: DataService,
-    private injInfer: PSParametersInferrerService) {
+    private injInfer: PSParametersInferrerService,
+    private injAPIStatus: APIStatusService,
+    private injConn: ConnectivityService) {
     logger.logInfo("CoreService instance created")
+
     this._init()
   }
 
@@ -64,6 +69,14 @@ export class CoreService {
 
   get data(): DataService {
     return this.injData;
+  }
+
+  get status(): APIStatusService {
+    return this.injAPIStatus;
+  }
+
+  get connectivity(): ConnectivityService {
+    return this.injConn;
   }
 
   get psParametersinferrer(): PSParametersInferrerService {
@@ -94,7 +107,7 @@ export class CoreService {
    * @param dirtiness FormHandler instance with the current form status.
    */
   dataChanged(dirtiness: FormHandler<any> | boolean): boolean | Observable<boolean> | Promise<boolean> {
-    
+
     //If we pass a value that evaluates to false, we will not display the dialog:
     let showDlg: boolean = Boolean(dirtiness);
     let form = (dirtiness as FormHandler<any>).form;
@@ -129,7 +142,29 @@ export class CoreService {
   private _init() {
     this.injErr.getErrorHandlerSubscription()
       .subscribe((error: PropelAppError) => {
-        this.injToast.showError(error);
+        this.injConn.updateStatus(error);
+      });
+
+    this.injConn.getConnectivityStatusChangeSubscription()
+      .subscribe((status: ConnectivityStatus) => {
+
+        logger.logInfo(`Connectivity status change event have been triggered. Current status:
+      - Network is ${(status.networkOn) ? "online" : "offline"}.
+      - Propel API is ${(status.apiOn) ? "up and ready" : "down"}.
+      Last error was: "${(status.lastError) ? status.lastError.message.substring(0, 100) : "No errors so far!"}".`)
+
+        if (status.networkOn && status.apiOn) {
+          if (status.lastError) {
+            //We show a toaster for the user indicating the error details:
+            this.injToast.showError(status.lastError);
+          }
+        }
+        else {
+          //Navigate to the offline page to show the connectivity issue details:
+          this.injZone.run(() => {
+            this.injNav.toOffline();
+          });
+        }
       })
   }
 }

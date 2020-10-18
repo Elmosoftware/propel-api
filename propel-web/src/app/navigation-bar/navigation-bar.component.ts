@@ -18,6 +18,14 @@ export class NavigationBarComponent implements OnInit {
   loading: boolean;
   searchTerm: string = "";
 
+  get isSearchPage(): boolean {
+    return this.core.navigation.currentPage() == PAGES.Search;
+  }
+  
+  get isOffline(): boolean {
+    return this.core.navigation.currentPage() == PAGES.Offline;
+  }
+
   ngOnInit(): void {
 
     this.core.navigation.getHttpRequestCountSubscription()
@@ -66,9 +74,5 @@ export class NavigationBarComponent implements OnInit {
 
   goToHistory() {
     this.core.navigation.toHistory();
-  }
-
-  isSearchPage(): boolean {
-    return this.core.navigation.currentPage() == PAGES.Search;
   }
 }

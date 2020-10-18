@@ -2,35 +2,30 @@
     <div class="container mt-4">
         <div class="row font-weight-bold subtitle not-break text-center">
             <div *ngIf="totalWorkflows >= 0" class="col-6 col-lg-3 ">
-                <div class="capsule py-2 my-2 rounded" 
-                matTooltip="Total amount of workflows created.
-Click here to browse them."
-                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+                <div class="capsule py-2 my-2 rounded" matTooltip="Total amount of workflows created.
+Click here to browse them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
                     (click)="goToBrowseWorkflows()">
                     <i class="fas fa-list-ol mr-2"></i>{{totalWorkflows}}
                 </div>
             </div>
             <div *ngIf="totalResults >= 0" class="col-6 col-lg-3">
                 <div class="capsule py-2 my-2 rounded" matTooltip="Total amount of executions in the last month.
-Click here to check the execution history."
-                (click)="goToHistory()"
-                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+Click here to check the execution history." (click)="goToHistory()" matTooltipClass="tooltipsWithBreakLines"
+                    matTooltipPosition="above">
                     <i class="fas fa-stopwatch mr-2"></i>{{totalResults}}
                 </div>
             </div>
             <div *ngIf="totalScripts >= 0" class="col-6 col-lg-3">
                 <div class="capsule py-2 my-2 rounded" matTooltip="Total of scripts already uploaded.
-Click here to take a look at them."
-                (click)="goToBrowseScripts()"
-                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+Click here to take a look at them." (click)="goToBrowseScripts()" matTooltipClass="tooltipsWithBreakLines"
+                    matTooltipPosition="above">
                     <i class="fas fa-scroll mr-2"></i>{{totalScripts}}
                 </div>
             </div>
             <div *ngIf="totalTargets >= 0" class="col-6 col-lg-3">
                 <div class="capsule py-2 my-2 rounded" matTooltip="Total number of targets registered.
-Click here to browse them."
-                (click)="goToBrowseTargets()"
-                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+Click here to browse them." (click)="goToBrowseTargets()" matTooltipClass="tooltipsWithBreakLines"
+                    matTooltipPosition="above">
                     <i class="fas fa-server mr-2"></i>{{totalTargets}}
                 </div>
             </div>
@@ -46,22 +41,22 @@ Click here to browse them."
                 <div class="card-body">
                     <ul class="list-unstyled mt-3 mb-4">
                         <li class="mt-3">
-                            <button type="button" (click)="goToTarget()" 
-                            class="btn btn-lg btn-block btn-primary">Add a Target</button>
+                            <button type="button" (click)="goToTarget()" class="btn btn-lg btn-block btn-primary">Add a
+                                Target</button>
                         </li>
                         <li class="mt-3">
-                            <button type="button"  (click)="goToScript()" 
-                            class="btn btn-lg btn-block btn-primary">Upload your
+                            <button type="button" (click)="goToScript()" class="btn btn-lg btn-block btn-primary">Upload
+                                your
                                 Script</button>
                         </li>
                         <li class="mt-3">
-                            <button type="button"  (click)="goToWorkflow()" 
-                            class="btn btn-lg btn-block btn-primary">Create a
+                            <button type="button" (click)="goToWorkflow()"
+                                class="btn btn-lg btn-block btn-primary">Create a
                                 Workflow</button>
                         </li>
                         <li class="mt-3">
-                            <button type="button"  (click)="goToQuickTask()" 
-                            class="btn btn-lg btn-block btn-primary">Run a Quick task</button>
+                            <button type="button" (click)="goToQuickTask()" class="btn btn-lg btn-block btn-primary">Run
+                                a Quick task</button>
                         </li>
                     </ul>
                 </div>
@@ -70,36 +65,40 @@ Click here to browse them."
                 <div class="card-header">
                     <h4 class="my-0 font-weight-normal">Last activity</h4>
                 </div>
-                <div *ngIf="lastResults && lastResults.length > 0"  class="card-body">
-                    <div class="row" *ngFor="let item of lastResults">
-                        <div class="col-3 pr-0">
-                            <app-status-icon class="d-none d-md-block" size="big" [status]="item.status">
-                            </app-status-icon>
-                            <app-status-icon class="d-block d-md-none" size="small" [status]="item.status">
-                            </app-status-icon>
-                        </div>
-                        <div class="col-9 align-self-center pl-0">
-                            <div class="row">
-                                <div class="col-auto text-left">{{item.workflow.name}}</div>
+                <div class="card-body">
+                    <div *ngIf="loadingResults; else resultsReady">
+                        <app-status-icon size="small" status="RUNNING"></app-status-icon>
+                        <span class="ml-2">Loading last activity details.</span>
+                    </div>
+                    <ng-template #resultsReady>
+                        <div class="row" *ngFor="let item of lastResults">
+                            <div class="col-3 pr-0">
+                                <app-status-icon class="d-none d-md-block" size="big" [status]="item.status">
+                                </app-status-icon>
+                                <app-status-icon class="d-block d-md-none" size="small" [status]="item.status">
+                                </app-status-icon>
                             </div>
-                            <div class="row">
-                                <div class="col-auto">
-                                    <a href="javascript:void(0)"
-                                        (click)="goToResults(item._id)">{{getFriendlyStartTime(item)}}</a>
+                            <div class="col-9 align-self-center pl-0">
+                                <div class="row">
+                                    <div class="col-auto text-left">{{item.workflow.name}}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <a href="javascript:void(0)"
+                                            (click)="goToResults(item._id)">{{getFriendlyStartTime(item)}}</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="text-muted text-mini mt-1">
-                        <a href="javascript:void(0)" (click)="goToHistory()">{{totalResults}}</a>&nbsp;execution(s) in
-                        the last month.
-                    </div>
+                        <div class="text-muted text-mini mt-1">
+                            <a href="javascript:void(0)" (click)="goToHistory()">{{totalResults}}</a>&nbsp;execution(s)
+                            in
+                            the last month.
+                        </div>
+                    </ng-template>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- <div class="container-fluid bg">wjhwkejh<br>wjhwkejh<br>wjhwkejh<br>wjhwkejh<br>wjhwkejh<br>wjhwkejh<br>wjhwkejh<br>wjhwkejh<br></div> -->
-<!-- <div class="image">
-    Your content
-    </div> -->

@@ -4,6 +4,7 @@ import { HomeRouter } from "../routes/home";
 import { InferRouter } from "../routes/infer";
 import { RunRouter } from "../routes/run";
 import { FrontendRouter } from "../routes/frontend";
+import { StatusRouter } from "../routes/status";
 
 /**
  * Router for the Express JS Web Server
@@ -17,7 +18,8 @@ export class Router {
     }
 
     setup() {
-        let homeRouter = new HomeRouter()
+        let homeRouter = new HomeRouter();
+        let statusRouter = new StatusRouter();      
         let dataRouter = new DataRouter();
         let inferRouter = new InferRouter();
         let runRouter = new RunRouter();
@@ -25,6 +27,8 @@ export class Router {
 
         //Home:
         this._app.use("/api", homeRouter.route());
+        //Status:
+        this._app.use("/api/status", statusRouter.route());
         //GraphQL Data endpoint:
         this._app.use("/api/data", dataRouter.route());
         //Infer:

@@ -2,6 +2,7 @@ import { PropelError } from "../../propel-shared/core/propel-error";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { logger } from "../services/logger-service";
 import { ObjectPoolOptions } from "./object-pool-options";
+import { ObjectPoolStats } from "./object-pool-stats";
 
 /**
  * Implementations can be reseted. Mean to flush all content and restore the state to some default state.
@@ -81,54 +82,73 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
     }
 
     /**
-     * Returns the amount of objects already created and ready to be aquired.
+     * Current object pool stats.
      */
-    get availableCount(): number {
-        return this._availableRepo.length;
+    get stats(): ObjectPoolStats {
+        let ret = new ObjectPoolStats();
+
+        ret.objectsAvailable = this._availableRepo.length;
+        ret.objectsLocked = this._lockedRepo.length;
+        ret.objectsCreated = ret.objectsAvailable + ret.objectsLocked;
+        ret.availableToGrow = (this._disposing) ? 0 : this._opt.maxSize - ret.objectsCreated; 
+        ret.queueSize = this._requestQueue.length;
+        ret.remainingQueueSpace = this._opt.maxQueueSize - ret.queueSize;
+        ret.canGrow = (ret.availableToGrow > 0);
+
+        return ret;
     }
 
-    /**
-     * Returns the amounts of object already in use. 
-     */
-    get lockedCount(): number {
-        return this._lockedRepo.length;
-    }
 
-    /**
-     * Returns theamount of objects already created by the pool.
-     */
-    get createdCount(): number {
-        return this.availableCount + this.lockedCount;
-    }
 
-    /**
-     * Returns how many objects the pool can create if all the current are aquired and new 
-     * requests come in.
-     */
-    get availableToGrow(): number {
-        return (this._disposing) ? 0 : this._opt.maxSize - this.createdCount;
-    }
+    // /**
+    //  * Returns the amount of objects already created and ready to be aquired.
+    //  */
+    // get availableCount(): number {
+    //     return this._availableRepo.length;
+    // }
 
-    /**
-     * Returns a boolean value indicating if there still space to grow by creating more instances of T.
-     */
-    get canGrow(): boolean {
-        return (this.availableToGrow > 0);
-    }
+    // /**
+    //  * Returns the amounts of object already in use. 
+    //  */
+    // get lockedCount(): number {
+    //     return this._lockedRepo.length;
+    // }
 
-    /**
-     * Current amount of aquire request that have been queud and are waiting for released objects.
-     */
-    get queueSize(): number {
-        return this._requestQueue.length;
-    }
+    // /**
+    //  * Returns theamount of objects already created by the pool.
+    //  */
+    // get createdCount(): number {
+    //     return this.availableCount + this.lockedCount;
+    // }
 
-    /**
-     * Remaining queue space. (Maximum queue size less current request queued).
-     */
-    get remainingQueueSpace(): number {
-        return this._opt.maxQueueSize - this.queueSize;
-    }
+    // /**
+    //  * Returns how many objects the pool can create if all the current are aquired and new 
+    //  * requests come in.
+    //  */
+    // get availableToGrow(): number {
+    //     return (this._disposing) ? 0 : this._opt.maxSize - this.createdCount;
+    // }
+
+    // /**
+    //  * Returns a boolean value indicating if there still space to grow by creating more instances of T.
+    //  */
+    // get canGrow(): boolean {
+    //     return (this.availableToGrow > 0);
+    // }
+
+    // /**
+    //  * Current amount of aquire request that have been queud and are waiting for released objects.
+    //  */
+    // get queueSize(): number {
+    //     return this._requestQueue.length;
+    // }
+
+    // /**
+    //  * Remaining queue space. (Maximum queue size less current request queued).
+    //  */
+    // get remainingQueueSpace(): number {
+    //     return this._opt.maxQueueSize - this.queueSize;
+    // }
 
     /**
      * Returns a boolean value indicating if the pool is now disposing object.
@@ -164,13 +184,13 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
                 reject(this._disposingError());
             }
             //If there is some objects available in the repo, we will take one of those:
-            else if (this.availableCount > 0) {
+            else if (this.stats.objectsAvailable > 0) {
                 obj = (this._availableRepo.pop() as T);
                 this._lockedRepo.push(obj);
                 resolve(obj);
             }
             //If there is no available objects, but we can create, we will add a new one:
-            else if (this.canGrow) {
+            else if (this.stats.canGrow) {
                 obj = this._cb();
                 this._lockedRepo.push(obj);
                 resolve(obj);
@@ -178,7 +198,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
             //If there is no available object and also the repo is full, (mean we can't create new instances), 
             //the only option is to queue the client request. In order to do so we need to check first if 
             //there is remaining space in the requests queue: 
-            else if (this.remainingQueueSpace > 0) {
+            else if (this.stats.remainingQueueSpace > 0) {
                 //we will queue the request. As soon an istance is released will be assigned to the first 
                 //client in the queue.
                 this._requestQueue.push(resolve);
@@ -218,7 +238,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
                     this._lockedRepo.splice(i, 1); //Dropping it.
                     released = false;
                 }
-                else if (this.queueSize > 0) {//If there is a pending request queued:
+                else if (this.stats.queueSize > 0) {//If there is a pending request queued:
                     //We extract and invoke the resolve function passing as argument for the object:
                     (this._requestQueue.shift() as Function)(item);
                 }
@@ -299,12 +319,14 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
     }
 
     private _currentStatsText() :string {
+        let s = this.stats; 
+
         return `Current Object pool stats:
-    Items in use in the pool: ${this.lockedCount}.
-    Items released in the pool: ${this.availableCount}.
+    Items in use in the pool: ${s.objectsLocked}.
+    Items released in the pool: ${s.availableToGrow}.
     MAX queue size: ${this._opt.maxQueueSize}.
-    Current queue size: ${this.queueSize}.
-    Remaining queue space: ${this.remainingQueueSpace}.`
+    Current queue size: ${s.queueSize}.
+    Remaining queue space: ${s.remainingQueueSpace}.`
     }
 
     private _disposingError(): Error {

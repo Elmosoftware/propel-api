@@ -20,6 +20,7 @@ const TOP_RESULTS: number = 5;
 })
 export class HomeComponent implements OnInit {
 
+  loadingResults: boolean = false;
   lastResults: ExecutionLog[] = [];
   totalResults: number = -1;
   totalWorkflows: number = -1;
@@ -84,12 +85,16 @@ export class HomeComponent implements OnInit {
     qm.populate = true;
     qm.sortBy = "-startedAt";
 
+    this.loadingResults = true
+
     this.core.data.find(DataEntity.ExecutionLog, qm)
       .subscribe((results: APIResponse<ExecutionLog>) => {
+        this.loadingResults = false;
         this.lastResults = results.data;
         this.totalResults = results.totalCount;
       },
         err => {
+          this.loadingResults = false;
           throw err
         });
   }

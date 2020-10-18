@@ -1,3 +1,32 @@
+OFFLINE Indicators
+=======================================
+
+
+isNetworkOffline:
+------------------
+
+Subtitle: No network connection.
+Message: 
+	If !isAPIUnreachable
+		Propel service is up and running, but you won't be able to reach any of your target servers.
+	else
+		Propel service is unreachable now.
+	Please double check your network cable, or try to reconnect your Wi-Fi. 
+	As soon this is fixed Propel will be available again. 
+
+	HIDE BUTTON
+
+isAPIUnreachable:
+-----------------		
+
+Subtitle: Propel service seems to be down.
+Message: Maybe the only needed is to start the service!. Please enter "Services" in the windows search bar and open the services console. Then locate a service called "Propel" and start it. 
+	You can also change the service startup type to automatic to avoid this to happen again.
+
+	As soon you fix this please click on the retry button.
+
+	SHOW BUTTON
+
 Distribution
 =================================
 

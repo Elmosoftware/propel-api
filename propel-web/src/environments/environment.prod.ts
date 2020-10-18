@@ -6,6 +6,7 @@ export const environment = {
   api: {
     url: "localhost:3000/api/",
     endpoint: {
+      status: "status/",
       data: "data/",
       infer: "infer/",
       run: "run/"

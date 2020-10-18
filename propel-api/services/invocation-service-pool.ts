@@ -1,6 +1,7 @@
 import { ObjectPool, Disposable, Resettable } from "../core/object-pool";
 import { InvocationService } from "./invocation-service";
 import { cfg } from "../core/config";
+import { ObjectPoolStats } from "../core/object-pool-stats";
 
 /**
  * Implements an Object pool for the @class InvocationService.
@@ -31,6 +32,10 @@ class InvocationServicePool implements Disposable, Resettable {
      */
     aquire(): Promise<InvocationService> {
         return this._pool.aquire()
+    }
+
+    get stats(): ObjectPoolStats {
+        return this._pool.stats;
     }
 
     /**
