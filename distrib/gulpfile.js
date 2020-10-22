@@ -3,6 +3,7 @@ var del = require("del");
 var rename = require("gulp-rename");
 
 const API_FOLDER_NAME = "propel-api"
+const API_PSSCRIPTS_FOLDER_NAME = "ps-scripts"
 const WEB_FOLDER_NAME = "propel-web"
 const SHELL_FOLDER_NAME = "propel-shell"
 const DIST_FOLDER_NAME = "dist"
@@ -11,6 +12,7 @@ var folders = {
     src: {
         api: `../${API_FOLDER_NAME}`,
         apiDist: `../${API_FOLDER_NAME}/dist`,
+        apiPSScripts: `../${API_FOLDER_NAME}/${API_PSSCRIPTS_FOLDER_NAME}`,
         web: `../${WEB_FOLDER_NAME}`,
         webDist: `../${WEB_FOLDER_NAME}/dist`,
         shell: `./shell`,
@@ -21,6 +23,7 @@ var folders = {
     dest: {
         dist: DIST_FOLDER_NAME,
         api: `${DIST_FOLDER_NAME}/${API_FOLDER_NAME}`,
+        apiPSScripts: `${DIST_FOLDER_NAME}/${API_FOLDER_NAME}/${API_PSSCRIPTS_FOLDER_NAME}`,
         web: `${DIST_FOLDER_NAME}/${WEB_FOLDER_NAME}`,
         shell: `${DIST_FOLDER_NAME}/${SHELL_FOLDER_NAME}`
     }    
@@ -35,6 +38,12 @@ gulp.task("copyPropelAPIBuild", function () {
     console.log(`Copying to "${folders.dest.dist}" folder the last API build from "${folders.src.apiDist}".`);
     return gulp.src(`${folders.src.apiDist}/**/*.*`)
         .pipe(gulp.dest(folders.dest.dist));
+});
+
+gulp.task("copyPropelAPIAdditionalFiles", function () {
+    console.log(`Copying to "${folders.dest.apiPSScripts}" folder the last API build from "${folders.src.apiPSScripts}".`);
+    return gulp.src(`${folders.src.apiPSScripts}/*.*`)
+        .pipe(gulp.dest(folders.dest.apiPSScripts));
 });
 
 gulp.task("copyPropelAPIProdEnvFile", function () {
@@ -85,6 +94,7 @@ gulp.task("copyElectronShellBuild", function () {
 gulp.task("productionBuild", gulp.series(
     "dropDistFolder",
     "copyPropelAPIBuild",
+    "copyPropelAPIAdditionalFiles",
     "copyPropelAPIProdEnvFile",
     "copyPropelAPIPackageDefinitionFiles",
     "copyServiceInstallationScripts",
