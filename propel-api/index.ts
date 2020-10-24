@@ -4,8 +4,8 @@
     Propel API
 */
 
-console.log(`\n -------------------------  Propel API ------------------------- \n`);
-console.log(`\n     --------------------  Reach your servers! -------------------- \n`);
+console.log(`\r\n -------------------------  Propel API ------------------------- \r\n`);
+console.log(`\r\n     --------------------  Reach your servers! -------------------- \r\n`);
 
 //Core Propel API services and helpers:
 import { cfg } from "./core/config";
@@ -17,8 +17,8 @@ import { db } from "./core/database";
 //Configuration validation:
 if (!cfgVal.validate().isValid) {
     //@ts-ignore
-    logger.logWarn(`\n\nIMPORTANT: One or more configuration errors prevent the application to start:\n
-Check the details below in order to review and remediate your ".env" file accordingly.\n\n`);
+    logger.logWarn(`\r\n\r\nIMPORTANT: One or more configuration errors prevent the application to start:\r\n
+Check the details below in order to review and remediate your ".env" file accordingly.\r\n\r\n`);
     logger.logError((cfgVal.getErrors() as Error));
     closeHandler(cfgVal.getErrors(), "Application start");
 }
@@ -29,24 +29,23 @@ db.start() //Database setup.
     .then((data: any) => {
         logger.logInfo(`Successfully connected to Mongo DB instance! Options in use:
         ${JSON.stringify(db.options)
-                .replace(/,/g, "\n\t")
+                .replace(/,/g, "\r\n\t")
                 .replace(/{/g, "")
-                .replace(/}/g, "")}\n`);
+                .replace(/}/g, "")}\r\n`);
 
         logger.logInfo("Starting HTTP server...")
         webServer.start() //Web Server and routing services start.
             .then(() => {
                 if (cfg.isProduction) {
-                    logger.logInfo(`\n
-                =============================================================
-                CURRENT ENVIRONMENT SETTINGS CORRESPONDS TO: PRODUCTION SITE.
-                =============================================================\n`)
+                    logger.logInfo(`\r\n=============================================================
+    CURRENT ENVIRONMENT SETTINGS CORRESPONDS TO: PRODUCTION SITE.
+=============================================================\r\n`)
                 }
 
                 logger.logDebug(`Executing on folder: "${__dirname}".
 Executing script: "${__filename}".
 Server is ready and listening on port: ${cfg.port}.
-\n\nPropel started on "${cfg.environment}" environment.\n`);
+\r\nPropel started on "${cfg.environment}" environment.\r\n`);
             })
         .catch((err:any) => {
             closeHandler(err)
@@ -57,7 +56,7 @@ Server is ready and listening on port: ${cfg.port}.
     })
 
 function closeHandler(err:any, origin?: any, code: number = 1) {
-    logger.logError(`There was an error on: "${origin}", error details are: \n${String(err)}`);
+    logger.logError(`There was an error on: "${origin}", error details are: \r\n${String(err)}`);
     logger.logInfo(`Exiting now with code ${code}`);
     process.exit(code);
 }

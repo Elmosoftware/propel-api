@@ -43,7 +43,7 @@ export class ErrorCodes {
      */
     static get QueueOverflow(): Code {
         return new Code("QUEUE_OVERFLOW",
-            "The implemented Object pool queue is overflow. An object pool is defined for the InvocationService so, this issue caused when all the objects in the pool are in use and also the queued request collection reach his maximum size. \nNew Requests will be dropped until there is enough space in the queue.",
+            "The implemented Object pool queue is overflow. An object pool is defined for the InvocationService so, this issue caused when all the objects in the pool are in use and also the queued request collection reach his maximum size. \r\nNew Requests will be dropped until there is enough space in the queue.",
             "System capacity is full, please check the system stats and retry later.");
     }
 

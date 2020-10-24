@@ -142,7 +142,7 @@ export class ResultsComponent implements OnInit {
     let ret: string = ""
 
     if (this.log) {
-      ret = `${this.log.workflow.name}:\n${this.log.workflow.description}`
+      ret = `${this.log.workflow.name}:\r\n${this.log.workflow.description}`
     }
 
     return ret;

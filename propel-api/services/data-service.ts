@@ -122,7 +122,7 @@ export class DataService {
                         reject(new APIResponse<any>(err, null));
                     }
                     else if (this.isVoidWrite(data)) {
-                        let err = new PropelError(`The last UPDATE operation affects no documents. Please verify: \n
+                        let err = new PropelError(`The last UPDATE operation affects no documents. Please verify: \r\n
                     - If The document you try to update no longer exists.
                     - If you have been granted with the necessary permissions.`,
                             ErrorCodes.VoidUpdate
@@ -260,7 +260,7 @@ Those fields are for internal use only and must not take part on user queries.`)
                         }
                         else if (this.isVoidWrite(data)) {
                             //The attempt to soft delete a non existent document by Id is not reported as error by Mongoose:
-                            let err = new PropelError(`The last DELETE operation affects no documents. This can be caused by the following issues: \n
+                            let err = new PropelError(`The last DELETE operation affects no documents. This can be caused by the following issues: \r\n
                     - The document you tried to delete no longer exists.
                     - You are not been granted with the necessary permissions.`, ErrorCodes.VoidDelete);
                             reject(new APIResponse<any>(err, null));

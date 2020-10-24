@@ -197,12 +197,12 @@ export class InfiniteScrollingService<T> {
             errorMsg = `The parameter "dataPage" is not an array."`;
         }
         else if (dataPage.length > this.pageSize) {
-            errorMsg = `The parameter "dataPage" has more data than allowed.\n` +
+            errorMsg = `The parameter "dataPage" has more data than allowed.\r\n` +
                 `"dataPage" parameter lenght: ${dataPage.length}, defined page size: ${this.pageSize}.`
         }
         else if (totalCount < (dataPage.length + this.count)) {
-            errorMsg = `You are trying to add more data than the value currently specified for the "totalCount" property.\n` +
-                `"totalCount": ${this.totalCount}, "count": ${this.count}, "dataPage" parameter lenght: ${dataPage.length}.\n` +
+            errorMsg = `You are trying to add more data than the value currently specified for the "totalCount" property.\r\n` +
+                `"totalCount": ${this.totalCount}, "count": ${this.count}, "dataPage" parameter lenght: ${dataPage.length}.\r\n` +
                 `This means you are trying to add ${Math.abs(this.totalCount - this.count - dataPage.length)} extra items.`;
         }
 
@@ -254,7 +254,7 @@ export class InfiniteScrollingService<T> {
             //This is inconsistent: Means that we have nothing on both, cache and model but we 
             //still receiving a scroll event!
             else if (this.count == 0) {
-                console.warn(`Ignoring scroll event for position ${position} because no data was added yet!.\n` +
+                console.warn(`Ignoring scroll event for position ${position} because no data was added yet!.\r\n` +
                     `Be sure to call "feed()" with the data the service must handle and use the attribute "model" to bind ` +
                     `the data in your component`);
             }

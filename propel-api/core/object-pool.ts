@@ -205,7 +205,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
             }
             //If the queue is also full of waiting clients, there is no option than throw an error.
             else {
-                reject(new PropelError(`ObjectPool memory queue overflow.\n${this._currentStatsText()}`, 
+                reject(new PropelError(`ObjectPool memory queue overflow.\r\n${this._currentStatsText()}`, 
                     ErrorCodes.QueueOverflow));
             }
         });
@@ -278,7 +278,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         
         let dispositions: Promise<any>[] = [];
 
-        logger.logDebug(`Object pool start disposing objects.\n${this._currentStatsText()}`)
+        logger.logDebug(`Object pool start disposing objects.\r\n${this._currentStatsText()}`)
         this._disposing = true;
         this._cb = () => {};
         this._requestQueue = [];
@@ -315,7 +315,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         }
         
         this._disposing = false;
-        logger.logDebug(`Object pool was initialized.\n${this._currentStatsText()}`);
+        logger.logDebug(`Object pool was initialized.\r\n${this._currentStatsText()}`);
     }
 
     private _currentStatsText() :string {

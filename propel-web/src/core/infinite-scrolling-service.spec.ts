@@ -73,13 +73,13 @@ describe("InfiniteScrollingService Class", () => {
         });
         it(`Must throw an error if the parameter "dataPage" has more elements than the current page size.`, () => {
             expect(() => { svc.feed(1000, p.getPage(11, 0)) })
-                .toThrowError(`The parameter "dataPage" has more data than allowed.\n` +
+                .toThrowError(`The parameter "dataPage" has more data than allowed.\r\n` +
                     `"dataPage" parameter lenght: 11, defined page size: ${PAGE_SIZE}.`);
         });
         it(`Must throw an error if the parameter "totalCount" is less than the size of the array in the parameter "dataPage".`, () => {
             expect(() => { svc.feed(1, [1, 2, 3, 4, 5]) })
-                .toThrowError(`You are trying to add more data than the value currently specified for the "totalCount" property.\n` +
-                    `"totalCount": 0, "count": 0, "dataPage" parameter lenght: 5.\n` +
+                .toThrowError(`You are trying to add more data than the value currently specified for the "totalCount" property.\r\n` +
+                    `"totalCount": 0, "count": 0, "dataPage" parameter lenght: 5.\r\n` +
                     `This means you are trying to add 5 extra items.`);
         });
         it(`Must not throw any error if the parameters are valid.`, () => {

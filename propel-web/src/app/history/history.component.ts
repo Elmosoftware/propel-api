@@ -168,10 +168,10 @@ export class ExecutionLogExtended {
     this.workflowName = log.workflow.name;
     if (log.workflow.isQuickTask) {
       this.workflowNameTooltip = `Script: ${log.workflow.steps[0].script.name}
-Parameters:\n${UIHelper.getParameterValuesList(log.workflow.steps[0].values)}`
+Parameters:\r\n${UIHelper.getParameterValuesList(log.workflow.steps[0].values)}`
     }
     else {
-      this.workflowNameTooltip = `${log.workflow.name}:\n${log.workflow.description}`;
+      this.workflowNameTooltip = `${log.workflow.name}:\r\n${log.workflow.description}`;
     }
     
     this.duration = SystemHelper.getDuration(log.startedAt, log.endedAt);
@@ -189,7 +189,7 @@ Total duration: ${SystemHelper.getDuration(log.startedAt, log.endedAt)}.`
 
     this.targetsAmount = targets.size.toString();
     this.targetsAmountTooltip = `This workflow is hitting ${targets.size} target${(targets.size > 1) ? "s" : ""}:
-${Array.from(targets).join("\n")}`;
+${Array.from(targets).join("\r\n")}`;
   
   }
 }

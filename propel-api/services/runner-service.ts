@@ -371,7 +371,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
 
     private _buildCommand(scriptCode: string, argList: string[], target: Target): string {
 
-        let ret: string = `$codeBlock = [Scriptblock]::Create(@'\n${scriptCode}\n'@)\nInvoke-Command`;
+        let ret: string = `$codeBlock = [Scriptblock]::Create(@'\r\n${scriptCode}\r\n'@)\r\nInvoke-Command`;
 
         /*
             Note: 
@@ -392,10 +392,10 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
             ret += ` -ArgumentList ${argList.join(", ")}`
         }
 
-        ret += `\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
+        ret += `\r\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
 
-        logger.logDebug(`Executing command:\n${ret}`)
+        logger.logDebug(`Executing command:\r\n${ret}`)
 
         return ret;
     }

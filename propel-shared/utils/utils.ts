@@ -85,14 +85,14 @@ export class Utils {
      * By default this value is "true".
      */
     static removeEmptyLines(text: string, removeOnlyLastEmptyLines: boolean = true): string {
-        let cr = "\n"
+        let lf = "\n"
         let ret: string[]
 
         if (!text) {
             return text
         }
 
-        ret = text.split(cr);
+        ret = text.split(lf);
 
         if (removeOnlyLastEmptyLines) {
             while (ret.length > 1 && ret[ret.length - 1] == "") {
@@ -103,7 +103,7 @@ export class Utils {
             ret = ret.filter((line) => line.length > 0);
         }
 
-        return ret.join(cr);
+        return ret.join(lf);
     }
 
     /**

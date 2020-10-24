@@ -107,11 +107,11 @@ class Database {
 
     _printDetails() {
         let details: string = ""
-        logger.logInfo(`\nModels initialized sucessfully. Models count: ${this._modelsRepo.length}.`);
+        logger.logInfo(`\r\nModels initialized sucessfully. Models count: ${this._modelsRepo.length}.`);
 
-        details = "\n\n --------------- MODELS --------------- "
+        details = "\r\n --------------- MODELS --------------- "
         this._modelsRepo.forEach((model: AdapterModel) => {
-            details += `\n- ${model.name}:\n`;
+            details += `\r\n- ${model.name}:\r\n`;
             let fieldslist: string = "";
             //@ts-ignore
             for (var key in model.model.schema.tree) {
@@ -124,7 +124,7 @@ class Database {
 \tSub docs populate schema:${JSON.stringify(model.populateSchema)}
 \tInternal fields: ${model.internalFieldsList.join(", ")}
 \tAudit fields: ${model.auditFieldsList.join(", ")}
----------------------------------------------------------------------\n`;            
+---------------------------------------------------------------------\r\n`;            
         });
         
         logger.logDebug(details);

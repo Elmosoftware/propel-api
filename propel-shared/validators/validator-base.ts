@@ -28,7 +28,7 @@ export class ValidatorBase {
         var ret = null;
 
         if (!this.isValid) {
-            ret = new PropelError(this._results.join("\n"))
+            ret = new PropelError(this._results.join("\r\n"))
         }
         
         return ret;
