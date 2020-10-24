@@ -127,7 +127,7 @@ export class SystemHelper {
             throw new PropelError(`We expect a "string" for the parameter "base64String". Supplied value type: "${typeof base64String}".`)
         }
   
-        return Buffer.from(base64String, "base64").toString("ascii");
+        return Buffer.from(base64String, "base64").toString("utf8");
     }
 
     /**

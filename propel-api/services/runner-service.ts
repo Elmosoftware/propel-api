@@ -93,7 +93,7 @@ export class Runner {
 
         await Utils.asyncForEach(workflow.steps, async (step: WorkflowStep, i: number) => {
             let argsList: string[] = this._buildArgumentList(step);
-            let scriptCode: string = SystemHelper.decodeBase64(step.script.code);
+            let scriptCode: string = this._preprocessScriptCode(step.script.code);
             let execStep: ExecutionStep = new ExecutionStep();
             
             //Updating Execution log:
@@ -194,6 +194,26 @@ export class Runner {
             msg.context = this._stats;
             this._cb(msg);
         }
+    }
+
+    private _preprocessScriptCode(encodedScriptCode: string): string {
+        let ret: string = "";
+
+        if (encodedScriptCode && typeof encodedScriptCode == "string") {
+            ret = SystemHelper.decodeBase64(encodedScriptCode) //Decoding Base64
+                .replace(/\t/gi, ` `.repeat(4)) //Tabs can cause issues during script 
+                //execution, (see notes), so we are replacing them with spaces. 
+        }
+        
+        /*
+            Note: Regarding allowing Tabs, (ASCII 9), character in the script. This can cause some 
+            issues when Powershell is reading from the STDIN, (as we use to do when running scripts).
+            See the following about:
+                https://developercommunity.visualstudio.com/content/problem/901642/tab-character-not-allowed-in-powershell-scripts.html
+                https://github.com/PowerShell/PowerShell/issues/13275
+                https://github.com/PowerShell/PSReadLine/issues/579
+        */
+        return ret;
     }
 
     private _executeOnAllTargets(scriptCode: string, argsList: string[], targets: Target[]) {
