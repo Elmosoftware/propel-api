@@ -357,7 +357,7 @@ export class Runner {
                     sufix = `"`;
                 }
 
-                ret.push(`${prefix}${value}${sufix}`)
+                ret.push(`-${param.name}:${prefix}${value}${sufix}`)
             })
         }
 
@@ -371,7 +371,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
 
     private _buildCommand(scriptCode: string, argList: string[], target: Target): string {
 
-        let ret: string = `$codeBlock = [Scriptblock]::Create(@'\r\n${scriptCode}\r\n'@)\r\nInvoke-Command`;
+        let ret: string = `$codeBlock = [Scriptblock]::Create(@'\r\n&{\r\n${scriptCode}\r\n} ${argList.join(" ")}\r\n'@)\r\nInvoke-Command`;
 
         /*
             Note: 
@@ -387,10 +387,6 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         }
 
         ret += ` -ScriptBlock $codeBlock`
-
-        if (argList && argList.length > 0) {
-            ret += ` -ArgumentList ${argList.join(", ")}`
-        }
 
         ret += `\r\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
