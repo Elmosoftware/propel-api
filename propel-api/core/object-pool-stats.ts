@@ -38,6 +38,14 @@ export class ObjectPoolStats {
      */
     public canGrow: boolean = false;
 
+    toString() { 
+        return `Current Object pool stats:
+        Items in use in the pool: ${this.objectsLocked}.
+        Items released in the pool: ${this.availableToGrow}.
+        Current queue size: ${this.queueSize}.
+        Remaining queue space: ${this.remainingQueueSpace}.`
+    }
+
     constructor() {
     }    
 }

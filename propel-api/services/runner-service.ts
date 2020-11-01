@@ -91,6 +91,8 @@ export class Runner {
         this._execLog.startedAt = new Date();
         this._execLog.workflow = workflow;
 
+        logger.logDebug(`Pool stats before to start workflow execution:\n${pool.stats.toString()}`)
+
         await Utils.asyncForEach(workflow.steps, async (step: WorkflowStep, i: number) => {
             let argsList: string[] = this._buildArgumentList(step);
             let scriptCode: string = this._preprocessScriptCode(step.script.code);
@@ -161,6 +163,8 @@ export class Runner {
             resultsMessage = new InvocationMessage(InvocationStatus.Failed, 
                 e.errorCode.userMessage, "", this._stats, "", ExecutionStatus.Faulty);
         }
+
+        logger.logDebug(`Pool stats at the end of workflow execution:\n${pool.stats.toString()}`);
 
         return resultsMessage;
     }

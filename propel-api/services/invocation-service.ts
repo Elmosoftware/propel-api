@@ -21,8 +21,11 @@ export class InvocationService implements Disposable, Resettable {
     private _STDOUTs!: string[];
     private _invocationStatus!: InvocationStatus;
     private _isDisposed: boolean = false;
+    private _mustDispose: boolean = false;
+    private _EOIrexp: RegExp;
 
     constructor() {
+        this._EOIrexp = new RegExp("EOI_([A-Za-z0-9_-]){7,14}$", "gi");
         this._shell = new NodePowershell({
             executionPolicy: 'Bypass',
             noProfile: true,
@@ -116,19 +119,68 @@ export class InvocationService implements Disposable, Resettable {
             //Listening on the PS process standard output:
             this._shell.streams.stdout.on("data", (chunk: string) => {
 
-                chunk = Utils.removeEmptyLines(chunk, true);
+                let isFragment: boolean = false;
+                let isFragmentEnd: boolean = false;
+                let isEOI: boolean = this._isEOI(chunk);
+                let debugInfo: string = ""
 
                 if (!chunk) {
                     return;
                 }
 
-                //We will emit at least the event indicates the end of the invocation:
-                if (chunk.startsWith("EOI_")) {
+                debugInfo += `NEW CHUNK: ${(chunk.length >= 60) ? chunk.substring(0, 25) + "..." + chunk.substring(chunk.length -25, chunk.length) : chunk }
+CHUNK DETAILS: Chunk size:${chunk.length}, Last chars:${chunk.charCodeAt(chunk.length - 2)}, ${chunk.charCodeAt(chunk.length - 1)}.`;
+
+                if (this._STDOUTs && this._STDOUTs.length > 0) {
+                    let prev = this._STDOUTs[this._STDOUTs.length - 1];
+                    isFragment = !this._endsWithBreakline(prev);
+
+                    /*
+                        NOTE: 
+                            As you can see in this still opened bug: https://github.com/rannn505/node-powershell/issues/94
+                            there is some times were the EOI, (End of invocation), signal is sent with the 
+                            data. This is causing 2 issues with this code:
+                            
+                            1st - The EOI signal will be added to the data and if we are returning JSON, any
+                            parsing is going to fail.
+                                Remediation: We need to detect the cases and remove the EOI signal from the data.
+                            2nd - In the bug description is explained that this issue also causes the promise
+                            never resolves.
+                                Remediation: Sadly, the only way to fix this once detected will be to automatically
+                                dispose the service.   
+                    */
+                    //node-powershell is using the shortid package to generate the EOI identifier. The ids 
+                    //generated can have from 7 to 14 chars. We also have the "EOI_" prefix.
+                    //So if the chunk contains the EOI and the total chunk lenght is greater than 18 chars
+                    //then we found the cases mentioned in the bug:
+                    if (isEOI && chunk.length > 18) {
+                        chunk = this._removeEOI(chunk);
+                        this._mustDispose = true;
+                    }
+
+                    isFragmentEnd = isFragment && this._endsWithBreakline(chunk);
+                }
+
+                logger.logDebug(`${debugInfo}, Is EOI: ${isEOI}, Is previous fragment: ${isFragment}, Is fragment end: ${isFragmentEnd}, EOI removed from data: ${this._mustDispose}.`)
+
+                if (isFragment) {
+                    this._STDOUTs[this._STDOUTs.length - 1] += chunk;
+                }
+                else if(!isEOI) {
+                    this._STDOUTs.push(chunk);
+                }
+
+                this._emit(InvocationStatus.Running, (isFragment && !isFragmentEnd) ? "Waiting for data..." : this._STDOUTs[this._STDOUTs.length - 1]);
+
+                if (isEOI) {
                     this._emit(InvocationStatus.Stopping);
                 }
-                else {
-                    this._STDOUTs.push(chunk);
-                    this._emit(InvocationStatus.Running, chunk);
+
+                if (this._mustDispose) {
+                    this._emit(InvocationStatus.Stopped);
+                    resolve(this.results);
+                    logger.logWarn(`"EOI included in data" issue found. The script executes successfully, but we need to terminate this PowerShell instance. Status must be SUCCESS.`);
+                    this.disposeSync();
                 }
             });
 
@@ -136,10 +188,12 @@ export class InvocationService implements Disposable, Resettable {
             this._shell.invoke()
                 .then((out: string) => {
                     this._emit(InvocationStatus.Stopped);
+                    logger.logDebug(`RESOLVING Invocation.`)
                     resolve(this.results)
                 })
                 .catch((err) => {
                     this._emit(InvocationStatus.Failed, String(err));
+                    logger.logDebug(`REJECTING Invocation.`)
                     reject(err);
                 });
         });
@@ -167,11 +221,31 @@ export class InvocationService implements Disposable, Resettable {
         this._STDOUTs = [];
         this._eventEmitter = new EventEmitter();
         this._invocationStatus = InvocationStatus.NotStarted
+        this._mustDispose = false;
 
         //The following method is well documented in node-powershell library, but is not included 
         //in @types/node-powershell *.d.ts file the types, so we need to ignore the warning.
         //@ts-ignore
         this._shell.clear();
+    }
+
+    private _endsWithBreakline(text: string): boolean {
+        let ret: boolean = false;
+
+        if (!text) return ret;
+
+        ret = (text.charCodeAt(text.length - 1) == 13 || text.charCodeAt(text.length - 2) == 13);
+
+        return ret;
+    }
+
+    private _isEOI(text: string): boolean {
+        let ret = this._EOIrexp.exec(text);
+        return Boolean(ret && ret.length > 0);
+    }
+
+    private _removeEOI(text: string): string {
+        return text.replace(this._EOIrexp, "");
     }
 
     private _dispose(): Promise<string> {
@@ -197,18 +271,24 @@ export class InvocationService implements Disposable, Resettable {
             //Otherwise, we will exit gracefully:
             ret = this._shell.dispose();
         }
-        this._emit(status, msg);
+
+        //If we are disposing not by a user request, but because the "EOI included in data" known
+        //issue, then we MUST NOT report this status as Faulty status:
+        if (!this._mustDispose) {
+            this._emit(status, msg);
+        }
+        
         this.reset();
         return ret;
     }
 
     private _emit(status: InvocationStatus, message?: string) {
         this._invocationStatus = status;
-        
+
         if (message) {
             message = Utils.removeANSIEscapeCodes(message);
         }
-        
+
         this._eventEmitter.emit("data", new InvocationMessage(status, (message) ? message : ""));
     }
 }

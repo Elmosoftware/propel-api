@@ -49,9 +49,11 @@ export class RunRouter implements Route {
                     logger.logDebug(`Starting execution of Workflow "${(workflow.name) ? workflow.name : "name unavailable" }" with id: "${workflow._id}".`)
                     runner.execute(workflow, subsCallback)
                         .then((msg: InvocationMessage) => {
+                            logger.logDebug(`Execution of Workflow "${(workflow.name) ? workflow.name : "name unavailable" }" is finished, Status is "${msg.logStatus}".`);
                             ws.send(JSON.stringify(msg));
                         })
                         .catch((err) => {
+                            logger.logDebug(`Execution of Workflow "${(workflow.name) ? workflow.name : "name unavailable" }" finished with the following error: "${String(err)}".`);
                             ws.send(JSON.stringify(new APIResponse(err, null)));
                         })
                         .finally(() => {
