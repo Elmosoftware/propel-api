@@ -152,7 +152,7 @@ export class Runner {
         try {
             resultsMessage = new InvocationMessage(InvocationStatus.Finished, "","", this._stats);
             resultsMessage.logStatus = this._execLog.status;
-            resultsMessage.logId = (await this.saveExecutionLog(this._execLog)).data[0]; 
+            resultsMessage.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog))).data[0]; 
             this._execLog._id = resultsMessage.logId;
         } catch (error) {
             if (error.errors && error.errors.length > 0) {
@@ -398,5 +398,30 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         logger.logDebug(`Executing command:\r\n${ret}`)
 
         return ret;
+    }
+
+    private _prepareLogForSave(log: ExecutionLog): ExecutionLog {
+        let maxLogSize: number = cfg.maxWorkflowResultsSize;
+        let originalSize: number = 0;
+        let removedCount: number = 0;
+
+        log.executionSteps.forEach((s: ExecutionStep) => {
+            s.targets.forEach((t: ExecutionTarget) => {
+                originalSize += t.execResults.length;
+
+                if (originalSize > maxLogSize) {
+                    t.execResults = `Removing the results because they exceeded the execution log quota.\r\nMaximum allowed results size: ${cfg.maxWorkflowResultsSizeInMB.toFixed(2)}MB.`;
+                    removedCount++;
+                }                
+            })
+        })
+
+        if (originalSize > maxLogSize) {
+            logger.logDebug(`${removedCount} of all the target execution results has been removed from the execution log because they were exceeding the execution log quota. 
+Total size of target(s) execution results is: ${originalSize} Bytes (${(originalSize/1024/1024).toFixed(2)}MB)
+Maximum allowed size is: ${cfg.maxWorkflowResultsSize} Bytes (${cfg.maxWorkflowResultsSizeInMB.toFixed(2)}MB).`);
+        }                
+
+        return log;
     }
 }

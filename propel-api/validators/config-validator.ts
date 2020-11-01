@@ -70,6 +70,13 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`POOL_QUEUE_SIZE is not a number or is less than zero. Supplied value: "${process.env.POOL_QUEUE_SIZE}".`);
         }
 
+        if (!process.env.MAX_WORKFLOW_RESULTS_SIZE) {
+            super._addError("MAX_WORKFLOW_RESULTS_SIZE is required.");
+        }
+        else if ((isNaN(Number(process.env.MAX_WORKFLOW_RESULTS_SIZE)) || Number(process.env.MAX_WORKFLOW_RESULTS_SIZE) < 0)) {
+            super._addError(`MAX_WORKFLOW_RESULTS_SIZE is not a number or it has a negative value. Supplied value: "${process.env.MAX_WORKFLOW_RESULTS_SIZE}".`);
+        }
+
         return this;
     }
 }

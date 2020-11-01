@@ -70,16 +70,46 @@ class Config {
         return o;
     }
 
+    /**
+     * This is the log name for logging into Windows Event log, (Production only).
+     */
     get logName(): string {
         return (process.env.LOGGING_LOG_NAME) ? process.env.LOGGING_LOG_NAME : "";
     }
 
+    /**
+     * This is the log source for logging into Windows Event log, (Production only).
+     */
     get logSource(): string {
         return (process.env.LOGGING_SOURCE) ? process.env.LOGGING_SOURCE : "";
     }
 
+    /**
+     * This is the log level configured for the API.
+     */
     get logLevel(): LogLevel {
         return (process.env.LOGGING_LEVEL) ? (process.env.LOGGING_LEVEL as LogLevel) : LogLevel.Error;
+    }
+
+    /**
+     * There is a limitation on the amount of data wecan save as per document basis in Mongo DB. 
+     * Because the execution log contains the data retrieved by all the targets included in the 
+     * workflow, (and this can be a lot of data), we are establishing a maximum amoount data that 
+     * we can admit on any Execution log entry.
+     * 
+     * Be aware that: Actual limit on Mongo DB is set to 16MB, so the recommendation is this limit 
+     * is set no higher than 12MB in order to be able to report at least part of the execution 
+     * results and detail the reason in the execution log.
+     */
+    get maxWorkflowResultsSize(): number {
+        return Number(process.env.MAX_WORKFLOW_RESULTS_SIZE)
+    }
+
+    /**
+     * Retrieves the max execution log size entry allowed in MB.
+     */
+    get maxWorkflowResultsSizeInMB(): number {
+        return this.maxWorkflowResultsSize / 1024 / 1024
     }
 }
 

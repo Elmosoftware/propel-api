@@ -8,6 +8,7 @@ function setAllValid() {
     process.env.POOL_MAX_SIZE="40"
     process.env.POOL_PRE_ALLOC="10"
     process.env.POOL_QUEUE_SIZE="5"
+    process.env.MAX_WORKFLOW_RESULTS_SIZE="12582912"
 }
 
 describe("ConfigValidator Class", () => {
@@ -160,6 +161,39 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain("POOL_QUEUE_SIZE is not a number or is less than zero.");
+        cfgVal.reset();
+    })
+    test(`Invalid MAX_WORKFLOW_RESULTS_SIZE as a null value`, () => {
+        //@ts-ignore
+        process.env.MAX_WORKFLOW_RESULTS_SIZE = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain("MAX_WORKFLOW_RESULTS_SIZE is required");
+        cfgVal.reset();
+    })
+    test(`Invalid MAX_WORKFLOW_RESULTS_SIZE as a non-numeric value`, () => {
+        //@ts-ignore
+        process.env.MAX_WORKFLOW_RESULTS_SIZE = "ABC"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain("MAX_WORKFLOW_RESULTS_SIZE is not a number or it has a negative value");
+        cfgVal.reset();
+    })
+    test(`Invalid MAX_WORKFLOW_RESULTS_SIZE as a negative value`, () => {
+        //@ts-ignore
+        process.env.MAX_WORKFLOW_RESULTS_SIZE = "-1"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain("MAX_WORKFLOW_RESULTS_SIZE is not a number or it has a negative value");
         cfgVal.reset();
     })
 })
