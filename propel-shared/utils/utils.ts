@@ -78,38 +78,44 @@ export class Utils {
     }
 
     /**
-     * Remove empty lines from the supplied text. Optionally can remove only empty new lines at the end 
-     * of the text.
-     * @param text text to inspect.
-     * @param removeOnlyLastEmptyLines Boolean value indicating if only the last empty line need to be removed.
-     * By default this value is "true".
+     * This method try to detect JSON as part of a multiline text. If a valid JSON is detected
+     * it will be returned, otherwise this method will return an empty string.
+     * As a valid JSON we are going to consider only an object or object array. Consider the below examples
+     *      `This is a
+     *      multiline with JSON object in next line
+     *      { "myData": "This is my data" }
+     *      And another line at the end`
+     * For that case this function will return: `{"myData":"This is my data" }`
+     * @param text Text to check.
      */
-    static removeEmptyLines(text: string, removeOnlyLastEmptyLines: boolean = true): string {
-        let lf = "\n"
-        let ret: string[]
+    static detectJSON(text: string): string {
 
-        if (!text) {
-            return text
-        }
+        let ret = "";
 
-        ret = text.split(lf);
+        if (!text || typeof text !== "string") return text;
 
-        if (removeOnlyLastEmptyLines) {
-            while (ret.length > 1 && ret[ret.length - 1] == "") {
-                ret.splice(ret.length - 1, 1);
+        let arr = text.split("\n") //Splitting by lines.
+            .map((t) => t.replace(/[\r\t\f]/gi, "")); //Removing escape chars.
+
+        for (let i = arr.length - 1; i >= 0; i--) {
+            //If seems to be a JSON:
+            if ((arr[i].startsWith("{") && arr[i].endsWith("}")) ||
+                (arr[i].startsWith("[{") && arr[i].endsWith("}]"))) {
+                //We try it:
+                if (this.isValidJSON(arr[i])) {
+                    ret = arr[i];
+                    break;
+                }
             }
         }
-        else {
-            ret = ret.filter((line) => line.length > 0);
-        }
 
-        return ret.join(lf);
+        return ret;
     }
 
     /**
      * This is an "async" version of the "Array.prototype.forEach" method that handles async functions 
      * as callbacks. Normal forEach function will call the callback and immediately iterate to the 
-     * next item. This version is going to wait for the assynchronous callback to finish before to 
+     * next item. This version is going to wait for the asynchronous callback to finish before to 
      * continue with the next item in the array.
      * @author [Sébastien Chopin](https://gist.github.com/Atinux/fd2bcce63e44a7d3addddc166ce93fb2) 
      * @param array Array to iterate
@@ -220,7 +226,7 @@ export class Utils {
         ].join('|');
         let reg = new RegExp(removeAnsiPattern, "g");
 
-        return s.replace(reg, "");        
+        return s.replace(reg, "");
     }
 
     /**
@@ -237,10 +243,10 @@ export class Utils {
         let ret: boolean;
 
         ret = Boolean(s) && (
-            (s.startsWith(`"`) && s.endsWith(`"`)) || 
+            (s.startsWith(`"`) && s.endsWith(`"`)) ||
             (s.startsWith(`'`) && s.endsWith(`'`))
         )
-        
+
         return ret;
     }
 
@@ -252,7 +258,7 @@ export class Utils {
         let ret: string = s;
 
         if (s && !this.isQuotedString(s)) {
-            ret = `"${s}"`;    
+            ret = `"${s}"`;
         }
 
         return ret;
@@ -266,7 +272,7 @@ export class Utils {
         let ret: string = s;
 
         if (s && this.isQuotedString(s)) {
-            ret = s.slice(1, s.length - 1)   
+            ret = s.slice(1, s.length - 1)
         }
 
         return ret;

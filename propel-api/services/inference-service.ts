@@ -41,10 +41,16 @@ export class InferenceService {
                             ]
 
                             invsvc.invoke(command, params)
-                                .then((params: any[]) => {
+                                .then((data: string) => {
+
+                                    let params: any = Utils.detectJSON(data);
+
+                                    if (params && Utils.isValidJSON(params)) {
+                                        params = JSON.parse(params);
+                                    }
 
                                     if (params && params.length > 0) {
-                                        params.forEach((param) => {
+                                        params.forEach((param: any) => {
 
                                             if (!isNaN(param.Position) && param.Name) {
                                                 let sp = new ScriptParameter();

@@ -34,32 +34,7 @@ export class InvocationService implements Disposable, Resettable {
 
         this.reset();
     }
-
-    /**
-     * Returns the results, (last output), from the script execution.
-     */
-    get results(): any[] {
-
-        let ret: any[] = [];
-
-        if (this._STDOUTs.length > 0) {
-            let last = this._STDOUTs[this._STDOUTs.length - 1];
-
-            if (Utils.isValidJSON(last)) {
-                ret = JSON.parse(last);
-
-                if (!Array.isArray(ret)) {
-                    ret = [ret];
-                }
-            }
-            else {
-                ret.push(last);
-            }
-        }
-
-        return ret;
-    }
-
+    
     /**
      * Invocation service current status.
      */
@@ -87,11 +62,11 @@ export class InvocationService implements Disposable, Resettable {
      * @param command Command to execute. It can be a commandlet, script block or a full path to a script.
      * @param params Optional execution arguments.
      */
-    invoke(command: string, params?: any[]): Promise<any[]> {
+    invoke(command: string, params?: any[]): Promise<string> {
 
         this._emit(InvocationStatus.Preparing);
 
-        return new Promise<any[]>((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             this._shell.addCommand(command);
 
             if (params && Array.isArray(params) && params.length > 0) {
@@ -178,7 +153,7 @@ CHUNK DETAILS: Chunk size:${chunk.length}, Last chars:${chunk.charCodeAt(chunk.l
 
                 if (this._mustDispose) {
                     this._emit(InvocationStatus.Stopped);
-                    resolve(this.results);
+                    resolve(this.getLastReceivedChunk());
                     logger.logWarn(`"EOI included in data" issue found. The script executes successfully, but we need to terminate this PowerShell instance. Status must be SUCCESS.`);
                     this.disposeSync();
                 }
@@ -189,7 +164,7 @@ CHUNK DETAILS: Chunk size:${chunk.length}, Last chars:${chunk.charCodeAt(chunk.l
                 .then((out: string) => {
                     this._emit(InvocationStatus.Stopped);
                     logger.logDebug(`RESOLVING Invocation.`)
-                    resolve(this.results)
+                    resolve(this.getLastReceivedChunk())
                 })
                 .catch((err) => {
                     this._emit(InvocationStatus.Failed, String(err));
@@ -227,6 +202,16 @@ CHUNK DETAILS: Chunk size:${chunk.length}, Last chars:${chunk.charCodeAt(chunk.l
         //in @types/node-powershell *.d.ts file the types, so we need to ignore the warning.
         //@ts-ignore
         this._shell.clear();
+    }
+
+    private getLastReceivedChunk(): string {
+        let ret: string = "";
+
+        if (this._STDOUTs.length > 0) {
+            ret = this._STDOUTs[this._STDOUTs.length - 1];
+        }
+
+        return ret;
     }
 
     private _endsWithBreakline(text: string): boolean {

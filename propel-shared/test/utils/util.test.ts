@@ -236,82 +236,6 @@ describe("Utils Class - isValidJSON()", () => {
     })
 })
 
-describe("Utils Class - removeEmptyLines() All lines", () => {
-    test(`removeEmptyLines(null, false)`, () => {
-        //@ts-ignore
-        expect(Utils.removeEmptyLines(null, false)).toBe(null);
-    })
-    test(`removeEmptyLines(undefined, false)`, () => {
-        //@ts-ignore
-        expect(Utils.removeEmptyLines(undefined, false)).toBe(undefined);
-    })
-    test(`removeEmptyLines("", false)`, () => {
-        expect(Utils.removeEmptyLines("", false)).toEqual("");
-    })
-    test(`removeEmptyLines("text with no lines", false)`, () => {
-        expect(Utils.removeEmptyLines("text with no lines", false)).toEqual("text with no lines");
-    })
-    test(`removeEmptyLines("text with 2 lines\nAnd no empty lines", false)`, () => {
-        expect(Utils.removeEmptyLines("text with 2 lines\nAnd no empty lines", false)).toEqual("text with 2 lines\nAnd no empty lines");
-    })
-    test(`removeEmptyLines("text with 3 lines\n\nAnd a middle empty line", false)`, () => {
-        expect(Utils.removeEmptyLines("text with 3 lines\n\nAnd a middle empty line", false)).toEqual("text with 3 lines\nAnd a middle empty line");
-    })
-    test(`removeEmptyLines("text with 3 lines\n \nAnd a middle empty line with space", false)`, () => {
-        expect(Utils.removeEmptyLines("text with 3 lines\n \nAnd a middle empty line with space", false)).toEqual("text with 3 lines\n \nAnd a middle empty line with space");
-    })
-    test(`removeEmptyLines("text with 4 lines\nThird and Fourth empty\n\n", false)`, () => {
-        expect(Utils.removeEmptyLines("text with 4 lines\nThird and Fourth empty\n\n", false)).toEqual("text with 4 lines\nThird and Fourth empty");
-    })
-    test(`removeEmptyLines("\ntext with 5 lines\nFirst, Fourth and Fifth empty\n\n", false)`, () => {
-        expect(Utils.removeEmptyLines("\ntext with 5 lines\nFirst, Fourth and Fifth empty\n\n", false)).toEqual("text with 5 lines\nFirst, Fourth and Fifth empty");
-    })
-    test(`removeEmptyLines("\n", false) Single empty line`, () => {
-        expect(Utils.removeEmptyLines("\n", false)).toEqual("");
-    })
-    test(`removeEmptyLines("\n\n\n", false) Multiple empty lines`, () => {
-        expect(Utils.removeEmptyLines("\n\n\n", false)).toEqual("");
-    })
-})
-
-describe("Utils Class - removeEmptyLines() Only last lines", () => {
-    test(`removeEmptyLines(null)`, () => {
-        //@ts-ignore
-        expect(Utils.removeEmptyLines(null)).toBe(null);
-    })
-    test(`removeEmptyLines(undefined)`, () => {
-        //@ts-ignore
-        expect(Utils.removeEmptyLines(undefined)).toBe(undefined);
-    })
-    test(`removeEmptyLines("")`, () => {
-        expect(Utils.removeEmptyLines("")).toEqual("");
-    })
-    test(`removeEmptyLines("text with no lines")`, () => {
-        expect(Utils.removeEmptyLines("text with no lines")).toEqual("text with no lines");
-    })
-    test(`removeEmptyLines("text with 2 lines\nAnd no empty lines")`, () => {
-        expect(Utils.removeEmptyLines("text with 2 lines\nAnd no empty lines")).toEqual("text with 2 lines\nAnd no empty lines");
-    })
-    test(`removeEmptyLines("text with 3 lines\n\nAnd a middle empty line")`, () => {
-        expect(Utils.removeEmptyLines("text with 3 lines\n\nAnd a middle empty line")).toEqual("text with 3 lines\n\nAnd a middle empty line");
-    })
-    test(`removeEmptyLines("text with 3 lines\n \nAnd a middle empty line with space")`, () => {
-        expect(Utils.removeEmptyLines("text with 3 lines\n \nAnd a middle empty line with space")).toEqual("text with 3 lines\n \nAnd a middle empty line with space");
-    })
-    test(`removeEmptyLines("text with 4 lines\nThird and Fourth empty\n\n")`, () => {
-        expect(Utils.removeEmptyLines("text with 4 lines\nThird and Fourth empty\n\n")).toEqual("text with 4 lines\nThird and Fourth empty");
-    })
-    test(`removeEmptyLines("\ntext with 5 lines\nFirst, Fourth and Fifth empty\n\n")`, () => {
-        expect(Utils.removeEmptyLines("\ntext with 5 lines\nFirst, Fourth and Fifth empty\n\n")).toEqual("\ntext with 5 lines\nFirst, Fourth and Fifth empty");
-    })
-    test(`removeEmptyLines("\n") Single empty line`, () => {
-        expect(Utils.removeEmptyLines("\n")).toEqual("");
-    })
-    test(`removeEmptyLines("\n\n\n") Multiple empty lines`, () => {
-        expect(Utils.removeEmptyLines("\n\n\n")).toEqual("");
-    })
-})
-
 describe("Utils Class - isQuotedString()", () => {
 
     test(`isQuotedString(null)`, () => {
@@ -435,3 +359,60 @@ describe("Utils Class - removeQuotes()", () => {
         expect(Utils.removeQuotes("'Hello world'")).toEqual("Hello world");
     })
 })
+
+describe("Utils Class - detectJSON()", () => {
+
+    describe("Invalid or no JSON in supplied text", () => {
+
+        test(`With null argument`, () => {
+            //@ts-ignore
+            expect(Utils.detectJSON(null)).toBe(null);
+        })
+        test(`With empty string argument`, () => {
+            expect(Utils.detectJSON(``)).toBe(``);
+        })
+        test(`With Single line of text`, () => {
+            expect(Utils.detectJSON(`This is a no JSON single line`)).toBe(``);
+        })
+        test(`With Multiple line of text`, () => {
+            expect(Utils.detectJSON(`This is a no JSON\r\nmultiple line\r\nof text\r\n\r\n`)).toBe(``);
+        })
+        test(`With Cross line invalid JSON Object`, () => {
+            expect(Utils.detectJSON(`This is a no JSON\r\nmultiple {"data":[1,2,\r\n3]}of text}\r\n\r\n`)).toBe(``);
+        })
+        test(`With Cross line invalid JSON Object Array`, () => {
+            expect(Utils.detectJSON(`This is a no JSON\r\nmultiple [{"data":[1,2,\r\n3]}]of text}]\r\n\r\n`)).toBe(``);
+        })
+        test(`JSON with adjacent text in same line`, () => {
+            expect(Utils.detectJSON(`This is a no JSON\r\nadjacent text [{"data":[1,2,3]}]\r\nof text}]\r\n\r\n`)).toBe(``);
+        })
+        test(`Invalid JSON Object in same line`, () => {
+            expect(Utils.detectJSON(`This is a no JSON\r\n{:[1,2,3]}\r\nof text}]\r\n\r\n`)).toBe(``);
+        })
+        test(`Invalid JSON Object Array in same line`, () => {
+            expect(Utils.detectJSON(`This is a no JSON\r\n[{"data":[1,2,3]}, {"}]\r\nof text}]\r\n\r\n`)).toBe(``);
+        })
+        test(`Invalid formatted JSON, (breaklines not allowed into JSON)`, () => {
+            expect(Utils.detectJSON(`This a line\r\n
+            {
+                "data":  [
+                             8,
+                             9
+                         ]
+            }\r\nAnother line`)).toBe(``);
+        })
+    })
+    describe("Valid JSON in supplied text", () => {
+
+        test(`With compressed JSON`, () => {
+            expect(Utils.detectJSON(`This a line\r\n\t{"data":[1,2,3]}\t\r\nAnother line`)).toBe(`{"data":[1,2,3]}`);
+        })
+        test(`With compressed JSON, Example 2`, () => {
+            expect(Utils.detectJSON(`This a line\r\n\t{"data":"This is my data"}\t\r\nAnother line`)).toBe(`{"data":"This is my data"}`);
+        })
+        test(`With compressed JSON, Object Array`, () => {
+            expect(Utils.detectJSON(`This a line\r\n[{"data":[1,2,3]},{"data":[4,5,6]},{"data":[7,8,9]}]\r\nAnother line`)).toBe(`[{"data":[1,2,3]},{"data":[4,5,6]},{"data":[7,8,9]}]`);
+        })
+    })
+
+});

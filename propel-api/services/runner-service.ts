@@ -256,9 +256,10 @@ export class Runner {
                         //Invoke the Script:
                         et.status = ExecutionStatus.Running;
                         invsvc.invoke(this._buildCommand(scriptCode, argsList, target))
-                            .then((data: any[]) => {
+                            .then((data: string) => {
+                                let JSONData = Utils.detectJSON(data);
                                 et.status = ExecutionStatus.Success;
-                                et.execResults = JSON.stringify(data);
+                                et.execResults = (JSONData) ? JSONData : data;
                                 this._currentInvocation = null;
                                 resolve(et);
                             })
