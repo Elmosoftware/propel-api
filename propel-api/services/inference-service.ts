@@ -31,7 +31,10 @@ export class InferenceService {
 
             pool.aquire()
                 .then((invsvc: InvocationService) => {
-                    //Sadly for thsi we will need to persist the script in the file system, so firts 
+
+                    logger.logDebug(`Starting temp file creation.`)
+
+                    //Sadly for this we will need to persist the script in the file system, so first 
                     //step is to create a temp file with the script content.
                     SystemHelper.createTempFile("infer-", "ps1", scriptBody)
                         .then((fileName) => {
@@ -40,6 +43,8 @@ export class InferenceService {
                                 { name: "Path", value: fileName }
                             ]
 
+                            logger.logDebug(`Temp file created. Command to run: "${command} -${params[0].name} ${params[0].value}".\r\nStarting command execution.`);
+
                             invsvc.invoke(command, params)
                                 .then((data: string) => {
 
@@ -47,6 +52,15 @@ export class InferenceService {
 
                                     if (params && Utils.isValidJSON(params)) {
                                         params = JSON.parse(params);
+                                        //If the script has one single param, even when we returned an array in our PS script, PowerShell 
+                                        //is converting the array in a single object with the "ConvertTo-JSON" commandlet. 
+                                        //So we need to double check here:
+                                        if (!Array.isArray(params)) {
+                                            params = [params];
+                                        }
+                                    }
+                                    else {
+                                        logger.logError(`Returned data IS NOT JSON. The inference parameters process failed.`)
                                     }
 
                                     if (params && params.length > 0) {
