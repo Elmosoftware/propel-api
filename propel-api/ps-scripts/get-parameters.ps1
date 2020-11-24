@@ -45,7 +45,7 @@ $defaultValues = `
     (Get-Command $Path).ScriptBlock.Ast.FindAll({ $args[0] -is [System.Management.Automation.Language.ParameterAst] }, $true) | `
         Where-Object { $_.DefaultValue } | `
         Select-Object @{ Name = 'name'; Expression = { $_.Name.VariablePath.UserPath } }, `
-            @{ Name = 'value'; Expression = { $_.DefaultValue.Extent.Text } }
+            @{ Name = 'value'; Expression = { if($_.DefaultValue.Value){ $_.DefaultValue.Value } else { $_.DefaultValue.Extent.Text } } }
 
 #Extracting each parameter individually to get all the details:
 (get-command $Path).ParameterSets.Parameters | Where-Object { $_.name -ne $null } | ForEach-Object -Process {

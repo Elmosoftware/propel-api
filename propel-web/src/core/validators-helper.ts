@@ -87,7 +87,7 @@ export class ValidatorsHelper {
         return (control: AbstractControl): {[key: string]: any} | null => {
           let ret: any = null;
 
-          if (!(!isNaN(parseFloat(control.value)) && isFinite(control.value))) {
+          if (control.value != "" && !(!isNaN(parseFloat(control.value)) && isFinite(control.value))) {
             ret = {
               'anyNumber': {
                 value: control.value 

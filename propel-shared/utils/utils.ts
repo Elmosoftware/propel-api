@@ -1,3 +1,5 @@
+import { ParameterValue } from "../models/parameter-value";
+
 /**
  * Utilities.
  */
@@ -197,6 +199,68 @@ export class Utils {
         }
 
         return ret;
+    }
+
+    /**
+     * This method convert the parameter value supplied, from a native Javascript value to a 
+     * one can be understood by PowerShell during the script execution.
+     * @param pv Parameter value to convert.
+     */
+    static JavascriptToPowerShellValueConverter(pv: ParameterValue): void {
+
+        if (!pv || !pv.nativeType) {
+            return;
+        }
+
+        //If is a boolean type, we need to change the native boolean literals of Javascript by 
+        //the ones used in powershell:
+        if (pv.nativeType == "Boolean") {
+            if (typeof pv.value == "boolean") {
+                pv.value = (pv.value) ? "$true" : "$false";
+            }
+            else {
+                pv.value = (pv.value == "true") ? "$true" : "$false";
+            }            
+        }
+        //Double quoted strings in PowerShell works differently, so we need to convert any:
+        else if(pv.nativeType == "String") {
+            pv.value = pv.value.replace(/"/gi, "`\"")
+        }
+        //If the native type is not a string and the value is an empty string, we must replace 
+        //it by the null PowerShell literal:
+        else if (pv.nativeType != "String" && pv.value == "") {
+            pv.value = "$null"
+        }
+    }
+
+    /**
+     * This method convert the parameter value supplied, from a native PowerShell value to the 
+     * corresponding native Javascript value.
+     * @param pv Parameter value to convert.
+     */
+    static PowerShellToJavascriptValueConverter(pv: ParameterValue): void {
+
+        if (!pv || !pv.nativeType) {
+            return;
+        }
+
+        //If is a boolean type, we need to change the native PowerShell literals for boolean to
+        // a Javascript boolean value:
+        if (pv.nativeType == "Boolean") {
+            if (typeof pv.value !== "boolean") {
+                //@ts-ignore
+                pv.value = Boolean(pv.value == "$true");
+            }            
+        }
+        //Double quoted strings in PowerShell works differently, so we need to convert any:
+        else if(pv.nativeType == "String") {
+            pv.value = pv.value.replace(/`"/gi, "\"")
+        }
+        //If the native type is not a string and the value is a null PowerShell literal, we 
+        //must replace it by an empty string:
+        else if (pv.nativeType != "String" && pv.value == "$null") {
+            pv.value = ""
+        }
     }
 
     /**

@@ -15,6 +15,7 @@ import { SystemHelper } from 'src/util/system-helper';
 import { Category } from '../../../../propel-shared/models/category';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { DataEntity } from 'src/services/data.service';
+import { Utils } from "../../../../propel-shared/utils/utils";
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -158,7 +159,12 @@ export class WorkflowStepComponent implements OnInit {
         let step = Object.assign({}, this.fh.value)
 
         //We need to convert back boolean values to PowerShell Booleans:
-        this.convertParameterValuesFromJStoPS(step.values);
+        // this.convertParameterValuesFromJStoPS(step.values);
+        if (step.values && step.values.length > 0) {
+          step.values.forEach((val) => {
+              Utils.JavascriptToPowerShellValueConverter(val);
+            })
+        }
 
         status = new WorkflowStepComponentStatus(
           Boolean(value.toLowerCase() == "valid"),
@@ -212,20 +218,28 @@ export class WorkflowStepComponent implements OnInit {
       else {
         this.fh.form.controls.targets.disable({ onlySelf: true, emitEvent: false })
       }
+      this.fh.form.updateValueAndValidity();
     });
   }
 
-  private convertParameterValuesFromJStoPS(values: ParameterValue[]): ParameterValue[]{
-     if (values) {
-      values.forEach((val, i) => {
-        if (val.nativeType == "Boolean") {
-          values[i].value = (val.value) ? "$true" : "$false";
-        }
-      })
-    }
+  // private convertParameterValuesFromJStoPS(values: ParameterValue[]): ParameterValue[]{
+  //    if (values) {
+  //     values.forEach((val, i) => {
+  //       // //If is a boolean, we need to change the native boolean literals of Javascript by the ones used in powershell:
+  //       // if (val.nativeType == "Boolean") {
+  //       //   values[i].value = (val.value) ? "$true" : "$false";
+  //       // }
+  //       // //If the native type is not a string and the value is an empty string, we must replace it by the 
+  //       // //PowerShell literal for null:
+  //       // else if(val.nativeType != "String" && val.value == "") {
+  //       //   values[i].value = "$null"
+  //         Utils.JavascriptToPowerShellValueConverter(val);
+  //       }
+  //     })
+  //   }
 
-    return values;
-  }
+  //   return values;
+  // }
 
   private initializeParameters() {
 
@@ -280,6 +294,7 @@ export class WorkflowStepComponent implements OnInit {
         }
       }
 
+      //Assigning the validators based on the parameter type and if it is required or not:
       switch (p.nativeType) {
         case "Number":
           vfns.push(ValidatorsHelper.anyNumber());
@@ -287,14 +302,14 @@ export class WorkflowStepComponent implements OnInit {
         case "Date":
           vfns.push(ValidatorsHelper.anyDate());
           break;
-        case "Boolean":
-          //Because of the slide toggle control, we need to convert the 
-          //string PowerShell Boolean value to a native Javascript Boolean value:
-          if (pv.value != "") {
-            //@ts-ignore
-            pv.value = Boolean(pv.value == "$true");
-          }
-          break;
+        // case "Boolean":
+        //   //Because of the slide toggle control, we need to convert the 
+        //   //string PowerShell Boolean value to a native Javascript Boolean value:
+        //   if (pv.value != "") {
+        //     //@ts-ignore
+        //     pv.value = Boolean(pv.value == "$true");
+        //   }
+        //   break;
         default:
           break;
       }
@@ -302,6 +317,9 @@ export class WorkflowStepComponent implements OnInit {
       if (p.required) {
         vfns.push(Validators.required)
       }
+
+      //Converting the native Powershell value representation to a Javascript native value:
+      Utils.PowerShellToJavascriptValueConverter(pv);
 
       //Adding the controls to the array:
       (this.fh.form.controls.values as FormArray).push(new FormGroup({

@@ -358,8 +358,8 @@ export class Runner {
                 }
 
                 if (param.nativeType == "String") {
-                    prefix = `"`;
-                    sufix = `"`;
+                        prefix = `"`;
+                        sufix = `"`;
                 }
 
                 ret.push(`-${param.name}:${prefix}${value}${sufix}`)

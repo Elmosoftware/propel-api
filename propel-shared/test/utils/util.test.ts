@@ -1,3 +1,4 @@
+import { ParameterValue } from "../../models/parameter-value";
 import { Utils } from "../../utils/utils";
 
 describe("Utils Class - isObject()", () => {
@@ -414,5 +415,246 @@ describe("Utils Class - detectJSON()", () => {
             expect(Utils.detectJSON(`This a line\r\n[{"data":[1,2,3]},{"data":[4,5,6]},{"data":[7,8,9]}]\r\nAnother line`)).toBe(`[{"data":[1,2,3]},{"data":[4,5,6]},{"data":[7,8,9]}]`);
         })
     })
-
 });
+
+describe("Utils Class - JavascriptToPowerShellValueConverter()", () => {
+    test(`With null reference`, () => {
+        //@ts-ignore
+        let pv: ParameterValue = null;
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv).toEqual(null);
+    })
+    test(`For Object Native type - No changes in value`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Object";
+        //@ts-ignore
+        pv.value = null
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual(null);
+    })
+    test(`For Boolean Native type with a Boolean value "true" - must be converted to "$true"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = true
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("$true");
+    })
+    test(`For Boolean Native type with a Boolean value "false" - must be converted to "$false"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = false
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("$false");
+    })
+    test(`For Boolean Native type with a Boolean value "null" - must be converted to "$false"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = null
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("$false");
+    })
+    test(`For Boolean Native type with a String value "true" - must be converted to "$true"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = "true"
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("$true");
+    })
+    test(`For Boolean Native type with a String value "false" - must be converted to "$false"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = "false"
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("$false");
+    })
+    test(`For Boolean Native type with a String value that is neither "true" nor "false" - must be converted to "$false"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = "any value here"
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("$false");
+    })
+    test(`For String Native type with any value that is not an empty string - original value must be preserved.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = "any value here"
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("any value here");
+    })
+    test(`For String Native type with an empty string value - original value must be preserved.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = ""
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("");
+    })
+    test(`For a Native type other than "String" and "Boolean" with any value that is not and empty string - original value must be preserved.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = "any value here"
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("any value here");
+    })
+    test(`For a Native type other than "String" and "Boolean" with an empty string as value - original value must be changes by "$null".`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = ""
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("$null");
+    })
+    test(`For a "String" Native type that not contains double quotes, ("), the value must remain unchanged.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = "Hello"
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("Hello");
+    })
+    test(`For a "String" Native type that contains double quotes, ("), that char must be replaced by a backtick plus a double quote, (\`").`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = "\"Hello\""
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("`\"Hello`\"");
+    })
+    test(`For a "String" Native type that contains single quotes, ('), the value must remain unchanged.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = "'Hello'"
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("'Hello'");
+    })
+})
+
+describe("Utils Class - PowershellToJavascriptValueConverter()", () => {
+    test(`With null reference`, () => {
+        //@ts-ignore
+        let pv: ParameterValue = null;
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv).toEqual(null);
+    })
+    test(`For Object Native type - No changes in value`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Object";
+        //@ts-ignore
+        pv.value = null
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual(null);
+    })
+    test(`For Boolean Native type with a Boolean value "true" - original value must be preserved`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = true
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual(true);
+    })
+    test(`For Boolean Native type with a Boolean value "false" - original value must be preserved`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = false
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual(false);
+    })
+    test(`For Boolean Native type with a Boolean value "null" - must be converted to "false"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = null
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual(false);
+    })
+    test(`For Boolean Native type with a String value "$true" - must be converted to "true"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = "$true"
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual(true);
+    })
+    test(`For Boolean Native type with a String value "$false" - must be converted to "false"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = "$false"
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual(false);
+    })
+    test(`For Boolean Native type with a String value that is neither "$true" nor "$false" - must be converted to "false"`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Boolean";
+        //@ts-ignore
+        pv.value = "any value here"
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual(false);
+    })
+    test(`For String Native type with any value that is not and empty string - original value must be preserved.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = "any value here"
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual("any value here");
+    })
+    test(`For String Native type with an empty string value - original value must be preserved.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = ""
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual("");
+    })
+    test(`For a Native type other than "String" and "Boolean" with any value that is not and empty string - original value must be preserved.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = "any value here"
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual("any value here");
+    })
+    test(`For a Native type other than "String" and "Boolean" with the value "$null" - original value must be changed to an empty string.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = "$null"
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual("");
+    })
+    test(`For a "String" Native type that not contains double quotes, ("), the value must remain unchanged.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = "Hello"
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual("Hello");
+    })
+    test(`For a "String" Native type that contains a backtick plus a double quote, (\`"), it must be replaced by double quotes, (").`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = "`\"Hello`\""
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual("\"Hello\"");
+    })
+    test(`For a "String" Native type that contains single quotes, ('), the value must remain unchanged.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "String";
+        //@ts-ignore
+        pv.value = "'Hello'"
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual("'Hello'");
+    })
+})
