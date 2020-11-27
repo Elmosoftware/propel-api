@@ -268,7 +268,16 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
           let step = status.step;
 
           if (step) {
-            (this.fh.form.controls.steps as FormArray).controls[stepIndex].patchValue(step);
+            /*Why we need to do this instead of a simple patch?:
+            This is to prevent the case where a parameter is removed from the script. If that's the case 
+            the parameter values collection will keep the removed parameter if we do a patch, because the 
+            item won't be removed from the FormArray. 
+            So to ensure this, we need to recreate the step in the Form.
+            */
+            let allSteps: WorkflowStep[] = this.fh.value.steps;
+            allSteps[stepIndex] = step;
+            this.createStepsFormArray(allSteps, true);
+
             this.extractScriptNameAndTargetFromStatus(status);
             this.fh.form.updateValueAndValidity();
             this.fh.form.markAsDirty();

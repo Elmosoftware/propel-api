@@ -14,7 +14,7 @@ import { SystemHelper } from "../util/system-helper";
 import { ExecutionLog } from "../../propel-shared/models/execution-log";
 import { ExecutionStep } from "../../propel-shared/models/execution-step";
 import { ExecutionTarget } from "../../propel-shared/models/execution-target";
-import { Utils } from "../../propel-shared/utils/utils";
+import { POWERSHELL_NULL_LITERAL, Utils } from "../../propel-shared/utils/utils";
 import { ExecutionStatus } from "../../propel-shared/models/execution-status";
 import { ExecutionError } from "../../propel-shared/models/execution-error";
 import { db } from "../core/database";
@@ -94,8 +94,8 @@ export class Runner {
         logger.logDebug(`Pool stats before to start workflow execution:\n${pool.stats.toString()}`)
 
         await Utils.asyncForEach(workflow.steps, async (step: WorkflowStep, i: number) => {
-            let argsList: string[] = this._buildArgumentList(step);
-            let scriptCode: string = this._preprocessScriptCode(step.script.code);
+            let argsList: string[] = [];
+            let scriptCode: string = "";
             let execStep: ExecutionStep = new ExecutionStep();
             
             //Updating Execution log:
@@ -108,6 +108,14 @@ export class Runner {
             this._stats.currentStep = i + 1;
             this._stats.steps[i].status = ExecutionStatus.Running;
 
+            try {
+                argsList = this._buildArgumentList(step);
+                scriptCode = this._preprocessScriptCode(step.script.code);
+            } catch (error) {
+                execStep.status = ExecutionStatus.Faulty;
+                execStep.execError = new ExecutionError(error);
+            }
+            
             if (this._cancelExecution) {
                 abort = true //Next steps,(if any), will be aborted.
                 execStep.status = ExecutionStatus.CancelledByUser;
@@ -130,8 +138,12 @@ export class Runner {
                 }
 
                 try {
-                    execStep.targets = await this._executeOnAllTargets(scriptCode, argsList, step.targets);
-                    execStep.status = this._summaryStatus(execStep.targets);
+                    //We must do this check before to start executing, because some previous issues with the 
+                    //arguments or script decoding can prevent the execution:
+                    if (execStep.status == ExecutionStatus.Pending) {
+                        execStep.targets = await this._executeOnAllTargets(scriptCode, argsList, step.targets);
+                        execStep.status = this._summaryStatus(execStep.targets);
+                    }                    
                 } catch (error) {
                     execStep.status = ExecutionStatus.Faulty;
                     execStep.execError = new ExecutionError(error);
@@ -340,11 +352,12 @@ export class Runner {
 
         this._scriptVal.reset();
 
+        //If the script has parameters, we check the validity of the supplied values:
         if (step.script.parameters.length > 0) {
 
             step.script.parameters.forEach((param: ScriptParameter) => {
                 let suppliedParam: ParameterValue | undefined = step.values.find((sp) => sp.name == param.name);
-                let value: string = "$null";
+                let value: string = POWERSHELL_NULL_LITERAL;
                 let prefix: string = "";
                 let sufix: string = "";
 
@@ -357,7 +370,7 @@ export class Runner {
                     value = param.defaultValue;
                 }
 
-                if (param.nativeType == "String") {
+                if (value !== POWERSHELL_NULL_LITERAL && param.nativeType == "String") {
                         prefix = `"`;
                         sufix = `"`;
                 }

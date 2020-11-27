@@ -222,25 +222,6 @@ export class WorkflowStepComponent implements OnInit {
     });
   }
 
-  // private convertParameterValuesFromJStoPS(values: ParameterValue[]): ParameterValue[]{
-  //    if (values) {
-  //     values.forEach((val, i) => {
-  //       // //If is a boolean, we need to change the native boolean literals of Javascript by the ones used in powershell:
-  //       // if (val.nativeType == "Boolean") {
-  //       //   values[i].value = (val.value) ? "$true" : "$false";
-  //       // }
-  //       // //If the native type is not a string and the value is an empty string, we must replace it by the 
-  //       // //PowerShell literal for null:
-  //       // else if(val.nativeType != "String" && val.value == "") {
-  //       //   values[i].value = "$null"
-  //         Utils.JavascriptToPowerShellValueConverter(val);
-  //       }
-  //     })
-  //   }
-
-  //   return values;
-  // }
-
   private initializeParameters() {
 
     let newValues: ParameterValue[] = [];

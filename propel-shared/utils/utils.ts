@@ -1,5 +1,7 @@
 import { ParameterValue } from "../models/parameter-value";
 
+export const POWERSHELL_NULL_LITERAL = "$null"
+
 /**
  * Utilities.
  */
@@ -229,7 +231,7 @@ export class Utils {
         //If the native type is not a string and the value is an empty string, we must replace 
         //it by the null PowerShell literal:
         else if (pv.nativeType != "String" && pv.value == "") {
-            pv.value = "$null"
+            pv.value = POWERSHELL_NULL_LITERAL
         }
     }
 
@@ -258,7 +260,7 @@ export class Utils {
         }
         //If the native type is not a string and the value is a null PowerShell literal, we 
         //must replace it by an empty string:
-        else if (pv.nativeType != "String" && pv.value == "$null") {
+        else if (pv.nativeType != "String" && pv.value == POWERSHELL_NULL_LITERAL) {
             pv.value = ""
         }
     }

@@ -59,12 +59,21 @@
                 [expanded]="i == (log.executionSteps.length - 1)">
                 <mat-expansion-panel-header class="step-header">
                     <mat-panel-title class="align-items-baseline">
-                        <app-status-icon size="small" iconStyle="dark" [status]="log.status" class="mr-2">
+                        <app-status-icon size="small" iconStyle="dark" [status]="step.status" class="mr-2">
                         </app-status-icon>{{step.stepName}}
                         <i class="fas fa-binoculars ml-2 text-mini" matTooltip="{{getStepDetails(i)}}"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                     </mat-panel-title>
                 </mat-expansion-panel-header>
+                <div class="content-container">
+                    <div *ngIf="step.execError">
+                        <i class="fas fa-bug fa-2x py-2"
+                            matTooltip="Below the errors returned during the step preparation."
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                        <app-dynamic-table [data]="step.execError" [show-filter]="false" excluded-fields="stack"
+                            class="errors-header"></app-dynamic-table>
+                    </div>
+                </div>
                 <div *ngIf="showGrouped; else showContinuous">
                     <!-- Grouped section start -->
                     <mat-accordion multi displayMode="flat" togglePosition="before">
