@@ -3,7 +3,6 @@
 * https://materialtheme.arcsine.dev
 */
 @import 'https://fonts.googleapis.com/css?family=Material+Icons';
-/* @import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500"); */
 .mat-badge-content {
   font-weight: 600;
   font-size: 12px; }
@@ -112,12 +111,10 @@
   font-weight: 500; }
 
 .mat-cell, .mat-footer-cell {
-  /* font-size: 14px;  */
   font-size: inherit;
 }
 
 th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
-    padding: 0.75rem !important;
     border-bottom-width: 1px !important;
     border-bottom-style: solid !important;
 }
@@ -899,7 +896,6 @@ body {
   .mat-button.mat-warn, .mat-icon-button.mat-warn, .mat-stroked-button.mat-warn {
     color: var(--colors-danger); }
   .mat-button.mat-primary[disabled], .mat-button.mat-accent[disabled], .mat-button.mat-warn[disabled], .mat-button[disabled][disabled], .mat-icon-button.mat-primary[disabled], .mat-icon-button.mat-accent[disabled], .mat-icon-button.mat-warn[disabled], .mat-icon-button[disabled][disabled], .mat-stroked-button.mat-primary[disabled], .mat-stroked-button.mat-accent[disabled], .mat-stroked-button.mat-warn[disabled], .mat-stroked-button[disabled][disabled] {
-    /* color: rgba(18, 52, 65, 0.26);  */
     color: var(--colors-disabled);
     opacity: .4;
   }

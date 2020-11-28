@@ -241,17 +241,36 @@ button:focus {
 }
 
 .table th, .table td {
+    padding: 0.75rem !important;
+    font-size: 1em;
     vertical-align: top;
     border-top: none;
 }
 
 .table thead th {
+    padding: 0.75rem !important;
     font-size: 1em;
     font-weight: 400;
     vertical-align: middle;
     color: var(--colors-white);
     background-color: var(--colors-primary);
     border-bottom: none;
+}
+
+.table-concise thead th {
+    padding: 0.3rem !important;
+    font-size: 0.75em;
+    font-weight: 400;
+    vertical-align: middle;
+    color: var(--colors-white);
+    background-color: var(--colors-primary);
+    border-bottom: none;
+    padding: 0.2rem !important;
+}
+
+.table-concise td {
+    padding: 0.3rem !important;
+    font-size: 0.75em;
 }
 
 /* Alerts */
