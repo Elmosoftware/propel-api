@@ -11,7 +11,7 @@ param (
 
 #region External Modules
 <#
-	Recall that any module added here need to exist on remote server.
+    Recall that any module added here need to exist on remote server.
 #>
 
 #endregion
@@ -31,10 +31,6 @@ $results = @()
 #endregion
 
 #region Script Body
-
-Write-Output "Starting script execution ..." 
-Write-Output "Parameters:"
-Write-Output "Path: ""$path"""
 
 #Getting here all the parameters default values:
 <#
@@ -102,12 +98,6 @@ $defaultValues = `
     }
 }
 
-Write-Output ($results.length.ToString() + " parameter(s) found") 
-
 return $results | ConvertTo-Json -Compress
 
 #endregion
-
-
-
-
