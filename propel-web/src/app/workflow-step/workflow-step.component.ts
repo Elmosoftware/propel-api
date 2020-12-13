@@ -54,6 +54,7 @@ export class WorkflowStepComponent implements OnInit {
   allTargets: Target[];
   selectedScript: Script | undefined;
   validSets: any = {};
+  quickTaskId: string = "";
 
   get parameterValues(): FormArray {
     return (this.fh.form.controls.values as FormArray);
@@ -61,12 +62,52 @@ export class WorkflowStepComponent implements OnInit {
 
   constructor(private core: CoreService) {
 
+    // let nameValidators: any[] = [ Validators.required ]
+
+    // //For a quicktask the isalways fixed, no need to add the validators for the name length:
+    // if(!this.isQuickTask) {
+    //   nameValidators.push(Validators.minLength(NAME_MIN));
+    //   nameValidators.push(Validators.maxLength(NAME_MAX));
+    // }
+
+    // this.fh = new FormHandler("WorkflowStep", new FormGroup({
+    //   name: new FormControl("", nameValidators),
+    //   enabled: new FormControl(true, [
+    //     Validators.required
+    //   ]),
+    //   abortOnError: new FormControl(true, [
+    //     Validators.required
+    //   ]),
+    //   script: new FormControl("", [
+    //     Validators.required
+    //   ]),
+    //   targets: new FormControl(""),
+    //   values: new FormArray([])
+    // }));
+
+    // this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
+    // this.requestCount$
+    //   .subscribe((count: number) => {
+    //     if (count > 0) {
+    //       this.fh.form.disable({ emitEvent: false });
+    //     }
+    //     else {
+    //       this.fh.form.enable({ emitEvent: false });
+    //     }
+    //   })
+  }
+
+  ngOnInit(): void {
+    let nameValidators: any[] = [Validators.required]
+
+    //For a quicktask the isalways fixed, no need to add the validators for the name length:
+    if (!this.isQuickTask) {
+      nameValidators.push(Validators.minLength(NAME_MIN));
+      nameValidators.push(Validators.maxLength(NAME_MAX));
+    }
+
     this.fh = new FormHandler("WorkflowStep", new FormGroup({
-      name: new FormControl("", [
-        Validators.required,
-        Validators.minLength(NAME_MIN),
-        Validators.maxLength(NAME_MAX)
-      ]),
+      name: new FormControl("", nameValidators),
       enabled: new FormControl(true, [
         Validators.required
       ]),
@@ -90,9 +131,7 @@ export class WorkflowStepComponent implements OnInit {
           this.fh.form.enable({ emitEvent: false });
         }
       })
-  }
 
-  ngOnInit(): void {
     //Doing this with a timeout to avoid the "ExpressionChangedAfterItHasBeenCheckedError" error:
     setTimeout(() => {
       forkJoin([
@@ -131,6 +170,19 @@ export class WorkflowStepComponent implements OnInit {
     });
   }
 
+  getQuickTaskName(): string {
+    let ret: string = ""
+    let scriptLabel = (this.selectedScript) ? ` for ${this.selectedScript.name}` : "";
+
+    if (!this.quickTaskId) {
+      this.quickTaskId = SystemHelper.getUniqueId();
+    }
+
+    ret = `Quick Task${scriptLabel} #${this.quickTaskId}`;
+
+    return ret;
+  }
+
   setValue(value?: WorkflowStep) {
 
     if (!value) {
@@ -142,7 +194,7 @@ export class WorkflowStepComponent implements OnInit {
       //A quick task doesn't require a name. Is not a repetible action, so 
       //we are assigning one name randomly:
       if (this.isQuickTask) {
-        value.name = `Quick Task #${SystemHelper.getUniqueId()}`;
+        value.name = this.getQuickTaskName();
       }
     }
     else if (typeof value.script == "string") {
@@ -162,8 +214,8 @@ export class WorkflowStepComponent implements OnInit {
         // this.convertParameterValuesFromJStoPS(step.values);
         if (step.values && step.values.length > 0) {
           step.values.forEach((val) => {
-              Utils.JavascriptToPowerShellValueConverter(val);
-            })
+            Utils.JavascriptToPowerShellValueConverter(val);
+          })
         }
 
         status = new WorkflowStepComponentStatus(
@@ -204,6 +256,11 @@ export class WorkflowStepComponent implements OnInit {
     }
 
     this.enableOrDisableTargets();
+
+    if (this.isQuickTask) {
+      this.fh.form.controls.name.patchValue(this.getQuickTaskName());
+    }
+
     this.fh.form.updateValueAndValidity();
     this.initializeParameters();
   }
@@ -283,14 +340,6 @@ export class WorkflowStepComponent implements OnInit {
         case "Date":
           vfns.push(ValidatorsHelper.anyDate());
           break;
-        // case "Boolean":
-        //   //Because of the slide toggle control, we need to convert the 
-        //   //string PowerShell Boolean value to a native Javascript Boolean value:
-        //   if (pv.value != "") {
-        //     //@ts-ignore
-        //     pv.value = Boolean(pv.value == "$true");
-        //   }
-        //   break;
         default:
           break;
       }
@@ -430,7 +479,7 @@ export class WorkflowStepComponentStatus {
   constructor(isValid: boolean, isDirty: boolean, step?: WorkflowStep,
     category?: Category, scriptName?: string, targetNames?: string[]) {
     this.isValid = isValid,
-    this.isDirty = isDirty;
+      this.isDirty = isDirty;
     this.step = step;
     this.category = category;
     this.scriptName = scriptName;
