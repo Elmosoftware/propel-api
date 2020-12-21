@@ -163,6 +163,14 @@ textarea::placeholder {
     padding-bottom: 0px;
 }
 
+.button-icon-regular{
+    font-size: 1.42rem;
+    padding-top: 1px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-bottom: 1px;
+}
+
 .button-circular-small {
     border-radius: 50% !important;
     height: 32px;

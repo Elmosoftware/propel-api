@@ -658,3 +658,45 @@ describe("Utils Class - PowershellToJavascriptValueConverter()", () => {
         expect(pv.value).toEqual("'Hello'");
     })
 })
+
+describe("Utils Class - getNextDuplicateName()", () => {
+    test(`With empty Master name and empty list of names.`, () => {
+        expect(Utils.getNextDuplicateName("", [])).toEqual("");
+    })
+    test(`With Master name and empty list of names.`, () => {
+        expect(Utils.getNextDuplicateName("My incredible item", [])).toEqual("My incredible item (Duplicate)");
+    })
+    test(`With Master name and not empty list of names.`, () => {
+        expect(Utils.getNextDuplicateName("My incredible item", ["Non related Item", "Non related Item", 
+            "Non related Item"]))
+            .toEqual("My incredible item (Duplicate)");
+    })
+    test(`With Master name and list of names without dups.`, () => {
+        expect(Utils.getNextDuplicateName("My incredible item", ["My incredible item"]))
+            .toEqual("My incredible item (Duplicate)");
+    })
+    test(`With Master name and list of names with one dup.`, () => {
+        expect(Utils.getNextDuplicateName("My incredible item", ["My incredible item", "My incredible item (Duplicate)"]))
+            .toEqual("My incredible item (Duplicate 2)");
+    })
+    test(`With Master name and list of names with two dup.`, () => {
+        expect(Utils.getNextDuplicateName("My incredible item", ["My incredible item", "My incredible item (Duplicate)", "My incredible item (Duplicate 2)"]))
+            .toEqual("My incredible item (Duplicate 3)");
+    })
+    test(`With Master name and list of names with one dup, (non sequential).`, () => {
+        expect(Utils.getNextDuplicateName("My incredible item", ["My incredible item", "My incredible item (Duplicate 45)"]))
+            .toEqual("My incredible item (Duplicate 46)");
+    })
+    test(`With Master name and list of names with wrong dups.`, () => {
+        expect(Utils.getNextDuplicateName("My incredible item", ["My incredible item", "My incredible item (Duplicate 4a)", "My incredible item (Duplicate -1)"]))
+            .toEqual("My incredible item (Duplicate)");
+    })
+    test(`With Master name and list of valid and not valid test names.`, () => {
+        expect(Utils.getNextDuplicateName("xxxx", ["xxxx", "xxxx (Duplicate 2)", "xxxx (Duplicate carat)", "xxxx (Duplicate)"]))
+            .toEqual("xxxx (Duplicate 3)");
+    })
+    test(`With Master name with already "(Duplicate)" inthe nme and list of single current names.`, () => {
+        expect(Utils.getNextDuplicateName("xxxx (Duplicate) (Duplicate)", ["xxxx (Duplicate) (Duplicate)"]))
+            .toEqual("xxxx (Duplicate) (Duplicate) (Duplicate)");
+    })    
+})

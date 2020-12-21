@@ -40,7 +40,7 @@
         <div [ngSwitch]="fg.controls.searchType.value">
             <div *ngSwitchCase="searchTypeEnum.Workflows">
                 <div *ngIf="currentSearchType == searchTypeEnum.Workflows">
-                    <app-search-workflow-line [model]="svcInfScroll.model"></app-search-workflow-line>
+                    <app-search-workflow-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)"></app-search-workflow-line>
                 </div>
             </div>
             <div *ngSwitchCase="searchTypeEnum.Scripts">

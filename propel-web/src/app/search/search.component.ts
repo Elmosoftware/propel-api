@@ -244,6 +244,10 @@ export class SearchComponent implements OnInit {
   onDataFeedHandler(ph: PagingHelper): void {
     this.fetchData(ph.top, ph.skip);
   }
+
+  onDataChangedHandler($events) : void {
+    this.search();
+  }
   
   fullScrollUp() {
     this.svcInfScroll.fullScrollUp();

@@ -7,6 +7,8 @@ export const POWERSHELL_NULL_LITERAL = "$null"
  */
 export class Utils {
 
+
+
     /**
      * Returns a boolean value indicating if the supplied value is an object reference.
      * @param {object} object Object instance to validate.
@@ -222,10 +224,10 @@ export class Utils {
             }
             else {
                 pv.value = (pv.value == "true") ? "$true" : "$false";
-            }            
+            }
         }
         //Double quoted strings in PowerShell works differently, so we need to convert any:
-        else if(pv.nativeType == "String") {
+        else if (pv.nativeType == "String") {
             pv.value = pv.value.replace(/"/gi, "`\"")
         }
         //If the native type is not a string and the value is an empty string, we must replace 
@@ -252,10 +254,10 @@ export class Utils {
             if (typeof pv.value !== "boolean") {
                 //@ts-ignore
                 pv.value = Boolean(pv.value == "$true");
-            }            
+            }
         }
         //Double quoted strings in PowerShell works differently, so we need to convert any:
-        else if(pv.nativeType == "String") {
+        else if (pv.nativeType == "String") {
             pv.value = pv.value.replace(/`"/gi, "\"")
         }
         //If the native type is not a string and the value is a null PowerShell literal, we 
@@ -294,6 +296,15 @@ export class Utils {
 
         return s.replace(reg, "");
     }
+
+    /**
+     * Escape any regular expresssion charcter in the supplied text.
+     * Based on the suggestion to escape Regular expression chars as indicated in MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+     * @param text text to escape.
+     */
+    static escapeRegEx(text: string) {
+        return text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    }    
 
     /**
      * Returns a boolean value that indicates if the provided string is quoted.
@@ -341,6 +352,51 @@ export class Utils {
             ret = s.slice(1, s.length - 1)
         }
 
+        return ret;
+    }
+
+    /**
+     * This method facilitates to creates duplicate names for items enabling to create copys of items 
+     * of for example one entity that require unique names.
+     * So, if you have an entity with unique names and and you want to get the duplicate for the 
+     * name "Sample Name", this method will return "Sample Name (Duplicate)". Also, you can provide in the 
+     * parameter "currentNames" a list of actual names for the master name currently existing.
+     * This method is going to search in the list and provide the next one.
+     * For example: for the master name "My Item" and if you provide the folloing list of current names:
+     * ["Mi Item", "My Item (Duplicate)"]. This method will return the value "My Item (Duplicate 2)". 
+     * @param masterName Name of the item we want to duplicate.
+     * @param currentNames List of itemsthat starts with the Master name.
+     */
+    static getNextDuplicateName(masterName: string, currentNames: string[]): string {
+
+        let dupRegExp = new RegExp("\\(Duplicate[ 0-9]*\\)$");
+        let dupNumber: number = 0;
+        let ret: string = ""
+
+        if(!masterName) return ret;
+
+        currentNames.filter((name: string) => name !== masterName)
+            .forEach((name) => {
+
+                let matchDup = name.match(dupRegExp);
+
+                if (matchDup) {
+                    //We need to figure out if there is a first duplicate, like "My Workflow (Duplicate)" or
+                    //a subsequent duplicate like "My Workflow (Duplicate 2)":
+                    let dupKey = matchDup[0].match(new RegExp("[0-9]+"))
+
+                    //If is the first duplicate like in "My Workflow (Duplicate)":
+                    if (!dupKey) {
+                        dupNumber = Math.max(dupNumber, 1); //Always keep highest number for the duplicate key.
+                    }
+                    else { //If there is a subsequent duplicate like in "My Workflow (Duplicate 2)":"
+                        dupNumber = Math.max(dupNumber, Number(dupKey[0]));
+                    }
+                }
+            })
+        
+        ret =  masterName.trim() + ((dupNumber == 0) ? " (Duplicate)" : ` (Duplicate ${dupNumber + 1})`)
+        
         return ret;
     }
 }
