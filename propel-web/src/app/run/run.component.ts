@@ -91,10 +91,16 @@ export class RunComponent implements OnInit {
         () => {
           this.workflowStatus = this.lastMessage.logStatus;
           this.scrollDown();
-          this.core.toaster.showInformation("Showing results soon...", "Execution is done.")
-          setTimeout(() => {
-            this.core.navigation.toResults(this.lastMessage.logId);
-          }, 500);
+
+          if (this.lastMessage.logId) {
+            this.core.toaster.showInformation("Showing results soon...", "Execution is done.")
+            setTimeout(() => {
+              this.core.navigation.toResults(this.lastMessage.logId);
+            }, 500);
+          }
+          else { //If there is no logId, means something preventthe execution to complete:
+            this.core.toaster.showError("There was an error preventing the execution to complete.")
+          }
         });
   }
 

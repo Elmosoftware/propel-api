@@ -75,6 +75,14 @@ export class Runner {
 
         //Creating stats:
         this._stats = new ExecutionStats();
+
+        //If the Workflow was deleted, we are not able to proceed.
+        if(!workflow){
+            return new InvocationMessage(InvocationStatus.Failed, 
+                "The workflow does not exists. Please verify if it was deleted before retrying.",
+                "", this._stats, "", ExecutionStatus.Faulty);
+        }
+
         this._stats.workflowName = workflow.name;
         this._stats.totalSteps = workflow.steps.length;
         this._stats.steps = workflow.steps.map((step) => {

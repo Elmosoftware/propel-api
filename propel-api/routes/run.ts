@@ -46,14 +46,14 @@ export class RunRouter implements Route {
                     }
 
                     //Starting the execution:
-                    logger.logDebug(`Starting execution of Workflow "${(workflow.name) ? workflow.name : "name unavailable" }" with id: "${workflow._id}".`)
+                    logger.logDebug(`Starting execution of Workflow "${(workflow && workflow.name) ? workflow.name : "deleted workflow" }" with id: "${req.params.workFlowId}".`)
                     runner.execute(workflow, subsCallback)
                         .then((msg: InvocationMessage) => {
-                            logger.logDebug(`Execution of Workflow "${(workflow.name) ? workflow.name : "name unavailable" }" is finished, Status is "${msg.logStatus}".`);
+                            logger.logDebug(`Execution of Workflow "${(workflow && workflow.name) ? workflow.name : `with id "${req.params.workFlowId}"` }" is finished, Status is "${msg.logStatus}".`);
                             ws.send(JSON.stringify(msg));
                         })
                         .catch((err) => {
-                            logger.logDebug(`Execution of Workflow "${(workflow.name) ? workflow.name : "name unavailable" }" finished with the following error: "${String(err)}".`);
+                            logger.logDebug(`Execution of Workflow "${(workflow && workflow.name) ? workflow.name : `with id "${req.params.workFlowId}"` }" finished with the following error: "${String(err)}".`);
                             ws.send(JSON.stringify(new APIResponse(err, null)));
                         })
                         .finally(() => {
@@ -65,7 +65,7 @@ export class RunRouter implements Route {
                         if (!Utils.isValidJSON(message)) return;
 
                         let m: InvocationMessage = JSON.parse(message);
-                        logger.logInfo(`User sent action "${m.status}" during the execution of workflow "${workflow._id}".`);
+                        logger.logInfo(`User sent action "${m.status}" during the execution of workflow with id "${req.params.workFlowId}".`);
 
                         if (m.status == InvocationStatus.UserActionCancel) {
                             logger.logInfo(`Cancelling workflow execution before next step.`)
