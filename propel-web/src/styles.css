@@ -97,6 +97,11 @@ body{
     text-overflow: ellipsis;
 }
 
+.item-disabled {
+	font-weight: normal !important;
+	text-decoration: line-through !important;
+}
+
 /* 
   FORMS
   ==========================================================

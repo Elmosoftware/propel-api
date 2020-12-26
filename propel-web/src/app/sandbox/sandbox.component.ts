@@ -14,6 +14,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Utils } from '../../../../propel-shared/utils/utils';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-root',
@@ -23,6 +24,12 @@ import { Utils } from '../../../../propel-shared/utils/utils';
 export class SandboxComponent implements OnInit {
 
   @ViewChild(MatAccordion) accordion: MatAccordion;
+  @ViewChild('MyNGSelect') myNGSelect: NgSelectComponent;
+
+  dropItem(item: any) {
+    console.log("clearing the item!!!")
+    this.myNGSelect.clearItem(item);
+  }
 
   title = 'propel-web';
   color: ThemePalette = 'accent';
@@ -60,19 +67,19 @@ export class SandboxComponent implements OnInit {
   ];
 
   allColors: Color[] = [
-    { _id: "1", name: "black"},
-    { _id: "2", name: "red"},
-    { _id: "3", name: "yellow"},
-    { _id: "4", name: "white"},
-    { _id: "5", name: "silver"},
-    { _id: "6", name: "maroon"},
-    { _id: "7", name: "olive"},
-    { _id: "8", name: "green"},
-    { _id: "9", name: "aqua"},
-    { _id: "10", name: "teal"},
-    { _id: "11", name: "navy"},
-    { _id: "12", name: "fuchsia"},
-    { _id: "13", name: "purple"},
+    { _id: "1", name: "black", disabled:false},
+    { _id: "2", name: "red", disabled:false},
+    { _id: "3", name: "yellow", disabled:true},
+    { _id: "4", name: "white", disabled:false},
+    { _id: "5", name: "silver", disabled:false},
+    { _id: "6", name: "maroon", disabled:false},
+    // { _id: "7", name: "olive"},
+    // { _id: "8", name: "green"},
+    // { _id: "9", name: "aqua"},
+    // { _id: "10", name: "teal"},
+    // { _id: "11", name: "navy"},
+    // { _id: "12", name: "fuchsia"},
+    // { _id: "13", name: "purple"},
 
   ]
   
@@ -119,8 +126,15 @@ export class SandboxComponent implements OnInit {
       this.sampleData.name = "ValidName";
       this.sampleData.enabled = true;
       this.sampleData.country = this.countries[5];
-      this.sampleData.colors.push(this.allColors[9]);
-      this.sampleData.colors.push(this.allColors[10]);
+      this.sampleData.colors.push(this.allColors[3]);
+      // this.sampleData.colors.push(this.allColors[2]);
+      //In order to be able to remove: we must drop the "disabled" property or turn it to "false" always:
+      // let notDisabledColor = Object.assign({}, this.allColors[2]);
+      // delete notDisabledColor.disabled
+      // notDisabledColor.disabled = false;
+      this.sampleData.colors.push(this.allColors[2]);
+      // this.sampleData.colors.push(notDisabledColor);
+
     }
 
     this.sampleForm.patchValue(this.sampleData);    
@@ -359,6 +373,7 @@ class Country extends Entity {
 class Color extends Entity {
 
   name: string = "";
+  disabled: boolean = false;
 
   constructor() {
     super()

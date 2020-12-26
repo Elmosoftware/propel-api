@@ -33,6 +33,14 @@
                 [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="friendlyName"
                 clearAllText="Clear" [compareWith]="compareFn" placeholder="Select all the targets you want to hit."
                 formControlName="targets">
+                <!-- NGSelect does not allow disabled items to be removed from the selection list. In order to 
+                    do that we must use a template and handle ourselves the item removal -->
+                  <ng-template ng-label-tmp let-item="item">
+                    <span class="ng-value-custom-icon" (click)="dropItem(item)">×</span>
+                    <span class="ng-value-label"
+                    [ngClass]="{
+                        'item-disabled': !item.enabled }">{{item.friendlyName}}</span>
+                  </ng-template>
             </ng-select>
             <!-- DEBUG -->
             <!-- <small class="form-text text-muted">Current control status:

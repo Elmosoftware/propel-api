@@ -22,4 +22,17 @@ export class SearchTargetLineComponent implements OnInit {
     this.core.navigation.toTarget(id);
   }
 
+  getTargetTooltipMessage(item: Target): string {
+    let ret = `This target is enabled and ready to use.`;
+
+    if(!item.enabled) {
+      ret = `This target is now disabled. It can't be selected as a target for any Workflow. 
+If there is a Workflow that already have it, the execution on this target will be prevented.`
+    }
+
+    ret += `\r\nFQDN:"${item.FQDN}".`;
+
+    return ret;
+  }
+
 }

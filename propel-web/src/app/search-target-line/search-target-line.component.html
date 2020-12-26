@@ -2,7 +2,12 @@
     <li class="list-group-item mx-3" *ngFor="let item of model">
         <div class="row">
             <div class="col-auto">
-                <a href="javascript:void(0)" (click)="goToEditTarget(item._id)" [innerHtml]="item.friendlyName"></a>
+                <a href="javascript:void(0)" (click)="goToEditTarget(item._id)" [innerHtml]="item.friendlyName" 
+                    [ngClass]="{
+                        'item-disabled': !item.enabled }" matTooltip="{{ getTargetTooltipMessage(item) }}" 
+                    matTooltipClass="tooltipsWithBreakLines"
+                    matTooltipPosition="above">
+                </a>
             </div>
             <div class="col-auto">
                 <div class="ml-1 text-muted overflowEllipsis">({{item.FQDN}})</div>

@@ -126,7 +126,7 @@
 }
 
 .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-value.ng-value-disabled {
-	background-color: #f9f9f9
+	background-color: var(--colors-dark-border);
 }
 
 .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-value.ng-value-disabled .ng-value-label {
@@ -155,10 +155,6 @@
     font-weight: 800;
 }
 
-/* .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-value .ng-value-icon.left {
-	border-right: 1px solid #b8dbff
-} */
-
 [dir="rtl"] .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-value .ng-value-icon.left {
 	border-left: 1px solid #b8dbff;
 	border-right: none
@@ -180,17 +176,6 @@
 [dir="rtl"] .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-input {
 	padding: 0 3px 3px 0
 }
-
-/* .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-placeholder {
-	top: 5px;
-	padding-bottom: 5px;
-	padding-left: 3px
-}
-
-[dir="rtl"] .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-placeholder {
-	padding-right: 3px;
-	padding-left: 0
-} */
 
 .ng-select .ng-clear-wrapper {
 	color: var(--colors-soft-border);
@@ -316,7 +301,9 @@
 }
 
 .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-disabled {
-	color: #ccc
+	color: var(--colors-dark-border);
+	font-weight: normal !important;
+	text-decoration: line-through !important;
 }
 
 .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-child {
@@ -342,4 +329,16 @@
 [dir="rtl"] .ng-dropdown-panel {
 	direction: rtl;
 	text-align: right
+}
+
+/* 
+To be used in the NGSelect templates:
+====================================================
+Note: This is to avoid using the class "ng-value-icon" because it will hide the "x" on disabled items 
+preventing them to be removed in a multiple selection scenario.*/
+.ng-value-custom-icon {
+	display: inline-block;
+	padding: 1px 5px;
+	margin-left: 2px;
+	cursor: pointer;
 }

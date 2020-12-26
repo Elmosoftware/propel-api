@@ -19,7 +19,6 @@
                     </div>
                 </div>
             </div>
-            <!-- <div class="col-auto align-self-center"> -->
             <div class="col-12">
                 <div class="row justify-content-end">
                     <div class="col-auto align-self-center">
@@ -79,10 +78,16 @@
                     <mat-accordion multi displayMode="flat" togglePosition="before">
                         <mat-expansion-panel *ngFor="let target of step.targets; let i=index" expanded="true">
                             <mat-expansion-panel-header class="target-header">
-                                <mat-panel-title>
+                                <mat-panel-title class="align-items-baseline">
                                     <app-status-icon size="small" iconStyle="dark" [status]="target.status" class="mr-2">
                                     </app-status-icon>
-                                    <span style="padding-top: 1px">{{target.name}}&nbsp;({{target.FQDN}})</span>
+                                    <span style="padding-top: 1px"  [ngClass]="{
+                                        'item-disabled': target.status == 'SKIPPED' }">{{target.name}}&nbsp;({{target.FQDN}})</span>
+                                    <i class="fas ml-2 text-mini" 
+                                        [ngClass]="{
+                                            'fa-binoculars': target.status == 'SKIPPED' }"
+                                        matTooltip="The target was disabled at the moment of the execution."
+                                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                                 </mat-panel-title>
                             </mat-expansion-panel-header>
                             <div class="content-container">

@@ -614,7 +614,17 @@
             <label class="mr-2" for="multipleSelect">Selection of multiple values</label>
             <ng-select [items]="allColors" [multiple]="true" labelForId="multipleSelect" [closeOnSelect]="false"
               [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name" clearAllText="Clear"
-              [compareWith]="compareFn" placeholder="Select all the colors" formControlName="colors">
+              [compareWith]="compareFn" placeholder="Select all the colors" formControlName="colors" 
+              #MyNGSelect>
+              <!-- NGSelect does not allow disabled items to be removed from the selection list. 
+                I think is a bug :-(.
+                In order to do that we must use a template and handle ourselves the item removal -->
+              <ng-template ng-label-tmp let-item="item">
+                <span class="ng-value-custom-icon" (click)="dropItem(item)">×</span>
+                <span class="ng-value-label"
+                [ngClass]="{
+                  'item-disabled': !item.enabled }">{{item.name}}</span>
+              </ng-template>
             </ng-select>
             <small *ngIf="getErrorText(this.sampleForm.controls.colors)"
               class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.colors) }}</small>

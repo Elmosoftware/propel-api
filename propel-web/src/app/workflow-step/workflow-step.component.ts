@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, EventEmitter, ViewChild, Output } from '@angular/core';
 import { FormGroup, Validators, FormControl, FormArray, ValidatorFn, AbstractControl } from '@angular/forms';
 import { forkJoin } from "rxjs";
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 import { Script } from '../../../../propel-shared/models/script';
 import { compareEntities } from '../../../../propel-shared/models/entity';
@@ -47,6 +48,7 @@ export class WorkflowStepComponent implements OnInit {
   @Output() change = new EventEmitter<WorkflowStepComponentStatus>();
 
   @ViewChild("script") scriptDropdown;
+  @ViewChild('targets') targets: NgSelectComponent;
 
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<WorkflowStep>;
@@ -62,39 +64,6 @@ export class WorkflowStepComponent implements OnInit {
 
   constructor(private core: CoreService) {
 
-    // let nameValidators: any[] = [ Validators.required ]
-
-    // //For a quicktask the isalways fixed, no need to add the validators for the name length:
-    // if(!this.isQuickTask) {
-    //   nameValidators.push(Validators.minLength(NAME_MIN));
-    //   nameValidators.push(Validators.maxLength(NAME_MAX));
-    // }
-
-    // this.fh = new FormHandler("WorkflowStep", new FormGroup({
-    //   name: new FormControl("", nameValidators),
-    //   enabled: new FormControl(true, [
-    //     Validators.required
-    //   ]),
-    //   abortOnError: new FormControl(true, [
-    //     Validators.required
-    //   ]),
-    //   script: new FormControl("", [
-    //     Validators.required
-    //   ]),
-    //   targets: new FormControl(""),
-    //   values: new FormArray([])
-    // }));
-
-    // this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
-    // this.requestCount$
-    //   .subscribe((count: number) => {
-    //     if (count > 0) {
-    //       this.fh.form.disable({ emitEvent: false });
-    //     }
-    //     else {
-    //       this.fh.form.enable({ emitEvent: false });
-    //     }
-    //   })
   }
 
   ngOnInit(): void {
@@ -140,7 +109,13 @@ export class WorkflowStepComponent implements OnInit {
       ])
         .subscribe((results) => {
           this.allScripts = (results[0].data as Script[]);
-          this.allTargets = (results[1].data as Target[]);
+          //@ts-ignore
+          this.allTargets = results[1].data.map(item => {
+            //@ts-ignore
+            item.disabled = !item.enabled;
+            return item;
+          });
+          // this.allTargets = (results[1].data as Target[]);
           this.setValue(this.step);
         });
     });
@@ -277,6 +252,10 @@ export class WorkflowStepComponent implements OnInit {
       }
       this.fh.form.updateValueAndValidity();
     });
+  }
+
+  dropItem(item: any) {
+    this.targets.clearItem(item);
   }
 
   private initializeParameters() {
