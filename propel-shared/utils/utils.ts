@@ -364,21 +364,21 @@ export class Utils {
      * This method is going to search in the list and provide the next one.
      * For example: for the master name "My Item" and if you provide the folloing list of current names:
      * ["Mi Item", "My Item (Duplicate)"]. This method will return the value "My Item (Duplicate 2)". 
-     * @param masterName Name of the item we want to duplicate.
-     * @param currentNames List of itemsthat starts with the Master name.
+     * @param masterIdentifier Name of the item we want to duplicate.
+     * @param currentIdentifierList List of itemsthat starts with the Master name.
      */
-    static getNextDuplicateName(masterName: string, currentNames: string[]): string {
+    static getNextDuplicateName(masterIdentifier: string, currentIdentifierList: string[]): string {
 
         let dupRegExp = new RegExp("\\(Duplicate[ 0-9]*\\)$");
         let dupNumber: number = 0;
         let ret: string = ""
 
-        if(!masterName) return ret;
+        if(!masterIdentifier) return ret;
 
-        currentNames.filter((name: string) => name !== masterName)
-            .forEach((name) => {
+        currentIdentifierList.filter((identifier: string) => identifier !== masterIdentifier)
+            .forEach((identifier) => {
 
-                let matchDup = name.match(dupRegExp);
+                let matchDup = identifier.match(dupRegExp);
 
                 if (matchDup) {
                     //We need to figure out if there is a first duplicate, like "My Workflow (Duplicate)" or
@@ -395,7 +395,7 @@ export class Utils {
                 }
             })
         
-        ret =  masterName.trim() + ((dupNumber == 0) ? " (Duplicate)" : ` (Duplicate ${dupNumber + 1})`)
+        ret =  masterIdentifier.trim() + ((dupNumber == 0) ? " (Duplicate)" : ` (Duplicate ${dupNumber + 1})`)
         
         return ret;
     }

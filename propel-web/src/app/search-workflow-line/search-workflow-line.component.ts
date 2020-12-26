@@ -31,7 +31,7 @@ export class SearchWorkflowLineComponent implements SearchLineInterface, OnInit 
   }
 
   duplicate(name: string) {
-    this.core.data.duplicateWorkflow(name)
+    this.core.data.duplicate(DataEntity.Workflow, name)
       .subscribe((results: APIResponse<string>) => {
         this.core.navigation.toWorkflow(results.data[0]);
       },

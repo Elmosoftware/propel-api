@@ -50,7 +50,7 @@
             </div>
             <div *ngSwitchCase="searchTypeEnum.Targets">
                 <div *ngIf="currentSearchType == searchTypeEnum.Targets">
-                    <app-search-target-line [model]="svcInfScroll.model"></app-search-target-line>
+                    <app-search-target-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)"></app-search-target-line>
                 </div>
             </div>
         </div>

@@ -9,6 +9,7 @@ import { APIResponse } from "../../../propel-shared/core/api-response";
 import { APIRequest, APIRequestAction } from "../../../propel-shared/core/api-request";
 import { logger } from '../../../propel-shared/services/logger-service';
 import { Utils } from '../../../propel-shared/utils/utils';
+import { PropelAppError } from "../core/propel-app-error";
 
 export enum DataEntity {
   Category = "Category",
@@ -100,34 +101,53 @@ export class DataService {
     return this.http.post<APIResponse<string>>(url, req, { headers: this.buildHeaders() });
   }
 
-  duplicateWorkflow(name: string): Observable<APIResponse<string>> {
+  /**
+   * This method creates a copy of an existing entoty with exactly the same data. The name or identifier 
+   * of the document is going to be modified in order to ensure uniquenes. 
+   * e.g.: If the document identifier is "Server 01". The copy will have as name: "Server 01 (Duplicate)"
+   * if that name is already existent, "Server 01 (Duplicate 2)" will be created and so on.
+   * At this moment, you can creat duplicaes only for the following entities: Workflows and Targets.
+   * An attempt of createa duplicate for any other entity will throw an error. 
+   * @param entityType The type of items that is going to be duplicated.
+   * @param identifier The unique text that identify uniquely the item. Usually his name.
+   */
+  duplicate(entityType: DataEntity, identifier: string): Observable<APIResponse<string>> {
     return new Observable<APIResponse<string>>((subscriber) => {
 
       let qm = new QueryModifier();
+      let property: string = "name";
+      
+      if(!(entityType == DataEntity.Target || entityType == DataEntity.Workflow)) {
+        throw new PropelAppError(`We can duplicate only Workflows and Targets. There is not logic yet to duplicate "${entityType.toString()}".`)
+      }
+
+      if(entityType == DataEntity.Target){
+        property = "FQDN";
+      }
 
       qm.populate = false;
       //Searching for all the Workflows that starts with the supplied name:      
       qm.filterBy = {
-        name: {
-          $regex: new RegExp(`^${Utils.escapeRegEx(name)}`)
+        // [`${property}`]: {
+        [property]: {
+          $regex: new RegExp(`^${Utils.escapeRegEx(identifier)}`)
             .toString()
             .replace(/\//g, "") //Removing forwardslashes for conversion as JSON string.
         }
       }
-      qm.sortBy = "name";
+      qm.sortBy = property;
 
-      this.find(DataEntity.Workflow, qm)
+      this.find(entityType, qm)
         .subscribe((results: APIResponse<Entity>) => {
+          //This is the item that have the data that is going to be duplicated
+          let masterCopy: Entity = results.data.find((item) => (item as any)[property] == identifier); 
+          let newName = Utils.getNextDuplicateName(identifier, results.data.map(item => (item as any)[property]))
 
-          let masterCopy: Entity = results.data.find((w) => (w as any).name == name); //This is the 
-          //workflow that is going to be copied.
-          let newName = Utils.getNextDuplicateName(name, results.data.map(w => (w as any).name))
-
-          masterCopy._id = ""; //Removing the ID from the master copy, so save will create a new workflow.
-          (masterCopy as any).name = newName; //Changing the name as a duplicate of the master copy.
+          masterCopy._id = ""; //Removing the ID from the master copy, so save will create a new document.
+          (masterCopy as any)[property] = newName; //Changing the name for the duplicate of the master copy.
 
           //Creating the new workflow as a copy from the master:
-          this.save(DataEntity.Workflow, masterCopy)
+          this.save(entityType, masterCopy)
             .subscribe((results: APIResponse<string>) => {
               subscriber.next(results);
               subscriber.complete();
