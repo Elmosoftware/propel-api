@@ -149,7 +149,7 @@ describe("ScriptValidator Class", () => {
         //@ts-ignore
         expect(val.getErrors().message).toContain("A null or empty value was supplied or set by default to a parameter that has a validation that prevent null or empty values");
     })
-    test(`Not Invalid when evaluating native types and parameter value is not defined.`, () => {
+    test(`Valid when evaluating native types with default value and parameter value is not defined.`, () => {
         
         param.hasDefault = true;
         param.defaultValue = "@()";
@@ -160,11 +160,7 @@ describe("ScriptValidator Class", () => {
         
         val.validateParameter(param, paramValue);
 
-        expect(val.isValid).toBe(false);
-        //@ts-ignore
-        expect(val.getErrors().message).not.toBeFalsy();
-        //@ts-ignore
-        expect(val.getErrors().message).toContain("The supplied parameter type is different from the stored value");
+        expect(val.isValid).toBe(true);
     })
     test(`Invalid when parameter native type doesn't match the parameter value native type.`, () => {
         

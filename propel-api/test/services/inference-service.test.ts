@@ -358,7 +358,7 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[9].validValues.length).toEqual(0);
                 expect(params[9].canBeNull).toEqual(true);
                 expect(params[9].canBeEmpty).toEqual(true);
-                expect(params[9].defaultValue).toEqual("5");
+                expect(params[9].defaultValue).toEqual(5);
 
                 //Parameter #11: TestParam11WIthArray:
                 expect(params[10].name).toEqual("TestParam11WIthArray");

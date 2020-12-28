@@ -27,7 +27,8 @@
             "command": "npm",
             "args": [
                 "test"
-            ]
+            ],
+            "problemMatcher": []
         },
         {
             "label": "Build SHD",
@@ -53,7 +54,8 @@
             "command": "npm",
             "args": [
                 "test"
-            ]
+            ],
+            "problemMatcher": []
         },
         {
             "label": "Run API",
@@ -85,7 +87,8 @@
             "command": "npm",
             "args": [
                 "test"
-            ]
+            ],
+            "problemMatcher": []
         },
         {
             "label": "Build PRODUCTION (WEB Only)",
@@ -107,7 +110,7 @@
                 "electronBuild"
             ],
             "problemMatcher": [],
-            "dependsOn":[
+            "dependsOn": [
                 "Build PRODUCTION (WEB Only)"
             ]
         },
