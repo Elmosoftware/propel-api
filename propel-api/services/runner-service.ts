@@ -109,6 +109,7 @@ export class Runner {
             //Updating Execution log:
             execStep.stepName = step.name;
             execStep.scriptName = step.script.name;
+            execStep.scriptEnabled = step.script.enabled;
             execStep.values = step.values;
             this._execLog?.executionSteps.push(execStep);
 
@@ -131,7 +132,7 @@ export class Runner {
             else if (abort) {
                 execStep.status = ExecutionStatus.Aborted;
             }
-            else if (!step.enabled) {
+            else if (!step.enabled || !execStep.scriptEnabled) {
                 execStep.status =  ExecutionStatus.Skipped;
             }
             else {

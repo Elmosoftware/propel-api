@@ -10,6 +10,8 @@ function showIndexes(coll) {
 
 try {
     print(`\n\n===============================================`)
+    print(`\n\n      DB Creation/Updates Script`)
+    print(`\n\n===============================================`)
     print(`Creating database.`)
     db = conn.getDB("Propel");
 
@@ -212,10 +214,10 @@ try {
     })
     showIndexes(coll);
 
-    print(`\nScript has been finished.\n===============================================`)
+    print(`\nScript have been finished.\n===============================================`)
 
 } catch (error) {
-    print(`\n\nTHERE WAS AN ERROR: The Database migration process was not finishing successfully.\nError details:${error}\n`)
+    print(`\n\nTHERE WAS AN ERROR: The Database migration process didn't finish successfully.\nError details:${error}\n`)
 }
 
 

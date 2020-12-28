@@ -19,12 +19,6 @@ export class Workflow extends AuditedEntity {
      * for, expected changes, case applicability, etc.
      */
     public description: string = ""
-    
-    /**
-     * Boolean value indicating if only the creator can alter and run it. Useful for testing 
-     * purposes in order to ensure all is working as intended.
-     */
-    public isPrivate: boolean = false
 
     /**
      * Boolean value indicating if this is a quick task.

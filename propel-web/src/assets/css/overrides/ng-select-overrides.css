@@ -138,6 +138,12 @@
 	padding-right: 5px
 }
 
+.ng-value-disabled{
+	color: var(--colors-dark-border);
+	font-weight: normal !important;
+	text-decoration: line-through !important;
+}
+
 .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-value .ng-value-label {
 	display: inline-block;
 	padding: 1px 3px

@@ -1,6 +1,23 @@
+Unused fields to be removed:
+===============================
+Script
+--------
+v	- isSystem
+v	- readonly 
+
+Workflow
+-----------
+v	- isPrivate
+
+New Fields to be added:
+============================
+
+Script
+--------
+	- enabled = true
+	
 OFFLINE Indicators
 =======================================
-
 
 isNetworkOffline:
 ------------------

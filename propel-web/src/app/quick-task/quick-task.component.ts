@@ -57,7 +57,6 @@ export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
 
     ret.name = status.step.name;
     ret.isQuickTask = true;
-    ret.isPrivate = true;
     //@ts-ignore
     ret.category = status.category._id;
 

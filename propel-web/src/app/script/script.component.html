@@ -49,16 +49,14 @@
                         <app-validation-message [control]="fh.form.controls.category"></app-validation-message>
                     </div>
                     <div class="form-group">
-                        <label class="mr-2 w-100">Impact</label>
+                        <label class="mr-2 w-100">Availability</label>
                         <div class="d-flex justify-content-center">
-                            <label class="mr-2 mt-1 text-mini">This script is going to change some state, data or
-                                configuration.</label>
-                            <mat-slide-toggle color="primary" id="readonly" formControlName="readonly">
+                            <label class="mr-2 mt-1 text-mini">Disabled for now</label>
+                            <mat-slide-toggle color="primary" id="enabled" formControlName="enabled">
                             </mat-slide-toggle>
-                            <label class="ml-2 mt-1 text-mini">This script is not changing any state, just reads
-                                informations.</label>
+                            <label class="ml-2 mt-1 text-mini">Ready to use.</label>
                         </div>
-                        <app-validation-message [control]="fh.form.controls.readonly"></app-validation-message>
+                        <app-validation-message [control]="fh.form.controls.enabled"></app-validation-message>            
                     </div>
                     <div class="form-group">
                         <hr class="my-4">

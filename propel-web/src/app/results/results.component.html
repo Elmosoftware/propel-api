@@ -59,7 +59,9 @@
                 <mat-expansion-panel-header class="step-header">
                     <mat-panel-title class="align-items-baseline">
                         <app-status-icon size="small" iconStyle="dark" [status]="step.status" class="mr-2">
-                        </app-status-icon>{{step.stepName}}
+                        </app-status-icon>
+                        <span [ngClass]="{
+                            'item-disabled': !step.scriptEnabled }">{{step.stepName}}</span>
                         <i class="fas fa-binoculars ml-2 text-mini" matTooltip="{{getStepDetails(i)}}"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                     </mat-panel-title>
@@ -86,7 +88,7 @@
                                     <i class="fas ml-2 text-mini" 
                                         [ngClass]="{
                                             'fa-binoculars': target.status == 'SKIPPED' }"
-                                        matTooltip="The target was disabled at the moment of the execution."
+                                        matTooltip="The target was disabled or deleted at the moment of the execution."
                                         matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                                 </mat-panel-title>
                             </mat-expansion-panel-header>

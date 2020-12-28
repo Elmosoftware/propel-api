@@ -189,12 +189,6 @@ class Schemas {
                     {
                         type: String
                     }),
-                new SchemaField("isSystem", `Boolean value that indicates if the script is a System script or one uploaded by the User.
-            Users are able to use System scripts, but not able to alter them.`,
-                    {
-                        type: Boolean,
-                        isRequired: true
-                    }),
                 new SchemaField("isTargettingServers", `Boolean value indicating if this script requires a target selection or not.`,
                     {
                         type: Boolean,
@@ -203,11 +197,6 @@ class Schemas {
                 new SchemaField("category", `The script category, group scripts that have similar functionality. Helping in the creation of workflows to find and pick the right one.`,
                     {
                         type: this.category,
-                        isRequired: true
-                    }),
-                new SchemaField("readonly", `Indicates if the script is not modifieng target server state in any way.`,
-                    {
-                        type: Boolean,
                         isRequired: true
                     }),
                 new SchemaField("code", `Base 64 encoded script code.`,
@@ -219,6 +208,11 @@ class Schemas {
                     {
                         type: this.scriptParameter,
                         isArray: true
+                    }),
+                new SchemaField("enabled", `Indicate if the script is ok to be used in a Task or Workflow. If the value is "false", the execution will be skipped on any Workflow or Task that have it.`,
+                    {
+                        type: Boolean,
+                        isRequired: true
                     })
             ])
             .merge(this.auditedEntity)
@@ -263,7 +257,7 @@ class Schemas {
             .setDescription("Target definition.")
             .freeze();
     }
-    
+
     /**
      * **Workflow** schema definition.
      * @implements WorfloStep embedded schema
@@ -283,11 +277,6 @@ class Schemas {
                     {
                         type: String,
                         isRequired: false
-                    }),
-                new SchemaField("isPrivate", `Indicate if this is shared or not with other users.`,
-                    {
-                        type: Boolean,
-                        isRequired: true
                     }),
                 new SchemaField("isQuickTask", `Indicate if this is a quick task.`,
                     {
@@ -579,6 +568,11 @@ class Schemas {
                 new SchemaField("scriptName", `Script name.`,
                     {
                         type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("scriptEnabled", `Script enabled, (at the moment of the execution).`,
+                    {
+                        type: Boolean,
                         isRequired: true
                     }),
                 new SchemaField("values", `Values assigned to the script for this execution.`,

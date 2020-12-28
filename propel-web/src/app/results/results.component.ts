@@ -171,7 +171,7 @@ Total duration: ${SystemHelper.getDuration(this.log.startedAt, this.log.endedAt)
     if (this.log) {
       let step: ExecutionStep = this.log.executionSteps[i];
 
-      ret = `Script: "${step.scriptName}".
+      ret = `Script: "${step.scriptName}" ${(!step.scriptEnabled) ? "(The script was disabled or deleted at the moment of the execution)" : ""}.
 Targets: ${UIHelper.getTargetList(step)}.
 Parameters: ${UIHelper.getParameterValuesList(step.values)}.`
     }

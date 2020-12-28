@@ -65,7 +65,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
       description: new FormControl("", [
         Validators.maxLength(DESCRIPTION_MAX)
       ]),
-      isPrivate: new FormControl(""),
       isQuickTask: new FormControl(""),
       category: new FormControl("", [
         Validators.required

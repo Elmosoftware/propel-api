@@ -22,6 +22,17 @@
             </ng-select>
             <app-validation-message [control]="fh.form.controls.script">
             </app-validation-message>
+            <div *ngIf="fh.form.value.script && fh.form.value.script.enabled == false">
+                <div class="alert fade show alert-warning alert-dismissible my-2" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                    <strong>The selected script is disabled.</strong> This means that this Workflow step is going to be
+                    skipped on the next execution.
+                    <br>
+                    In order to avoid this, please enable the script or select a different one.
+                </div>
+            </div>
             <!-- DEBUG -->
             <!-- <small class="form-text text-muted">Current control status:
                 {{ sampleFormOrControlStatus(fh.form.controls.script) }}</small> -->

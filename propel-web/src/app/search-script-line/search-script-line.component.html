@@ -1,12 +1,23 @@
 <ul class="list-group">
     <li class="list-group-item mx-3" *ngFor="let item of model">
         <div class="d-flex justify-content-between">
-            <div class="d-flex flex-column">
-                <a href="javascript:void(0)" (click)="goToEditScript(item._id)">
-                    <span [innerHtml]="item.name"></span>
-                </a>
-                <span *ngIf="item.description" class="text-mini description" 
-                    [innerHtml]="item.description"></span>
+            <div class="d-flex">
+                <div class="d-flex flex-column mr-2">
+                    <button class="btn btn-danger button-icon-medium" type="button" (click)="remove(item)"
+                        matTooltip="Delete this script. Watch out!, this operation can't be undone."
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                <div class="d-flex flex-column">
+                    <a href="javascript:void(0)" (click)="goToEditScript(item._id)">
+                        <span [innerHtml]="item.name" [ngClass]="{
+                            'item-disabled': !item.enabled }" matTooltip="{{ getScriptTooltipMessage(item) }}"
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
+                    </a>
+                    <span *ngIf="item.description" class="text-mini description" 
+                        [innerHtml]="item.description"></span>
+                </div>
             </div>
         </div>
     </li>

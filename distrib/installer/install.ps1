@@ -98,12 +98,17 @@ function InstallShell() {
 
 function DBMigration() {
 
-    [console]::ForegroundColor = "DarkGray"    
-    Start-Process -FilePath "mongo"`
-        -Wait `
-        -NoNewWindow `
-        -ArgumentList "db-script.js"
-    [console]::ForegroundColor = "White"
+    Get-Childitem -Path $installerFolder -Filter "*.js" | `
+        Sort Name | `
+        ForEach-Object -Process {
+        
+        [console]::ForegroundColor = "DarkGray"    
+        Start-Process -FilePath "mongo"`
+            -Wait `
+            -NoNewWindow `
+            -ArgumentList $_.Name
+        [console]::ForegroundColor = "White"
+	}    
 
     return $LASTEXITCODE    
 }

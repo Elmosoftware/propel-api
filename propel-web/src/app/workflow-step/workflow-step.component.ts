@@ -108,14 +108,25 @@ export class WorkflowStepComponent implements OnInit {
         this.refreshTargets()
       ])
         .subscribe((results) => {
-          this.allScripts = (results[0].data as Script[]);
+
+          //We are adding here a temporary field "disabled" for both, (Scripts and Targets), this field 
+          //is required for the @NgSelect component to identify disabled items in the list and prevent 
+          //them to be selected:
+
+          //@ts-ignore
+          this.allScripts = results[0].data.map(item => {
+            //@ts-ignore
+            item.disabled = !item.enabled;
+            return item;
+          });
+
           //@ts-ignore
           this.allTargets = results[1].data.map(item => {
             //@ts-ignore
             item.disabled = !item.enabled;
             return item;
           });
-          // this.allTargets = (results[1].data as Target[]);
+
           this.setValue(this.step);
         });
     });

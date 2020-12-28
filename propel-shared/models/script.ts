@@ -19,12 +19,6 @@ export class Script extends AuditedEntity {
     public description: string = "";
 
     /**
-     * Boolean value that indicates if the script is a System script or one uploaded by the User.
-     * Users are able to use System scripts, but not able to alter them.
-     */
-    public isSystem: boolean = false;
-
-    /**
      * Boolean value indicating if this script requires a target selection or not.
      */
     public isTargettingServers: boolean = true;
@@ -36,11 +30,6 @@ export class Script extends AuditedEntity {
     public category!: Category;
 
     /**
-     * Indicates if the script is not modifieng target server state in any way.
-     */
-    public readonly: boolean = true;
-
-    /**
      * Script code.
      */
     public code: string = "";
@@ -49,6 +38,12 @@ export class Script extends AuditedEntity {
      * Collection of script parameters inferred for the script.
      */
     public parameters: ScriptParameter[] = [];
+
+    /**
+     * Indicate if the script is enabled, threfore can be used in a Quick Task or Workflow. 
+     * If the value is "false", the execution will be skipped on any Workflow or Task that have it.
+     */
+    public enabled: boolean = true;
 
     constructor() {
         super();

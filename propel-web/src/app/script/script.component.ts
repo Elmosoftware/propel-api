@@ -82,12 +82,11 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
       description: new FormControl("", [
         Validators.maxLength(DESCRIPTION_MAX)
       ]),
-      isSystem: new FormControl(""),
       isTargettingServers: new FormControl(""),
       category: new FormControl("", [
         Validators.required
       ]),
-      readonly: new FormControl(""),
+      enabled: new FormControl(""),
       code: new FormControl(""), //Didn't set this as required, because will be handled 
       //in a separate tab.
       parameters: new FormControl("")

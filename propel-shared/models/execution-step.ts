@@ -20,6 +20,11 @@ export class ExecutionStep {
     public scriptName: string = "";
 
     /**
+     * Indicates if the script was disabled or deleted at the moment of the execution.
+     */
+    public scriptEnabled: boolean = true;
+
+    /**
      * Parameter values used in the script execution.
      */
     public values: ParameterValue[] = [];
