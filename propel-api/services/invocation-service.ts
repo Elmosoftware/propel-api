@@ -21,7 +21,6 @@ export class InvocationService implements Disposable, Resettable {
     private _STDOUTs!: string[];
     private _invocationStatus!: InvocationStatus;
     private _isDisposed: boolean = false;
-    private _mustDispose: boolean = false;
     private _EOIrexp: RegExp;
 
     constructor() {
@@ -96,6 +95,7 @@ export class InvocationService implements Disposable, Resettable {
 
                 let isFragment: boolean = false;
                 let isFragmentEnd: boolean = false;
+                let fragmentSize: number = 0;
                 let isEOI: boolean = this._isEOI(chunk);
                 let debugInfo: string = ""
 
@@ -104,25 +104,22 @@ export class InvocationService implements Disposable, Resettable {
                 }
 
                 debugInfo += `NEW CHUNK: ${(chunk.length >= 60) ? chunk.substring(0, 25) + "..." + chunk.substring(chunk.length -25, chunk.length) : chunk }
-CHUNK DETAILS: Chunk size:${chunk.length}, Last chars:${chunk.charCodeAt(chunk.length - 2)}, ${chunk.charCodeAt(chunk.length - 1)}.`;
+CHUNK DETAILS: Size:${chunk.length}, 2 End chars:${chunk.charCodeAt(chunk.length - 2)};${chunk.charCodeAt(chunk.length - 1)}`;
 
                 if (this._STDOUTs && this._STDOUTs.length > 0) {
                     let prev = this._STDOUTs[this._STDOUTs.length - 1];
+                    //If the previous chunk doesn't ends with a breakline, means this chunk is the continuation: 
                     isFragment = !this._endsWithBreakline(prev);
 
                     /*
                         NOTE: 
                             As you can see in this still opened bug: https://github.com/rannn505/node-powershell/issues/94
                             there is some times were the EOI, (End of invocation), signal is sent with the 
-                            data. This is causing 2 issues with this code:
-                            
-                            1st - The EOI signal will be added to the data and if we are returning JSON, any
+                            data. This is causing the following issue:
+                                The EOI signal will be added to the data and if we are returning JSON, any
                             parsing is going to fail.
-                                Remediation: We need to detect the cases and remove the EOI signal from the data.
-                            2nd - In the bug description is explained that this issue also causes the promise
-                            never resolves.
-                                Remediation: Sadly, the only way to fix this once detected will be to automatically
-                                dispose the service.   
+
+                            Remediation: We need to detect the cases and remove the EOI signal from the data.
                     */
                     //node-powershell is using the shortid package to generate the EOI identifier. The ids 
                     //generated can have from 7 to 14 chars. We also have the "EOI_" prefix.
@@ -130,32 +127,30 @@ CHUNK DETAILS: Chunk size:${chunk.length}, Last chars:${chunk.charCodeAt(chunk.l
                     //then we found the cases mentioned in the bug:
                     if (isEOI && chunk.length > 18) {
                         chunk = this._removeEOI(chunk);
-                        this._mustDispose = true;
                     }
 
                     isFragmentEnd = isFragment && this._endsWithBreakline(chunk);
                 }
 
-                logger.logDebug(`${debugInfo}, Is EOI: ${isEOI}, Is previous fragment: ${isFragment}, Is fragment end: ${isFragmentEnd}, EOI removed from data: ${this._mustDispose}.`)
+                logger.logDebug(`${debugInfo}, EOI: ${isEOI}, Is continuation: ${isFragment}, Is end packet: ${isFragmentEnd}.`) //, EOI removed: ${this._mustDispose}.`)
 
                 if (isFragment) {
                     this._STDOUTs[this._STDOUTs.length - 1] += chunk;
+                    fragmentSize = this._STDOUTs[this._STDOUTs.length - 1].length;
                 }
                 else if(!isEOI) {
                     this._STDOUTs.push(chunk);
                 }
 
-                this._emit(InvocationStatus.Running, (isFragment && !isFragmentEnd) ? "Waiting for data..." : this._STDOUTs[this._STDOUTs.length - 1]);
+                if(isFragment && !isFragmentEnd) {
+                    this._emit(InvocationStatus.Running, `Receiving data ... (${(fragmentSize/1024).toFixed(1)}KB)`);
+                }
+                else {
+                    this._emit(InvocationStatus.Running, this._STDOUTs[this._STDOUTs.length - 1]);
+                }
 
                 if (isEOI) {
                     this._emit(InvocationStatus.Stopping);
-                }
-
-                if (this._mustDispose) {
-                    this._emit(InvocationStatus.Stopped);
-                    resolve(this.getLastReceivedChunk());
-                    logger.logWarn(`"EOI included in data" issue found. The script executes successfully, but we need to terminate this PowerShell instance. Status must be SUCCESS.`);
-                    this.disposeSync();
                 }
             });
 
@@ -196,7 +191,6 @@ CHUNK DETAILS: Chunk size:${chunk.length}, Last chars:${chunk.charCodeAt(chunk.l
         this._STDOUTs = [];
         this._eventEmitter = new EventEmitter();
         this._invocationStatus = InvocationStatus.NotStarted
-        this._mustDispose = false;
 
         //The following method is well documented in node-powershell library, but is not included 
         //in @types/node-powershell *.d.ts file the types, so we need to ignore the warning.
@@ -257,12 +251,7 @@ CHUNK DETAILS: Chunk size:${chunk.length}, Last chars:${chunk.charCodeAt(chunk.l
             ret = this._shell.dispose();
         }
 
-        //If we are disposing not by a user request, but because the "EOI included in data" known
-        //issue, then we MUST NOT report this status as Faulty status:
-        if (!this._mustDispose) {
-            this._emit(status, msg);
-        }
-        
+        this._emit(status, msg);
         this.reset();
         return ret;
     }

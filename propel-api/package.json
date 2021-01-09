@@ -24,7 +24,7 @@
     "graphql": "^14.7.0",
     "http-status-codes": "^1.4.0",
     "mongoose": "^5.10.7",
-    "node-powershell": "^4.0.0",
+    "node-powershell": "git+https://github.com/Elmosoftware/node-powershell.git",
     "node-windows": "^1.0.0-beta.5",
     "tmp": "^0.1.0"
   },
