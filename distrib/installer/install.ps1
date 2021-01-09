@@ -8,6 +8,7 @@ $installationFolder = "C:\Propel"
 $installerFolder = (Get-Location).Path
 $APIFolder = "propel-api"
 $ShellFolder = "propel-shell"
+$serviceName = "propel.exe";
 
 #region Private Methods
 
@@ -68,6 +69,59 @@ function InstallPropelService() {
         -Wait `
         -NoNewWindow `
         -ArgumentList "service-install.js"
+    [console]::ForegroundColor = "White"
+
+    return $LASTEXITCODE    
+}
+
+function SetPropelServiceCredentials() {
+    $serviceName = "propel.exe";
+    $service = $null;
+
+    [console]::ForegroundColor = "DarkGray"   
+
+    try {
+        $cred = (Get-Credential).GetNetworkCredential()
+    }
+    catch {
+    }
+
+    if($cred -ne $null) {
+        $service = Get-WMIObject -namespace "root\cimv2" -class Win32_Service -Filter ("Name='$serviceName'")
+
+        if($service -ne $null) {
+            Msg "Changing service by setting the new credentials..."
+            $user = ""
+
+            if([String]::IsNullOrEmpty($cred.Domain)) {
+                $user =  $cred.UserName
+            }
+            else {
+                $user = $cred.Domain + "\" + $cred.UserName
+            }
+
+            Msg "Changing service to run with the following user: ""$user""."
+            $service.Change($null, $null, $null, $null, $null, $null, $user, $cred.Password, $null, $null, $null) | Out-Null
+
+            Msg "Stopping the service"
+            $service.StopService() | Out-Null
+
+            while ($service.Started) {
+                Start-Sleep -Seconds 1
+                $service = Get-WmiObject -namespace "root\cimv2" -class Win32_Service -Filter ("Name='$serviceName'")
+            }
+
+            Msg "Starting the service"
+            $service.StartService() | Out-Null
+        }
+        else {
+             Msg "SERVICE NOT FOUND. Please verify it was installed successfully."
+        }        
+    }
+    else {
+        Msg "NO CREDENTIALS PROVIDED. There will be no change to current Propel service log on account."
+    }     
+
     [console]::ForegroundColor = "White"
 
     return $LASTEXITCODE    
@@ -173,6 +227,11 @@ if((InstallNodeWindows) -gt 0) {
 
 if((InstallPropelService) -gt 0) {
     ExitByPressingKey "There was an error during Propel Service installation. The process can not continue."
+}
+
+Msg "Following, you can set the log on credentials for the Propel Service. If you close the following popup, no changes will be done to the service and it will run with a local system account."
+if((SetPropelServiceCredentials) -gt 0) {
+    ExitByPressingKey "There was an error during Propel Service credential settings. The process can not continue."
 }
 
 #Installing the Propel frontend app
