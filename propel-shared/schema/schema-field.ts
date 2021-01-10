@@ -61,7 +61,7 @@ export class SchemaField {
     }
 
     /**
-     * When the field is an embedded schema and when migrating to GraphQL, the type and input 
+     * When the field is an embedded schema, the type and input 
      * name will be composed as {Schema name}{field name}. This is because embedded schemas are 
      * not entity schemas.
      */

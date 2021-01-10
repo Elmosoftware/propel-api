@@ -29,7 +29,7 @@ export class Router {
         this._app.use("/api", homeRouter.route());
         //Status:
         this._app.use("/api/status", statusRouter.route());
-        //GraphQL Data endpoint:
+        //Data endpoint:
         this._app.use("/api/data", dataRouter.route());
         //Infer:
         this._app.use("/api/infer", inferRouter.route());

@@ -1,4 +1,5 @@
-import NodePowershell from "node-powershell";
+//@ts-ignore
+import * as NodePowershell from "elmosoftware-node-powershell";
 import { EventEmitter } from "events";
 
 import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/invocation-message";
@@ -16,7 +17,7 @@ import { PropelError } from "../../propel-shared/core/propel-error";
  */
 export class InvocationService implements Disposable, Resettable {
 
-    private _shell: NodePowershell;
+    private _shell: NodePowershell.default;
     private _eventEmitter!: EventEmitter;
     private _STDOUTs!: string[];
     private _invocationStatus!: InvocationStatus;
@@ -25,7 +26,8 @@ export class InvocationService implements Disposable, Resettable {
 
     constructor() {
         this._EOIrexp = new RegExp("EOI_([A-Za-z0-9_-]){7,14}$", "gi");
-        this._shell = new NodePowershell({
+
+        this._shell = new NodePowershell.default({
             executionPolicy: 'Bypass',
             noProfile: true,
             verbose: false
@@ -161,7 +163,7 @@ CHUNK DETAILS: Size:${chunk.length}, 2 End chars:${chunk.charCodeAt(chunk.length
                     logger.logDebug(`RESOLVING Invocation.`)
                     resolve(this.getLastReceivedChunk())
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     this._emit(InvocationStatus.Failed, String(err));
                     logger.logDebug(`REJECTING Invocation.`)
                     reject(err);
