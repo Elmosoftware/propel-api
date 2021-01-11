@@ -361,62 +361,6 @@ describe("Utils Class - removeQuotes()", () => {
     })
 })
 
-describe("Utils Class - detectJSON()", () => {
-
-    describe("Invalid or no JSON in supplied text", () => {
-
-        test(`With null argument`, () => {
-            //@ts-ignore
-            expect(Utils.detectJSON(null)).toBe(null);
-        })
-        test(`With empty string argument`, () => {
-            expect(Utils.detectJSON(``)).toBe(``);
-        })
-        test(`With Single line of text`, () => {
-            expect(Utils.detectJSON(`This is a no JSON single line`)).toBe(``);
-        })
-        test(`With Multiple line of text`, () => {
-            expect(Utils.detectJSON(`This is a no JSON\r\nmultiple line\r\nof text\r\n\r\n`)).toBe(``);
-        })
-        test(`With Cross line invalid JSON Object`, () => {
-            expect(Utils.detectJSON(`This is a no JSON\r\nmultiple {"data":[1,2,\r\n3]}of text}\r\n\r\n`)).toBe(``);
-        })
-        test(`With Cross line invalid JSON Object Array`, () => {
-            expect(Utils.detectJSON(`This is a no JSON\r\nmultiple [{"data":[1,2,\r\n3]}]of text}]\r\n\r\n`)).toBe(``);
-        })
-        test(`JSON with adjacent text in same line`, () => {
-            expect(Utils.detectJSON(`This is a no JSON\r\nadjacent text [{"data":[1,2,3]}]\r\nof text}]\r\n\r\n`)).toBe(``);
-        })
-        test(`Invalid JSON Object in same line`, () => {
-            expect(Utils.detectJSON(`This is a no JSON\r\n{:[1,2,3]}\r\nof text}]\r\n\r\n`)).toBe(``);
-        })
-        test(`Invalid JSON Object Array in same line`, () => {
-            expect(Utils.detectJSON(`This is a no JSON\r\n[{"data":[1,2,3]}, {"}]\r\nof text}]\r\n\r\n`)).toBe(``);
-        })
-        test(`Invalid formatted JSON, (breaklines not allowed into JSON)`, () => {
-            expect(Utils.detectJSON(`This a line\r\n
-            {
-                "data":  [
-                             8,
-                             9
-                         ]
-            }\r\nAnother line`)).toBe(``);
-        })
-    })
-    describe("Valid JSON in supplied text", () => {
-
-        test(`With compressed JSON`, () => {
-            expect(Utils.detectJSON(`This a line\r\n\t{"data":[1,2,3]}\t\r\nAnother line`)).toBe(`{"data":[1,2,3]}`);
-        })
-        test(`With compressed JSON, Example 2`, () => {
-            expect(Utils.detectJSON(`This a line\r\n\t{"data":"This is my data"}\t\r\nAnother line`)).toBe(`{"data":"This is my data"}`);
-        })
-        test(`With compressed JSON, Object Array`, () => {
-            expect(Utils.detectJSON(`This a line\r\n[{"data":[1,2,3]},{"data":[4,5,6]},{"data":[7,8,9]}]\r\nAnother line`)).toBe(`[{"data":[1,2,3]},{"data":[4,5,6]},{"data":[7,8,9]}]`);
-        })
-    })
-});
-
 describe("Utils Class - JavascriptToPowerShellValueConverter()", () => {
     test(`With null reference`, () => {
         //@ts-ignore

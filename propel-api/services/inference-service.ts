@@ -48,7 +48,7 @@ export class InferenceService {
                             invsvc.invoke(command, params)
                                 .then((data: string) => {
 
-                                    let params: any = Utils.detectJSON(data);
+                                    let params: any = SystemHelper.detectJSON(data);
 
                                     if (params && Utils.isValidJSON(params)) {
                                         params = JSON.parse(params);
@@ -61,6 +61,7 @@ export class InferenceService {
                                     }
                                     else {
                                         logger.logError(`Returned data IS NOT JSON. The inference parameters process failed.`)
+                                        logger.logDebug(`This is the received data:${data}`)
                                     }
 
                                     if (params && params.length > 0) {

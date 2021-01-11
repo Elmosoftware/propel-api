@@ -2,6 +2,8 @@ import { appendFile, close, unlink } from "fs";
 import { file } from "tmp";
 import { exec } from "child_process";
 import { PropelError } from "../../propel-shared/core/propel-error";
+import { Utils } from "../../propel-shared/utils/utils";
+import jsesc from "jsesc"
 
 /**
  * File System utilities.
@@ -145,5 +147,41 @@ export class SystemHelper {
                 }
             });
         })
+    }
+
+    /**
+     * This method try to detect JSON as part of a multiline text. If a valid JSON is detected
+     * it will be returned, otherwise this method will return an empty string.
+     * As a valid JSON we are going to consider only an object or object array. Consider the below examples
+     *      `This is a
+     *      multiline with JSON object in next line
+     *      { "myData": "This is my data" }
+     *      And another line at the end`
+     * For that case this function will return: `{"myData":"This is my data" }`
+     * @param text Text to check.
+     */
+    static detectJSON(text: string): string {
+
+        let ret = "";
+
+        if (!text || typeof text !== "string") return text;
+
+        let arr = text.split("\n") //Splitting by lines.
+            .map((t) => t.replace(/[\r\t\f]/gi, "")) //Removing special chars.
+            .map((t) => jsesc(t)); //Escaping string for JSON parsing.
+
+        for (let i = arr.length - 1; i >= 0; i--) {
+            //If seems to be a JSON:
+            if ((arr[i].startsWith("{") && arr[i].endsWith("}")) ||
+                (arr[i].startsWith("[{") && arr[i].endsWith("}]"))) {
+                //We try it:
+                if (Utils.isValidJSON(arr[i])) {
+                    ret = arr[i];
+                    break;
+                }
+            }
+        }
+
+        return ret;
     }
 }

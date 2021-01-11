@@ -278,7 +278,7 @@ export class Runner {
                         et.status = ExecutionStatus.Running;
                         invsvc.invoke(this._buildCommand(scriptCode, argsList, target))
                             .then((data: string) => {
-                                let JSONData = Utils.detectJSON(data);
+                                let JSONData = SystemHelper.detectJSON(data);
                                 et.status = ExecutionStatus.Success;
                                 et.execResults = (JSONData) ? JSONData : data;
                                 this._currentInvocation = null;
@@ -418,7 +418,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         ret += `\r\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
 
-        logger.logDebug(`Executing command:\r\n${ret}`)
+        logger.logDebug(`Executing command:\r\n${(ret.length > 300) ? ret.substring(0, 150) + "\r\n(removed part of the script for brevity)\r\n" + ret.substring(ret.length -150, ret.length) : ret }`)
 
         return ret;
     }

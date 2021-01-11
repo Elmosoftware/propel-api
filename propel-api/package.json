@@ -16,6 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/cors": "^2.8.9",
+    "@types/jsesc": "^2.5.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
@@ -23,6 +24,7 @@
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "http-status-codes": "^1.4.0",
+    "jsesc": "^3.0.2",
     "mongoose": "^5.10.7",
     "node-windows": "^1.0.0-beta.5",
     "tmp": "^0.1.0"
