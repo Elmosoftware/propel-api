@@ -6,6 +6,7 @@ import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard
 import { DialogResult } from 'src/core/dialog-result';
 import { DataEntity } from 'src/services/data.service';
 import { SearchLineInterface } from 'src/core/search-line-interface';
+import { Entity } from '../../../../propel-shared/models/entity';
 
 @Component({
   selector: 'app-search-workflow-line',
@@ -30,10 +31,25 @@ export class SearchWorkflowLineComponent implements SearchLineInterface, OnInit 
     this.core.navigation.toWorkflow(id);
   }
 
-  duplicate(name: string) {
-    this.core.data.duplicate(DataEntity.Workflow, name)
-      .subscribe((results: APIResponse<string>) => {
-        this.core.navigation.toWorkflow(results.data[0]);
+  duplicate(id: string) {
+
+    //We search for the workflow first:
+    this.core.data.getById(DataEntity.Workflow, id)
+      .subscribe((results: APIResponse<Entity>) => {
+
+        if (results.count == 0) {
+          this.core.toaster.showWarning("Seems like the items is gone!, maybe someone else deleted. Please double check before to retry.", "Could not find the item");
+        }
+        else {
+          //If exists, we duplicate it:
+          this.core.data.duplicate(DataEntity.Workflow, (results.data[0] as Workflow).name)
+            .subscribe((results: APIResponse<string>) => {
+              this.core.navigation.toWorkflow(results.data[0]);
+            },
+              err => {
+                throw err
+              });
+        }
       },
         err => {
           throw err

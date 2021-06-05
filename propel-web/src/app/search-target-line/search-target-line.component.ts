@@ -8,6 +8,7 @@ import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { SearchLineInterface } from 'src/core/search-line-interface';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
+import { Entity } from '../../../../propel-shared/models/entity';
 
 @Component({
   selector: 'app-search-target-line',
@@ -33,7 +34,7 @@ export class SearchTargetLineComponent implements SearchLineInterface, OnInit {
   getTargetTooltipMessage(item: Target): string {
     let ret = `This target is enabled and ready to use.`;
 
-    if(!item.enabled) {
+    if (!item.enabled) {
       ret = `This target is now disabled. It can't be selected as a target for any Workflow. 
 If there is a Workflow that already have it, the execution on this target will be prevented.`
     }
@@ -43,10 +44,24 @@ If there is a Workflow that already have it, the execution on this target will b
     return ret;
   }
 
-  duplicate(name: string) {
-    this.core.data.duplicate(DataEntity.Target, name)
-      .subscribe((results: APIResponse<string>) => {
-        this.core.navigation.toTarget(results.data[0]);
+  duplicate(id: string) {
+    //We search for the target first:
+    this.core.data.getById(DataEntity.Target, id)
+      .subscribe((results: APIResponse<Entity>) => {
+
+        if (results.count == 0) {
+          this.core.toaster.showWarning("Seems like the items is gone!, maybe someone else deleted. Please double check before to retry.", "Could not find the item");
+        }
+        else {
+          //If exists, we duplicate it:
+          this.core.data.duplicate(DataEntity.Target, (results.data[0] as Target).FQDN)
+            .subscribe((results: APIResponse<string>) => {
+              this.core.navigation.toTarget(results.data[0]);
+            },
+              err => {
+                throw err
+              });
+        }
       },
         err => {
           throw err
