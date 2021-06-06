@@ -107,7 +107,7 @@ export class SearchComponent implements OnInit {
     this.currentSearchType = this.fg.controls.searchType.value;
     this.fetchData(this.svcInfScroll.pageSize, 0);
   }
-  
+
   fetchData(top: number, skip: number): void {
     let strictSearch: boolean = this.termIsQuoted;
     let termsToSearch: string[] = [];
@@ -164,7 +164,7 @@ export class SearchComponent implements OnInit {
     //If we are in browsing mode, this is, we need to show all the results. We are 
     //going to sort by main field: 
     else {
-      qm.sortBy = (this.fg.controls.searchType.value == SearchType.Targets)? "friendlyName" : "name";
+      qm.sortBy = (this.fg.controls.searchType.value == SearchType.Targets) ? "friendlyName" : "name";
     }
 
     //Adding conditions specific to Workflows here:
@@ -183,7 +183,7 @@ export class SearchComponent implements OnInit {
 
         //If we are showing all the results, there is no need to highlight any word matches:
         if (!this.showAll) {
-           d = this._processMatches(d, termsToSearch, f1, f2)
+          d = this._processMatches(d, termsToSearch, f1, f2)
         }
 
         this.svcInfScroll.feed(results.totalCount, d);
@@ -221,7 +221,7 @@ export class SearchComponent implements OnInit {
     //   return this._fakeWorkflowCreation(1000, 100, qm);      
     // }
     // throw new Error("Prueba");
-    
+
     /////////////////////////////////////////////////////////////////////////////////
 
     return this.core.data.find(entityType, qm);
@@ -245,10 +245,10 @@ export class SearchComponent implements OnInit {
     this.fetchData(ph.top, ph.skip);
   }
 
-  onDataChangedHandler($events) : void {
+  onDataChangedHandler($events): void {
     this.search();
   }
-  
+
   fullScrollUp() {
     this.svcInfScroll.fullScrollUp();
   }
@@ -285,7 +285,6 @@ export class SearchComponent implements OnInit {
 
     this.fg = new FormGroup({
       searchText: new FormControl(term, [
-        Validators.required,
         Validators.minLength(SEARCH_TEXT_MIN),
         Validators.maxLength(SEARCH_TEXT_MAX),
         ValidatorsHelper.searchableText()
@@ -293,6 +292,13 @@ export class SearchComponent implements OnInit {
       searchType: new FormControl(searchType),
       browse: new FormControl(browse)
     });
+
+    //Watching changes on the search type, so we can restart the search when other type is selected:
+    this.fg.get("searchType").valueChanges.subscribe(value => {
+      if (this.showAll || this.searchTerm !== "") {
+        this.search();
+      }
+    })
   }
 
   /*================================================================================================
