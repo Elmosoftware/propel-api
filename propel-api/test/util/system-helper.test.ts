@@ -101,8 +101,5 @@ describe("SystemHelper Class - detectJSON()", () => {
         test(`With compressed JSON, Object Array`, () => {
             expect(SystemHelper.detectJSON(`This a line\r\n[{"data":[1,2,3]},{"data":[4,5,6]},{"data":[7,8,9]}]\r\nAnother line`)).toBe(`[{"data":[1,2,3]},{"data":[4,5,6]},{"data":[7,8,9]}]`);
         })
-        test(`With compressed unescaped string in JSON`, () => {
-            expect(SystemHelper.detectJSON(`This a line\r\n[{"data":"AB\\C"}]\r\nAnother line`)).toBe(`[{\"data\":\"AB\\\\C\"}]`);
-        })
     })
 });

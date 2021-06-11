@@ -3,7 +3,6 @@ import { file } from "tmp";
 import { exec } from "child_process";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { Utils } from "../../propel-shared/utils/utils";
-import jsesc from "jsesc"
 
 /**
  * File System utilities.
@@ -167,8 +166,7 @@ export class SystemHelper {
         if (!text || typeof text !== "string") return text;
 
         let arr = text.split("\n") //Splitting by lines.
-            .map((t) => t.replace(/[\r\t\f]/gi, "")) //Removing special chars.
-            .map((t) => jsesc(t)); //Escaping string for JSON parsing.
+            .map((t) => t.replace(/[\r\t\f]/gi, "")); //Removing special chars.
 
         for (let i = arr.length - 1; i >= 0; i--) {
             //If seems to be a JSON:
