@@ -365,3 +365,23 @@ propel-api ->rename to propel
 propel-api
 propel-web
 
+=====================================================================================
+
+Impersonate another user account when executing remote scripts
+---------------------------------------------------------------
+
+https://stackoverflow.com/questions/28989750/running-powershell-as-another-user-and-launching-a-script/34307483
+
+
+$u = "Domain\User"
+$p = "Password here"
+$sp = ConvertTo-SecureString $p -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential $u, $sp
+
+Start-Process Notepad.exe -Credential $cred
+
+One line version
+---------------------
+$cred = New-Object System.Management.Automation.PSCredential "Domain\User", (ConvertTo-SecureString "Password here" -AsPlainText -Force)
+
+Start-Process Notepad.exe -Credential $cred

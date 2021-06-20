@@ -9,6 +9,10 @@ function setAllValid() {
     process.env.POOL_PRE_ALLOC="10"
     process.env.POOL_QUEUE_SIZE="5"
     process.env.MAX_WORKFLOW_RESULTS_SIZE="12582912"
+    process.env.IMPERSONATE="false"
+    process.env.IMPERSONATE_USER=""
+    process.env.IMPERSONATE_DOMAIN=""
+    process.env.IMPERSONATE_PASSWORD=""
 }
 
 describe("ConfigValidator Class", () => {
@@ -194,6 +198,40 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain("MAX_WORKFLOW_RESULTS_SIZE is not a number or it has a negative value");
+        cfgVal.reset();
+    })
+    test(`Missing IMPERSONATE value`, () => {
+        //@ts-ignore
+        process.env.IMPERSONATE = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain("IMPERSONATE is required");
+        cfgVal.reset();
+    })
+    test(`Invalid IMPERSONATE value`, () => {
+        //@ts-ignore
+        process.env.IMPERSONATE = "xxxxx"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain("IMPERSONATE need to be a boolean value");
+        cfgVal.reset();
+    })
+    test(`Invalid IMPERSONATE_USER value`, () => {
+        //@ts-ignore
+        process.env.IMPERSONATE = "true"
+        process.env.IMPERSONATE_USER = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`IMPERSONATE_USER can be empty only if IMPERSONATE is set to "false"`);
         cfgVal.reset();
     })
 })

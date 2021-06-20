@@ -77,6 +77,19 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`MAX_WORKFLOW_RESULTS_SIZE is not a number or it has a negative value. Supplied value: "${process.env.MAX_WORKFLOW_RESULTS_SIZE}".`);
         }
 
+        //IMPERSONATE can't be null and must be a Boolean value
+        if (!process.env.IMPERSONATE) {
+            super._addError("IMPERSONATE is required.");
+        }
+        else if (!(process.env.IMPERSONATE =="true" || process.env.IMPERSONATE =="false")) {
+            super._addError(`IMPERSONATE need to be a boolean value. Supplied value: "${process.env.IMPERSONATE}".`);
+        }
+
+        //IMPERSONATE_USER can't be null if IMPERSONATE is set to true:
+        if (!process.env.IMPERSONATE_USER && process.env.IMPERSONATE !== "false" ) {
+            super._addError(`IMPERSONATE_USER can be empty only if IMPERSONATE is set to "false".`);
+        }
+
         return this;
     }
 }

@@ -398,29 +398,49 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
 
     private _buildCommand(scriptCode: string, argList: string[], target: Target): string {
 
-        let ret: string = `$codeBlock = [Scriptblock]::Create(@'\r\n&{\r\n${scriptCode}\r\n} ${argList.join(" ")}\r\n'@)\r\nInvoke-Command`;
+        let ret: string = "";
+
+        if (cfg.impersonateOptions.enabled) {
+            ret += `$cred = New-Object System.Management.Automation.PSCredential "${cfg.impersonateOptions.user}", (ConvertTo-SecureString "${cfg.impersonateOptions.password}" -AsPlainText -Force)\r\n`    
+        }
+       
+        ret += `$codeBlock = [Scriptblock]::Create(@'\r\n&{\r\n${scriptCode}\r\n} ${argList.join(" ")}\r\n'@)\r\nInvoke-Command`;
 
         /*
             Note: 
                 On a development environment there is a lot of times where is not possible to
-                invoke a remote computer, so when working on an environment different than prod
-                we will hit the local host even when a target is defined.
+                invoke a remote computer, (because of security restrictions), so when working on an 
+                environment different than prod we will hit our local machine even when a target is defined.
          */
-        if (target && cfg.isProduction) {
-            //Also, need to be an script that is actually targetting a remote server :-)
-            if (target.FQDN.toLowerCase() !== this.localTarget.FQDN.toLowerCase()) {
-                ret += ` -ComputerName ${target.FQDN}`
-            }
+        if (cfg.isProduction) {
+            ret += ` -ComputerName ${target.FQDN}`
         }
 
+        if (cfg.impersonateOptions.enabled) {
+            ret += ` -Credential $cred`;
+        }
+       
         ret += ` -ScriptBlock $codeBlock`
-
         ret += `\r\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
 
-        logger.logDebug(`Executing command:\r\n${(ret.length > 300) ? ret.substring(0, 150) + "\r\n(removed part of the script for brevity)\r\n" + ret.substring(ret.length -150, ret.length) : ret }`)
+        this._logCommand(ret);
 
         return ret;
+    }
+
+    private _logCommand(command: string) {
+
+        if (cfg.impersonateOptions.enabled && cfg.impersonateOptions.password) {
+            command = command.replace(new RegExp(cfg.impersonateOptions.password, "g"), "********")            
+        }
+
+        if (command.length > 300) {
+            command = command.substring(0, 150) + "\r\n       ... (removed part of the script for brevity) ...     \r\n" + 
+                command.substring(command.length -150, command.length)
+        }
+
+        logger.logDebug(`Executing command:\r\n${command}`);
     }
 
     private _prepareLogForSave(log: ExecutionLog): ExecutionLog {
