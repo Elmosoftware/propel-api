@@ -413,6 +413,11 @@ class Schemas {
                         type: Boolean,
                         isRequired: true
                     }),
+                new SchemaField("isPropelParameter", `Indicates if the parameter is the System Managed Propel parameter.`,
+                    {
+                        type: Boolean,
+                        isRequired: false
+                    })
             ])
             .setDescription("Represents all the details of an inferred script parameter.")
             .freeze();

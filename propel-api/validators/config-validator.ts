@@ -49,6 +49,11 @@ class ConfigValidator extends ValidatorBase {
             super._addError("DB_ENDPOINT is required and can't be null or empty.");
         }
 
+        //PS_SCRIPT_PROPEL_PARAM is required and can't be null or empty:
+        if (!process.env.PS_SCRIPT_PROPEL_PARAM) {
+            super._addError("PS_SCRIPT_PROPEL_PARAM is required and can't be null or empty.");
+        }
+
         if (!process.env.POOL_MAX_SIZE) {
             super._addError("POOL_MAX_SIZE is required.");
         }

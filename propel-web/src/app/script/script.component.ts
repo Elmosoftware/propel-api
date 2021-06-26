@@ -224,6 +224,15 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
             this.uploadProgress = 100;
             this.invalidFileMessage = `There was an error during the script parameters discovery process. 
           If the script has no parameters and you feel comfident the script is no having any runtime issues you can continue to the next step.`
+
+            if (err?.error?.errors) {
+              err.error.errors.forEach((value)=>{
+                if (value.errorCode) {
+                  this.invalidFileMessage = `${value.errorCode.description}\r\n${value.errorCode.userMessage}`
+                }
+              });              
+            }
+
             throw err
           }
         );

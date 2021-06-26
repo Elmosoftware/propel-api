@@ -287,6 +287,7 @@ export class WorkflowStepComponent implements OnInit {
 
       let pv: ParameterValue;
       let vfns: ValidatorFn[] = [];
+      let fg: FormGroup;
 
       //First we pair the parameters in the selected scrip with the values, (if any), already
       //provided in the "step" input:
@@ -342,11 +343,20 @@ export class WorkflowStepComponent implements OnInit {
       Utils.PowerShellToJavascriptValueConverter(pv);
 
       //Adding the controls to the array:
-      (this.fh.form.controls.values as FormArray).push(new FormGroup({
+      fg = new FormGroup({
         name: new FormControl(pv.name),
         value: new FormControl(pv.value, vfns),
         nativeType: new FormControl(pv.nativeType)
-      }));
+      });
+
+      //The $Propel parameter must be readonly:
+      if (p.isPropelParameter) {
+        fg.disable({ onlySelf: true });
+      }
+
+      (this.fh.form.controls.values as FormArray).push(fg);
+
+      
 
       newValues.push(pv);
     })

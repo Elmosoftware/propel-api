@@ -60,6 +60,12 @@ export class ScriptParameter {
      */
     public hasDefault: boolean = false;
 
+    /**
+     * Indicates if this parameter is the System Managed Propel parameter. This allows the script to get 
+     * some context information related to the execution.
+     */
+    public isPropelParameter: boolean = false;
+
     constructor() {
     }
 }

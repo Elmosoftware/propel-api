@@ -379,6 +379,10 @@ export class Runner {
                     value = param.defaultValue;
                 }
 
+                if (param.isPropelParameter) {
+                    value = `(${this._buildPropelVariableValue()})`
+                }
+
                 if (value !== POWERSHELL_NULL_LITERAL && param.nativeType == "String") {
                         prefix = `"`;
                         sufix = `"`;
@@ -400,10 +404,6 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
 
         let ret: string = "";
 
-        if (cfg.impersonateOptions.enabled) {
-            ret += `$cred = New-Object System.Management.Automation.PSCredential "${cfg.impersonateOptions.user}", (ConvertTo-SecureString "${cfg.impersonateOptions.password}" -AsPlainText -Force)\r\n`    
-        }
-       
         ret += `$codeBlock = [Scriptblock]::Create(@'\r\n&{\r\n${scriptCode}\r\n} ${argList.join(" ")}\r\n'@)\r\nInvoke-Command`;
 
         /*
@@ -417,7 +417,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         }
 
         if (cfg.impersonateOptions.enabled) {
-            ret += ` -Credential $cred`;
+            ret += ` -Credential (${this._buildCredentials()})`;
         }
        
         ret += ` -ScriptBlock $codeBlock`
@@ -427,6 +427,24 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         this._logCommand(ret);
 
         return ret;
+    }
+
+    private _buildPropelVariableValue(): string {
+
+        let cred = POWERSHELL_NULL_LITERAL;
+
+        if (cfg.impersonateOptions.enabled) {
+            cred = this._buildCredentials();
+        }
+
+        return `New-Object -TypeName PsCustomObject | \`
+    Add-member -Name Environment -MemberType ScriptProperty -PassThru -Value { "${cfg.environment}" } | \`
+    Add-member -Name ImpersonateEnabled -MemberType ScriptProperty -PassThru -Value { ${cfg.impersonateOptions.enabled ? "$true" : "$false"} } | \`
+    Add-member -Name ImpersonateCredentials -MemberType ScriptProperty -PassThru -Value { ${cred} }`;
+    }
+
+    private _buildCredentials(): string {
+        return `New-Object System.Management.Automation.PSCredential "${cfg.impersonateOptions.user}", (ConvertTo-SecureString "${cfg.impersonateOptions.password}" -AsPlainText -Force)`;
     }
 
     private _logCommand(command: string) {

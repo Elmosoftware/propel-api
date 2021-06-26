@@ -1,5 +1,8 @@
 <ul *ngFor="let param of parameters" class="list-group text-mini">
-    <li class="list-group-item my-1">
+    <!-- <li class="list-group-item my-1"> -->
+    <li class="list-group-item my-1" [ngClass]="{
+        'list-group-item-primary': param.isPropelParameter
+    }">
         <div class="d-flex">
             <span class="token namespace">[{{param.type}}]</span>
             <span><strong>${{param.name}}</strong></span>

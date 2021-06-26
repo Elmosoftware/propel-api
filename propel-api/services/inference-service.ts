@@ -7,6 +7,9 @@ import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { logger } from "../services/logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
 import { InvocationService } from "./invocation-service";
+import { ErrorCodes } from "../../propel-shared/core/error-codes";
+import { PropelError } from "../../propel-shared/core/propel-error";
+
 
 /**
  * This class encapsulates all teh functionality related to Script parameter inference used in the API.
@@ -49,6 +52,7 @@ export class InferenceService {
                                 .then((data: string) => {
 
                                     let params: any = SystemHelper.detectJSON(data);
+                                    let e:PropelError|null = null;
 
                                     if (params && Utils.isValidJSON(params)) {
                                         params = JSON.parse(params);
@@ -79,10 +83,22 @@ export class InferenceService {
                                                 sp.validValues = param.ValidValues;
                                                 sp.canBeNull = param.CanBeNull;
                                                 sp.canBeEmpty = param.CanBeEmpty;
+                                                sp.isPropelParameter = false;
 
                                                 if (param.DefaultValue !== null) {
                                                     sp.hasDefault = true;
                                                     sp.defaultValue = param.DefaultValue;
+                                                }
+
+                                                if (cfg.isPropelParam(sp.name)) {
+                                                    if(sp.validValues.length > 0 || sp.type != "System.Object") {
+                                                        e = new PropelError(`Invalid "${cfg.PSScriptPropelParam}" parameter.`,ErrorCodes.WrongPropelParameter);
+                                                    }
+                                                    else { //Is a valid $Propel parameter:
+                                                        sp.isPropelParameter = true;
+                                                        sp.description = `This parameter is managed by Propel. The value is going be set automatically by Propel, providing some context information that can be used inside the script. For more information, please check the documentation.`
+                                                        sp.defaultValue = ""
+                                                    }
                                                 }
 
                                                 ret.push(sp);
@@ -90,7 +106,12 @@ export class InferenceService {
                                         })
                                     }
 
-                                    resolve(ret)
+                                    if (e) {
+                                        reject(e)
+                                    }
+                                    else {
+                                        resolve(ret)
+                                    }
                                 })
                                 .catch((err: any) => {
                                     reject(err);

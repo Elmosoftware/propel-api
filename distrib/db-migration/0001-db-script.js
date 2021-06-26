@@ -218,6 +218,7 @@ try {
 
 } catch (error) {
     print(`\n\nTHERE WAS AN ERROR: The Database migration process didn't finish successfully.\nError details:${error}\n`)
+    throw error
 }
 
 

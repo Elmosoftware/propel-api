@@ -65,8 +65,20 @@ This could happen when a script is updated with breaking changes. Please review 
     static get saveLogFailed(): Code {
         return new Code("SAVE_LOG_FAILED",
             `An error prevent the log information to be saved, but the underlying operation was completed. This is not critical.`,
-        `Some issue prevent the log to be saved, but the operation was able to complete. Please contact the site administrator about this.`,
-        true);
+            `Some issue prevent the log to be saved, but the operation was able to complete. Please contact the site administrator about this.`,
+            true);
+    }
+
+    /**
+     * This code indicates that in the inference process, a Propel parameter, (as defined in 
+     * the PS_SCRIPT_PROPEL_PARAM environment value) was found but his definition was incorrect.
+     */
+    static get WrongPropelParameter(): Code {
+        return new Code("WRONG_PROPEL_PARAM",
+            `Incorrect definition for the $Propel parameter.`,
+            `The $Propel parameter is managed by Propel and allows the script to take some context information related to the execution like the remote target details, etc.           
+            The definition of this parameter is wrong. Please verify: Type must be System.Object and no ValidSet is allowed.`,
+            false);
     }
 }
 

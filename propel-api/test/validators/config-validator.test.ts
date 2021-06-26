@@ -4,6 +4,7 @@ function setAllValid() {
     process.env.NODE_ENV = "development"
     process.env.PORT = "3000"
     process.env.DB_ENDPOINT = "mongodb://localhost:27017/propel-api"
+    process.env.PS_SCRIPT_PROPEL_PARAM = "Propel"
     process.env.MODELS_FOLDER = "models"
     process.env.POOL_MAX_SIZE="40"
     process.env.POOL_PRE_ALLOC="10"
@@ -232,6 +233,17 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`IMPERSONATE_USER can be empty only if IMPERSONATE is set to "false"`);
+        cfgVal.reset();
+    })
+    test(`Missing PS_SCRIPT_PROPEL_PARAM value`, () => {
+        //@ts-ignore
+        process.env.PS_SCRIPT_PROPEL_PARAM = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`PS_SCRIPT_PROPEL_PARAM is required`);
         cfgVal.reset();
     })
 })

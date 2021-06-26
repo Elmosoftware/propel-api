@@ -104,6 +104,7 @@ try {
 } catch (error) {
     print(`\n\nTHERE WAS AN ERROR: The Database migration process didn't finish successfully.
     Error details:${error}${sep}`)
+    throw error
 }
 
 

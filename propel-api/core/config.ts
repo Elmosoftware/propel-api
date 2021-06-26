@@ -64,6 +64,14 @@ class Config {
     }
 
     /**
+     * Returns the Powershell scripts system parameter managed by Propel. This parameter allows 
+     * to get some context information inside the executed script.
+     */
+    get PSScriptPropelParam(): string {
+        return (process.env.PS_SCRIPT_PROPEL_PARAM) ? process.env.PS_SCRIPT_PROPEL_PARAM : "";
+    }
+
+    /**
      * Returns the current pool options configured for the API.
      */
     get poolOptions(): ObjectPoolOptions {
@@ -122,6 +130,16 @@ class Config {
      */
     get impersonateOptions(): ImpersonateOptions {
         return this._impersonateOptions;
+    }
+
+    /**
+     * 
+     * @param paramName Parameter name to check.
+     * @returns A boolean value indicating if the parameter has the samae name defined 
+     * for the "Propel" parameter.
+     */
+    isPropelParam(paramName: string): boolean {
+        return (paramName.toLowerCase() == this.PSScriptPropelParam.toLowerCase());
     }
 }
 
