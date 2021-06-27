@@ -15,30 +15,30 @@
   "author": "JC",
   "license": "ISC",
   "dependencies": {
-    "@types/cors": "^2.8.9",
+    "@types/cors": "^2.8.10",
     "@types/jsesc": "^2.5.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
+    "dotenv": "^8.6.0",
     "elmosoftware-node-powershell": "^4.0.0",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "http-status-codes": "^1.4.0",
-    "mongoose": "^5.10.7",
+    "mongoose": "^5.12.15",
     "node-windows": "^1.0.0-beta.5",
     "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "@types/express": "^4.17.7",
+    "@types/express": "^4.17.12",
     "@types/express-ws": "^3.0.0",
     "@types/http-status-codes": "^1.2.0",
     "@types/jest": "^25.2.3",
-    "@types/mongoose": "^5.7.36",
-    "@types/node": "^13.13.21",
+    "@types/mongoose": "^5.11.97",
+    "@types/node": "^13.13.52",
     "@types/node-powershell": "^3.1.1",
     "@types/node-windows": "^0.1.0",
     "@types/tmp": "^0.1.0",
     "jest": "^25.5.4",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.10"
   }
 }

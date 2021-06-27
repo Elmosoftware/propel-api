@@ -114,7 +114,7 @@ export class DataService {
             }
             else {
                 this._setAuditData(false, document, null);
-                this._model.model.updateOne({ _id: document._id }, document, (err: any, data: any) => {
+                this._model.model.updateOne({ _id: document._id }, document, null, (err: any, data: any) => {
                     if (err) {
                         if (this.isDupKeyError(err)) {
                             err = new PropelError(err, ErrorCodes.DuplicatedItem)
@@ -253,7 +253,7 @@ Those fields are for internal use only and must not take part on user queries.`)
                 reject(new APIResponse<any>(e, null));
             }
             else {
-                this._model.model.updateOne({ _id: id }, { $set: { deletedOn: new Date() } },
+                this._model.model.updateOne({ _id: id }, { $set: { deletedOn: new Date() } }, null, 
                     (err: any, data: any) => {
                         if (err) {
                             reject(new APIResponse<any>(err, null));

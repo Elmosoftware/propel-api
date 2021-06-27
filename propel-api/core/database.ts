@@ -61,7 +61,7 @@ class Database {
     /**
      * Built models and establish database connectivity.
      */
-    start() {
+    start(): Promise<any> {
         let models: any[] = [];
 
         if (this._started) {
@@ -73,6 +73,7 @@ class Database {
         }
 
         logger.logInfo("Establishing database conection...");
+        //@ts-ignore  The connect method is returning a promise, but seems Typescript didn't like it  :-(
         return mongoose.connect(cfg.databaseEndpoint, mongooseOptions);
     }
 
