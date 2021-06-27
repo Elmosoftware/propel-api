@@ -19,6 +19,6 @@
     height: 36px !important
 }
 
-:host /deep/ .errors-header th {
+:host ::ng-deep .errors-header th {
     background-color: var(--colors-danger) !important;
 }
