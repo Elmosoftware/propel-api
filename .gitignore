@@ -16,6 +16,9 @@ dist/**
 tmp/**
 /out-tsc
 
+# Propel documentation
+!/doc/**
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json
