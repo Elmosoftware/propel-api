@@ -96,7 +96,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/propel-web"
             },
-            "command": "ng build --prod --base-href ./"
+            "command": "ng build --configuration production --base-href ./"
         },
         {
             "label": "Build PRODUCTION (Electron Shell Only)",

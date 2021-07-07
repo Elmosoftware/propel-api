@@ -149,6 +149,14 @@ export class SystemHelper {
     }
 
     /**
+     * Escapes a regular expression string.
+     * This is based on the proposal by [benjamingr](https://github.com/benjamingr) you can find [here](https://github.com/tc39/proposal-regex-escaping).
+     */
+    static RegExpEscape(regExpString: string): string{
+        return String(regExpString).replace(/[\\^$*+?.()|[\]{}]/g, '\\$&');
+    }
+
+    /**
      * This method try to detect JSON as part of a multiline text. If a valid JSON is detected
      * it will be returned, otherwise this method will return an empty string.
      * As a valid JSON we are going to consider only an object or object array. Consider the below examples

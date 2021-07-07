@@ -450,7 +450,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
     private _logCommand(command: string) {
 
         if (cfg.impersonateOptions.enabled && cfg.impersonateOptions.password) {
-            command = command.replace(new RegExp(cfg.impersonateOptions.password, "g"), "********")            
+            command = command.replace(new RegExp(SystemHelper.RegExpEscape(cfg.impersonateOptions.password), "g"), "********")            
         }
 
         if (command.length > 300) {
