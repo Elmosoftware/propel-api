@@ -1,3 +1,4 @@
+const DB_NAME = "Propel"
 var conn = new Mongo();
 var db;
 var collection;
@@ -5,6 +6,14 @@ var counter = 0;
 var sep = "\r\n\r\n" + "=".repeat(60);
 
 try {
+    print(`\r\nAuthenticating...`);
+    db = conn.getDB("admin");
+    /*
+        Variables "adu" and "adp", "apu", "app" must be passed with the "-- eval" parameter" like this:
+            mongo --eval "var adu='Admin user name here'; var adp='Admin password here';apu='Regular user name here'; var app='Regular user password here';" myscript.js
+    */
+    db.auth(adu, adp);
+
     print(`${sep}`)
     print(`Adding the "IsPropelParameter" attribute as false for the ScripParameter embedded documents.`)
     print(`${sep}`)

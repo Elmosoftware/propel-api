@@ -1,3 +1,4 @@
+const DB_NAME = "Propel"
 var conn = new Mongo();
 var collName = "";
 var coll = null;
@@ -9,11 +10,19 @@ function showIndexes(coll) {
 }
 
 try {
-    print(`\n\n===============================================`)
-    print(`\n\n      DB Creation/Updates Script`)
-    print(`\n\n===============================================`)
-    print(`Creating database.`)
-    db = conn.getDB("Propel");
+    print(`\r\nAuthenticating...`);
+    db = conn.getDB("admin");
+    /*
+        Variables "adu" and "adp", "apu", "app" must be passed with the "-- eval" parameter" like this:
+            mongo --eval "var adu='Admin user name here'; var adp='Admin password here';apu='Regular user name here'; var app='Regular user password here';" myscript.js
+    */
+    db.auth(adu, adp);
+    
+    print(`\r\n===============================================`)
+    print(`\r\n      DB Creation/Updates Script`)
+    print(`\r\n===============================================`)
+    print(`Creating database ${DB_NAME}, (if not exists)...`);
+    db = conn.getDB(DB_NAME);
 
     /**
      * Categories
@@ -217,11 +226,6 @@ try {
     print(`\nScript have been finished.\n===============================================`)
 
 } catch (error) {
-    print(`\n\nTHERE WAS AN ERROR: The Database migration process didn't finish successfully.\nError details:${error}\n`)
+    print(`\r\nTHERE WAS AN ERROR: The Database migration process didn't finish successfully.\nError details:${error}\n`)
     throw error
 }
-
-
-
-
-

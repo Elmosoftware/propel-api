@@ -12,13 +12,23 @@ $cfg = [pscustomobject]@{ `
         "shellProgramFilesFolder" = "Propel";
         "shellUninstaller" = "Uninstall Propel.exe";
         "serviceName" = "propel.exe";
-        "defaultSvcAccount" = "NT AUTHORITY\NETWORK SERVICE"
+        "defaultSvcAccount" = "NT AUTHORITY\LOCAL SERVICE";
+        "MongoDBAdminUser" = "";
+        "MongoDBAdminPassword" = "";
+        "PropelApplicationUser" = "";
+        "PropelApplicationPassword" = "";
         } 
 
 
 #===============================================================================
 # Private Methods:
 #===============================================================================
+
+function GetRandomPassword() {
+    #We are excluding the following characters to avoid percent encoding the password in the MongoDB connectionstring:
+    #    :  /  ?  #  [  ]  @
+    return (("!$^&*0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz".tochararray() | sort {Get-Random})[0..8] -join '');
+}
 
 
 #===============================================================================
@@ -243,85 +253,66 @@ function SetPropelServiceCredentials() {
 }
 Export-ModuleMember -Function "SetPropelServiceCredentials"
 
-function ImpersonateOptions() {
+function ConfigurationOptions() {
 
-    $cred = $null
-    $envFile = ($cfg.installationFolder + "\" + $cfg.APIFolder + "\" + $cfg.APIConfigFile);
-    $textDialog = @'
-Following you can define which credentials Propel is going to use to execute remote scripts. 
-If you select "Yes" you will be prompted to enter the user and password.
-If you select "No" Propel is going to use the same credentials used to run the Propel Service.
+    $LASTEXITCODE = 0
 
-Do you want to enter specific credentials to execute remote scripts?
-'@
-    $replaceList = @(   
-     @{ SearchFor = "{#IMPERSONATE}"; 
-        ReplaceBy = "false" },
-    @{ SearchFor = "{#IMPERSONATE_USER}"; 
-        ReplaceBy = "" },
-    @{ SearchFor = "{#IMPERSONATE_DOMAIN}"; 
-        ReplaceBy = "" },
-    @{ SearchFor = "{#IMPERSONATE_PASSWORD}"; 
-        ReplaceBy = "" }
-    )
+    try {
+
+        $cred = $null
+        $envFile = ($cfg.installationFolder + "\" + $cfg.APIFolder + "\" + $cfg.APIConfigFile);
     
-    [console]::ForegroundColor = "DarkGray"   
-
-    $retDialog = (Util.Dialog -Text $textDialog -Caption "Remote script invocation credentials" -Buttons "YesNo" -Icon "Question")
-
-    if($retDialog -eq "Yes") {
-        try {
-            $cred = (Get-Credential).GetNetworkCredential()
-        }
-        catch {
-        }
-    }
-
-    #If some credentials were provided:
-    if($cred -ne $null) {
-        $replaceList[0].ReplaceBy = "true"
-        $replaceList[1].ReplaceBy = $cred.UserName
-        $replaceList[2].ReplaceBy = $cred.Domain
-        $replaceList[3].ReplaceBy = $cred.Password
-        Util.Msg ("Option selected: Invoke remote commands as user """ + $cred.UserName + """.")
-    }
-    else {
-        Util.Msg ("Option selected: Invoke remote commands using Propel Service credentials.")
-    }
-
-    #Getting the content and replacing:
-    Util.Msg ("Reading config file: ""$envFile"".")
-    [string]$content = [String]::Join("`r`n", (Get-Content $envFile))
-
-    $replaceList | ForEach-Object {
-        $content = $content.Replace($_.SearchFor, $_.ReplaceBy)
-    }
-
-    #Writing the modified config file:
-    Util.Msg ("Updating config file: ""$envFile"".")
-    $content | Out-File $envFile -Encoding "ASCII" -Force
+        $replaceList = @(   
+         @{ SearchFor = "{#DATABASE-CREDENTIALS}"; 
+            ReplaceBy = ($cfg."PropelApplicationUser" + ":" + $cfg."PropelApplicationPassword") }
+        )
     
-    [console]::ForegroundColor = "White"
+        [console]::ForegroundColor = "DarkGray"   
+
+        #Getting the content and replacing:
+        Util.Msg ("Reading config file: ""$envFile"".")
+        [string]$content = [String]::Join("`r`n", (Get-Content $envFile))
+
+        $replaceList | ForEach-Object {
+            $content = $content.Replace($_.SearchFor, $_.ReplaceBy)
+        }
+
+        #Writing the modified config file:
+        Util.Msg ("Updating config file: ""$envFile"".")
+        $content | Out-File $envFile -Encoding "ASCII" -Force
+    
+        [console]::ForegroundColor = "White"
+    }
+    catch{
+        $LASTEXITCODE = 1
+    }
 
     return $LASTEXITCODE    
 }
-Export-ModuleMember -Function "ImpersonateOptions"
+Export-ModuleMember -Function "ConfigurationOptions"
 
 function InstallPackages() {
+    
+    $LASTEXITCODE = 0
 
-    [console]::ForegroundColor = "DarkGray"  
-    #Changing working dir to the API folder:
-    Set-Location -Path ($cfg.installationFolder + "\" + $cfg.APIFolder)  
-    Start-Process -FilePath "npm"`
-        -Wait `
-        -NoNewWindow `
-        -ArgumentList "install"
-    $code = $LASTEXITCODE   
-    #Changing back to the installer folder:
-    Set-Location -Path $cfg.installerFolder
-    [console]::ForegroundColor = "White"
+    try {
+        [console]::ForegroundColor = "DarkGray"  
+        #Changing working dir to the API folder:
+        Set-Location -Path ($cfg.installationFolder + "\" + $cfg.APIFolder)
+        $LASTEXITCODE = (Start-Process -FilePath "npm"`
+            -Wait `
+            -NoNewWindow `
+            -PassThru `
+            -ArgumentList "install").ExitCode   
+        #Changing back to the installer folder:
+        Set-Location -Path $cfg.installerFolder
+        [console]::ForegroundColor = "White"
+    }
+    catch {
+        $LASTEXITCODE = 1
+    }
 
-    return $code
+    return $LASTEXITCODE
 }
 Export-ModuleMember -Function "InstallPackages"
 
@@ -358,19 +349,65 @@ function UninstallShell() {
 Export-ModuleMember -Function "UninstallShell"
 
 function DBMigration() {
+      
+    $cred = $null
+    $evalParam = ""
+    $textDialog = @'
+In order to proceed with the database updates we need to authenticate in the Database with an administrator account.
+If you select "Yes" you will be prompted to enter the user and password.
+If you select "No" the installation process will be aborted.
+'@   
+    $retDialog = (Util.Dialog -Text $textDialog -Caption "MongoDB admin user credentials" -Buttons "YesNo" -Icon "Question")
+
+    if($retDialog -eq "Yes") {
+        try {
+            $cred = (Get-Credential).GetNetworkCredential()
+        }
+        catch {
+        }
+    }
+    else {
+        Util.Msg ("Installer is now aborting...")
+        return 1
+    }
+
+    #If some credentials were provided:
+    if($cred -ne $null) {
+        $cfg."MongoDBAdminUser" = $cred.UserName;
+        $cfg."MongoDBAdminPassword" = $cred.Password;
+    }
+    else {
+        Util.Msg ("No credentials were provided, installer is now aborting...")
+        return 1
+    }
+
+    #Configuring now the Propel database application user, this one will be used by the Propel API to connect to the database.
+    $cfg."PropelApplicationUser" = "PropelUser";
+    $cfg."PropelApplicationPassword" = (GetRandomPassword);
+
+    #Build the "eval" parameter of mongo:
+    $evalParam = "--eval ""var adu= '" + ($cfg."MongoDBAdminUser").ToString() + "'; var adp= '" + ($cfg."MongoDBAdminPassword").ToString() + "'; var apu= '" + ($cfg."PropelApplicationUser").ToString() + "'; var app= '" + ($cfg."PropelApplicationPassword").ToString()  + "';""";
+
+    $LASTEXITCODE = 0
 
     Get-Childitem -Path $cfg.installerFolder -Filter "*.js" | `
         Sort Name | `
         ForEach-Object -Process {
+
+        if($LASTEXITCODE -eq 0) {
+            Util.Msg ("Executing """ + $_.Name + """ ... -> " + ($LASTEXITCODE).ToString()) 
+            [console]::ForegroundColor = "DarkGray"    
+            $LASTEXITCODE = (Start-Process -FilePath "mongo" `
+                -Wait `
+                -NoNewWindow `
+                -ArgumentList $evalParam, $_.Name `
+                -PassThru).ExitCode
+            [console]::ForegroundColor = "White"
+            Util.Msg ("""" + $_.Name + """ returns exit code: " + ($LASTEXITCODE).ToString()) 
+        }
         
-        [console]::ForegroundColor = "DarkGray"    
-        Start-Process -FilePath "mongo"`
-            -Wait `
-            -NoNewWindow `
-            -ArgumentList $_.Name
-        [console]::ForegroundColor = "White"
 	}    
 
-    return $LASTEXITCODE    
+    return $LASTEXITCODE 
 }
 Export-ModuleMember -Function "DBMigration"
