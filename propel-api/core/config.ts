@@ -2,6 +2,7 @@ import dotenv from "dotenv"
 
 import { ObjectPoolOptions } from "../core/object-pool-options";
 import { ImpersonateOptions } from "../core/impersonate-options";
+import { SystemHelper } from "../util/system-helper";
 
 export enum LogLevel {
     Error = "ERROR",
@@ -15,6 +16,7 @@ export enum LogLevel {
 class Config {
 
     private _impersonateOptions: ImpersonateOptions;
+    private _key: string = "";
 
     constructor() {
         dotenv.config();
@@ -130,6 +132,17 @@ class Config {
      */
     get impersonateOptions(): ImpersonateOptions {
         return this._impersonateOptions;
+    }
+
+    /**
+     * Encryption key to be used in some database operations.
+     */
+    get encryptionKey(): string {
+        if (!this._key) {
+            this._key = SystemHelper.decodeBase64(String(process.env.ENCRYPTION_KEY));
+        }
+        
+        return this._key; 
     }
 
     /**

@@ -1,8 +1,10 @@
 import { Schema, Model, model } from "mongoose";
+import { fieldEncryption } from 'mongoose-field-encryption';
 
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SchemaDefinition } from "../../propel-shared/schema/schema-definition";
 import { SchemaField } from "../../propel-shared/schema/schema-field";
+import { cfg } from "../core/config";
 
 /**
  * Schema definition adapter to migrate our entity schema definition to specific Mongoose
@@ -18,12 +20,14 @@ export class MongooseSchemaAdapter {
      */
     asSchema(schemaDef: SchemaDefinition | Readonly<SchemaDefinition>): Schema {
 
+        let ret: Schema;
+        let entitySchema: any = {}
+        let options: any = null;
+        let encryptedfields: string[] = [];
+
         if (!schemaDef || schemaDef.getFields().length == 0) {
             throw new PropelError(`Parameter "schemaDef" is a null reference or doesn't have defined fields.`);
         }
-
-        let entitySchema: any = {}
-        let options: any = null;
 
         if (!schemaDef.isEntity) {
             options = {
@@ -69,11 +73,22 @@ export class MongooseSchemaAdapter {
                     fieldDefinition.required = true;
                 }
             }
+
+            if (field.mustBeEncripted) {
+                encryptedfields.push(field.name);
+            }
          
             entitySchema[field.name] = (field.isArray) ? [fieldDefinition] : fieldDefinition;
         })
 
-        return new Schema(entitySchema, options);
+        ret = new Schema(entitySchema, options);
+
+        //If there is at least one field that need to be encrypted:
+        if (encryptedfields.length > 0) {
+            ret.plugin(fieldEncryption, { fields: encryptedfields, secret: cfg.encryptionKey });
+        }
+
+        return ret;
     }
 
     /**

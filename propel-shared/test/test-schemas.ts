@@ -334,4 +334,25 @@ export class TestSchemas {
             .setDescription("Super complex 2 refs plus an embedded with sub refs")
             .freeze();
     }
+
+    get simpleWithEncryptedField(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("SimpleWithEncryptedField", "SimpleWithEncryptedFields", true)
+            .merge(this.entity)
+            .setFields([
+                new SchemaField("notEnc", "",
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("Enc", "",
+                    {
+                        type: String,
+                        isRequired: true,
+                        mustBeEncripted: true
+                    })
+            ])
+            .setDescription("Simple with an encrypted field.")
+            .freeze();
+    }
 }

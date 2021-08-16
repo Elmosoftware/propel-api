@@ -385,3 +385,94 @@ One line version
 $cred = New-Object System.Management.Automation.PSCredential "Domain\User", (ConvertTo-SecureString "Password here" -AsPlainText -Force)
 
 Start-Process Notepad.exe -Credential $cred
+
+------------------------------------------------------------
+
+How to generate the ENCRYPTION_KEY in the env file:
+
+Navigate to https://asecuritysite.com/encryption/keygen
+Select the option AES 256 CBC
+Enter a passphrase
+The page will return something like this:
+
+salt=C762955414E7C25E
+key=30CB6CBC52E004DD2E756D5915F3A420E613EE7EBF7681F451E063ECA9154DD8
+iv =505B362C922CB8A2B63B47451272DA9B
+
+get the key and use it in the .env file
+
+Validation: key must be always 64 bytes long.
+
+==================================================================================
+Propel Credentials:
+-----------------------
+
+Credentials {
+	name:  {string max 25 , required, unique, FULL Text Search index},
+	description: {string max 512, FULL Text Search index}
+	type: {string, required, Can be "Generic" or "AWS"}
+	secret: {string, required, encrypted}
+	fields: [CredentialField]
+}
+
+secret attribute:
+	Secret attribute content will be always a JSON string, and the schema depend of the attribute "type"
+
+	For the type "Generic":
+	{
+		userName: {string max 255, required},
+		domain: {string max 255},
+		password: {string max 50, required}
+	}
+
+	For the type "AWS":
+	{
+		accessKey: {string max 20, required},
+		secretKey: {string max 40, required}
+	}
+
+===================================================================================
+
+Credentials Model:
+
+CredentialSecret
+{
+	type: string;
+	secret: string;
+}
+
+GenericCredential inherits CredentialSecret {
+	userName
+	domain
+}
+
+AWSCredential inherits CredentialSecret {
+	accessKey
+}
+
+---------------------------------------------------------------------------------
+2nd approach:
+
+Credentialbase {
+	name,
+	description,
+	fields,
+	secret: any
+}
+
+GenericCredential inherits CredentialSecret {
+
+	secret: {
+		userName,
+		domain
+		password
+	}
+	
+}
+
+AWSCredential inherits CredentialSecret {
+	secret: {
+		accessKey
+		secretKey
+	}	
+}

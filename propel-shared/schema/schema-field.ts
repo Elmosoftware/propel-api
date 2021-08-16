@@ -54,6 +54,11 @@ export class SchemaField {
     public isId: boolean = false;
 
     /**
+     * Indicates if the data need to be encripted in the database.
+     */
+    public mustBeEncripted: boolean = false;
+
+    /**
      * Returns the schema this field belongs to.
      */
     get schema(): SchemaDefinition | undefined {
@@ -124,6 +129,7 @@ export class SchemaField {
         this.isAudit = Boolean(fieldDefinition.isAudit);
         this.isInternal = Boolean(fieldDefinition.isInternal);
         this.isId = Boolean(fieldDefinition.isId);
+        this.mustBeEncripted = Boolean(fieldDefinition.mustBeEncripted);
     }
 
     /**
@@ -174,6 +180,11 @@ export class FieldDefinition {
      * Indicates if the field value is a unique identifier.
      */
     public isId: boolean = false;
+
+    /**
+     * Indicates if the data need to be encripted in the database.
+     */
+    public mustBeEncripted: boolean = false;
 
     constructor() {
 

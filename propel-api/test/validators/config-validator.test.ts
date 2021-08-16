@@ -4,6 +4,7 @@ function setAllValid() {
     process.env.NODE_ENV = "development"
     process.env.PORT = "3000"
     process.env.DB_ENDPOINT = "mongodb://localhost:27017/propel-api"
+    process.env.ENCRYPTION_KEY = "2129B972482115C8CEBEB4180F362D3BEEFAE97CE5D61F54F36D6628AE8745CC"
     process.env.PS_SCRIPT_PROPEL_PARAM = "Propel"
     process.env.MODELS_FOLDER = "models"
     process.env.POOL_MAX_SIZE="40"
@@ -28,7 +29,7 @@ describe("ConfigValidator Class", () => {
     }),
     test(`Invalid NODE_ENV as a null value`, () => {
         //@ts-ignore
-        process.env.NODE_ENV = null
+        process.env.NODE_ENV = null 
         cfgVal.validate()
         expect(cfgVal.isValid).toBe(false)
         //@ts-ignore
@@ -244,6 +245,28 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`PS_SCRIPT_PROPEL_PARAM is required`);
+        cfgVal.reset();
+    })
+    test(`Missing ENCRYPTION_KEY value`, () => {
+        //@ts-ignore
+        process.env.ENCRYPTION_KEY = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`ENCRYPTION_KEY is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid ENCRYPTION_KEY value`, () => {
+        //@ts-ignore
+        process.env.ENCRYPTION_KEY = "1234"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`ENCRYPTION_KEY is required`);
         cfgVal.reset();
     })
 })

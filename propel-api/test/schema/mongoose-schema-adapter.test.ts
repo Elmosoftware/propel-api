@@ -74,6 +74,19 @@ describe("SchemaAdapter Class - asSchema()", () => {
         expect(schema.tree.steps[0].tree.embeddedArray23[0].tree.secondLevel).toBeTruthy();
         expect(schema.tree.steps[0].tree.embeddedArray23[0].tree.secondLevel.tree.simpleEmbeddedName).toBeTruthy();
     })
+
+    test(`Simple Schema with Encrypted field`, () => {
+        let schema: any = sa.asSchema(s.simpleWithEncryptedField);
+        expect(schema.tree).toBeTruthy();
+        expect(schema.tree._id).toBeTruthy();
+        expect(schema.tree._id.type).toEqual("ObjectId");
+        expect(schema.tree.notEnc).toBeTruthy();
+        expect(schema.tree.notEnc.required).toBe(true);
+        expect(schema.tree.notEnc.type.name).toEqual("String");
+        expect(schema.tree.Enc).toBeTruthy();
+        expect(schema.tree.Enc.type.name).toEqual("String");
+        expect(schema.tree.Enc.required).toBe(true);
+    })
 })
 
 describe("SchemaAdapter Class - asModel()", () => {
@@ -147,5 +160,11 @@ describe("SchemaAdapter Class - asModel()", () => {
                     ]
                 }
             ]);
+    })
+
+    test(`Simple Schema with encrypted field`, () => {
+        let m: AdapterModel = sa.asModel(s.simpleWithEncryptedField);
+        expect(m.model).toBeTruthy();
+        expect(m.populateSchema.length).toEqual(0);
     })
 })

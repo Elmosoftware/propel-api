@@ -25,6 +25,7 @@
     "express-ws": "^4.0.0",
     "http-status-codes": "^1.4.0",
     "mongoose": "^5.12.15",
+    "mongoose-field-encryption": "4.0.2",
     "node-windows": "^1.0.0-beta.5",
     "tmp": "^0.1.0"
   },

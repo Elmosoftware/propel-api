@@ -9,11 +9,13 @@ class ConfigValidator extends ValidatorBase {
 
     private readonly MIN_PORT: number;
     private readonly MAX_PORT: number;
+    private readonly ENCRYPTION_KEY_LENGTH: number;
 
     constructor() {
         super();
         this.MIN_PORT = 1024;
         this.MAX_PORT = 49151;
+        this.ENCRYPTION_KEY_LENGTH = 64
     }
 
     /**
@@ -93,6 +95,11 @@ class ConfigValidator extends ValidatorBase {
         //IMPERSONATE_USER can't be null if IMPERSONATE is set to true:
         if (!process.env.IMPERSONATE_USER && process.env.IMPERSONATE !== "false" ) {
             super._addError(`IMPERSONATE_USER can be empty only if IMPERSONATE is set to "false".`);
+        }
+
+        //ENCRYPTION_KEY can't be null and need to have 64 characters length:
+        if (!process.env.ENCRYPTION_KEY || String(process.env.ENCRYPTION_KEY).length !== this.ENCRYPTION_KEY_LENGTH) {
+            super._addError(`ENCRYPTION_KEY is required and need to be 64 characters length.`);
         }
 
         return this;
