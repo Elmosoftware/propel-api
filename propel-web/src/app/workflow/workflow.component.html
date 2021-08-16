@@ -1,7 +1,7 @@
 <div class="container mt-2">
     <form [formGroup]="fh.form">
         <div class="form-group">
-            <label for="name" class="data-required">Script name</label>
+            <label for="name" class="data-required">Name</label>
             <input type="text" class="form-control" id="name" aria-describedby="name"
                 placeholder="Enter the Workflow name." formControlName="name" required>
             <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
