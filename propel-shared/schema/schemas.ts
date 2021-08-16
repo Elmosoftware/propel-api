@@ -23,7 +23,8 @@ class Schemas {
             this.workflowStep,
             this.executionError,
             this.executionTarget,
-            this.executionStep
+            this.executionStep,
+            this.credential
         ]
     }
 
@@ -344,6 +345,44 @@ class Schemas {
             ])
             .merge(this.entity)
             .setDescription("Full log of a Workflow execution.")
+            .freeze();
+    }
+
+    /**
+     * **Credential** schema definition.
+     * @implements ParameterValue embedded schema
+     * @extends AuditedEntity schema definition
+     */
+     get credential(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("Credential", "Credentials", true)
+            .setFields([
+                new SchemaField("name", `Credential name.`,
+                    {
+                        type: String,
+                        isRequired: true,
+                        isUnique: true
+                    }),
+                new SchemaField("description", `Credential description. Intended usage and other details.`,
+                    {
+                        type: String,
+                        isRequired: false
+                    }),
+                new SchemaField("secret", `Credential secret value. this is going to be encrypted in the database.`,
+                    {
+                        type: Object,
+                        isRequired: true,
+                        mustBeEncripted: true
+                    }),
+                new SchemaField("fields", `Collection of credential non-sensitive additional fields.`,
+                    {
+                        type: this.parameterValue,
+                        isRequired: false,
+                        isArray: true
+                    })
+            ])
+            .merge(this.auditedEntity)
+            .setDescription("A Credential to be stored encrypted in the datbase and intended to be pass to the script for authentication purposes.")
             .freeze();
     }
 

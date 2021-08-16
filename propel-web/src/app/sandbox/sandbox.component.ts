@@ -15,6 +15,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { NgSelectComponent } from '@ng-select/ng-select';
+import { GenericCredential } from '../../../../propel-shared/models/generic-credential';
 
 @Component({
   selector: 'app-root',
@@ -228,9 +229,9 @@ export class SandboxComponent implements OnInit {
   }
 
   testGetById() {
-    // let ret: User
+    // let ret: Credential
 
-    // this.data.getById(User, "5e7c195b001fa35f5c4db76c")
+    // this.data.getById(DataEntity.Credential, "6119aa63396de6399c756cec")
     //   .subscribe(
     //     data => {
     //       let x = data;
@@ -260,13 +261,15 @@ export class SandboxComponent implements OnInit {
 
   testInsert() {
 
-    // let u: User = new User();
+    // let c = new GenericCredential();
 
-    // u.email = "spongebob3@hotmail.com"
-    // u.initials = "sb3"
-    // u.name = "Bob the third"
+    // c.name = "Test Cred 01"
+    // c.description = "Description for credential"
+    // c.secret.userName = "User"
+    // c.secret.domain= "domain"
+    // c.secret.password = "password"
 
-    // this.data.save<User>(User, u)
+    // this.data.save(DataEntity.Credential, c)
     //   .subscribe(
     //     data => {
     //       let x = data;
