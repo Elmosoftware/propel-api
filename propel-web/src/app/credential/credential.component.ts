@@ -19,11 +19,6 @@ import { Utils } from '../../../../propel-shared/utils/utils';
 import { ErrorCodes } from '../../../../propel-shared/core/error-codes';
 import { FormSubcomponentEventData } from 'src/core/form-subcomponent';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
-import { environment } from "../../environments/environment";
-
-const NAME_MAX: number = 25;
-const DESCRIPTION_MAX: number = 512;
-const FIELDS_MAX: number = 5;
 
 @Component({
   selector: 'app-credential',
@@ -39,6 +34,14 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
   saved: Subject<void>;
   secret: Vault<any> = null;
   secretIsValid: boolean = false;
+  showInformativeFieldsAlert: boolean = true;
+  showMaxFieldsReachedAlert: boolean = true;
+  //Form validation constant parameters:
+  validationParams: any = {
+    get nameMaxLength() { return 25 },
+    get descriptionMaxLength() { return 512 },
+    get fieldsMaxCount() { return 5 }
+  }
 
   get fields(): FormArray {
     return (this.fh.form.controls.fields as FormArray);
@@ -53,17 +56,17 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
     this.fh = new FormHandler(DataEntity.Credential, new FormGroup({
       name: new FormControl("", [
         Validators.required,
-        Validators.maxLength(NAME_MAX),
+        Validators.maxLength(this.validationParams.nameMaxLength),
         ValidatorsHelper.pattern(new RegExp("^[a-zA-Z0-9]+$", "g"),
           "The credential name can contain only letters and numbers, any other character is invalid.")
       ]),
       description: new FormControl("", [
-        Validators.maxLength(DESCRIPTION_MAX)
+        Validators.maxLength(this.validationParams.descriptionMaxLength)
       ]),
       type: new FormControl(DEFAULT_CREDENTIAL_TYPE),
       vaultId: new FormControl(""), //It will hold the secret vault item _id.
       fields: new FormArray([], [
-        ValidatorsHelper.maxItems(FIELDS_MAX)])
+        ValidatorsHelper.maxItems(this.validationParams.fieldsMaxCount)])
     }));
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
@@ -172,10 +175,10 @@ missing sensitive data in the form again.</p>`))
                   }
 
                   //If the vault item exists, but there was an error decrypting the secret data:
-                  if (cryptoError) {                    
+                  if (cryptoError) {
                     this.core.toaster.showError("Not able to retrieve some part of the credential information.", "Error decrypting data.")
                     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Credential information is missing",
-                    `<strong>We found an error decrypting this credential secret data.</strong>
+                      `<strong>We found an error decrypting this credential secret data.</strong>
 This can be caused by data corruption, but most probably by unintended changes in Propel encryption keys that are set 
 by the installer. This is most likely the cause if you can confirm this is happening to other credentials too.
 <p class="mt-2">
@@ -197,14 +200,14 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
                           this.core.navigation.toHome();
                         }
                         else { //If the user decide to enter the credential again.
-                          
+
                           //We must try to delete the old one first
                           this.core.data.delete(DataEntity.Vault, this.fh.form.controls.vaultId.value)
-                          .subscribe((results: APIResponse<string>) => {
+                            .subscribe((results: APIResponse<string>) => {
                               //Old Vault item id was deleted!                      
-                          }, err => {
-                            //We give our best!
-                          })
+                            }, err => {
+                              //We give our best!
+                            })
 
                           //Whatever the error is, we need to create a new secret in the form, (because the 
                           //persisted one is gone):
@@ -278,9 +281,15 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
           let pv: ParameterValue = dlgResults.value;
 
           if (pv) {
-            this._createFieldsFromArray([pv], false);
-            this.fh.form.updateValueAndValidity();
-            this.fh.form.markAsDirty();
+            //We need to ensure the field is unique:
+            if (this._fieldIsUnique(this.fh.value.fields, pv.name)) {
+              this._createFieldsFromArray([pv], false);
+              this.fh.form.updateValueAndValidity();
+              this.fh.form.markAsDirty();
+            }
+            else {
+              this.core.toaster.showWarning("The field name supplied is already in use. Be aware that field names are case insensitive and must be unique.", "Duplicated field")
+            }
           }
         }
       },
@@ -307,10 +316,17 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
           if (pv) {
             let allFields: ParameterValue[] = this.fh.value.fields;
-            allFields[i] = pv;
-            this._createFieldsFromArray(allFields, true);
-            this.fh.form.updateValueAndValidity();
-            this.fh.form.markAsDirty();
+            
+            //We need to ensure the field keeps being unique:
+            if (this._fieldIsUnique(allFields, pv.name, i)) {
+              allFields[i] = pv;
+              this._createFieldsFromArray(allFields, true);
+              this.fh.form.updateValueAndValidity();
+              this.fh.form.markAsDirty();
+            }
+            else {
+              this.core.toaster.showWarning("The field name supplied is already in use. Be aware that field names are case insensitive and must be unique.", "Duplicated field")
+            }
           }
         }
       },
@@ -333,6 +349,14 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
       this._createFieldsFromArray(this.fh.previousValue.fields, true);
       this.fh.resetForm();
     }
+  }
+
+  stopShowingInformativeFieldsAlert(): void {
+    this.showInformativeFieldsAlert = false;
+  }
+
+  stopShowingMaxFieldsReachedAlert(): void {
+    this.showMaxFieldsReachedAlert = false;
   }
 
   save(): void {
@@ -365,6 +389,22 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
           throw err
         }
       );
+  }
+
+  /**
+   * 
+   * @param fields ParameterValue collection
+   * @param name Name of a new field or the updated name of an existing field.
+   * @param currentIndex the index of the field. If we are adding a new field, the value must be -1.
+   * @returns A boolean value indicating if the field name is unique in the collection of 
+   * ParameterValues supplied.
+   */
+  private _fieldIsUnique(fields: ParameterValue[], name: string, currentIndex: number = -1): boolean {
+    let duplicated: boolean = fields.some((pv, i) => {
+      return i !== currentIndex && (pv.name.toLowerCase() == name.toLowerCase());
+    })
+
+    return !duplicated;
   }
 
   private _createFieldsFromArray(fields: ParameterValue[], clearBeforeAdd: boolean = false): void {
