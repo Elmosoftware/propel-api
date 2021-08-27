@@ -43,6 +43,7 @@ import { APIStatusService } from "./services/api-status.service";
 //Dialogs
 import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
 import { WorkflowStepDialogComponent } from './app/dialogs/workflow-step-dlg/workflow-step-dlg.component';
+import { CustomFieldDialogComponent } from './app/dialogs/custom-field-dlg/custom-field-dlg.component';
 
 //Components
 import { NavigationBarComponent } from './app/navigation-bar/navigation-bar.component';
@@ -69,6 +70,9 @@ import { SearchScriptLineComponent } from './app/search-script-line/search-scrip
 import { SearchTargetLineComponent } from './app/search-target-line/search-target-line.component';
 import { HistoryComponent } from './app/history/history.component';
 import { OfflineComponent } from './app/offline/offline.component';
+import { CredentialComponent } from './app/credential/credential.component';
+import { WindowsVaultItemComponent } from './app/credential/windows-vault-item/windows-vault-item.component';
+import { AWSVaultItemComponent } from "./app/credential/aws-vault-item/aws-vault-item.component";
 
 @NgModule({
   declarations: [
@@ -89,6 +93,7 @@ import { OfflineComponent } from './app/offline/offline.component';
     WorkflowStepComponent,
     WorkflowComponent,
     WorkflowStepDialogComponent,
+    CustomFieldDialogComponent,
     ResultsComponent,
     DynamicTableComponent,
     SearchComponent,
@@ -96,7 +101,10 @@ import { OfflineComponent } from './app/offline/offline.component';
     SearchScriptLineComponent,
     SearchTargetLineComponent,
     HistoryComponent,
-    OfflineComponent
+    OfflineComponent,
+    CredentialComponent,
+    WindowsVaultItemComponent,
+    AWSVaultItemComponent
   ],
   imports: [
     BrowserModule,
@@ -144,7 +152,8 @@ import { OfflineComponent } from './app/offline/offline.component';
   ],
   entryComponents: [
     StandardDialogComponent,
-    WorkflowStepDialogComponent
+    WorkflowStepDialogComponent,
+    CustomFieldDialogComponent
   ],
   bootstrap: [RootComponent]
 })

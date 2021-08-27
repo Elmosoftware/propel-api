@@ -1,12 +1,12 @@
 /**
- * Credential types stores in the application.
+ * Credential types stored in the application.
  */
 export enum CredentialTypes {
-    Generic = "Generic",
+    Windows = "Windows",
     AWS = "AWS"
 }
 
 /**
  * Default credential type
  */
-export let DEFAULT_CREDENTIAL_TYPE = CredentialTypes.Generic
+export let DEFAULT_CREDENTIAL_TYPE = CredentialTypes.Windows

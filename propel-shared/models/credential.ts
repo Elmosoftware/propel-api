@@ -6,7 +6,7 @@ import { ParameterValue } from "./parameter-value";
 /**
  * Security credentials base class.
  */
-export class CredentialBase extends AuditedEntity {
+export class Credential extends AuditedEntity {
 
     /**
      * Unique name for the credential.
@@ -24,9 +24,9 @@ export class CredentialBase extends AuditedEntity {
     public description: string = ""
 
     /**
-     * Credential secret. Encrypted text.
+     * Propel Secret Vault id.
      */
-    public secret!: any
+    public vaultId: string = "";
 
     /**
     * Additional fields. This is extra data, (non-sensitive), added to the credential that will 

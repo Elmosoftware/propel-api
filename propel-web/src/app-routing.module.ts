@@ -15,6 +15,7 @@ import { SearchComponent } from './app/search/search.component';
 import { HistoryComponent } from './app/history/history.component';
 import { environment } from './environments/environment';
 import { OfflineComponent } from './app/offline/offline.component';
+import { CredentialComponent } from './app/credential/credential.component';
 
 const routes: Routes = [
   {
@@ -140,6 +141,22 @@ const routes: Routes = [
     data: {
       title: "There are connectivity issues"
     }
+  },
+  {
+    path: PAGES.Credential,
+    component: CredentialComponent,
+    data: {
+      title: "New Credential"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: `${PAGES.Credential}/:id`,
+    component: CredentialComponent,
+    data: {
+      title: "Editing Credential"
+    },
+    canDeactivate: [DataLossPreventionGuard]
   },
   {
     path: PAGES.Sandbox,

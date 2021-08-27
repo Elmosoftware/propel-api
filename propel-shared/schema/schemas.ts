@@ -24,6 +24,7 @@ class Schemas {
             this.executionError,
             this.executionTarget,
             this.executionStep,
+            this.vault,
             this.credential
         ]
     }
@@ -105,7 +106,6 @@ class Schemas {
      */
     get user(): Readonly<SchemaDefinition> {
 
-        // return new SchemaDefinition("user", "users", true)
         return new SchemaDefinition("User", "Users", true)
             .setFields([
                 new SchemaField("name", `User name.`,
@@ -349,11 +349,31 @@ class Schemas {
     }
 
     /**
+     * **SecretVaultItem** schema definition.
+     * @extends AuditedEntity schema definition
+     */
+    get vault(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("Vault", "Vault", true)
+            .setFields([
+                new SchemaField("value", `Propel Secret vault value.`,
+                    {
+                        type: Object,
+                        isRequired: true,
+                        mustBeEncripted: true
+                    })
+            ])
+            .merge(this.auditedEntity)
+            .setDescription("Propel secret vault.")
+            .freeze();
+    }
+
+    /**
      * **Credential** schema definition.
      * @implements ParameterValue embedded schema
      * @extends AuditedEntity schema definition
      */
-     get credential(): Readonly<SchemaDefinition> {
+    get credential(): Readonly<SchemaDefinition> {
 
         return new SchemaDefinition("Credential", "Credentials", true)
             .setFields([
@@ -368,11 +388,10 @@ class Schemas {
                         type: String,
                         isRequired: false
                     }),
-                new SchemaField("secret", `Credential secret value. this is going to be encrypted in the database.`,
+                new SchemaField("vaultId", `Propel Secret vault item identifier.`,
                     {
-                        type: Object,
-                        isRequired: true,
-                        mustBeEncripted: true
+                        type: String,
+                        isRequired: true
                     }),
                 new SchemaField("fields", `Collection of credential non-sensitive additional fields.`,
                     {

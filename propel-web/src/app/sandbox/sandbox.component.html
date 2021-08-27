@@ -631,6 +631,20 @@
             <small class="form-text text-muted">Current control status:
               {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
           </div>
+          <div class="form-group">
+            <label for="password" class="data-required">Password</label>
+            <div class="form-inline">
+              <input [type]="viewpw ? 'text' : 'password'" 
+                class="form-control" id="password" aria-describedby="password"
+                placeholder="Enter your password here" formControlName="password" required>
+              <button class="btn btn-primary button-icon-regular ml-1" (click)="toggleViewPassword()" >
+                <i class="fas" [ngClass]="{
+                  'fa-eye-slash': !viewpw,
+                  'fa-eye': viewpw
+                }"></i>
+              </button>
+            </div>           
+        </div>
           <button class="btn btn-primary" type="submit" [disabled]="!sampleForm.valid">Save</button>
           <br>
           <span>Current form status: {{ sampleFormOrControlStatus(sampleForm) }}</span><br>

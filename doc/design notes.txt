@@ -476,3 +476,17 @@ AWSCredential inherits CredentialSecret {
 		secretKey
 	}	
 }
+
+===============================================================
+Next steps:
+
+- Change AWS & Windows icons by the fontawesome versions.
+- Commit Propel credentials changes.
+- Add "credentials" menu in Nav bar
+- Work on Browse credentials
+- Modify Credentials component to redirect to the new browse when there is a CRYPTO_ERROR
+- In home page add counter for total credentials get also an icon representing all credentials from font-awesome
+- Add icons in the menues of the navigation bar, (Browse and credentials).
+- Add a text or navigational help to indicate which is the current page.
+- Add a graph tp the hme page indcating some metrics, like usage in last month, most used workflows, etc...
+- Upgrade ALL, (Node, Mongo, angular, all dependencies, etc.)

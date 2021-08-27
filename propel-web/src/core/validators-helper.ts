@@ -4,6 +4,8 @@ import * as moment from 'moment';
 import { UIHelper } from 'src/util/ui-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
 
+const DEFAULT_PATTERN_MESSAGE: string = "The entered value is not valid."
+
 /**
  * Reactive Froms validation helper.
  */
@@ -138,6 +140,26 @@ export class ValidatorsHelper {
       }
 
       /**
+       * Validator specific for Fully qualified domain names.
+       */
+       static pattern(pattern: RegExp, message: string = DEFAULT_PATTERN_MESSAGE): ValidatorFn {
+        return (control: AbstractControl): {[key: string]: any} | null => {
+          let ret: any = null;
+
+          if (!String(control.value).match(pattern)) {
+            ret = {
+              'pattern': {
+                value: control.value,
+                message: (message) ? String(message) : DEFAULT_PATTERN_MESSAGE
+              }
+            }
+          }
+
+          return ret;
+        };
+      }
+
+      /**
        * Returns the validation error text for the supplied control.
        * Thi methis returns an empty string if "control" is a null reference or is not invalid.
        * @param control Control
@@ -198,6 +220,9 @@ export class ValidatorsHelper {
         }
         else if (control.errors.searchableText && control.touched) {
           ret = "We didnt find any searchable words in the supplied text. If you want to do a strict search, please surround the text by quotes."
+        }
+        else if (control.errors.pattern && control.touched) {
+          ret = control.errors.pattern.message
         }
     
         return ret;

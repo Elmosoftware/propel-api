@@ -21,7 +21,8 @@ export const enum PAGES {
     BrowseScripts = "browse-scripts",
     BrowseTargets = "browse-targets",
     History = "history",
-    Offline = "offline"
+    Offline = "offline",
+    Credential = "credential"
 }
 
 /**

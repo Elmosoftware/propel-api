@@ -1,6 +1,20 @@
 import { ParameterValue } from "../../models/parameter-value";
 import { Utils } from "../../utils/utils";
 
+enum StringValuesEnum {
+    First = "1st",
+    Second = "2nd",
+    Third = "3rd"
+}
+
+enum NumberValuesEnum {
+    Zero = 0,
+    One = 1,
+    Two = 2,
+    Three = 3
+}
+
+
 describe("Utils Class - isObject()", () => {
 
     test(`isObject(null)`, () => {
@@ -643,4 +657,133 @@ describe("Utils Class - getNextDuplicateName()", () => {
         expect(Utils.getNextDuplicateName("xxxx (Duplicate) (Duplicate)", ["xxxx (Duplicate) (Duplicate)"]))
             .toEqual("xxxx (Duplicate) (Duplicate) (Duplicate)");
     })    
+})
+
+describe("Utils Class - testEnumKey()", () => {
+
+    test(`Missing Enumeration type`, () => {
+        expect(Utils.testEnumKey(null, "")).toEqual(false);
+    })
+    test(`String enum with empty string value as key`, () => {
+        expect(Utils.testEnumKey(StringValuesEnum, "")).toEqual(false);
+    })
+    test(`String enum with null value as key`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(StringValuesEnum, null)).toEqual(false);
+    })
+    test(`String enum with invalid value as key`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(StringValuesEnum, "NotExistentKey")).toEqual(false);
+    })
+    test(`String enum with valid value as key (caseSensitive = true)`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(StringValuesEnum, "First")).toEqual(true);
+    })
+    test(`String enum with valid value as key (caseSensitive = false)`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(StringValuesEnum, "firST", false)).toEqual(true);
+    })
+    test(`Number enum with empty string value as key (caseSensitive = true)`, () => {
+        expect(Utils.testEnumKey(NumberValuesEnum, "")).toEqual(false);
+    })
+    test(`Number enum with empty string value as key (caseSensitive = false)`, () => {
+        expect(Utils.testEnumKey(NumberValuesEnum, "", false)).toEqual(false);
+    })
+    test(`Number enum with null value as key`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(NumberValuesEnum, null)).toEqual(false);
+    })
+    test(`Number enum with invalid value as key`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(NumberValuesEnum, 34)).toEqual(false);
+    })
+    test(`Number enum with valid value as key, (non-zero) (caseSensitive = true)`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(NumberValuesEnum, "Two")).toEqual(true);
+    })
+    test(`Number enum with valid value as key, (non-zero) (caseSensitive = false)`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(NumberValuesEnum, "tWO", false)).toEqual(true);
+    })
+    test(`Number enum with valid value as key, (zero) (caseSensitive = true)`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(NumberValuesEnum, "Zero")).toEqual(true);
+    })
+    test(`Number enum with valid value as key, (zero) (caseSensitive = false)`, () => {
+        //@ts-ignore
+        expect(Utils.testEnumKey(NumberValuesEnum, "ZeRO", false)).toEqual(true);
+    })
+})
+
+describe("Utils Class - getEnumValue()", () => {
+
+    test(`Missing Enumeration type`, () => {
+        expect(Utils.getEnumValue(null, "")).toBe(undefined);
+    })
+    test(`String enum with null value as key`, () => {
+        //@ts-ignore
+        expect(Utils.getEnumValue(StringValuesEnum, null)).toBe(undefined);
+    })
+    test(`String enum with non existent key`, () => {
+        expect(Utils.getEnumValue(StringValuesEnum, "NotExistentKey")).toBe(undefined);
+    })
+    test(`String enum with valid value as key (caseSensitive = true)`, () => {
+        expect(Utils.getEnumValue(StringValuesEnum, "First")).toEqual("1st");
+    })
+    test(`String enum with valid value as key (caseSensitive = false)`, () => {
+        //@ts-ignore
+        expect(Utils.getEnumValue(StringValuesEnum, "firST", false)).toEqual("1st");
+    })
+    test(`Number enum with empty string value as key (caseSensitive = true)`, () => {
+        expect(Utils.getEnumValue(NumberValuesEnum, "")).toBe(undefined);
+    })
+    test(`Number enum with empty string value as key (caseSensitive = false)`, () => {
+        expect(Utils.getEnumValue(NumberValuesEnum, "", false)).toBe(undefined);
+    })
+    test(`Number enum with null value as key`, () => {
+        //@ts-ignore
+        expect(Utils.getEnumValue(NumberValuesEnum, null)).toBe(undefined);
+    })
+    test(`Number enum with invalid value as key`, () => {
+        //@ts-ignore
+        expect(Utils.getEnumValue(NumberValuesEnum, 34)).toBe(undefined);
+    })
+    test(`Number enum with valid value as key, (non-zero) (caseSensitive = true)`, () => {
+        //@ts-ignore
+        expect(Utils.getEnumValue(NumberValuesEnum, "Two")).toEqual(2);
+    })
+    test(`Number enum with valid value as key, (non-zero) (caseSensitive = false)`, () => {
+        //@ts-ignore
+        expect(Utils.getEnumValue(NumberValuesEnum, "tWO", false)).toEqual(2);
+    })
+    test(`Number enum with valid value as key, (zero) (caseSensitive = true)`, () => {
+        //@ts-ignore
+        expect(Utils.getEnumValue(NumberValuesEnum, "Zero")).toEqual(0);
+    })
+    test(`Number enum with valid value as key, (zero) (caseSensitive = false)`, () => {
+        //@ts-ignore
+        expect(Utils.getEnumValue(NumberValuesEnum, "ZeRO", false)).toEqual(0);
+    })
+})
+
+describe("Utils Class - getEnum", () => {
+
+    test(`Missing Enumeration type`, () => {
+        expect(Utils.getEnum(null)).toEqual([]);
+    })
+    test(`String values Enumeration`, () => {
+        expect(Utils.getEnum(StringValuesEnum)).toEqual([
+            {key: "First", value: "1st"},
+            {key: "Second", value: "2nd"},
+            {key: "Third", value: "3rd"}
+        ]);
+    })
+    test(`Number values Enumeration`, () => {
+        expect(Utils.getEnum(NumberValuesEnum)).toEqual([
+            {key: "Zero", value: 0},
+            {key: "One", value: 1},
+            {key: "Two", value: 2},
+            {key: "Three", value: 3}
+        ]);
+    })
 })

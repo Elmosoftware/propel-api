@@ -80,6 +80,14 @@ This could happen when a script is updated with breaking changes. Please review 
             The definition of this parameter is wrong. Please verify: Type must be System.Object and no ValidSet is allowed.`,
             false);
     }
+
+    static get CryptoError(): Code {
+        return new Code("CRYPTO_ERROR",
+            `Encryption or decryption of a database collection field failed. Possible cause: Change of Propel Encryption key in the configuration.`,
+            `There was an error trying to encrypt or decrypt sensitive data in the database. 
+Most likely cause, is you trying to fetch information encrypted with a different key than the actual. If you try to fetch information when this error happened, best course of action is to recreated the data.`,
+            false);
+    }
 }
 
 /**

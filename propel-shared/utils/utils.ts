@@ -82,7 +82,7 @@ export class Utils {
 
         return ret;
     }
-    
+
     /**
      * This is an "async" version of the "Array.prototype.forEach" method that handles async functions 
      * as callbacks. Normal forEach function will call the callback and immediately iterate to the 
@@ -269,7 +269,7 @@ export class Utils {
      */
     static escapeRegEx(text: string) {
         return text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-    }    
+    }
 
     /**
      * Returns a boolean value that indicates if the provided string is quoted.
@@ -338,7 +338,7 @@ export class Utils {
         let dupNumber: number = 0;
         let ret: string = ""
 
-        if(!masterIdentifier) return ret;
+        if (!masterIdentifier) return ret;
 
         currentIdentifierList.filter((identifier: string) => identifier !== masterIdentifier)
             .forEach((identifier) => {
@@ -359,9 +359,127 @@ export class Utils {
                     }
                 }
             })
-        
-        ret =  masterIdentifier.trim() + ((dupNumber == 0) ? " (Duplicate)" : ` (Duplicate ${dupNumber + 1})`)
-        
+
+        ret = masterIdentifier.trim() + ((dupNumber == 0) ? " (Duplicate)" : ` (Duplicate ${dupNumber + 1})`)
+
+        return ret;
+    }
+
+    /**
+     * For a Typescript enumeration, this method return if the specified key exists.
+     * e.g.: If you have the following enum type:
+     * @example 
+     * enum MyEnum {
+     *     First = "1st",
+     *     Second = "2nd",
+     *     Third = "3rd"
+     * }
+     * 
+     * testEnumKey(MyEnum, "First") -> true
+     * testEnumKey(MyEnum, "fiRST", false) -> true
+     * testEnumKey(MyEnum, "Fourth") -> false
+     * 
+     * @param enumType The enumeration type.
+     * @param key The key we are going to search for.
+     * @param caseSensitive Boolean value that represent case sesitivity of the search. By default the search will be case sensitive.
+     * @returns A boolean value indicating if the key is valid. 
+     */
+    static testEnumKey(enumType: any, key: string, caseSensitive: boolean = true): boolean {
+
+        let ret: boolean = false;
+
+        if (!enumType) return ret;
+        if (typeof key !== "string") return ret;
+
+        if (caseSensitive) {
+            ret = !(enumType[String(key)] == undefined);
+        }
+        else {
+            ret = Object.keys(enumType)
+                .map((value) => {
+                    return String(value).toLowerCase()
+                })
+                .includes(String(key).toLowerCase());
+        }
+
+        return ret
+    }
+
+    /**
+     * Returns the value of the Typescript enumeration type for the specific supplied key.
+     * @example 
+     * enum MyStringEnum {
+     *     First = "1st",
+     *     Second = "2nd",
+     *     Third = "3rd"
+     * }
+     * enum MyNumericEnum {
+     *     One = 1,
+     *     Two = 2,
+     *     Three = 3
+     * }
+     * 
+     * getEnumValue(MyStringEnum, "First") -> "1st"
+     * getEnumValue(MyStringEnum, "fiRST", false) -> "1st"
+     * getEnumValue(MyStringEnum, "Fourth") -> undefined
+     * 
+     * getEnumValue(MyNumericEnum, "One") -> 1
+     * getEnumValue(MyStringEnum, "one", false) -> 1
+     * getEnumValue(MyStringEnum, "Four") -> undefined
+     * 
+     * @param enumType The enumeration type.
+     * @param key The key we are going to search for.
+     * @param caseSensitive Boolean value that represent case sesitivity of the search. By default the search will be case sensitive.
+     * @returns A boolean value indicating if the key is valid. 
+     */
+    static getEnumValue(enumType: any, key: string, caseSensitive: boolean = true): string | number | undefined {
+
+        let ret: string | undefined = undefined;
+        let keys: string[];
+
+        if (!enumType) return ret;
+        if (typeof key !== "string") return ret;
+
+        keys = Object.keys(enumType);
+
+        if (this.testEnumKey(enumType, key, caseSensitive)) {
+            let index: number = keys
+                .map((value) => {
+                    return (caseSensitive) ? value : String(value).toLowerCase();
+                })
+                .findIndex((value) => { return (value == ((caseSensitive) ? key : String(key).toLowerCase())) })
+            if (index > -1) {
+                ret = enumType[Object.keys(enumType)[index]];
+            }
+        }
+
+        return ret
+    }
+
+    /**
+     * Returns an array of key value pairs that represent all the entries of the enumeration.
+     * @param enumType The enumeration type.
+     * @returns An array of key value pairs.
+     */
+    static getEnum(enumType: any): { key: string; value: string | number; }[] {
+        let ret: { key: string; value: string | number; }[] = []
+
+        if (!enumType) return ret;
+
+        Object.entries(enumType)
+            .map((entry) => {
+                /**
+                 * Note: in the case of enumerations that are holding numeric values, those values 
+                 * will be listed in the entries too, so we need to exclude them:
+                 */
+                if (Number.isNaN(parseInt(entry[0]))) {
+                    ret.push({
+                        key: String(entry[0]),
+                        value: ((typeof entry[1] == "number") ? Number(entry[1]) : String(entry[1]))
+                    });
+                }
+            })
+
         return ret;
     }
 }

@@ -12,6 +12,7 @@ import { APIResponse } from "../../propel-shared/core/api-response";
 export class DataService {
 
     private _model: AdapterModel;
+    private _cryptoErrorRegExp: RegExp = new RegExp("^ERR_OSSL", "gi");;
 
     constructor(model: AdapterModel) {
         this._model = model;
@@ -309,6 +310,10 @@ Those fields are for internal use only and must not take part on user queries.`)
     private _runFetchQuery(query: any, cbResolve: Function, cbReject: Function, totalCount?: number) {
         query.exec((err: any, data: any) => {
             if (err) {
+                if (this.isEncryptionError(err)) {
+                    err = new PropelError(err, ErrorCodes.CryptoError);
+                }
+
                 cbReject(new APIResponse<any>(err, null));
             }
             else {
@@ -333,6 +338,16 @@ Those fields are for internal use only and must not take part on user queries.`)
     private isVoidWrite(insertOneWriteOpResultObject: any) {
         return (insertOneWriteOpResultObject && insertOneWriteOpResultObject.n != undefined &&
             insertOneWriteOpResultObject.n == 0)
+    }
+
+    /**
+     * Indicate if a crypto operation is the cause of the error.
+     * @param err received error.
+     * @returns A boolean value indicating if the error is related to a failed encryption/decription 
+     * operation in the database.
+     */
+    private isEncryptionError(err:any): boolean {
+        return err && err.code && (String(err.code).match(this._cryptoErrorRegExp) != null);
     }
 
     //#endregion

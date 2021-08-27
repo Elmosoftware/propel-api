@@ -15,7 +15,9 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { NgSelectComponent } from '@ng-select/ng-select';
-import { GenericCredential } from '../../../../propel-shared/models/generic-credential';
+import { Credential } from '../../../../propel-shared/models/credential';
+import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
+import { Vault } from '../../../../propel-shared/models/vault';
 
 @Component({
   selector: 'app-root',
@@ -68,12 +70,12 @@ export class SandboxComponent implements OnInit {
   ];
 
   allColors: Color[] = [
-    { _id: "1", name: "black", disabled:false},
-    { _id: "2", name: "red", disabled:false},
-    { _id: "3", name: "yellow", disabled:true},
-    { _id: "4", name: "white", disabled:false},
-    { _id: "5", name: "silver", disabled:false},
-    { _id: "6", name: "maroon", disabled:false},
+    { _id: "1", name: "black", disabled: false },
+    { _id: "2", name: "red", disabled: false },
+    { _id: "3", name: "yellow", disabled: true },
+    { _id: "4", name: "white", disabled: false },
+    { _id: "5", name: "silver", disabled: false },
+    { _id: "6", name: "maroon", disabled: false },
     // { _id: "7", name: "olive"},
     // { _id: "8", name: "green"},
     // { _id: "9", name: "aqua"},
@@ -83,12 +85,12 @@ export class SandboxComponent implements OnInit {
     // { _id: "13", name: "purple"},
 
   ]
-  
+
   testWithData: boolean = false;
 
   sampleData: SampleData = new SampleData();
   sampleForm: FormGroup = new FormGroup({
-    name: new FormControl("",[
+    name: new FormControl("", [
       Validators.required,
       Validators.minLength(3),
       Validators.maxLength(10)
@@ -102,9 +104,12 @@ export class SandboxComponent implements OnInit {
     colors: new FormControl("", [
       ValidatorsHelper.minItems(2),
       ValidatorsHelper.maxItems(4)
+    ]),
+    password: new FormControl("", [
+      Validators.required
     ])
-  })  
-  
+  })
+
   sampleFormSubmit() {
     console.log("Sample form Submitted!!!")
   }
@@ -119,7 +124,7 @@ export class SandboxComponent implements OnInit {
     return ret;
   }
 
-  testWithDataChanged(){
+  testWithDataChanged() {
     console.log("TEST with data changed!")
     this.sampleData = new SampleData();
 
@@ -138,7 +143,7 @@ export class SandboxComponent implements OnInit {
 
     }
 
-    this.sampleForm.patchValue(this.sampleData);    
+    this.sampleForm.patchValue(this.sampleData);
   }
 
   /**
@@ -153,8 +158,8 @@ export class SandboxComponent implements OnInit {
 
   //#region MatTable Sample
 
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   tableTotalResults: number = 10;
   targetResultsTable: TargetResultsTable;
@@ -182,9 +187,9 @@ export class SandboxComponent implements OnInit {
         last: "Otto",
         handle: "@mdo-rtyui_tytyruwiiiw_dgfgrgstatta",
         ind: index + 1,
-        text: `This is the ${(index+1).toString()}`,
-        date: new Date((new Date()).getTime() + (86400000 * (index+1))),
-        bol: Boolean((index+1) % 4),
+        text: `This is the ${(index + 1).toString()}`,
+        date: new Date((new Date()).getTime() + (86400000 * (index + 1))),
+        bol: Boolean((index + 1) % 4),
         longText: "This is a random long text to verify how the table accomodate on long content in cells."
       });
     }
@@ -198,6 +203,11 @@ export class SandboxComponent implements OnInit {
   constructor(private core: CoreService, private data: DataService) {
 
   }
+
+  testEnum(enumType: any, value: string): boolean {
+    return true;
+  }
+
 
   ngOnInit() {
     this.testWithDataChanged();
@@ -231,7 +241,7 @@ export class SandboxComponent implements OnInit {
   testGetById() {
     // let ret: Credential
 
-    // this.data.getById(DataEntity.Credential, "6119aa63396de6399c756cec")
+    // this.data.getById(DataEntity.Credential, "612300b0c8f78d6b5883b922")
     //   .subscribe(
     //     data => {
     //       let x = data;
@@ -245,34 +255,53 @@ export class SandboxComponent implements OnInit {
 
   testFind() {
     // let qm: QueryModifier = new QueryModifier();
-    
+
+    // qm.populate = false
+
+
+    // this.data.find(DataEntity.Credential, qm)
+    //   .subscribe(
+    //     data => {
+    //       let x = data;
+    //     },
+    //     err => {
+    //       throw err
+    //     });
     // qm.sortBy = "name";
     // qm.populate = true;
-    
+
     // this.data.find(Group,qm)
-    // .subscribe(
-    //   data => {
-    //     let x = data;
-    //   },
-    //   err => {
-    //     throw err
-    //   });
+
   }
 
   testInsert() {
 
-    // let c = new GenericCredential();
+    // let svi = new Vault()
+    // svi.value = new Object()
+    // svi.value.attr1 = "Hola"
+    // svi.value.attr2 = 67.678;
 
-    // c.name = "Test Cred 01"
-    // c.description = "Description for credential"
-    // c.secret.userName = "User"
-    // c.secret.domain= "domain"
-    // c.secret.password = "password"
-
-    // this.data.save(DataEntity.Credential, c)
+    // this.data.save(DataEntity.Vault, svi)
     //   .subscribe(
     //     data => {
-    //       let x = data;
+    //       svi._id = data.data[0];
+
+    //       let c = new Credential();
+
+    //       c.name = "Test Cred 01"
+    //       c.description = "Description for credential"
+    //       c.vaultId = svi._id;
+
+    //       this.data.save(DataEntity.Credential, c)
+    //         .subscribe(
+    //           data => {
+    //             let x = data;
+    //           },
+    //           err => {
+    //             throw err
+    //           });
+
+
     //     },
     //     err => {
     //       throw err
@@ -321,26 +350,26 @@ export class SandboxComponent implements OnInit {
         throw err
       });
   }
-  
+
   showShortConfirmationDialog() {
-    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration( 
-        "Confirmation required",
-        `Do you confirm the action?`)
-      ).subscribe((result: DialogResult<any>) => {
-        alert(`Result is: "${JSON.stringify(result)}".`);
-      }, err => {
-        throw err
-      });
+    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
+      "Confirmation required",
+      `Do you confirm the action?`)
+    ).subscribe((result: DialogResult<any>) => {
+      alert(`Result is: "${JSON.stringify(result)}".`);
+    }, err => {
+      throw err
+    });
   }
 
   showEntityDialog() {
     this.core.dialog.showEntityDialog(new EntityDialogConfiguration(DataEntity.Group, new Group()))
-    .subscribe((results: DialogResult<Group>) => {
-      alert(`Result is: "${JSON.stringify(results)}".`);
-    },
-      err => {
-        throw err
-      });
+      .subscribe((results: DialogResult<Group>) => {
+        alert(`Result is: "${JSON.stringify(results)}".`);
+      },
+        err => {
+          throw err
+        });
   }
 
   expandAll() {
@@ -351,17 +380,22 @@ export class SandboxComponent implements OnInit {
     this.accordion.closeAll();
   }
 
+  viewpw: boolean = false
+
+  toggleViewPassword() {
+    this.viewpw = !this.viewpw;
+  }
 }
 
 class SampleData {
-  
+
   name: string = "";
   enabled: boolean = false;
   country?: Country = null;
   colors: Color[] = [];
-  
+
   constructor() {
-  }  
+  }
 }
 
 class Country extends Entity {
@@ -412,7 +446,7 @@ class TargetResultsTable {
   }
 
   get noMatches(): boolean {
-    return this.currentFilterTerm && this.dataSource.filteredData 
+    return this.currentFilterTerm && this.dataSource.filteredData
       && this.dataSource.filteredData.length == 0
   }
 
@@ -442,14 +476,14 @@ class TargetResultsTable {
     this.originalData = [];
     this.isValidJSON = Utils.isValidJSON(rawData);
 
-    if(this.isValidJSON) {
+    if (this.isValidJSON) {
       parsedData = JSON.parse(rawData);
 
       if (!Array.isArray(parsedData)) {
         parsedData = [parsedData];
       }
-      
-      if(parsedData.length > 0) {
+
+      if (parsedData.length > 0) {
         //Analyzing the first element of the array in order to figure out what we are dealing with;
         if (typeof parsedData[0] == "object") {
           Object.keys(parsedData[0]).forEach((prop: string) => {
@@ -470,5 +504,5 @@ class TargetResultsTable {
 
     this.dataSource = new MatTableDataSource(parsedData);
     this.originalData = parsedData;
-  }  
+  }
 }

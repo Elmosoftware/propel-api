@@ -1,0 +1,99 @@
+Wrong key set in .env file:
+	error:06065064:digital envelope routines:EVP_DecryptFinal_ex:bad decrypt
+Changing last character:
+	error:0606506D:digital envelope routines:EVP_DecryptFinal_ex:wrong final block length
+Changing last char before ":"
+	Invalid IV length
+Changing secret to empty string:
+	No error but the "secret" attribute is undefined
+When setting the secret with any chars:
+	Unexpected end of JSON input
+
+Correct value:
+b36ead1561a1d099736646b4ee1f7ab8:179bcfa9b2de37610487e1fd02d0cb6f3d3946c76f7096361cd5799eb6bf664b85206617d673e8e06934b82db78b4376cd4b81f33f00d071f690b2d29ce49ab8
+
+Full message:
+=======================================================================================
+Changing last character::
+----------------------------------------
+{errors: [{name: "PropelError - Error",…}], data: [], count: 0, totalCount: 0}
+count: 0
+data: []
+errors: [{name: "PropelError - Error",…}]
+0: {name: "PropelError - Error",…}
+errorCode: {key: "", description: "", userMessage: "", isWarning: false}
+message: "error:0606506D:digital envelope routines:EVP_DecryptFinal_ex:wrong final block length"
+name: "PropelError - Error"
+stack: "Error: error:0606506D:digital envelope routines:EVP_DecryptFinal_ex:wrong final block length\n    
+
+at Decipheriv.final (internal/crypto/cipher.js:174:29)\n    
+at decrypt (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:71:56)\n    at decryptFields (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:159:35)\n    
+at model.<anonymous> (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:234:7)\n    
+at Kareem.execPostSync (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\kareem\\index.js:226:17)\n    
+at model.syncWrapper [as $__init] (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\kareem\\index.js:237:12)\n    at model.Document.init (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\document.js:553:8)\n    at completeMany (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\helpers\\query\\completeMany.js:42:14)\n    at C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\query.js:2031:9\n    at C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\model.js:4870:18\n    at processTicksAndRejections (internal/process/task_queues.js:77:11)"
+stackArray: ["at Decipheriv.final (internal/crypto/cipher.js:174:29)",…]
+totalCount: 0
+=============================================================================================
+Changing last char before ":":
+----------------------------------
+{errors: [{name: "PropelError - Error", message: "Invalid IV length",…}], data: [], count: 0,…}
+count: 0
+data: []
+errors: [{name: "PropelError - Error", message: "Invalid IV length",…}]
+0: {name: "PropelError - Error", message: "Invalid IV length",…}
+errorCode: {key: "", description: "", userMessage: "", isWarning: false}
+message: "Invalid IV length"
+name: "PropelError - Error"
+stack: "Error: Invalid IV length\n    at Decipheriv.createCipherBase (internal/crypto/cipher.js:103:19)\n    at Decipheriv.createCipherWithIV (internal/crypto/cipher.js:121:20)\n    at new Decipheriv (internal/crypto/cipher.js:264:22)\n    at Object.createDecipheriv (crypto.js:132:10)\n    at decrypt (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:69:27)\n    at decryptFields (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:159:35)\n    at model.<anonymous> (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:234:7)\n    at Kareem.execPostSync (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\kareem\\index.js:226:17)\n    at model.syncWrapper [as $__init] (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\kareem\\index.js:237:12)\n    at model.Document.init (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\document.js:553:8)\n    at completeMany (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\helpers\\query\\completeMany.js:42:14)\n    at C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\query.js:2031:9\n    at C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\model.js:4870:18\n    at processTicksAndRejections (internal/process/task_queues.js:77:11)"
+stackArray: ["at Decipheriv.createCipherBase (internal/crypto/cipher.js:103:19)",…]
+totalCount: 0
+===============================================================================================================
+Changing secret to empty string:
+------------------------------------------
+{errors: [], data: [{_id: "6121858dd24ebf53fcd1ce0e", name: "TestWrongKey",…}], count: 1,…}
+count: 1
+data: [{_id: "6121858dd24ebf53fcd1ce0e", name: "TestWrongKey",…}]
+0: {_id: "6121858dd24ebf53fcd1ce0e", name: "TestWrongKey",…}
+createdBy: null
+createdOn: "2021-08-21T23:00:29.869Z"
+deletedOn: null
+description: "Test of credential witha secret that can't be decrypted"
+fields: [{name: "FIELD01", value: "Field01 value", nativeType: "String"}]
+lastUpdateBy: null
+lastUpdateOn: null
+name: "TestWrongKey"
+type: "Generic"
+__enc_secret: true
+__enc_secret_d: ""
+__v: 0
+_id: "6121858dd24ebf53fcd1ce0e"
+errors: []
+totalCount: 0
+===============================================================================================================
+When setting the secret with any chars:
+---------------------------------------
+{errors: [{name: "PropelError - SyntaxError", message: "Unexpected end of JSON input",…}], data: [],…}
+count: 0
+data: []
+errors: [{name: "PropelError - SyntaxError", message: "Unexpected end of JSON input",…}]
+0: {name: "PropelError - SyntaxError", message: "Unexpected end of JSON input",…}
+errorCode: {key: "", description: "", userMessage: "", isWarning: false}
+message: "Unexpected end of JSON input"
+name: "PropelError - SyntaxError"
+stack: "SyntaxError: Unexpected end of JSON input\n    at JSON.parse (<anonymous>)\n    at decryptFields (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:159:29)\n    at model.<anonymous> (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:234:7)\n    at Kareem.execPostSync (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\kareem\\index.js:226:17)\n    at model.syncWrapper [as $__init] (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\kareem\\index.js:237:12)\n    at model.Document.init (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\document.js:553:8)\n    at completeMany (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\helpers\\query\\completeMany.js:42:14)\n    at C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\query.js:2031:9\n    at C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\model.js:4870:18\n    at processTicksAndRejections (internal/process/task_queues.js:77:11)"
+stackArray: ["SyntaxError: Unexpected end of JSON input", "at JSON.parse (<anonymous>)",…]
+totalCount: 0
+================================================================================================================
+Wrong key set in .env file:
+-----------------------------
+{errors: [{name: "PropelError - Error",…}], data: [], count: 0, totalCount: 0}
+count: 0
+data: []
+errors: [{name: "PropelError - Error",…}]
+0: {name: "PropelError - Error",…}
+errorCode: {key: "", description: "", userMessage: "", isWarning: false}
+message: "error:06065064:digital envelope routines:EVP_DecryptFinal_ex:bad decrypt"
+name: "PropelError - Error"
+stack: "Error: error:06065064:digital envelope routines:EVP_DecryptFinal_ex:bad decrypt\n    at Decipheriv.final (internal/crypto/cipher.js:174:29)\n    at decrypt (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:71:56)\n    at decryptFields (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:159:35)\n    at model.<anonymous> (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose-field-encryption\\lib\\mongoose-field-encryption.js:234:7)\n    at Kareem.execPostSync (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\kareem\\index.js:226:17)\n    at model.syncWrapper [as $__init] (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\kareem\\index.js:237:12)\n    at model.Document.init (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\document.js:553:8)\n    at completeMany (C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\helpers\\query\\completeMany.js:42:14)\n    at C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\query.js:2031:9\n    at C:\\DATA\\Dev\\Propel\\propel\\propel-api\\node_modules\\mongoose\\lib\\model.js:4870:18\n    at processTicksAndRejections (internal/process/task_queues.js:77:11)"
+stackArray: ["at Decipheriv.final (internal/crypto/cipher.js:174:29)",…]
+totalCount: 0

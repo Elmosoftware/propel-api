@@ -263,6 +263,26 @@ try {
      });
      showIndexes(coll);
 
+     /**
+     * SecretVault
+     */
+      collName = "Vault"
+      print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+      db.createCollection(collName);
+  
+      print(`Creating indexes.`)
+      coll = db.getCollection(collName);
+  
+      coll.createIndex({
+          _id: 1,
+          deletedOn: 1
+      }, {
+          name: "IU_EntityConstraint",
+          unique: true,
+          background: true
+      })
+      showIndexes(coll);
+
     print(`\nScript have been finished.\n===============================================`)
 
 } catch (error) {
