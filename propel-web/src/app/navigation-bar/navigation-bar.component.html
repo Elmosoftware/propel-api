@@ -8,27 +8,27 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
-        <a class="nav-link no-wrap-links" href="javascript:void(0)" data-toggle="collapse"
+        <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToQuickTask()">Quick Task</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link no-wrap-links" href="javascript:void(0)" data-toggle="collapse"
+        <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
         data-target=".navbar-collapse.show" (click)="goToWorkflow()">Workflow</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link no-wrap-links" href="javascript:void(0)" data-toggle="collapse"
+        <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
         data-target=".navbar-collapse.show" (click)="goToScript()">Script</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link no-wrap-links" href="javascript:void(0)" data-toggle="collapse"
+        <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
         data-target=".navbar-collapse.show" (click)="goToTarget()">Target</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link no-wrap-links" href="javascript:void(0)" data-toggle="collapse"
+        <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
         data-target=".navbar-collapse.show" (click)="goToHistory()">History</a>
       </li>
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle no-wrap-links" href="#" id="navbarDropdown" role="button"
+        <a class="nav-link dropdown-toggle no-wrap-links menu-item" href="#" id="navbarDropdown" role="button"
           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Browse
         </a>
@@ -38,8 +38,19 @@
           <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseTargets()">Targets</a>
         </div>
       </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle no-wrap-links menu-item" href="#" id="navbarDropdown" role="button"
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Credentials
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialWin()"><i class="fab fa-windows menu-icon"></i>Windows</a>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialAWS()"><i class="fab fa-aws menu-icon"></i>Amazon Web Services</a>
+        </div>
+      </li>
     </ul>
-    <div *ngIf="!isSearchPage" class="input-group input-group-md justify-content-sm-start justify-content-md-end mb-2 mb-sm-2 mb-md-0">
+    <div *ngIf="!isSearchPage" 
+      class="input-group input-group-md justify-content-sm-start justify-content-md-end mb-2 mb-sm-2 mb-md-0 menu-item">
       <input type="text" class="form-control search-input" placeholder="Search" aria-label="Search"
         [(ngModel)]="searchTerm" (keyup.enter)="goToSearch()">
       <div class="input-group-append">

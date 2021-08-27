@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 
 import { logger } from "../../../propel-shared/services/logger-service";
 import { SearchType } from 'src/app/search/search.component';
+import { CredentialTypes } from "../../../propel-shared/models/credential-types";
 
 /**
  * This enums all the Pages in the app.
@@ -22,7 +23,8 @@ export const enum PAGES {
     BrowseTargets = "browse-targets",
     History = "history",
     Offline = "offline",
-    Credential = "credential"
+    CredentialWindows = "credential-win",
+    CredentialAWS = "credential-aws"
 }
 
 /**
@@ -164,32 +166,85 @@ export class NavigationService {
         });
     }
 
+    /**
+     * Navigate to search page but setting up to browse worflows.
+     */
     toBrowseWorkflows(): void {
         this.router.navigate([this.getRelativePath(PAGES.BrowseWorkflows)], {
             queryParams: { type: SearchType.Workflows.toString(), term: "", browse: "true" }
         });
     }
 
-    toBrowseScripts(): void {
+    /**
+     * Navigate to search page but setting up to browse scripts.
+     */
+     toBrowseScripts(): void {
         this.router.navigate([this.getRelativePath(PAGES.BrowseScripts)], {
             queryParams: { type: SearchType.Scripts.toString(), term: "", browse: "true" }
         });
     }
 
+    /**
+     * Navigate to search page but setting up to browse targets.
+     */
     toBrowseTargets(): void {
         this.router.navigate([this.getRelativePath(PAGES.BrowseTargets)], {
             queryParams: { type: SearchType.Targets.toString(), term: "", browse: "true" }
         });
     }
 
+    /**
+     * Navigates to History page.
+     */
     toHistory(): void {
         this.router.navigate([this.getRelativePath(PAGES.History)]);
     }
 
+    /**
+     * Navigates to credential page passing optionally a credential ID to edit. 
+     * Calling this method will work even if the credential ID belongs to a different than Windows 
+     * credential.
+     * @param credentialId 
+     */
+    toCredentialWindows(credentialId?: string) {
+        if (credentialId) {
+            this.router.navigate([this.getRelativePath(PAGES.CredentialWindows), credentialId]);
+        }
+        else {
+            this.router.navigate([this.getRelativePath(PAGES.CredentialWindows)], {
+                queryParams: { type: CredentialTypes.Windows }
+            });
+        }
+    }
+
+    /**
+     * Navigates to credential page passing optionally a credential ID to edit. 
+     * Calling this method will work even if the credential ID belongs to a different than AWS 
+     * credential.
+     * @param credentialId 
+     */
+    toCredentialAWS(credentialId?: string) {
+        if (credentialId) {
+            this.router.navigate([this.getRelativePath(PAGES.CredentialAWS), credentialId]);
+        }
+        else {
+            this.router.navigate([this.getRelativePath(PAGES.CredentialAWS)], {
+                queryParams: { type: CredentialTypes.AWS }
+            });
+        }
+    }
+
+    /**
+     * Used by the system tonavigate to the offline page if a network issue is detected.
+     */
     toOffline(): void {
         this.router.navigate([this.getRelativePath(PAGES.Offline)]);
     }
 
+    /**
+     * Navigate to sandbox page. For testing purposes only.
+     * This will not be available in production.
+     */
     toSandbox(): void {
         this.router.navigate([this.getRelativePath(PAGES.Sandbox)]);
     }

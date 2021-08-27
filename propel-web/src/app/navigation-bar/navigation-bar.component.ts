@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CoreService } from 'src/services/core.service';
 import { SearchType } from '../search/search.component';
 import { PAGES } from 'src/services/navigation.service';
+import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -74,5 +75,13 @@ export class NavigationBarComponent implements OnInit {
 
   goToHistory() {
     this.core.navigation.toHistory();
+  }
+
+  goToCredentialWin() {
+    this.core.navigation.toCredentialWindows();
+  }
+
+  goToCredentialAWS() {
+    this.core.navigation.toCredentialAWS();
   }
 }

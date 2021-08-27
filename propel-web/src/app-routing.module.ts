@@ -143,18 +143,34 @@ const routes: Routes = [
     }
   },
   {
-    path: PAGES.Credential,
+    path: PAGES.CredentialWindows,
     component: CredentialComponent,
     data: {
-      title: "New Credential"
+      title: "New Windows Credential"
     },
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: `${PAGES.Credential}/:id`,
+    path: `${PAGES.CredentialWindows}/:id`,
     component: CredentialComponent,
     data: {
-      title: "Editing Credential"
+      title: "Editing Windows Credential"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: PAGES.CredentialAWS,
+    component: CredentialComponent,
+    data: {
+      title: "New AWS Credential"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: `${PAGES.CredentialAWS}/:id`,
+    component: CredentialComponent,
+    data: {
+      title: "Editing AWS Credential"
     },
     canDeactivate: [DataLossPreventionGuard]
   },

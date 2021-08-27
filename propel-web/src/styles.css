@@ -103,6 +103,22 @@ body{
 }
 
 /* 
+  NAVIGATION BAR
+  ==========================================================
+*/
+
+.menu-item {
+    font-size: 1rem;
+    margin-top: 4px;
+}
+
+.menu-icon {
+    width: 1.3rem;
+    text-align: center;
+    margin-right: 0.5rem
+}
+
+/* 
   FORMS
   ==========================================================
 */
