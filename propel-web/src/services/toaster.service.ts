@@ -5,6 +5,8 @@ import { logger } from "../../../propel-shared/services/logger-service";
 import { PropelError } from '../../../propel-shared/core/propel-error';
 
 const STDERRMSG = "Something wrong happened. Please retry the operation later.";
+const DEFAULT_TOAST_ERROR_DURATION:number = 6000;
+const DEFAULT_TOAST_WARNING_DURATION:number = 6000;
 
 /**
  * Helper class for the ngx-toastr component.
@@ -69,13 +71,13 @@ export class ToasterService {
                 if (isWarning) {
                     this.toastr.warning(String(messageOrError), title, {
                         disableTimeOut: false,
-                        timeOut: 7000
+                        timeOut: DEFAULT_TOAST_WARNING_DURATION
                       });
                 }
                 else {
                     this.toastr.error(String(messageOrError), title, {
                         disableTimeOut: false,
-                        timeOut: 7000
+                        timeOut: DEFAULT_TOAST_ERROR_DURATION
                       });
                 }               
             } catch (error) {

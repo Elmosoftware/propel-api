@@ -60,8 +60,8 @@
     /* Badges */
     --badge-primary-color: #f0f0f0;
     --badge-primary-background: #328AAB;
-    --badge-secondary-color: var(--colors-primary);
-    --badge-secondary-background: #2B9DC6;
+    --badge-secondary-color: var(--colors-white);
+    --badge-secondary-background: var(--colors-dark-border);
     /* Lists */
     --list-color: #fff;
     --list-background: #e0ecf7;
@@ -113,9 +113,49 @@ body{
 }
 
 .menu-icon {
-    width: 1.3rem;
+    /* width: 1.3rem; */
     text-align: center;
     margin-right: 0.5rem
+}
+
+.icon-workflows::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f0cb";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.icon-scripts::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f70e";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.icon-targets::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f233";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.icon-credentials::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f084";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.icon-credential-windows::before {
+    font-family: "Font Awesome 5 Brands";
+    content: "\f17a";
+    font-size: 1rem;
+}
+
+.icon-credential-aws::before {
+    font-family: "Font Awesome 5 Brands";
+    content: "\f375";
+    font-size: 1rem;
 }
 
 /* 

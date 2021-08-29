@@ -1,12 +1,12 @@
 <a id="topSearch"></a>
 <div class="container mt-2">
+    <!-- Search form: -->
     <form [formGroup]="fg">
         <div class="d-flex flex-column justify-content-center">
             <div class="input-group input-group-md mt-2">
                 <div class="w-25 d-sm-block d-none"></div>
                 <input type="text" class="form-control search-input" aria-label="Search" id="searchText"
-                    placeholder="Enter here the search criteria ..."
-                    formControlName="searchText">
+                    placeholder="Enter here the search criteria ..." formControlName="searchText">
                 <div class="input-group-append">
                     <button class="btn btn-secondary" [disabled]="!fg.valid" (click)="search()">
                         <i class="fas fa-search"></i>
@@ -16,44 +16,50 @@
             </div>
             <app-validation-message class="text-center" [control]="fg.controls.searchText"></app-validation-message>
         </div>
-        <div class="mt-2 d-flex justify-content-around">
-            <div class="custom-control custom-radio">
-                <input type="radio" id="searchType1" formControlName="searchType" class="custom-control-input"
-                    [value]="searchTypeEnum.Workflows">
-                <label class="custom-control-label" for="searchType1">Workflows</label>
-            </div>
-            <div class="custom-control custom-radio">
-                <input type="radio" id="searchType2" formControlName="searchType" class="custom-control-input"
-                    [value]="searchTypeEnum.Scripts">
-                <label class="custom-control-label" for="searchType2">Scripts</label>
-            </div>
-            <div class="custom-control custom-radio">
-                <input type="radio" id="searchType3" formControlName="searchType" class="custom-control-input"
-                    [value]="searchTypeEnum.Targets">
-                <label class="custom-control-label" for="searchType3">Targets</label>
-            </div>
-        </div>
     </form>
-
-    <div class="mt-4" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
-        infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-        <div [ngSwitch]="fg.controls.searchType.value">
-            <div *ngSwitchCase="searchTypeEnum.Workflows">
-                <div *ngIf="currentSearchType == searchTypeEnum.Workflows">
-                    <app-search-workflow-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)"></app-search-workflow-line>
+    <!-- Tabs start -->
+    <mat-tab-group class="mt-2" [selectedIndex]="activeTab" (selectedIndexChange)="activeTabChanged($event)"
+        backgroundColor="primary" color="primary">
+        <mat-tab label="Workflows">
+            <div *ngIf="searchType == searchTypeEnum.Workflows">
+                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+                    <app-search-workflow-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+                    </app-search-workflow-line>
                 </div>
             </div>
-            <div *ngSwitchCase="searchTypeEnum.Scripts">
-                <div *ngIf="currentSearchType == searchTypeEnum.Scripts">
-                    <app-search-script-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)"></app-search-script-line>
+        </mat-tab>
+        <mat-tab label="Scripts">
+            <div *ngIf="searchType == searchTypeEnum.Scripts">
+                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+                    <app-search-script-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+                            </app-search-script-line>
                 </div>
             </div>
-            <div *ngSwitchCase="searchTypeEnum.Targets">
-                <div *ngIf="currentSearchType == searchTypeEnum.Targets">
-                    <app-search-target-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)"></app-search-target-line>
+        </mat-tab>
+        <mat-tab label="Targets">
+            <div *ngIf="searchType == searchTypeEnum.Targets">
+                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+                    <app-search-target-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+                    </app-search-target-line>
                 </div>
             </div>
-        </div>
+        </mat-tab>
+        <mat-tab label="Credentials">
+            <div *ngIf="searchType == searchTypeEnum.Credentials">
+                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+                    <!-- Nothing here for now! but we get {{ svcInfScroll.model.length }} credentials! -->
+                    <app-search-credential-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+                    </app-search-credential-line>
+                </div>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+    <!-- Tabs end -->
+    <div class="mt-4" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0">
         <button *ngIf="svcInfScroll.lastPageRendered > 1" type="button" pageScroll href="#topSearch"
             class="btn btn-primary button-circular floating-bottom-right float-bottom-second-line"
             matTooltip="Click here to go back to the first results." matTooltipPosition="left" (click)="fullScrollUp()">

@@ -406,6 +406,50 @@ export class Utils {
     }
 
     /**
+     * Returns the index in the Typescript enumeration type for the specific supplied key.
+     * @example 
+     * enum MyStringEnum {
+     *     First = "1st",
+     *     Second = "2nd",
+     *     Third = "3rd"
+     * }
+     * enum MyNumericEnum {
+     *     One = 1,
+     *     Two = 2,
+     *     Three = 3
+     * }
+     * 
+     * getEnumIndex(MyStringEnum, "First") -> 0
+     * getEnumIndex(MyStringEnum, "fiRST", false) -> 0
+     * getEnumIndex(MyStringEnum, "Fourth") -> -1
+     * 
+     * getEnumIndex(MyNumericEnum, "One") -> 0
+     * getEnumIndex(MyStringEnum, "one", false) -> 0
+     * getEnumIndex(MyStringEnum, "Four") -> -1
+     * 
+     * @param enumType The enumeration type.
+     * @param key The key we are going to search for.
+     * @param caseSensitive Boolean value that represent case sesitivity of the search. By default the search will be case sensitive.
+     * @returns A boolean value indicating if the key is valid. 
+     */
+    static getEnumIndex(enumType: any, key: string, caseSensitive: boolean = true): number {
+
+        let ret: number = -1;
+        let keys: string[];
+
+        if (!enumType) return ret;
+        if (typeof key !== "string") return ret;
+
+        ret = Object.keys(enumType)
+            .map((value) => {
+                return (caseSensitive) ? value : String(value).toLowerCase();
+            })
+            .findIndex((value) => { return (value == ((caseSensitive) ? key : String(key).toLowerCase())) });
+
+        return ret
+    }
+
+    /**
      * Returns the value of the Typescript enumeration type for the specific supplied key.
      * @example 
      * enum MyStringEnum {
@@ -436,21 +480,15 @@ export class Utils {
 
         let ret: string | undefined = undefined;
         let keys: string[];
+        let index: number = -1;
 
         if (!enumType) return ret;
         if (typeof key !== "string") return ret;
 
-        keys = Object.keys(enumType);
+        index = this.getEnumIndex(enumType, key, caseSensitive)
 
-        if (this.testEnumKey(enumType, key, caseSensitive)) {
-            let index: number = keys
-                .map((value) => {
-                    return (caseSensitive) ? value : String(value).toLowerCase();
-                })
-                .findIndex((value) => { return (value == ((caseSensitive) ? key : String(key).toLowerCase())) })
-            if (index > -1) {
-                ret = enumType[Object.keys(enumType)[index]];
-            }
+        if (index > -1) {
+            ret = enumType[Object.keys(enumType)[index]];
         }
 
         return ret

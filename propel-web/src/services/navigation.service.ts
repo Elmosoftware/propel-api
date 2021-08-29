@@ -2,8 +2,7 @@ import { Injectable, EventEmitter } from "@angular/core";
 import { Router } from '@angular/router';
 
 import { logger } from "../../../propel-shared/services/logger-service";
-import { SearchType } from 'src/app/search/search.component';
-import { CredentialTypes } from "../../../propel-shared/models/credential-types";
+import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from "../../../propel-shared/models/credential-types";
 
 /**
  * This enums all the Pages in the app.
@@ -17,15 +16,18 @@ export const enum PAGES {
     QuickTask = "quick-task",
     Workflow = "workflow",
     Results = "results",
-    Search = "search",
     BrowseWorkflows = "browse-workflows",
     BrowseScripts = "browse-scripts",
     BrowseTargets = "browse-targets",
+    BrowseCredentials = "browse-credentials",
     History = "history",
     Offline = "offline",
-    CredentialWindows = "credential-win",
+    EditCredential = "credential",
+    CredentialWindows = "credential-windows",
     CredentialAWS = "credential-aws"
 }
+
+export const SUFFIX_SEPARATOR: string = "-";
 
 /**
  * This class acts as a helper to navigate the different pages in the app.
@@ -37,13 +39,21 @@ export class NavigationService {
 
     private _currPageRXP: RegExp;
     private _requestCounter: number = 0;
-    private httpRequestCountEmitter$: EventEmitter<number> = new EventEmitter<number>();
+    private httpRequestCountEmitter$: EventEmitter<number> = new EventEmitter<number>(); 
 
     /**
      * Returns the amount of requests currently in progress.
      */
     get requestCounter(): number {
         return this._requestCounter;
+    }
+
+    get credentialsPagePrefix(): string{
+        return "credential"
+    }
+
+    get browsePagePrefix(): string{
+        return "browse"
     }
 
     constructor(private router: Router) {
@@ -84,8 +94,22 @@ export class NavigationService {
         if (matches && matches.length > 0) {
             ret = matches[0].slice(1); //Removing the initial forwardslash.
         }
-        
+
         return ret;
+    }
+
+    /**
+     * We defined the value SUFFIX_SEPARATOR that will be used to separate names in page urls.
+     * In this way the app can find the last part of the name and operate with it.
+     * @returns The suffix in the current page. 
+     * For example sif the value in SUFFIX_SEPARATOR is set to "-". Then if we navigate to the 
+     * page "sample-withsuffix". A call to this method will return "withsuffix". 
+     */
+    getCurrentPageSuffix() {
+        let parts = this.currentPage().split(SUFFIX_SEPARATOR);
+
+        if (parts.length > 1) return parts[parts.length - 1];
+        return "";        
     }
 
     /**
@@ -94,7 +118,7 @@ export class NavigationService {
     toHome(): void {
         this.router.navigate([this.getRelativePath(PAGES.Home)]);
     }
-    
+
     /**
      * Navigate to Run page.
      * @param workflowId Workflow to run
@@ -158,38 +182,40 @@ export class NavigationService {
     }
 
     /**
-     * Navigate to Search page.
-     */
-    toSearch(type: SearchType = SearchType.Workflows, term: string = "", browse: string = "false"): void {
-        this.router.navigate([this.getRelativePath(PAGES.Search)], {
-            queryParams: { type: type.toString(), term: term, browse: browse }
-        });
-    }
-
-    /**
      * Navigate to search page but setting up to browse worflows.
+     * @param term Term to search for.
+     * @param browse Indicates if even no term is specified, we must show all items.
      */
-    toBrowseWorkflows(): void {
+    toBrowseWorkflows(term:string = "", browse:boolean = true): void {
         this.router.navigate([this.getRelativePath(PAGES.BrowseWorkflows)], {
-            queryParams: { type: SearchType.Workflows.toString(), term: "", browse: "true" }
+            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
         });
     }
 
     /**
      * Navigate to search page but setting up to browse scripts.
      */
-     toBrowseScripts(): void {
+    toBrowseScripts(term:string = "", browse:boolean = true): void {
         this.router.navigate([this.getRelativePath(PAGES.BrowseScripts)], {
-            queryParams: { type: SearchType.Scripts.toString(), term: "", browse: "true" }
+            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
         });
     }
 
     /**
      * Navigate to search page but setting up to browse targets.
      */
-    toBrowseTargets(): void {
+    toBrowseTargets(term:string = "", browse:boolean = true): void {
         this.router.navigate([this.getRelativePath(PAGES.BrowseTargets)], {
-            queryParams: { type: SearchType.Targets.toString(), term: "", browse: "true" }
+            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
+        });
+    }
+
+    /**
+     * Navigate to search page but setting up to browse credentials.
+     */
+    toBrowseCredentials(term:string = "", browse:boolean = true): void {
+        this.router.navigate([this.getRelativePath(PAGES.BrowseCredentials)], {
+            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
         });
     }
 
@@ -201,36 +227,24 @@ export class NavigationService {
     }
 
     /**
-     * Navigates to credential page passing optionally a credential ID to edit. 
-     * Calling this method will work even if the credential ID belongs to a different than Windows 
-     * credential.
-     * @param credentialId 
+     * Navigates to credential page passing a credential ID. This method will provide everything 
+     * required to the Credential component to edit the credential.
+     * If instead of a credential ID, a credential type is provided, the Credential component
+     * will prepare a form to create a new credential of the specified type.
+     * If neither CredentialId or type is specified, a new credential of type DEFAULT_CREDENTIAL_TYPE 
+     * will be created and ready.
+     * @param credentialId The credential to edit
      */
-    toCredentialWindows(credentialId?: string) {
+    toCredential(credentialId?: string, type?: CredentialTypes) {
+        let page: string = this.credentialsPagePrefix + SUFFIX_SEPARATOR + 
+            ((type) ? type : DEFAULT_CREDENTIAL_TYPE).toString()
+            .toLowerCase();
+        
         if (credentialId) {
-            this.router.navigate([this.getRelativePath(PAGES.CredentialWindows), credentialId]);
+            this.router.navigate([this.getRelativePath(PAGES.EditCredential), credentialId]);
         }
         else {
-            this.router.navigate([this.getRelativePath(PAGES.CredentialWindows)], {
-                queryParams: { type: CredentialTypes.Windows }
-            });
-        }
-    }
-
-    /**
-     * Navigates to credential page passing optionally a credential ID to edit. 
-     * Calling this method will work even if the credential ID belongs to a different than AWS 
-     * credential.
-     * @param credentialId 
-     */
-    toCredentialAWS(credentialId?: string) {
-        if (credentialId) {
-            this.router.navigate([this.getRelativePath(PAGES.CredentialAWS), credentialId]);
-        }
-        else {
-            this.router.navigate([this.getRelativePath(PAGES.CredentialAWS)], {
-                queryParams: { type: CredentialTypes.AWS }
-            });
+            this.router.navigate([page]);
         }
     }
 

@@ -33,19 +33,38 @@
           Browse
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseWorkflows()">Workflows</a>
-          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseScripts()">Scripts</a>
-          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseTargets()">Targets</a>
+          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseWorkflows()">
+            <span class="icon-workflows menu-icon"></span>
+            <span>Workflows</span>
+          </a>
+          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseScripts()">
+            <span class="icon-scripts menu-icon"></span>
+            <span>Scripts</span>
+          </a>
+          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseTargets()">
+            <span class="icon-targets menu-icon"></span>
+            <span>Targets</span>
+          </a>
+          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseCredentials()">
+            <span class="icon-credentials menu-icon"></span>
+            <span>Credentials</span>
+          </a>
         </div>
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle no-wrap-links menu-item" href="#" id="navbarDropdown" role="button"
           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Credentials
+          Credential
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialWin()"><i class="fab fa-windows menu-icon"></i>Windows</a>
-            <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialAWS()"><i class="fab fa-aws menu-icon"></i>Amazon Web Services</a>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialWin()">
+              <span class="icon-credential-windows menu-icon"></span>
+              <span>Windows</span>
+            </a>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialAWS()">
+              <span class="icon-credential-aws menu-icon"></span>
+              <span>Amazon Web Services</span>
+            </a>
         </div>
       </li>
     </ul>

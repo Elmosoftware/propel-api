@@ -175,6 +175,10 @@ button:focus {
 
 /* Badges */
 
+.badge {
+    padding: 0.4em 0.7em;
+}
+
 .badge-primary {
     color: var(--badge-primary-color);
     background-color: var(--badge-primary-background);
@@ -183,6 +187,11 @@ button:focus {
 .badge-secondary {
     color: var(--badge-secondary-color);
     background-color: var(--badge-secondary-background);
+}
+
+.badge-danger {
+    color: var(--colors-white);
+    background-color: var(--colors-danger);
 }
 
 /* Forms */

@@ -73,6 +73,7 @@ import { OfflineComponent } from './app/offline/offline.component';
 import { CredentialComponent } from './app/credential/credential.component';
 import { WindowsVaultItemComponent } from './app/credential/windows-vault-item/windows-vault-item.component';
 import { AWSVaultItemComponent } from "./app/credential/aws-vault-item/aws-vault-item.component";
+import { SearchCredentialLineComponent } from './app/search-credential-line/search-credential-line.component';
 
 @NgModule({
   declarations: [
@@ -104,7 +105,8 @@ import { AWSVaultItemComponent } from "./app/credential/aws-vault-item/aws-vault
     OfflineComponent,
     CredentialComponent,
     WindowsVaultItemComponent,
-    AWSVaultItemComponent
+    AWSVaultItemComponent,
+    SearchCredentialLineComponent
   ],
   imports: [
     BrowserModule,
@@ -118,7 +120,7 @@ import { AWSVaultItemComponent } from "./app/credential/aws-vault-item/aws-vault
       closeButton: true,
       positionClass: "toast-top-right",
       disableTimeOut: false,
-      timeOut: 3500
+      timeOut: 2000
     }),
     HttpClientModule,
     MatSlideToggleModule,

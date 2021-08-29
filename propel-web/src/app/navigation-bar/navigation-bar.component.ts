@@ -20,7 +20,7 @@ export class NavigationBarComponent implements OnInit {
   searchTerm: string = "";
 
   get isSearchPage(): boolean {
-    return this.core.navigation.currentPage() == PAGES.Search;
+    return this.core.navigation.currentPage().startsWith(this.core.navigation.browsePagePrefix);
   }
   
   get isOffline(): boolean {
@@ -57,7 +57,8 @@ export class NavigationBarComponent implements OnInit {
 
   goToSearch(){
     if (this.searchTerm.length < 3)  return;
-    this.core.navigation.toSearch(SearchType.Workflows, this.searchTerm);
+    // this.core.navigation.toSearch(SearchType.Workflows, this.searchTerm);
+    this.core.navigation.toBrowseWorkflows(this.searchTerm)
     this.searchTerm = "";
   }
 
@@ -73,15 +74,19 @@ export class NavigationBarComponent implements OnInit {
     this.core.navigation.toBrowseTargets();
   }
 
+  goToBrowseCredentials() {
+    this.core.navigation.toBrowseCredentials();
+  }
+
   goToHistory() {
     this.core.navigation.toHistory();
   }
 
   goToCredentialWin() {
-    this.core.navigation.toCredentialWindows();
+    this.core.navigation.toCredential(null, CredentialTypes.Windows);
   }
 
   goToCredentialAWS() {
-    this.core.navigation.toCredentialAWS();
+    this.core.navigation.toCredential(null, CredentialTypes.AWS);
   }
 }

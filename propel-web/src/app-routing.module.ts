@@ -101,13 +101,6 @@ const routes: Routes = [
     }
   },
   {
-    path: PAGES.Search,
-    component: SearchComponent,
-    data: {
-      title: "New Search"
-    }
-  },
-  {
     path: PAGES.BrowseWorkflows,
     component: SearchComponent,
     data: {
@@ -129,6 +122,13 @@ const routes: Routes = [
     }
   },
   {
+    path: PAGES.BrowseCredentials,
+    component: SearchComponent,
+    data: {
+      title: "Browsing Credentials"
+    }
+  },
+  {
     path: PAGES.History,
     component: HistoryComponent,
     data: {
@@ -143,6 +143,14 @@ const routes: Routes = [
     }
   },
   {
+    path: `${PAGES.EditCredential}/:id`,
+    component: CredentialComponent,
+    data: {
+      title: "Editing Credential"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
     path: PAGES.CredentialWindows,
     component: CredentialComponent,
     data: {
@@ -151,26 +159,10 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: `${PAGES.CredentialWindows}/:id`,
-    component: CredentialComponent,
-    data: {
-      title: "Editing Windows Credential"
-    },
-    canDeactivate: [DataLossPreventionGuard]
-  },
-  {
     path: PAGES.CredentialAWS,
     component: CredentialComponent,
     data: {
       title: "New AWS Credential"
-    },
-    canDeactivate: [DataLossPreventionGuard]
-  },
-  {
-    path: `${PAGES.CredentialAWS}/:id`,
-    component: CredentialComponent,
-    data: {
-      title: "Editing AWS Credential"
     },
     canDeactivate: [DataLossPreventionGuard]
   },

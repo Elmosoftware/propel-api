@@ -92,7 +92,7 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
     //we must look into the querystring parameters:
     if (!id) {
       let type: any = Utils.getEnumValue(CredentialTypes,
-        this.route.snapshot.queryParamMap.get("type"), false)
+        this.core.navigation.getCurrentPageSuffix(), false)
 
       if (type) {
         this.fh.form.controls.type.patchValue(String(type));
@@ -196,8 +196,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
                       .subscribe((result: DialogResult<any>) => {
                         //If the user is cancelling, wewill redirect to the Browse credentials page:
                         if (result.isCancel) {
-                          //TODO: Pending here to redirect to the browse page when browsing credentials is finished!
-                          this.core.navigation.toHome();
+                          this.core.navigation.toBrowseCredentials();
                         }
                         else { //If the user decide to enter the credential again.
 

@@ -13,16 +13,20 @@ import { UIHelper } from 'src/util/ui-helper';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { InfiniteScrollingService, PagingHelper, SCROLL_POSITION } from 'src/core/infinite-scrolling-module';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
-import { Workflow } from '../../../../propel-shared/models/workflow';
-import { Script } from '../../../../propel-shared/models/script';
-import { Target } from '../../../../propel-shared/models/target';
 import { DataEntity } from 'src/services/data.service';
 
+/**
+ * Search types defined.
+ * IMPORTANT NOTE: They must match in count and order with the tabs in the component.
+ */
 export enum SearchType {
   Workflows = "workflows",
   Scripts = "scripts",
-  Targets = "targets"
+  Targets = "targets",
+  Credentials = "credentials"
 }
+
+export const DEFAULT_SEARCH_TYPE: SearchType = SearchType.Workflows;
 
 /**
  * Size of each data page.
@@ -42,13 +46,23 @@ export class SearchComponent implements OnInit {
   private requestCount$: EventEmitter<number>;
 
   searchTypeEnum = SearchType;
-  currentSearchType: SearchType = null;
+  activeTab: number; // = SearchTabs.Scripts;
   fg: FormGroup;
   svcInfScroll: InfiniteScrollingService<Entity>;
   onDataFeed: EventEmitter<PagingHelper>;
 
   get termIsQuoted(): boolean {
     return Utils.isQuotedString(this.fg.value.searchText);
+  }
+
+  get searchType(): SearchType {
+    let ret: SearchType = DEFAULT_SEARCH_TYPE;
+
+    if (this.fg && this.fg.value.searchType) {
+        ret = this.fg.value.searchType;
+    }
+
+    return ret;
   }
 
   get searchTerm(): string {
@@ -104,8 +118,19 @@ export class SearchComponent implements OnInit {
 
   search() {
     this.resetSearch();
-    this.currentSearchType = this.fg.controls.searchType.value;
+    // this.currentSearchType = this.fg.controls.searchType.value;
+    //TODO: Crear el metodo de abajo.
+    this.activateTab(this.fg.controls.searchType.value)
     this.fetchData(this.svcInfScroll.pageSize, 0);
+  }
+
+  activateTab(type: SearchType): void {
+    this.activeTab = Utils.getEnumIndex(SearchType, type, false);
+  }
+
+  activeTabChanged($event: number) {
+    this.fg.controls.searchType.patchValue(Utils.getEnum(SearchType)[$event].value)
+    this.search()
   }
 
   fetchData(top: number, skip: number): void {
@@ -175,7 +200,7 @@ export class SearchComponent implements OnInit {
     }
 
     this.getData(this.fg.controls.searchType.value, qm)
-      .subscribe((results: APIResponse<Workflow>) => {
+      .subscribe((results: APIResponse<Entity>) => {
 
         let f1: string = (this.fg.controls.searchType.value == SearchType.Targets) ? "friendlyName" : "name";
         let f2: string = "description";
@@ -211,6 +236,9 @@ export class SearchComponent implements OnInit {
       case SearchType.Targets:
         entityType = DataEntity.Target;
         break;
+      case SearchType.Credentials:
+        entityType = DataEntity.Credential;
+        break;
       default:
         throw new PropelError(`There is no search type define with name ${type}`)
     }
@@ -220,8 +248,7 @@ export class SearchComponent implements OnInit {
     // if (type == SearchType.Workflows) {
     //   return this._fakeWorkflowCreation(1000, 100, qm);      
     // }
-    // throw new Error("Prueba");
-
+    // throw new Error("FAKE ERROR!!!");
     /////////////////////////////////////////////////////////////////////////////////
 
     return this.core.data.find(entityType, qm);
@@ -268,15 +295,22 @@ export class SearchComponent implements OnInit {
 
   private _buildForm(): void {
     let term: string = "";
-    let searchType: string = this.searchTypeEnum.Workflows.toString();
+    let searchType: string = DEFAULT_SEARCH_TYPE.toString();
     let browse: string = "false";
+    let pageSuffix:string = this.core.navigation.getCurrentPageSuffix();
+
+    if (pageSuffix) {
+      searchType = String(Utils.getEnumValue(SearchType, pageSuffix, false))
+      
+      //If for some reason the page suffix is not right, we will prepare a search for the 
+      //default search type:
+      if (!searchType) {
+        searchType = DEFAULT_SEARCH_TYPE.toString();
+      }
+    }
 
     if (this.route.snapshot.queryParamMap.get("term")) {
       term = this.route.snapshot.queryParamMap.get("term")
-    }
-
-    if (this.route.snapshot.queryParamMap.get("type")) {
-      searchType = this.route.snapshot.queryParamMap.get("type")
     }
 
     if (this.route.snapshot.queryParamMap.get("browse")) {
@@ -292,19 +326,12 @@ export class SearchComponent implements OnInit {
       searchType: new FormControl(searchType),
       browse: new FormControl(browse)
     });
-
-    //Watching changes on the search type, so we can restart the search when other type is selected:
-    this.fg.get("searchType").valueChanges.subscribe(value => {
-      if (this.showAll || this.searchTerm !== "") {
-        this.search();
-      }
-    })
   }
 
   /*================================================================================================
         Used for testing purposes only:
     ================================================================================================
-  
+   
   private _fakeWorkflowCreation(totalWorkflows: number, msTimeout: number, qm: QueryModifier): Observable<APIResponse<Workflow>> {
 
     let data: Workflow[] = [];
@@ -315,12 +342,12 @@ export class SearchComponent implements OnInit {
     if (qm.filterBy.$text) {
       words = qm.filterBy.$text.$search.split(" ");
     }
-    else {
-      words = [qm.filterBy.$or[0].name.$regex];
+    else if(qm.filterBy.$or){
+      words.push(String(qm.filterBy.$or[0].name.$regex));
     }
 
     //To emulate no data retrieved, sent the search term "nodata":
-    if (words[0] == "nodata") {
+    if (words.length > 0 && words[0] == "nodata") {
       return of(new APIResponse<Workflow>(null, data, 0))
         .pipe(delay(msTimeout));
     }
@@ -350,5 +377,5 @@ dictum at tempor commodo ullamcorper a.`; // Searched word is ${word}.`;
     return of(new APIResponse<Workflow>(null, data, totalWorkflows))
       .pipe(delay(msTimeout));
   }
- */
+  */
 }
