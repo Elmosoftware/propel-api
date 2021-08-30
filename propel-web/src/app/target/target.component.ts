@@ -10,11 +10,12 @@ import { Group } from '../../../../propel-shared/models/group';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
-import { Observable } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { DialogResult } from 'src/core/dialog-result';
 import { FormHandler } from "../../core/form-handler";
 import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
 import { DataEntity } from 'src/services/data.service';
+import { Credential } from "../../../../propel-shared/models/credential";
 
 const FRIENDLY_NAME_MIN: number = 3;
 const FRIENDLY_NAME_MAX: number = 25;
@@ -29,11 +30,18 @@ const GROUPS_MAX: number = 5
 export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
   @ViewChild("groups") groups;
+  @ViewChild("invokeAs") invokeAs;
 
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<Target>
   allGroups: Group[] = [];
+  allWindowsCredentials: Credential[];
   showAddNewButton: boolean = false;
+  credentialIsDisabled: boolean = false;
+
+  get isValid(): boolean {
+    return (this.fh.form.valid && !this.credentialIsDisabled);
+  }
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
@@ -54,6 +62,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
         ValidatorsHelper.maxItems(GROUPS_MAX)
       ]
       ),
+      invokeAs: new FormControl(""),
       enabled: new FormControl(""),
     }));
 
@@ -80,22 +89,73 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
-    this.refreshData();
-    this.refreshGroups();
+
+    //Doing this with a timeout to avoid the "ExpressionChangedAfterItHasBeenCheckedError" error:
+    setTimeout(() => {
+      forkJoin([
+        this.refreshGroups(),
+        this.refreshCredentials()
+      ])
+        .subscribe((results) => {
+
+          //We are adding here a temporary field "disabled". This field 
+          //is required for the @NgSelect component to identify disabled items in the list and prevent 
+          //them to be selected:
+
+          //@ts-ignore
+          this.allGroups = results[0].data.map(item => {
+            //@ts-ignore
+            item.disabled = false;
+            return item;
+          });
+
+          //@ts-ignore
+          this.allWindowsCredentials = results[1].data.map(item => {
+            //@ts-ignore
+            item.disabled = false;
+            return item;
+          });
+
+          this.refreshData();
+        });
+    });
   }
 
   refreshData(): void {
     let id: string = this.route.snapshot.paramMap.get("id");
 
     if (id) {
-      this.core.data.getById(DataEntity.Target, id, false)
+      this.core.data.getById(DataEntity.Target, id, true)
         .subscribe((data: APIResponse<Target>) => {
           if (data.count == 0) {
             this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
             this.newItem();
           }
           else {
-            this.fh.setValue(data.data[0])
+
+            let target: Target = data.data[0];
+
+            //If the target has a credential, but is not in the list of credentials in cahce, then
+            //the credential must be deleted:
+            if (target.invokeAs && !this.getCredentialFromCache(target.invokeAs._id)) {
+              let c = new Credential()
+              c._id = target.invokeAs._id
+              c.name = target.invokeAs.name
+              /* Note: We are adding this credential with disabled=false because for some reason the 
+                cross button to remove an item from the dropdown is not working when the item is disabled.
+                So, we are managing this condition with a new "isDisabled" attribute only for this cases.
+              */
+              //@ts-ignore
+              c.disabled = false; 
+              //@ts-ignore
+              c.isDisabled = true; 
+
+              //Adding the deleted credential to the whole list:
+              this.allWindowsCredentials = [...this.allWindowsCredentials, c];
+              this.invokeAs.select({ name: c.name, value: c }); //Selecting the credential in the dropdown.
+            }
+
+            this.fh.setValue(target)
           }
         },
           err => {
@@ -112,13 +172,29 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
     qm.sortBy = "name";
 
-    this.core.data.find(DataEntity.Group, qm)
-      .subscribe((results: APIResponse<Group>) => {
-        this.allGroups = results.data;
-      },
-        err => {
-          throw err
-        });
+    return this.core.data.find(DataEntity.Group, qm)
+  }
+
+  refreshCredentials() {
+    let qm: QueryModifier = new QueryModifier();
+    qm.sortBy = "name";
+    qm.filterBy = {
+      type: {
+        $eq: "Windows"
+      }
+    }
+
+    return this.core.data.find(DataEntity.Credential, qm)
+  }
+
+  credentialChanged($event){
+    this.credentialIsDisabled = ($event && $event.isDisabled); 
+  }
+
+  getCredentialFromCache(id: string): Credential | undefined {
+    return this.allWindowsCredentials.find((credential: Credential) => {
+      return credential._id == String(id);
+    });
   }
 
   addGroup() {
@@ -163,5 +239,19 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
           throw err
         }
       );
+  }
+
+  resetForm() {
+    this.fh.resetForm();
+
+    let credId = (this.fh.value.invokeAs?._id) ? this.fh.value.invokeAs._id : this.fh.value.invokeAs;
+
+    if (credId) {
+      let cred: Credential = this.getCredentialFromCache(String(credId))
+      this.invokeAs.select({ name: cred.name, value: cred });
+      
+      //@ts-ignore
+      this.credentialIsDisabled = Boolean(cred?.isDisabled);
+    }   
   }
 }

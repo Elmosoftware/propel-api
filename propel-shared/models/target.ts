@@ -1,6 +1,7 @@
 // @ts-check
 import { AuditedEntity } from "./audited-entity";
 import { Group } from "./group";
+import { Credential } from "../models/credential";
 
 /**
  * Represents the Target of an invocation. It have any infomation required to describe a target server.
@@ -32,6 +33,12 @@ export class Target extends AuditedEntity {
      * skipped on any Workflow or Task that have it.
      */
     public enabled: boolean = true;
+
+    /**
+     * Always invoke this target server using this specific credentials.
+     * This is an optional value.
+     */
+     public invokeAs!: Credential;
 
     constructor() {
         super();

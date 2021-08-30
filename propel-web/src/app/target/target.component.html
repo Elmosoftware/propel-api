@@ -33,6 +33,33 @@
             <app-validation-message [control]="fh.form.controls.groups"></app-validation-message>            
         </div>
         <div class="form-group">
+            <label class="mr-2" for="invokeAs">Invoke with this credentials</label>
+            <ng-select #invokeAs [items]="allWindowsCredentials" [multiple]="false" labelForId="invokeAs"
+                [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name"
+                clearAllText="Clear" [compareWith]="compareFn" (change)="credentialChanged($event)" 
+                placeholder="Select the credential you want to use for remote invocation."
+                formControlName="invokeAs">
+                  <ng-template ng-label-tmp let-item="item">
+                    <span class="icon-credential-windows menu-icon"></span>
+                    <span class="ng-value-label" [ngClass]="{
+                        'item-disabled': item.isDisabled 
+                    }">{{item.name}}</span>
+                  </ng-template>
+            </ng-select>
+            <div *ngIf="credentialIsDisabled">
+                <div class="alert alert-dismissible fade show alert-warning" role="alert">
+                    <strong>The selected credential is deleted.</strong> You must remove it or change 
+                    it by another one before to be able to save your changes.
+                    <br>
+                        Please take action, otherwise some invocations on this target can result in a faulty state.
+                </div>
+            </div>
+            <!-- DEBUG -->
+            <!-- <small class="form-text text-muted">Current control status:
+                {{ sampleFormOrControlStatus(fh.form.controls.credential) }}</small> -->
+            <!-- DEBUG -->
+        </div>
+        <div class="form-group">
             <label class="mr-2 w-100">Availability</label>
             <div class="d-flex justify-content-center">
                 <label class="mr-2 mt-1 text-mini">Disabled for now</label>
@@ -46,11 +73,15 @@
             <hr class="my-4">
             <div class="d-flex">
                 <div class="mr-auto">
-                    <button *ngIf="showAddNewButton" class="btn btn-secondary" type="button" (click)="newItem()">Add new</button>
+                    <button class="btn btn-primary" type="button" [disabled]="fh.form.pristine" 
+                    (click)="resetForm()">Cancel</button>
+                    <button *ngIf="showAddNewButton" class="btn btn-secondary ml-2" type="button" 
+                    (click)="newItem()">Add new</button>
                 </div>                
-                <button class="btn btn-primary ml-2" type="submit" [disabled]="!fh.form.valid">Save</button>
-                <button class="btn btn-primary ml-2" type="button" [disabled]="fh.form.pristine" (click)="fh.resetForm()">Cancel</button>
+                <button class="btn btn-primary ml-2" type="submit" [disabled]="!isValid">Save</button>
             </div>
         </div>
     </form>
 </div>
+
+<!-- <pre>{{fh.form.value | json }}</pre> -->

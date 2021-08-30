@@ -252,6 +252,10 @@ class Schemas {
                     {
                         type: Boolean,
                         isRequired: true
+                    }),
+                new SchemaField("invokeAs", `Optional credentials to use for remote execution on this target.`,
+                    {
+                        type: this.credential
                     })
             ])
             .merge(this.auditedEntity)
