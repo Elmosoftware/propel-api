@@ -4,10 +4,109 @@ import { Script } from "../../../propel-shared/models/script";
 import { SystemHelper } from "../../util/system-helper";
 import { Workflow } from "../../../propel-shared/models/workflow";
 import { WorkflowStep } from "../../../propel-shared/models/workflow-step";
+import { Credential } from "../../../propel-shared/models/credential";
+import { CredentialTypes } from "../../../propel-shared/models/credential-types";
+import { ParameterValue } from "../../../propel-shared/models/parameter-value";
+import { WindowsVaultItem } from "../../../propel-shared/models/windows-vault-item";
+import { Vault } from "../../../propel-shared/models/vault";
+import { AWSVaultItem } from "../../../propel-shared/models/aws-vault-item";
+import { ScriptParameter } from "../../../propel-shared/models/script-parameter";
 
 export class TestingWorkflows {
 
     constructor() {
+    }
+
+    get SecretWindows01(): Vault<WindowsVaultItem>{
+        let ret = new Vault<WindowsVaultItem>(WindowsVaultItem);
+
+        ret._id = "SecretWindows01"
+        ret.value.userName = "UserName";
+        ret.value.domain = "Domain";
+        ret.value.password = "Password";
+
+        return ret;
+    }
+
+    get CredentialWindows01(): Credential {
+        let pv1 = new ParameterValue()
+        pv1.name = "Field01W"
+        pv1.value = "Windows cred Field 01"
+
+        let pv2 = new ParameterValue()
+        pv2.name = "Field02W"
+        pv2.value = "Windows cred Field 02"
+        
+        let ret: Credential = new Credential()
+        ret._id = "CredentialWindows01"
+        ret.name = ret._id
+        ret.description = "Windows Credential for testing"
+        ret.type = CredentialTypes.Windows
+        ret.fields = [pv1, pv2]
+        ret.vaultId = "SecretWindows01"
+
+        return ret;
+    }
+
+    get SecretAWS02(): Vault<AWSVaultItem>{
+        let ret = new Vault<AWSVaultItem>(AWSVaultItem);
+
+        ret._id = "SecretAWS02"
+        ret.value.accessKey = "AccessKey";
+        ret.value.secretKey = "SecretKey";
+
+        return ret;
+    }
+
+    get CredentialAWS02(): Credential {
+        let pv1 = new ParameterValue()
+        pv1.name = "Field01AWS"
+        pv1.value = "AWS cred Field 01"
+
+        let pv2 = new ParameterValue()
+        pv2.name = "Field02AWS"
+        pv2.value = "AWS cred Field 02"
+        
+        let ret: Credential = new Credential()
+        ret._id = "CredentialAWS02"
+        ret.name = ret._id
+        ret.description = "AWS Credential for testing"
+        ret.type = CredentialTypes.AWS
+        ret.fields = [pv1, pv2]
+        ret.vaultId = "SecretAWS02"
+
+        return ret;
+    }
+
+    get SecretWindows03(): Vault<WindowsVaultItem>{
+        let ret = new Vault<WindowsVaultItem>(WindowsVaultItem);
+
+        ret._id = "SecretWindows03"
+        ret.value.userName = "UserName3";
+        ret.value.domain = "Domain3";
+        ret.value.password = "Password3";
+
+        return ret;
+    }
+
+    get CredentialWindows03(): Credential {
+        let pv1 = new ParameterValue()
+        pv1.name = "Field01W"
+        pv1.value = "Windows 03 cred Field 01"
+
+        let pv2 = new ParameterValue()
+        pv2.name = "Field02W"
+        pv2.value = "Windows 03 cred Field 02"
+        
+        let ret: Credential = new Credential()
+        ret._id = "CredentialWindows03"
+        ret.name = ret._id
+        ret.description = "Windows Credential for testing"
+        ret.type = CredentialTypes.Windows
+        ret.fields = [pv1, pv2]
+        ret.vaultId = "SecretWindows03"
+
+        return ret;
     }
 
     get Target01Enabled(): Target {
@@ -43,6 +142,26 @@ export class TestingWorkflows {
         ret.friendlyName = "Server #04"
         ret.description = "Fake enabled server Server 04"
         ret.enabled = false;
+        return ret;
+    }
+
+    get Target05EnabledWithCredentials(): Target {
+        let ret: Target = new Target()
+        ret.FQDN = "server05.propel.com"
+        ret.friendlyName = "Server #05"
+        ret.description = "Fake enabled server Server 05"
+        ret.enabled = true;
+        ret.invokeAs = this.CredentialWindows01;
+        return ret;
+    }
+
+    get Target06EnabledWithCredentials(): Target {
+        let ret: Target = new Target()
+        ret.FQDN = "server06.propel.com"
+        ret.friendlyName = "Server #06"
+        ret.description = "Fake enabled server Server 06"
+        ret.enabled = true;
+        ret.invokeAs = this.CredentialWindows03;
         return ret;
     }
 
@@ -114,6 +233,30 @@ export class TestingWorkflows {
         ret.isTargettingServers = true;
         ret.parameters = [];
         ret.code = this._getEncodedScriptCode(ret.name, "", "FAST", 2, false)
+
+        return ret;
+    }
+
+    get ScriptWithPropelCredentialsTargetFastTwoResultsNoThrow(): Script {
+        let ret: Script = new Script();
+        let sp = new ScriptParameter();
+
+        sp.name = "PropelCredentials"
+        sp.nativeType = "System.Object"
+        sp.required = false
+        sp.type = "Object"
+        sp.canBeEmpty = true
+        sp.canBeNull = true
+        sp.isPropelParameter = true
+        sp.hasDefault = false
+
+        ret.name = "WITHPROPELCRED-WITHTARGETS-FAST-2RESULTS-NOTHROW"
+        ret.description = "Script with a propelcredentials parameter, targetting servers, fast execution and returning 2 results. No throwing error."
+        ret.isTargettingServers = true;
+        ret.parameters = [sp];
+        ret.code = this._getEncodedScriptCode(ret.name, `param (
+            $PropelCredentials
+)`, "FAST", 2, false)
 
         return ret;
     }
@@ -317,6 +460,29 @@ export class TestingWorkflows {
 
         ret.steps.push(step2);
 
+        return ret;
+    }
+
+    get Worflow_S1Enabled2TargetsEnabledWithCredFast(): Workflow{
+        let ret: Workflow = new Workflow();
+        
+        ret.name = "Worflow_S1EnabledTargetEnabledWithCredFast"
+        ret.description = "Workflow with Step 1:ScriptNoParamsTargetFastTwoResultsNoThrow:ScriptNoParamsTargetUltraFastTwoResultsNoThrow."
+
+        let pv = new ParameterValue();
+        pv.name = "PropelCredentials"
+        pv.value = testingWorkflows.CredentialAWS02._id
+
+        let step: WorkflowStep = new WorkflowStep();
+        step.name = "STEP #1 FAST"
+        step.abortOnError = true;
+        step.enabled = true
+        step.script = this.ScriptWithPropelCredentialsTargetFastTwoResultsNoThrow;
+        step.targets = [this.Target05EnabledWithCredentials, this.Target06EnabledWithCredentials]
+        step.values = [pv];
+
+        ret.steps.push(step);
+        
         return ret;
     }
 

@@ -19,8 +19,12 @@ import { ExecutionStatus } from "../../propel-shared/models/execution-status";
 import { ExecutionError } from "../../propel-shared/models/execution-error";
 import { db } from "../core/database";
 import { DataService } from "../services/data-service";
+import { CredentialCache, CredentialCacheItem } from "../services/credential-cache";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { logger } from "./logger-service";
+import { Credential } from "../../propel-shared/models/credential";
+import { Vault } from "../../propel-shared/models/vault";
+import { QueryModifier } from "../../propel-shared/core/query-modifier";
 
 /**
  * This class responsibility is everything related to run a specified workflow and 
@@ -35,6 +39,7 @@ export class Runner {
     private _cancelExecution: boolean;
     private _currentInvocation: InvocationService | null;
     private _stats!: ExecutionStats;
+    private _credentialCache: CredentialCache;
 
     constructor() {
         this._scriptVal = new ScriptValidator();
@@ -43,6 +48,7 @@ export class Runner {
         this._localTarget.friendlyName = this._localTarget.FQDN;
         this._cancelExecution = false;
         this._currentInvocation = null;
+        this._credentialCache = new CredentialCache();
     }
 
     /**
@@ -66,8 +72,8 @@ export class Runner {
      * @param workflow The workflow to execute.
      * @param subscriptionCallback A callback function to get any realtime message during the execution.
      */
-    async execute(workflow: Workflow, subscriptionCallback?: Function): Promise<InvocationMessage> {
-        
+    async execute(workflow: Workflow | undefined, subscriptionCallback?: Function): Promise<InvocationMessage> {
+
         let abort: boolean = false;
         let resultsMessage: InvocationMessage;
         this._cb = subscriptionCallback;
@@ -77,10 +83,24 @@ export class Runner {
         this._stats = new ExecutionStats();
 
         //If the Workflow was deleted, we are not able to proceed.
-        if(!workflow){
-            return new InvocationMessage(InvocationStatus.Failed, 
+        if (!workflow) {
+            return new InvocationMessage(InvocationStatus.Failed,
                 "The workflow does not exists. Please verify if it was deleted before retrying.",
                 "", this._stats, "", ExecutionStatus.Faulty);
+        }
+
+        try {
+            await this._credentialCache.build(workflow)
+         } catch (error) {
+            let e = (error?.errors && error.errors.length > 0) ? error.errors[0] : error
+            let message: string = (e.errorCode?.userMessage) ? e.errorCode?.userMessage : e.message;
+
+            return new InvocationMessage(InvocationStatus.Failed,
+                `There was an error during the preparation.\r\n` + 
+                `If this error is related to the credentials assigned to one specific target or the ` + 
+                `credentials set to one or more Propel parameters in any of the scripts, please verify them ` +
+                `before to retry. Following the error details: ` + message, "", this._stats, 
+                "", ExecutionStatus.Faulty);
         }
 
         this._stats.workflowName = workflow.name;
@@ -105,7 +125,7 @@ export class Runner {
             let argsList: string[] = [];
             let scriptCode: string = "";
             let execStep: ExecutionStep = new ExecutionStep();
-            
+
             //Updating Execution log:
             execStep.stepName = step.name;
             execStep.scriptName = step.script.name;
@@ -124,7 +144,7 @@ export class Runner {
                 execStep.status = ExecutionStatus.Faulty;
                 execStep.execError = new ExecutionError(error);
             }
-            
+
             if (this._cancelExecution) {
                 abort = true //Next steps,(if any), will be aborted.
                 execStep.status = ExecutionStatus.CancelledByUser;
@@ -133,7 +153,7 @@ export class Runner {
                 execStep.status = ExecutionStatus.Aborted;
             }
             else if (!step.enabled || !execStep.scriptEnabled) {
-                execStep.status =  ExecutionStatus.Skipped;
+                execStep.status = ExecutionStatus.Skipped;
             }
             else {
                 if (!step.script.isTargettingServers) {
@@ -152,12 +172,12 @@ export class Runner {
                     if (execStep.status == ExecutionStatus.Pending) {
                         execStep.targets = await this._executeOnAllTargets(scriptCode, argsList, step.targets);
                         execStep.status = this._summaryStatus(execStep.targets);
-                    }                    
+                    }
                 } catch (error) {
                     execStep.status = ExecutionStatus.Faulty;
                     execStep.execError = new ExecutionError(error);
                 }
-                
+
                 //If the step has errors and the workflow is configured to abort in that situation:
                 if (execStep.status == ExecutionStatus.Faulty && step.abortOnError) {
                     abort = true;
@@ -169,11 +189,11 @@ export class Runner {
 
         this._execLog.status = this._summaryStatus(this._execLog.executionSteps);
         this._execLog.endedAt = new Date();
-        
+
         try {
-            resultsMessage = new InvocationMessage(InvocationStatus.Finished, "","", this._stats);
+            resultsMessage = new InvocationMessage(InvocationStatus.Finished, "", "", this._stats);
             resultsMessage.logStatus = this._execLog.status;
-            resultsMessage.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog))).data[0]; 
+            resultsMessage.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog))).data[0];
             this._execLog._id = resultsMessage.logId;
         } catch (error) {
             if (error.errors && error.errors.length > 0) {
@@ -181,7 +201,7 @@ export class Runner {
             }
             let e = new PropelError(error, ErrorCodes.saveLogFailed);
             logger.logError(e);
-            resultsMessage = new InvocationMessage(InvocationStatus.Failed, 
+            resultsMessage = new InvocationMessage(InvocationStatus.Failed,
                 e.errorCode.userMessage, "", this._stats, "", ExecutionStatus.Faulty);
         }
 
@@ -190,6 +210,174 @@ export class Runner {
         return resultsMessage;
     }
 
+    // /**
+    //  * Returns a list of Vault items holding the secret part of all the credentials to be use in the specified 
+    //  * Workflow execution.
+    //  * @param workflow Workflow.
+    //  * @returns A list of all the Vault Items for all the credentials defined in all the targets that 
+    //  * appear in the specified Workflow steps.
+    //  */
+    // private async buildCredentialsCache(workflow: Workflow): Promise<void> {
+    //     let credentialCounter: number = 0;
+    //     let list: Set<string> = new Set<string>();
+    //     let credentials: Credential[] = [];
+    //     let vaultItems: Vault<any>[] = [];
+
+    //     workflow.steps.map(async (step) => {  
+
+    //         //1st - To gather all the credentials in Propel parameters:
+    //         //========================================================= 
+            
+    //         step.script.parameters.forEach((param) => {
+    //             //If the parameter is a Propel parameter the value will be the list 
+    //             //of credentials to retrieve:
+    //             if (param.isPropelParameter) {
+    //                 //Need to look in the collection of parameter values for that parameter:
+    //                 step.values.map((pv) => {
+    //                     if (pv.name == param.name) {
+    //                         //The values will be a comma separated list of all the credentials 
+    //                         //set in the Propel parmeter:
+    //                         pv.value
+    //                             .split(",")
+    //                             .map((name) => list.add(name)) //Set is preventing to add duplicates.
+    //                     }
+    //                 })
+    //             }
+    //         })
+
+    //         if (list.size > 0) {
+    //             credentialCounter += list.size;
+    //             credentials = await this.getCredentialsByName(Array.from(list));
+
+    //             //Verifying the count, throwing if not match:
+    //             if (credentialCounter != credentials.length) {
+    //                 throw new PropelError(`There was a total of ${credentialCounter} credentials specified in one or ` + 
+    //                     `more Propel parameters in all the scripts of this workflow. But we found only ${credentials.length} of them.\r\n` +
+    //                     `Credentials specified: "${Array.from(list).join()}", ` +
+    //                     `Credentials found: "${credentials.map((cred) => cred.name).join()}".`)
+    //             }
+    //         }
+
+    //         //2nd - To gather all the credentials specified for the Targets:
+    //         //==============================================================
+            
+    //         step.targets.map((t) => {
+    //             //if the credential is not already in the list:
+    //             if (t.invokeAs && !credentials.find((cred) => cred.name == t.invokeAs?.name)) {
+    //                 credentials.push(Object.assign({}, t.invokeAs));
+    //                 credentialCounter += 1;
+    //             }
+    //         })
+
+    //         //3rd - To fetch all the Vault items for all the credentials:
+    //         //===========================================================
+                
+    //         list = new Set<string>();
+            
+    //         credentials.forEach((cred) => {
+    //             list.add(cred.vaultId);
+    //         })
+
+    //         if (list.size > 0) {
+    //             vaultItems = await this.getVaultItemsById(Array.from(list));
+
+    //             //Verifying the count, throwing if not match:
+    //             if (list.size != vaultItems.length) {
+    //                 throw new PropelError(`There is a total of ${list.size} credentials specified for this Workflow, ` + 
+    //                     `but we found only the secret part of the Credentials for only ${vaultItems.length} of them.\r\n` +
+    //                     `Vault Item IDs specified: "${Array.from(list).join()}", ` +
+    //                     `Vault Item IDs found: "${vaultItems.map((vi) => vi._id).join()}".`)
+    //             }
+    //         }
+    //     })
+
+    //     //4th - Build the map:
+    //     //====================
+
+    //     this._credentialCache = new Map<Credential, Vault<any>>();
+
+    //     credentials.forEach((credential) =>{
+    //         let vaultItem = (vaultItems.find((vi) => vi._id = credential.vaultId) as Vault<any>)
+    //         this._credentialCache.set(credential, vaultItem);
+    //     }) 
+    // }
+
+    // private getCredentialFromCache(credentialName: string): {credential: Credential, vaultItem: Vault<any>} | undefined {
+
+    //     for (let [c, v] of  this._credentialCache.entries()) {
+    //         if (c.name == credentialName) {
+    //             return {credential: c, vaultItem: v}
+    //         }
+    //     }
+
+    //     return undefined
+    // }
+
+    // private async buildPropelParameterCredentials(credentialNames: string[]): Promise<Credential[]> {
+    //     let list: Set<string> = new Set<string>();
+    //     let credentials: Credential[] = await this.getCredentialsByName(credentialNames);
+    //     let vaultIds: string[] = [];
+    //     let vaultItems: Vault<any>[] = [];
+
+    //     //Getting the list of Vault items:
+    //     credentials.forEach((cred) => {
+    //         vaultIds.push(cred.vaultId);
+    //     })
+
+    //     vaultItems = await this.getVaultItemsById(vaultIds);
+
+    //     //Matching credentials and vault items:
+    //     credentials.forEach((credential) => {
+    //         let vaultItem = vaultItems.find((item) => item._id == credential.vaultId);
+
+    //         if (vaultItem) {
+    //             //We just add an extra attribute with the whole Vault Item that 
+    //             //holds the secret part of the credential: 
+    //             credential[this.VAULT_ITEM] = vaultItem;
+    //         }
+    //         else {
+    //             throw new PropelError(`Credential secret is missing. The credential "${credential.name}" has missing the secret part, (Id:"${credential.vaultId}").`)
+    //         }
+    //     })
+
+    //     return credentials;
+    // }
+
+    // async getVaultItemsById(vaultIds: string[]): Promise<Vault<any>[]> {
+
+    //     let svc: DataService = db.getService("Vault");
+    //     let qm = new QueryModifier();
+
+    //     //Adding a filter to retrieve all the Vault Items:
+    //     qm.filterBy = {
+    //         _id: {
+    //             $in: vaultIds.map((id) => svc.getObjectId(id))
+    //         }
+    //     };
+
+    //     return (await svc.find(qm)).data;
+    // }
+
+    // async getCredentialsByName(credentialNames: string[]): Promise<Credential[]> {
+
+    //     let svc: DataService = db.getService("Credential");
+    //     let qm = new QueryModifier();
+
+    //     //Adding a filter to retrieve all the Vault Items:
+    //     qm.filterBy = {
+    //         _id: {
+    //             $in: credentialNames
+    //         }
+    //     };
+
+    //     return (await svc.find(qm)).data;
+    // }
+
+    /**
+     * Persist an entire execution log in the database.
+     * @param log Log to persist.
+     * @returns A promis with the result of the operation.
+     */
     async saveExecutionLog(log: ExecutionLog): Promise<APIResponse<string>> {
         let svc: DataService = db.getService("ExecutionLog");
         return svc.add(log);
@@ -204,7 +392,7 @@ export class Runner {
      */
     cancelExecution(killProcessIfRunning: boolean = false): void {
         this._cancelExecution = true;
-        if (killProcessIfRunning && this._currentInvocation && 
+        if (killProcessIfRunning && this._currentInvocation &&
             this._currentInvocation.status == InvocationStatus.Running) {
             this._currentInvocation?.disposeSync();
         }
@@ -227,9 +415,9 @@ export class Runner {
         if (encodedScriptCode && typeof encodedScriptCode == "string") {
             ret = SystemHelper.decodeBase64(encodedScriptCode) //Decoding Base64
                 .replace(/\t/gi, ` `.repeat(4)) //Tabs can cause issues during script 
-                //execution, (see notes), so we are replacing them with spaces. 
+            //execution, (see notes), so we are replacing them with spaces. 
         }
-        
+
         /*
             Note: Regarding allowing Tabs, (ASCII 9), character in the script. This can cause some 
             issues when Powershell is reading from the STDIN, (as we use to do when running scripts).
@@ -267,7 +455,7 @@ export class Runner {
                     .then((invsvc: InvocationService) => {
 
                         this._currentInvocation = invsvc;
-                        
+
                         //Subscribe to the STDOUT event listener:
                         invsvc.addSTDOUTEventListener((msg: InvocationMessage) => {
                             msg.source = target.friendlyName;
@@ -314,7 +502,7 @@ export class Runner {
         }
     }
 
-    private _summaryStatus(execs: Array<any>): ExecutionStatus{
+    private _summaryStatus(execs: Array<any>): ExecutionStatus {
 
         let ret: ExecutionStatus = ExecutionStatus.Success;
         let skippedCount: number = 0;
@@ -328,14 +516,14 @@ export class Runner {
 
             //If there is at least one aborted item, we will summarize the status as "Aborted". At 
             //least that statuswas caused by a user cancellation.
-            if (ret != ExecutionStatus.CancelledByUser && item.status && 
+            if (ret != ExecutionStatus.CancelledByUser && item.status &&
                 item.status == ExecutionStatus.Aborted) {
                 ret = ExecutionStatus.Aborted;
             }
 
             //If execution wasn't cancelled and there is no Aborted items, but there is at least 
             //one Faulty, we will summarize the status as "Faulty":
-            if (ret != ExecutionStatus.CancelledByUser && ret != ExecutionStatus.Aborted && 
+            if (ret != ExecutionStatus.CancelledByUser && ret != ExecutionStatus.Aborted &&
                 item.status && item.status == ExecutionStatus.Faulty) {
                 ret = ExecutionStatus.Faulty;
             }
@@ -351,7 +539,7 @@ export class Runner {
         if (ret == ExecutionStatus.Success && skippedCount && skippedCount == execs.length) {
             ret = ExecutionStatus.Skipped;
         }
-    
+
         return ret;
     }
 
@@ -380,12 +568,12 @@ export class Runner {
                 }
 
                 if (param.isPropelParameter) {
-                    value = `(${this._buildPropelVariableValue()})`
+                    value = this._buildPropelVariableValue(value);
                 }
 
                 if (value !== POWERSHELL_NULL_LITERAL && param.nativeType == "String") {
-                        prefix = `"`;
-                        sufix = `"`;
+                    prefix = `"`;
+                    sufix = `"`;
                 }
 
                 ret.push(`-${param.name}:${prefix}${value}${sufix}`)
@@ -402,9 +590,8 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
 
     private _buildCommand(scriptCode: string, argList: string[], target: Target): string {
 
-        let ret: string = "";
-
-        ret += `$codeBlock = [Scriptblock]::Create(@'\r\n&{\r\n${scriptCode}\r\n} ${argList.join(" ")}\r\n'@)\r\nInvoke-Command`;
+        let ret: string = 
+        `$codeBlock = [Scriptblock]::Create(@'\r\n&{\r\n${scriptCode}\r\n} ${argList.join(" ")}\r\n'@)\r\nInvoke-Command`;
 
         /*
             Note: 
@@ -414,48 +601,113 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
          */
         if (cfg.isProduction) {
             ret += ` -ComputerName ${target.FQDN}`
+
+            if (target.invokeAs) {
+                let cacheItem = this._credentialCache.getById(target.invokeAs._id);
+
+                if (!cacheItem) {
+                    throw new PropelError(`Error building the command. Credential with name "${target.invokeAs.name}" was not found in cache.`)
+                }
+
+                ret += ` -Credential (${Utils.getPSCredentialFromVaultItem(cacheItem.vaultItem)})`;
+            }
         }
 
-        if (cfg.impersonateOptions.enabled) {
-            ret += ` -Credential (${this._buildCredentials()})`;
-        }
-       
         ret += ` -ScriptBlock $codeBlock`
         ret += `\r\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
 
-        this._logCommand(ret);
+        this._logCommand(ret, this._credentialCache.allSecretStrings);
 
         return ret;
     }
 
-    private _buildPropelVariableValue(): string {
+    /**
+     * Build the value for all the Credentials specified in one Propel parameter.
+     * The rsult is a serialized PowerShell array including the data for all the specified credentials.
+     * @param credentialIds Ids of the credentials to be passed as value in the Propel Parameter.
+     * @returns A serialized Powershell array with all the credentials data.
+     */
+    private _buildPropelVariableValue(credentialIds: any): string {
+    // private async _buildPropelVariableValue(credentialNames: any): Promise<string> {
 
-        let cred = POWERSHELL_NULL_LITERAL;
+        let ret: string = ""
 
-        if (cfg.impersonateOptions.enabled) {
-            cred = this._buildCredentials();
+        if(!credentialIds || String(credentialIds) == POWERSHELL_NULL_LITERAL) return String(credentialIds) 
+
+        if (!Array.isArray(credentialIds)) {
+            credentialIds = credentialIds
+                .split(",")
+                .map((v: any) => String(v).trim())
         }
 
-        return `New-Object -TypeName PsCustomObject | \`
-    Add-member -Name Environment -MemberType ScriptProperty -PassThru -Value { "${cfg.environment}" } | \`
-    Add-member -Name ImpersonateEnabled -MemberType ScriptProperty -PassThru -Value { ${cfg.impersonateOptions.enabled ? "$true" : "$false"} } | \`
-    Add-member -Name ImpersonateCredentials -MemberType ScriptProperty -PassThru -Value { ${cred} }`;
+        credentialIds.forEach((id: string, i: number) => {
+            let cacheItem = this._credentialCache.getById(id);
+
+            if (!cacheItem) {
+                throw new PropelError(`Error building Propel variable value. Credential with identifier "${id}" was not found in cache.`)
+            }
+
+            ret += ((i > 0)? ", " : "") +
+                Utils.credentialToPowerShellCustomObject(cacheItem.credential, cacheItem.vaultItem);            
+        });
+
+        return "@(" + ret + ")"
+        // return `""`
+
+            // ================================================================
+
+    //     let cred = POWERSHELL_NULL_LITERAL;
+
+    //     // if (cfg.impersonateOptions.enabled) {
+    //     //     cred = this._buildCredentials();
+    //     // }
+
+    //     return `New-Object -TypeName PsCustomObject | \`
+    // Add-member -Name Environment -MemberType ScriptProperty -PassThru -Value { "${cfg.environment}" } | \`
+    // Add-member -Name ImpersonateCredentials -MemberType ScriptProperty -PassThru -Value { ${cred} }`;
+    
     }
 
-    private _buildCredentials(): string {
-        return `New-Object System.Management.Automation.PSCredential "${cfg.impersonateOptions.user}", (ConvertTo-SecureString "${cfg.impersonateOptions.password}" -AsPlainText -Force)`;
-    }
+    // private _buildCredentials(cred: Credential): string {
+    //     //@ts-ignore
+    //     let secret: WindowsVaultItem = cred[this.VAULT_ITEM].value 
+    //     let u: string = this._buildUserName(secret.userName, secret.domain);
+    //     return `New-Object System.Management.Automation.PSCredential "${u}", (ConvertTo-SecureString "${secret.password}" -AsPlainText -Force)`;
+    // }
 
-    private _logCommand(command: string) {
+    // private _buildUserName(user: string, domain: string): string {
+    //     let ret: string = ""
+    
+    //         if(!user) return ret;
+    
+    //         if(domain) {
+    //             ret += `${domain}\\`
+    //         }
+    
+    //         ret += user;
+    
+    //         return ret;
+    // }
 
-        if (cfg.impersonateOptions.enabled && cfg.impersonateOptions.password) {
-            command = command.replace(new RegExp(SystemHelper.RegExpEscape(cfg.impersonateOptions.password), "g"), "********")            
+    /**
+     * This method log a command when in DEBUG mode including all the details of the invocation.
+     * The parameter "censorshipList" is a list of sensitive data that we would like to prevent 
+     * been in the logs, (like passwords, usernames, etc.)
+     * @param command command to log.
+     * @param censorshipList list of keywords to scrub.
+     */
+    private _logCommand(command: string, censorshipList: string[]) {
+
+        if (censorshipList && censorshipList.length > 0) {
+            censorshipList.forEach((secret) =>{
+                command = command.replace(new RegExp(SystemHelper.RegExpEscape(secret), "g"), "********")            
+            })
         }
 
         if (command.length > 300) {
-            command = command.substring(0, 150) + "\r\n       ... (removed part of the script for brevity) ...     \r\n" + 
-                command.substring(command.length -150, command.length)
+            command = command.substring(0, 150) + "\r\n       ... (removed part of the script for brevity) ...     \r\n" +
+                command.substring(command.length - 150, command.length)
         }
 
         logger.logDebug(`Executing command:\r\n${command}`);
@@ -473,15 +725,15 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
                 if (originalSize > maxLogSize) {
                     t.execResults = `Removing the results because they exceeded the execution log quota.\r\nMaximum allowed results size: ${cfg.maxWorkflowResultsSizeInMB.toFixed(2)}MB.`;
                     removedCount++;
-                }                
+                }
             })
         })
 
         if (originalSize > maxLogSize) {
             logger.logDebug(`${removedCount} of all the target execution results has been removed from the execution log because they were exceeding the execution log quota. 
-Total size of target(s) execution results is: ${originalSize} Bytes (${(originalSize/1024/1024).toFixed(2)}MB)
+Total size of target(s) execution results is: ${originalSize} Bytes (${(originalSize / 1024 / 1024).toFixed(2)}MB)
 Maximum allowed size is: ${cfg.maxWorkflowResultsSize} Bytes (${cfg.maxWorkflowResultsSizeInMB.toFixed(2)}MB).`);
-        }                
+        }
 
         return log;
     }

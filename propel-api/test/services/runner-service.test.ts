@@ -2,9 +2,11 @@ import { testingWorkflows } from "./testing-workflows";
 import { pool } from "../../services/invocation-service-pool";
 import { Runner } from "../../services/runner-service";
 import { ExecutionStatus } from "../../../propel-shared/models/execution-status";
-import { InvocationMessage, InvocationStatus } from "../../../propel-shared/core/invocation-message";
+import { InvocationMessage } from "../../../propel-shared/core/invocation-message";
 import { ExecutionLog } from "../../../propel-shared/models/execution-log";
 import { APIResponse } from "../../../propel-shared/core/api-response";
+import { Vault } from "../../../propel-shared/models/vault";
+import { Credential } from "../../../propel-shared/models/credential";
 
 let runner: Runner;
 
@@ -16,9 +18,40 @@ afterAll(() => {
 describe("Runner Class - execute()", () => {
 
     beforeEach(() => {
+        let tw = testingWorkflows;
+
         runner = new Runner();
         runner.saveExecutionLog = (log: ExecutionLog) => {
             return Promise.resolve(new APIResponse<string>(null, "newid"));
+        }
+
+        //Mocking the Credential cache inside the runner:
+
+
+        //@ts-ignore
+        runner._credentialCache.getCredentialsById = async (credentialIds: string[]): Promise<Credential[]> => {
+            let ret: Credential[] = []
+
+            credentialIds.forEach((id: string) => {
+                //@ts-ignore
+                ret.push(tw[id]) //Always ensure the Credential name is the same as the property "_id"!
+            })
+
+            return ret; //Here, (for a positive case), we expect to have only the credentials 
+            //in $PropelCredentials.
+        }
+
+        //@ts-ignore
+        runner._credentialCache.getVaultItemsById = async (vaultIds: string[]): Promise<Vault<any>[]> => {
+            let ret: Vault<any>[] = []
+
+            vaultIds.forEach((name: string) => {
+                //@ts-ignore
+                ret.push(tw[name])
+            })
+
+            return ret;  //Here, (for a positive case), we expect to have all the 
+            //credentials secrets. The ones in the $PropelCredentials and the ones for the Targets credentials.
         }
     })
 
@@ -272,6 +305,73 @@ describe("Runner Class - execute()", () => {
                     expect(runner.executionLog?.executionSteps[1].execError).toBe(null);
                     expect(runner.executionLog?.executionSteps[1].status).toEqual(ExecutionStatus.CancelledByUser);
 
+                }
+                else {
+                    expect(msg.logId).not.toBe(null);
+                }
+
+                done();
+            })
+            .catch((err) => {
+                //IMPORTANT: Is not expected an error in this call!!!!
+                expect(err).toEqual("Is not expected an error in this call!!!!")
+            })
+
+    }, 15000);
+
+    test(`Workflow with $PropelCredentials Parameter, 1 single credential`, (done) => {
+
+        let w = testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast //With Credentials!
+
+        //At last: CredentialCache is calling the "toObject()" method in the Credential model. We need 
+        //to add it in order to avoid the build method to fail:
+        w.steps[0].targets.map((target) => {
+            if (target.invokeAs && !(target.invokeAs as any).toObject) {
+                //@ts-ignore
+                target.invokeAs.toObject = () => target.invokeAs
+            }
+            return target;
+        })
+
+        runner.execute(w)
+            .then((msg: InvocationMessage) => {
+                if (msg.logId) {
+                    expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
+                }
+                else {
+                    expect(msg.logId).not.toBe(null);
+                }
+
+                done();
+            })
+            .catch((err) => {
+                //IMPORTANT: Is not expected an error in this call!!!!
+                expect(err).toEqual("Is not expected an error in this call!!!!")
+            })
+
+    }, 15000);
+
+    test(`Workflow with $PropelCredentials Parameter, 2 credentials`, (done) => {
+
+        let w = testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast //With Credentials!
+
+        //Adding an extra credential in the $PropelCredentials parameter value:
+        w.steps[0].values[0].value += `, ${testingWorkflows.CredentialWindows03._id}`
+
+        //At last: CredentialCache is calling the "toObject()" method in the Credential model. We need 
+        //to add it in order to avoid the build method to fail:
+        w.steps[0].targets.map((target) => {
+            if (target.invokeAs && !(target.invokeAs as any).toObject) {
+                //@ts-ignore
+                target.invokeAs.toObject = () => target.invokeAs
+            }
+            return target;
+        })
+        
+        runner.execute(w)
+            .then((msg: InvocationMessage) => {
+                if (msg.logId) {
+                    expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                 }
                 else {
                     expect(msg.logId).not.toBe(null);
