@@ -9,9 +9,7 @@ import { DataEntity } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from '../../../../propel-shared/models/credential-types';
-import { WindowsVaultItem } from '../../../../propel-shared/models/windows-vault-item';
-import { AWSVaultItem } from '../../../../propel-shared/models/aws-vault-item';
-import { Vault } from "../../../../propel-shared/models/vault";
+import { Vault, VaultItemFactory } from "../../../../propel-shared/models/vault";
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { DialogResult } from 'src/core/dialog-result';
@@ -242,7 +240,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
     let cred: Credential = new Credential();
 
     cred.type = this.fh.value.type
-    this.secret = this.createVaultItemFromCredentialType(cred.type);
+    this.secret = VaultItemFactory.createFromCredential(cred);
 
     //If we need to create not only a Vault Item but also the credentials:
     if (!vaultItemOnly) {
@@ -253,20 +251,6 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
     //Ensuring we are going to create a new Vault item:
     this.fh.form.controls.vaultId.patchValue(this.secret._id);
     this.fh.form.updateValueAndValidity();
-  }
-
-  createVaultItemFromCredentialType(type: CredentialTypes): Vault<any> {
-    let ret: Vault<any>;
-
-    switch (type) {
-      case CredentialTypes.AWS:
-        ret = new Vault<AWSVaultItem>(AWSVaultItem);
-        break;
-      default:
-        ret = new Vault<WindowsVaultItem>(WindowsVaultItem);
-    }
-
-    return ret;
   }
 
   addField() {

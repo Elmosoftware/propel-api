@@ -17,10 +17,14 @@ import { Category } from '../../../../propel-shared/models/category';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { DataEntity } from 'src/services/data.service';
 import { Utils } from "../../../../propel-shared/utils/utils";
+import { Credential } from '../../../../propel-shared/models/credential';
+import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
+
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
 const TARGETS_MAX: number = 10;
+const CREDENTIALS_MAX: number = 5;
 
 @Component({
   selector: 'app-workflow-step',
@@ -49,14 +53,17 @@ export class WorkflowStepComponent implements OnInit {
 
   @ViewChild("script") scriptDropdown;
   @ViewChild('targets') targets: NgSelectComponent;
+  @ViewChild('credentials') credentials: NgSelectComponent;
 
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<WorkflowStep>;
   allScripts: Script[];
   allTargets: Target[];
+  allCredentials: Credential[];
   selectedScript: Script | undefined;
   validSets: any = {};
   quickTaskId: string = "";
+  credentialTypes = CredentialTypes;
 
   get parameterValues(): FormArray {
     return (this.fh.form.controls.values as FormArray);
@@ -105,7 +112,8 @@ export class WorkflowStepComponent implements OnInit {
     setTimeout(() => {
       forkJoin([
         this.refreshScripts(),
-        this.refreshTargets()
+        this.refreshTargets(),
+        this.refreshCredentials()
       ])
         .subscribe((results) => {
 
@@ -127,6 +135,13 @@ export class WorkflowStepComponent implements OnInit {
             return item;
           });
 
+          //@ts-ignore
+          this.allCredentials = results[2].data.map(item => {
+            //@ts-ignore
+            item.disabled = false;
+            return item;
+          });
+
           this.setValue(this.step);
         });
     });
@@ -144,6 +159,12 @@ export class WorkflowStepComponent implements OnInit {
     return this.core.data.find(DataEntity.Target, qm);
   }
 
+  refreshCredentials() {
+    let qm: QueryModifier = new QueryModifier();
+    qm.sortBy = "name";
+    return this.core.data.find(DataEntity.Credential, qm);
+  }
+
   getScriptFromCache(id: string): Script | undefined {
     return this.allScripts.find((script: Script) => {
       return script._id == String(id);
@@ -153,6 +174,12 @@ export class WorkflowStepComponent implements OnInit {
   getTargetFromCache(id: string): Target | undefined {
     return this.allTargets.find((target: Target) => {
       return target._id == String(id);
+    });
+  }
+
+  getCredentialFromCacheByName(name: string): Credential | undefined {
+    return this.allCredentials.find((credential: Credential) => {
+      return credential.name == String(name);
     });
   }
 
@@ -199,8 +226,14 @@ export class WorkflowStepComponent implements OnInit {
         //We need to convert back boolean values to PowerShell Booleans:
         // this.convertParameterValuesFromJStoPS(step.values);
         if (step.values && step.values.length > 0) {
-          step.values.forEach((val) => {
-            Utils.JavascriptToPowerShellValueConverter(val);
+          step.values.forEach((pv) => {
+            //If is a propel parameter, we need to flaten the array of credential ids:
+            if (this.isPropelParameter(pv.name) && pv.value && Array.isArray(pv.value)) {
+              pv.value = pv.value.join(",")
+            }
+            else {
+              Utils.JavascriptToPowerShellValueConverter(pv);
+            }
           })
         }
 
@@ -265,8 +298,12 @@ export class WorkflowStepComponent implements OnInit {
     });
   }
 
-  dropItem(item: any) {
+  dropTargetItem(item: any) {
     this.targets.clearItem(item);
+  }
+
+  dropCredentialItem(item: any) {
+    this.credentials.clearItem(item);
   }
 
   private initializeParameters() {
@@ -335,6 +372,15 @@ export class WorkflowStepComponent implements OnInit {
           break;
       }
 
+      if (p.isPropelParameter) {
+        vfns.push(ValidatorsHelper.maxItems(CREDENTIALS_MAX));
+        //For the form edition, we need to convert the string value of the propel parameter in a string array:
+        if (pv.value) {
+          //@ts-ignore
+          pv.value = pv.value.split(",")
+        }
+      }
+
       if (p.required) {
         vfns.push(Validators.required)
       }
@@ -349,14 +395,7 @@ export class WorkflowStepComponent implements OnInit {
         nativeType: new FormControl(pv.nativeType)
       });
 
-      //The $Propel parameter must be readonly:
-      if (p.isPropelParameter) {
-        fg.disable({ onlySelf: true });
-      }
-
       (this.fh.form.controls.values as FormArray).push(fg);
-
-      
 
       newValues.push(pv);
     })
@@ -416,6 +455,25 @@ export class WorkflowStepComponent implements OnInit {
     }
 
     return ret;
+  }
+
+  isPropelParameter(paramName: string): boolean {
+    let ret: boolean = false;
+    let param: ScriptParameter;
+
+    param = this.tryGetParameter(paramName);
+
+    ret = param && param.isPropelParameter;
+
+    return ret;
+  }
+
+  getCredentialType(credentialName: string): CredentialTypes {
+    let cred = this.getCredentialFromCacheByName(credentialName);
+
+    if (cred) return cred.type
+    else return CredentialTypes.Windows;
+
   }
 
   getselectedTargetNames(): string[] {

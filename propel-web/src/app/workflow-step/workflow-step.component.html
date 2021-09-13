@@ -46,12 +46,11 @@
                 formControlName="targets">
                 <!-- NGSelect does not allow disabled items to be removed from the selection list. In order to 
                     do that we must use a template and handle ourselves the item removal -->
-                  <ng-template ng-label-tmp let-item="item">
-                    <span class="ng-value-custom-icon" (click)="dropItem(item)">×</span>
-                    <span class="ng-value-label"
-                    [ngClass]="{
+                <ng-template ng-label-tmp let-item="item">
+                    <span class="ng-value-custom-icon" (click)="dropTargetItem(item)">×</span>
+                    <span class="ng-value-label" [ngClass]="{
                         'item-disabled': !item.enabled }">{{item.friendlyName}}</span>
-                  </ng-template>
+                </ng-template>
             </ng-select>
             <!-- DEBUG -->
             <!-- <small class="form-text text-muted">Current control status:
@@ -64,40 +63,61 @@
             <div class="form-group">
                 <hr class="my-4">
             </div>
-            <label class="mb-2"><strong>Parameter values:</strong></label>            
+            <label class="mb-2"><strong>Parameter values:</strong></label>
             <div *ngIf="selectedScript.parameters && selectedScript.parameters.length > 0; else noParams">
                 <div formArrayName="values" *ngFor="let child of parameterValues.controls; let i=index">
-                    <ng-container [formGroupName]="i" [ngSwitch]="child.controls.nativeType.value">
-                        <label>${{child.controls.name.value}}</label>
-                        <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
-                        <div *ngSwitchCase="'Boolean'" class="form-group">
-                            <div class="d-flex justify-content-center">
-                                <label class="mr-2 mt-1 text-mini">$false</label>
-                                <mat-slide-toggle color="primary" formControlName="value">
-                                </mat-slide-toggle>
-                                <label class="ml-2 mt-1 text-mini">$true</label>
-                            </div>
+                    <label>${{child.controls.name.value}}</label>
+                    <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
+                    <ng-container [formGroupName]="i">
+                        <!-- Propel parameter requires specific treatment -->
+                        <div *ngIf="isPropelParameter(child.controls.name.value); else notPropelParameter" class="form-group">
+                            <ng-select #credentials [items]="allCredentials" [multiple]="true" [closeOnSelect]="false"
+                                [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name"
+                                clearAllText="Clear" [compareWith]="compareFn"
+                                placeholder="Select the credentials you will need in the script."
+                                formControlName="value">
+                                <ng-template ng-label-tmp let-item="item">
+                                    <span class="ng-value-custom-icon" (click)="dropCredentialItem(item)">×</span>
+                                    <span class="ml-1 menu-icon"
+                                        [ngClass]="{
+                                            'icon-credential-windows': getCredentialType(item.name) == credentialTypes.Windows,
+                                            'icon-credential-aws': getCredentialType(item.name) == credentialTypes.AWS
+                                        }"></span>
+                                    <span class="ng-value-label" [ngClass]="{
+                                                'item-disabled': false }">{{item.name}}</span>
+                                </ng-template>
+                            </ng-select>
                         </div>
-                        <div *ngSwitchDefault class="form-group">
-                            <div *ngIf="!hasValidSet(child.controls.name.value); else withValidSet">
-                                <input type="text" class="form-control" formControlName="value"
-                                    [placeholder]="getPlaceHolderText(child.controls.nativeType.value)">
-                            </div>
-                            <ng-template #withValidSet>
-                                <ng-select [items]="getValidSet(child.controls.name.value)" 
-                                    [multiple]="false"
-                                    bindValue="value" 
-                                    bindLabel="label" 
-                                    [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true" 
-                                    clearAllText="Clear" placeholder="This parameter has a valid set of values defined. Please select one from this list." 
-                                    formControlName="value">
-                                </ng-select>
-                            </ng-template>
-            <!-- DEBUG -->
-            <!-- <small class="form-text text-muted">Current control status:
+                        <ng-template #notPropelParameter>
+                            <div [ngSwitch]="child.controls.nativeType.value">
+                                <div *ngSwitchCase="'Boolean'" class="form-group">
+                                    <div class="d-flex justify-content-center">
+                                        <label class="mr-2 mt-1 text-mini">$false</label>
+                                        <mat-slide-toggle color="primary" formControlName="value">
+                                        </mat-slide-toggle>
+                                        <label class="ml-2 mt-1 text-mini">$true</label>
+                                    </div>
+                                </div>
+                                <div *ngSwitchDefault class="form-group">
+                                    <div *ngIf="!hasValidSet(child.controls.name.value); else withValidSet">
+                                        <input type="text" class="form-control" formControlName="value"
+                                            [placeholder]="getPlaceHolderText(child.controls.nativeType.value)">
+                                    </div>
+                                    <ng-template #withValidSet>
+                                        <ng-select [items]="getValidSet(child.controls.name.value)" [multiple]="false"
+                                            bindValue="value" bindLabel="label" [closeOnSelect]="true"
+                                            [clearSearchOnAdd]="true" [searchable]="true" clearAllText="Clear"
+                                            placeholder="This parameter has a valid set of values defined. Please select one from this list."
+                                            formControlName="value">
+                                        </ng-select>
+                                    </ng-template>
+                                    <!-- DEBUG -->
+                                    <!-- <small class="form-text text-muted">Current control status:
                 {{ sampleFormOrControlStatus(child.controls.value) }}</small> -->
-            <!-- DEBUG -->
-                        </div>
+                                    <!-- DEBUG -->
+                                </div>
+                            </div>
+                        </ng-template>
                         <app-validation-message [control]="child.controls.value">
                         </app-validation-message>
                     </ng-container>
@@ -107,8 +127,12 @@
                 <div class="ml-2">The script has no parameters defined.</div>
             </ng-template>
         </div>
+
+
         <!-- <pre>Is a quick task: {{ isQuickTask }}</pre>
         <pre>Is Form Valid: {{ fh.form.valid }}</pre>
         <pre>{{fh.form.value | json }}</pre> -->
+
+
     </form>
 </div>
