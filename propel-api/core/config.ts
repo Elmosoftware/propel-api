@@ -1,7 +1,6 @@
 import dotenv from "dotenv"
 
 import { ObjectPoolOptions } from "../core/object-pool-options";
-import { ImpersonateOptions } from "../core/impersonate-options";
 import { SystemHelper } from "../util/system-helper";
 
 export enum LogLevel {
@@ -15,12 +14,10 @@ export enum LogLevel {
  */
 class Config {
 
-    private _impersonateOptions: ImpersonateOptions;
     private _key: string = "";
 
     constructor() {
         dotenv.config();
-        this._impersonateOptions = new ImpersonateOptions(process.env);
     }
 
     /**
@@ -124,14 +121,6 @@ class Config {
      */
     get maxWorkflowResultsSizeInMB(): number {
         return this.maxWorkflowResultsSize / 1024 / 1024
-    }
-
-    /**
-     * Returns the impersonate options configured.
-     * This options can allow to execute remote scripts with specific credentials.
-     */
-    get impersonateOptions(): ImpersonateOptions {
-        return this._impersonateOptions;
     }
 
     /**
