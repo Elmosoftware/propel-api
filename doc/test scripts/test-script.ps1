@@ -15,7 +15,7 @@ param (
     [Parameter(HelpMessage='Indicates if any message will be displayed.')]
     [boolean]$ShowMessages = $true,
 
-    $Propel,
+    $PropelCredentials,
 
     [Parameter(Mandatory=$true, HelpMessage='Indicates if a text result will be send.Otherwise the result type will be JSONonly text results  any message will be displayed.')]
     [ValidateSet('Text','JSON')]
