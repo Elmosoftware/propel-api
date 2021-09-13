@@ -1,4 +1,8 @@
+import { Credential } from "../../models/credential";
+import { CredentialTypes } from "../../models/credential-types";
 import { ParameterValue } from "../../models/parameter-value";
+import { Vault, VaultItemFactory } from "../../models/vault";
+import { WindowsVaultItem } from "../../models/windows-vault-item";
 import { Utils } from "../../utils/utils";
 
 enum StringValuesEnum {
@@ -625,7 +629,7 @@ describe("Utils Class - getNextDuplicateName()", () => {
         expect(Utils.getNextDuplicateName("My incredible item", [])).toEqual("My incredible item (Duplicate)");
     })
     test(`With Master name and not empty list of names.`, () => {
-        expect(Utils.getNextDuplicateName("My incredible item", ["Non related Item", "Non related Item", 
+        expect(Utils.getNextDuplicateName("My incredible item", ["Non related Item", "Non related Item",
             "Non related Item"]))
             .toEqual("My incredible item (Duplicate)");
     })
@@ -656,7 +660,7 @@ describe("Utils Class - getNextDuplicateName()", () => {
     test(`With Master name with already "(Duplicate)" inthe nme and list of single current names.`, () => {
         expect(Utils.getNextDuplicateName("xxxx (Duplicate) (Duplicate)", ["xxxx (Duplicate) (Duplicate)"]))
             .toEqual("xxxx (Duplicate) (Duplicate) (Duplicate)");
-    })    
+    })
 })
 
 describe("Utils Class - testEnumKey()", () => {
@@ -773,17 +777,134 @@ describe("Utils Class - getEnum", () => {
     })
     test(`String values Enumeration`, () => {
         expect(Utils.getEnum(StringValuesEnum)).toEqual([
-            {key: "First", value: "1st"},
-            {key: "Second", value: "2nd"},
-            {key: "Third", value: "3rd"}
+            { key: "First", value: "1st" },
+            { key: "Second", value: "2nd" },
+            { key: "Third", value: "3rd" }
         ]);
     })
     test(`Number values Enumeration`, () => {
         expect(Utils.getEnum(NumberValuesEnum)).toEqual([
-            {key: "Zero", value: 0},
-            {key: "One", value: 1},
-            {key: "Two", value: 2},
-            {key: "Three", value: 3}
+            { key: "Zero", value: 0 },
+            { key: "One", value: 1 },
+            { key: "Two", value: 2 },
+            { key: "Three", value: 3 }
         ]);
+    })
+})
+
+describe("Utils Class - getFullyQualifiedUserName", () => {
+
+    test(`Missing User name`, () => {
+        expect(Utils.getFullyQualifiedUserName("")).toEqual("");
+    })
+    test(`Username and no domain`, () => {
+        expect(Utils.getFullyQualifiedUserName("john.doe")).toEqual("john.doe");
+    })
+    test(`Domain and no UserName`, () => {
+        expect(Utils.getFullyQualifiedUserName("", "MyDOmain")).toEqual("");
+    })
+    test(`Username and domain`, () => {
+        expect(Utils.getFullyQualifiedUserName("john.doe", "MyDomain")).toEqual("MyDomain\\john.doe");
+    })
+})
+
+describe("Utils Class - PSCredentialFromVaultItem", () => {
+
+    test(`Missing vault item`, () => {
+        expect(() => {
+            //@ts-ignore
+            Utils.getPSCredentialFromVaultItem(null);
+        }).toThrow(`The supplied vault item is a null reference`);
+    })
+    test(`Missing vault item "value" attribute`, () => {
+        expect(() => {
+            //@ts-ignore
+            Utils.getPSCredentialFromVaultItem({});
+        }).toThrow(`The supplied vault item is a null reference`);
+    })
+    test(`Missing vault item "userName" attribute`, () => {
+        expect(() => {
+            Utils.getPSCredentialFromVaultItem({
+                //@ts-ignore
+                value: {}
+            });
+        }).toThrow(`The supplied vault item doesn't have a "userName" property`);
+    })
+    test(`Passing the right vault item object`, () => {
+        let obj = {
+            value: {
+                userName: "john.doe",
+                domain: "mydomain",
+                password: "mypassword"
+            }
+        }
+        //@ts-ignore
+        expect(Utils.getPSCredentialFromVaultItem(obj))
+            .toEqual(`New-Object System.Management.Automation.PSCredential "${obj.value.domain}\\${obj.value.userName}", (ConvertTo-SecureString "${obj.value.password}" -AsPlainText -Force)`);
+    })
+})
+
+describe("Utils Class - toPowerShellCustomObject", () => {
+
+    test(`Missing credential`, () => {
+        expect(() => {
+            //@ts-ignore
+            Utils.credentialToPowerShellCustomObject(null);
+        }).toThrow(`We expect a valid Credential`);
+    })
+    test(`Missing Credential type`, () => {
+        expect(() => {
+            //@ts-ignore
+            Utils.credentialToPowerShellCustomObject({
+                type: ""
+            });
+        }).toThrow(`The supplied credential instance doesn't have a valid CredentialType assigned`);
+    })
+    test(`Missing Vault item`, () => {
+        let cred: Credential = new Credential();
+        cred.type = CredentialTypes.AWS;
+
+        expect(() => {
+            Utils.credentialToPowerShellCustomObject(cred,
+                //@ts-ignore
+                {});
+        }).toThrow(`The supplied vault item is a null reference`);
+    })
+    test(`Windows Credential to PSCustomObject`, () => {
+        //Credential fields:
+        let f1: ParameterValue = new ParameterValue();
+        f1.name = "Field1";
+        f1.value = "Field1Value"
+        let f2: ParameterValue = new ParameterValue();
+        f2.name = "Field2";
+        f2.value = "Field2Value"
+        //Creating the credential:
+        let cred: Credential = new Credential();
+        cred.name = "TestCred";
+        cred.type = CredentialTypes.Windows;
+        cred.fields.push(f1);
+        cred.fields.push(f2);
+        //Creating the Vault item:
+        let vaultItem = (VaultItemFactory.createFromCredential(cred) as Vault<WindowsVaultItem>);
+        vaultItem.value.userName = "john.doe";
+        vaultItem.value.domain = "mydomain";
+        vaultItem.value.password = "mypassword";
+
+        let actual = Utils.credentialToPowerShellCustomObject(cred, vaultItem)
+            .replace(/(\r\n|\n|\r)/gm, "") //Removing any break lines
+            .replace(/\s+/g, ""); //Removing spaces.
+        let expected = (`[pscustomobject]@{
+  Name = "TestCred"
+  Fields = [pscustomobject]@{
+      Field1 = "Field1Value";
+      Field2 = "Field2Value";
+  };
+  cred = (New-Object System.Management.Automation.PSCredential "mydomain\\john.doe", (ConvertTo-SecureString "mypassword" -AsPlainText -Force));
+};`)
+            .replace(/(\r\n|\n|\r)/gm, "")
+            .replace(/\s+/g, "");
+
+        expect(actual)
+            .toEqual(expected);
     })
 })

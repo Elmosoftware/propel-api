@@ -75,9 +75,9 @@ This could happen when a script is updated with breaking changes. Please review 
      */
     static get WrongPropelParameter(): Code {
         return new Code("WRONG_PROPEL_PARAM",
-            `Incorrect definition for the $Propel parameter.`,
-            `The $Propel parameter is managed by Propel and allows the script to take some context information related to the execution like the remote target details, etc.           
-            The definition of this parameter is wrong. Please verify: Type must be System.Object and no ValidSet is allowed.`,
+            `Incorrect definition for the $PropelCredentials parameter.`,
+            `The $PropelCredentials parameter is managed by Propel and allows the script to access the required credentials.           
+            The definition of this parameter is wrong. Please verify that : Type must be System.Object[], it can't has a default value and also no ValidSet is allowed.`,
             false);
     }
 

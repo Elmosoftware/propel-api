@@ -1,4 +1,9 @@
+import { Credential } from "../models/credential";
 import { ParameterValue } from "../models/parameter-value";
+import { CredentialTypes } from "../models/credential-types";
+import { Vault } from "../models/vault";
+import { PropelError } from "../core/propel-error";
+import { WindowsVaultItem } from "../models/windows-vault-item";
 
 export const POWERSHELL_NULL_LITERAL = "$null"
 
@@ -6,8 +11,6 @@ export const POWERSHELL_NULL_LITERAL = "$null"
  * Utilities.
  */
 export class Utils {
-
-
 
     /**
      * Returns a boolean value indicating if the supplied value is an object reference.
@@ -517,6 +520,84 @@ export class Utils {
                     });
                 }
             })
+
+        return ret;
+    }
+
+    /**
+     * Returns the code to create a PSCredential object with the secret user and paswword in the VaultItem specified.
+     * @param vaultItem Vault item of type "WindowsVaultItem".
+     * @returns Astring containing the PowerShell code to create a PSCredential object withthe Vault item data.
+     */
+    static getPSCredentialFromVaultItem(vaultItem: Vault<WindowsVaultItem>): string {
+        let user: string;
+        if (!vaultItem || !vaultItem.value) throw new PropelError(`The supplied vault item is a null reference. Supplied value is: "${String(vaultItem)}".`);
+        if (!vaultItem.value?.userName) throw new PropelError(`The supplied vault item doesn't have a "userName" property. Supplied object is: ${JSON.stringify(String(vaultItem))}.`);
+
+        user = this.getFullyQualifiedUserName(vaultItem.value.userName, vaultItem.value?.domain);
+        return `New-Object System.Management.Automation.PSCredential "${user}", (ConvertTo-SecureString "${vaultItem.value?.password}" -AsPlainText -Force)`;
+    }
+
+    /**
+     * By getting the user and domain this method return a string containing the fully quilified user name.
+     * e.g: 
+     * @example
+     *  getFullyQualifiedUserName("john.doe") --> "john.doe"
+     *  getFullyQualifiedUserName("john.doe", "MyDomain") --> "MyDomain\\john.doe"
+     * @param user User name
+     * @param domain Optional domain ame
+     * @returns a fully qualified user name.
+     */
+    static getFullyQualifiedUserName(user: string, domain: string = ""): string {
+        let ret: string = ""
+
+        if (!user) return ret;
+
+        if (domain) {
+            ret += `${domain}\\`
+        }
+
+        ret += user;
+
+        return ret;
+    }
+
+    /**
+     * Returns a serialized verion of a PowerShell custom object containing the informatin of 
+     * the supplied credential and secret.
+     * @param credential Credential bject 
+     * @param vaultItem Vault item object holding the secret part of the credential.
+     * @returns A string containingthecode to create a PowerShell custom object with the credential information.
+     */
+    static credentialToPowerShellCustomObject(credential: Credential, vaultItem: Vault<any>): string {
+        let ret: string = "";
+
+        if (!credential) throw new PropelError(`We expect a valid Credential. the parameter "credential" is a null reference.`);
+        if (!credential.type) throw new PropelError(`The supplied credential instance doesn't have a valid CredentialType assigned."type" attribute value: "${String(credential.type)}".`);
+        if (!vaultItem || !vaultItem.value) throw new PropelError(`The supplied vault item is a null reference. Supplied value is: "${JSON.stringify(String(vaultItem))}".`);
+
+        //Building the credential part of the object:
+        ret = `[pscustomobject]@{
+${this.tabs(1)}Name = "${credential.name}";
+${this.tabs(1)}Fields = [pscustomobject]@{
+${this.tabs(2)}${credential.fields
+                .map((item, i) => { return `${(i > 0) ? this.tabs(2) : ""}${item.name} = "${item.value}";` })
+                .join(`\r\n`)}\r\n${this.tabs(2)}};\r\n`
+
+        //Building the secret part:    
+        switch (credential.type) {
+            case CredentialTypes.Windows:
+                ret += `${this.tabs(1)}cred = (${this.getPSCredentialFromVaultItem(vaultItem)});`
+                break;
+            case CredentialTypes.AWS:
+                ret += `${this.tabs(1)}AccessKey = "${vaultItem.value?.accessKey}";
+${this.tabs(1)}SecretKey = "${vaultItem.value?.secretKey}";`
+                break;
+            default:
+                throw new PropelError(`The specified credential type is not defined. Credential type: "${credential.type}"`);
+        }
+
+        ret += `\r\n};`
 
         return ret;
     }
