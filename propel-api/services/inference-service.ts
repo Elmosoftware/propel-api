@@ -91,13 +91,12 @@ export class InferenceService {
                                                 }
 
                                                 if (cfg.isPropelParam(sp.name)) {
-                                                    if(sp.validValues.length > 0 || sp.type != "System.Object") {
+                                                    if(sp.validValues.length > 0 || sp.type != "System.Object" || sp.hasDefault) {
                                                         e = new PropelError(`Invalid "${cfg.PSScriptPropelParam}" parameter.`,ErrorCodes.WrongPropelParameter);
                                                     }
                                                     else { //Is a valid $Propel parameter:
                                                         sp.isPropelParameter = true;
-                                                        sp.description = `This parameter is managed by Propel. The value is going be set automatically by Propel, providing some context information that can be used inside the script. For more information, please check the documentation.`
-                                                        sp.defaultValue = ""
+                                                        sp.description = `This parameter is managed by Propel. The value is going be set automatically by Propel, per each one of the requested credentials. For more information, please check the documentation.`
                                                     }
                                                 }
 
