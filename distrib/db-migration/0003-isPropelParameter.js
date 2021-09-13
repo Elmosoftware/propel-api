@@ -15,7 +15,7 @@ try {
     db.auth(adu, adp);
 
     print(`${sep}`)
-    print(`Adding the "IsPropelParameter" attribute as false for the ScripParameter embedded documents.`)
+    print(`Fixing the "IsPropelParameter" attribute.`)
     print(`${sep}`)
     print(`Opening database.`);
     db = conn.getDB("Propel");
@@ -29,18 +29,27 @@ try {
         print(`Reviewing "${doc.name}", ("${doc._id.toString()}")`)
         let alreadyPatched = true;
 
-        //Adding the "IsPropelParameter" attribute, (if is not there) to each member of the 
-        //parameters embedded collection:
         if (doc.parameters && doc.parameters.length > 0) {
             doc.parameters.forEach((p) => {
-                if (p.IsPropelParameter == undefined) {
-                    p.IsPropelParameter = false
+                //By Mistake in previous Propel version we added the attribut with capital "I" at the begining.
+                //Like "IsPropelParameter" instead of "isPropelParameter". this can cause some issues because of 
+                //repeated fields. So we need to remove those cases:
+                if (p.IsPropelParameter !== undefined) {
+                    delete p.IsPropelParameter
+                    alreadyPatched = false
+                }
+
+                //Regarding the right "isPropelParameter", (with lower case "i"): 
+                //If exists we need to ensure is set to "false", because the name of the 
+                //parameter now in V2.0.0 changed from "$Propel" to "$PropelCredentials":
+                if (p.isPropelParameter !== undefined) {
+                    p.isPropelParameter = (p.name == "PropelCredentials")
                     alreadyPatched = false
                 }
             })
         }
 
-        if(!alreadyPatched) {
+        if (!alreadyPatched) {
             collection.save(doc);
             counter++;
             print(` -> All script parameters have been patched.`)
