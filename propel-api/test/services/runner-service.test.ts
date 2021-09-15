@@ -5,7 +5,8 @@ import { ExecutionStatus } from "../../../propel-shared/models/execution-status"
 import { InvocationMessage } from "../../../propel-shared/core/invocation-message";
 import { ExecutionLog } from "../../../propel-shared/models/execution-log";
 import { APIResponse } from "../../../propel-shared/core/api-response";
-import { Vault } from "../../../propel-shared/models/vault";
+import { Secret } from "../../../propel-shared/models/secret";
+import { SecretValue } from "../../../propel-shared/models/secret-value";
 import { Credential } from "../../../propel-shared/models/credential";
 
 let runner: Runner;
@@ -27,7 +28,6 @@ describe("Runner Class - execute()", () => {
 
         //Mocking the Credential cache inside the runner:
 
-
         //@ts-ignore
         runner._credentialCache.getCredentialsById = async (credentialIds: string[]): Promise<Credential[]> => {
             let ret: Credential[] = []
@@ -42,10 +42,10 @@ describe("Runner Class - execute()", () => {
         }
 
         //@ts-ignore
-        runner._credentialCache.getVaultItemsById = async (vaultIds: string[]): Promise<Vault<any>[]> => {
-            let ret: Vault<any>[] = []
+        runner._credentialCache.getSecretsById = async (secretIds: string[]): Promise<Secret<SecretValue>[]> => {
+            let ret: Secret<SecretValue>[] = []
 
-            vaultIds.forEach((name: string) => {
+            secretIds.forEach((name: string) => {
                 //@ts-ignore
                 ret.push(tw[name])
             })

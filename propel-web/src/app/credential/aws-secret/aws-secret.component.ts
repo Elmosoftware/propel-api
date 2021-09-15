@@ -3,21 +3,21 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { FormSubcomponentInterface, FormSubcomponentEventData } from 'src/core/form-subcomponent';
 import { CoreService } from 'src/services/core.service';
-import { AWSVaultItem } from '../../../../../propel-shared/models/aws-vault-item';
+import { AWSSecret } from '../../../../../propel-shared/models/aws-secret';
 
 const ACCESSKEY_MAX: number = 20;
 const SECRETKEY_MAX: number = 40;
 
 @Component({
-  selector: 'app-aws-vault-item',
-  templateUrl: './aws-vault-item.component.html',
-  styleUrls: ['./aws-vault-item.component.css']
+  selector: 'app-aws-secret',
+  templateUrl: './aws-secret.component.html',
+  styleUrls: ['./aws-secret.component.css']
 })
-export class AWSVaultItemComponent implements OnInit, FormSubcomponentInterface<AWSVaultItem> {
+export class AWSSecretComponent implements OnInit, FormSubcomponentInterface<AWSSecret> {
 
   //#region FormSubcomponentInterface implementation
 
-  @Input() model: AWSVaultItem;
+  @Input() model: AWSSecret;
 
   @Input() reset: Observable<void>;
 
@@ -26,7 +26,7 @@ export class AWSVaultItemComponent implements OnInit, FormSubcomponentInterface<
   /**
    * Change event, will be throw every time the form suffer any change.
    */
-  @Output() subFormChange = new EventEmitter<FormSubcomponentEventData<AWSVaultItem>>();
+  @Output() subFormChange = new EventEmitter<FormSubcomponentEventData<AWSSecret>>();
 
   get isValid(): boolean {
     return (this.fg) ? this.fg.valid : true;
@@ -42,7 +42,7 @@ export class AWSVaultItemComponent implements OnInit, FormSubcomponentInterface<
   fg: FormGroup;
   viewAccessKey: boolean = false;
   viewSecretKey: boolean = false;
-  previousValue: AWSVaultItem;
+  previousValue: AWSSecret;
 
   constructor(private core: CoreService) {
 

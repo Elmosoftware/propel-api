@@ -179,7 +179,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
     qm.filterBy = {
-      type: {
+      credentialType: {
         $eq: "Windows"
       }
     }

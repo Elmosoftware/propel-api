@@ -471,7 +471,7 @@ export class WorkflowStepComponent implements OnInit {
   getCredentialType(credentialName: string): CredentialTypes {
     let cred = this.getCredentialFromCacheByName(credentialName);
 
-    if (cred) return cred.type
+    if (cred) return cred.credentialType
     else return CredentialTypes.Windows;
 
   }

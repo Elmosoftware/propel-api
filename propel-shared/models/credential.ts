@@ -16,7 +16,7 @@ export class Credential extends AuditedEntity {
     /**
      * Unique name for the credential.
      */
-    public type: CredentialTypes = DEFAULT_CREDENTIAL_TYPE
+    public credentialType: CredentialTypes = DEFAULT_CREDENTIAL_TYPE
 
     /**
      * Credential description, purpose, details, etc.
@@ -24,9 +24,9 @@ export class Credential extends AuditedEntity {
     public description: string = ""
 
     /**
-     * Propel Secret Vault id.
+     * Propel Secret id.
      */
-    public vaultId: string = "";
+    public secretId: string = "";
 
     /**
     * Additional fields. This is extra data, (non-sensitive), added to the credential that will 

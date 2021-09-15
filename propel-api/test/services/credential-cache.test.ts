@@ -1,18 +1,16 @@
-// import { db } from "../../core/database";
-
-// class MockService {
-//     constructor() {
-
-//     }
-
-// }
-
 import { CredentialCache } from "../../services/credential-cache";
 import { Credential } from "../../../propel-shared/models/credential";
 import { testingWorkflows } from "./testing-workflows";
-import { Vault } from "../../../propel-shared/models/vault";
+import { Secret } from "../../../propel-shared/models/secret";
+import { SecretValue } from "../../../propel-shared/models/secret-value";
+import { WindowsSecret } from "../../../propel-shared/models/windows-secret";
+import { AWSSecret } from "../../../propel-shared/models/aws-secret";
 import { ParameterValue } from "../../../propel-shared/models/parameter-value";
 import { Workflow } from "../../../propel-shared/models/workflow";
+
+
+let w = new WindowsSecret()
+let y = new AWSSecret()
 
 function getTestCredentialCache(credentialsToRemove: number = 0, secretsToRemove: number = 0): CredentialCache {
     let ret: CredentialCache = new CredentialCache();
@@ -42,10 +40,10 @@ function getTestCredentialCache(credentialsToRemove: number = 0, secretsToRemove
     }
 
     //@ts-ignore
-    ret.getVaultItemsById = async (vaultIds: string[]): Promise<Vault<any>[]> => {
-        let ret: Vault<any>[] = []
+    ret.getSecretsById = async (secretIds: string[]): Promise<Secret<SecretValue>[]> => {
+        let ret: Secret<SecretValue>[] = []
 
-        vaultIds.forEach((name: string) => {
+        secretIds.forEach((name: string) => {
             //@ts-ignore
             ret.push(tw[name])
         })
@@ -69,7 +67,6 @@ function getTestCredentialCache(credentialsToRemove: number = 0, secretsToRemove
 function getTestWorkflow(propelCredentials: Credential[], totalTargets: number = 2,
     targetsWithCredentials: number = 2): Workflow {
 
-    // let ret = testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast; //This workflow already 
     let ret = Object.assign({}, testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast); //This 
     //workflow already have defined a $PropelCredentials parameter.
     let pv = new ParameterValue();
@@ -185,7 +182,7 @@ describe("CredentialCache Class - Build", () => {
             expect(ci01).not.toBe(undefined);
 
             expect(ci01?.credential.name).toEqual(testingWorkflows.CredentialAWS02.name);
-            expect(ci01?.vaultItem._id).toEqual(ci01?.credential.vaultId);
+            expect(ci01?.secret._id).toEqual(ci01?.credential.secretId);
         });
 
         test(`Workflow with: Targets with Cred: 2, Targets without Cred: 0, PropelCredentials: 1`, async () => {
@@ -206,13 +203,13 @@ describe("CredentialCache Class - Build", () => {
             expect(ci03).not.toBe(undefined);
 
             expect(ci01?.credential._id).toEqual(testingWorkflows.CredentialWindows01._id);
-            expect(ci01?.vaultItem._id).toEqual(ci01?.credential.vaultId);
+            expect(ci01?.secret._id).toEqual(ci01?.credential.secretId);
 
             expect(ci02?.credential._id).toEqual(testingWorkflows.CredentialAWS02._id);
-            expect(ci02?.vaultItem._id).toEqual(ci02?.credential.vaultId);
+            expect(ci02?.secret._id).toEqual(ci02?.credential.secretId);
 
             expect(ci03?.credential._id).toEqual(testingWorkflows.CredentialWindows03._id);
-            expect(ci03?.vaultItem._id).toEqual(ci03?.credential.vaultId);
+            expect(ci03?.secret._id).toEqual(ci03?.credential.secretId);
         });
 
         test(`Workflow with: Targets with Cred: 2, Targets without Cred: 0, PropelCredentials: 2`, async () => {
@@ -234,13 +231,13 @@ describe("CredentialCache Class - Build", () => {
             expect(ci03).not.toBe(undefined);
 
             expect(ci01?.credential._id).toEqual(testingWorkflows.CredentialWindows01._id);
-            expect(ci01?.vaultItem._id).toEqual(ci01?.credential.vaultId);
+            expect(ci01?.secret._id).toEqual(ci01?.credential.secretId);
 
             expect(ci02?.credential._id).toEqual(testingWorkflows.CredentialAWS02._id);
-            expect(ci02?.vaultItem._id).toEqual(ci02?.credential.vaultId);
+            expect(ci02?.secret._id).toEqual(ci02?.credential.secretId);
 
             expect(ci03?.credential._id).toEqual(testingWorkflows.CredentialWindows03._id);
-            expect(ci03?.vaultItem._id).toEqual(ci03?.credential.vaultId);
+            expect(ci03?.secret._id).toEqual(ci03?.credential.secretId);
         });
     });
 
@@ -284,7 +281,7 @@ describe("CredentialCache Class - Build", () => {
             expect(e).not.toBe(null)
             expect(String(e.message)
                     .toLowerCase()
-                    .includes(`There is a total of 2 credentials specified for this Workflow, but we found only 1 credential secret parts.`.toLowerCase()))
+                    .includes(`There is a total of 2 credentials specified for this Workflow, but we found the secret part for only 1 of them`.toLowerCase()))
                 .toBeTruthy();
         });
     });

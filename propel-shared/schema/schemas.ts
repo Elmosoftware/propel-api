@@ -24,7 +24,7 @@ class Schemas {
             this.executionError,
             this.executionTarget,
             this.executionStep,
-            this.vault,
+            this.secret,
             this.credential
         ]
     }
@@ -353,14 +353,14 @@ class Schemas {
     }
 
     /**
-     * **SecretVaultItem** schema definition.
+     * **Secret** schema definition.
      * @extends AuditedEntity schema definition
      */
-    get vault(): Readonly<SchemaDefinition> {
+    get secret(): Readonly<SchemaDefinition> {
 
-        return new SchemaDefinition("Vault", "Vault", true)
+        return new SchemaDefinition("Secret", "Secrets", true)
             .setFields([
-                new SchemaField("value", `Propel Secret vault value.`,
+                new SchemaField("value", `Propel Secret value.`,
                     {
                         type: Object,
                         isRequired: true,
@@ -368,7 +368,7 @@ class Schemas {
                     })
             ])
             .merge(this.auditedEntity)
-            .setDescription("Propel secret vault.")
+            .setDescription("Propel Credential secret value.")
             .freeze();
     }
 
@@ -387,12 +387,17 @@ class Schemas {
                         isRequired: true,
                         isUnique: true
                     }),
+                new SchemaField("credentialType", `Credential type.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
                 new SchemaField("description", `Credential description. Intended usage and other details.`,
                     {
                         type: String,
                         isRequired: false
                     }),
-                new SchemaField("vaultId", `Propel Secret vault item identifier.`,
+                new SchemaField("secretId", `Credential Secret identifier.`,
                     {
                         type: String,
                         isRequired: true
@@ -405,7 +410,7 @@ class Schemas {
                     })
             ])
             .merge(this.auditedEntity)
-            .setDescription("A Credential to be stored encrypted in the datbase and intended to be pass to the script for authentication purposes.")
+            .setDescription("A Credential to be stored encrypted in the database and intended to be pass to the script for authentication purposes.")
             .freeze();
     }
 

@@ -264,9 +264,9 @@ try {
      showIndexes(coll);
 
      /**
-     * SecretVault
+     * Secrets
      */
-      collName = "Vault"
+      collName = "Secrets"
       print(`\n------------------------------------------------\nAdding collection "${collName}"`)
       db.createCollection(collName);
   

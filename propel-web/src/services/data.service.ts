@@ -19,7 +19,7 @@ export enum DataEntity {
   Target = "Target",
   User = "User",
   Workflow = "Workflow",
-  Vault = "Vault",
+  Secret = "Secret",
   Credential = "Credential"
 }
 

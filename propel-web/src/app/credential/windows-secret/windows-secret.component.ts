@@ -3,22 +3,22 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { FormSubcomponentInterface, FormSubcomponentEventData } from 'src/core/form-subcomponent';
 import { CoreService } from 'src/services/core.service';
-import { WindowsVaultItem } from '../../../../../propel-shared/models/windows-vault-item';
+import { WindowsSecret } from '../../../../../propel-shared/models/windows-secret';
 
 const USERNAME_MAX: number = 255;
 const DOMAIN_MAX: number = 512;
 const PASSWORD_MAX: number = 255
 
 @Component({
-  selector: 'app-windows-vault-item',
-  templateUrl: './windows-vault-item.component.html',
-  styleUrls: ['./windows-vault-item.component.css']
+  selector: 'app-windows-secret',
+  templateUrl: './windows-secret.component.html',
+  styleUrls: ['./windows-secret.component.css']
 })
-export class WindowsVaultItemComponent implements OnInit, FormSubcomponentInterface<WindowsVaultItem> {
+export class WindowsSecretComponent implements OnInit, FormSubcomponentInterface<WindowsSecret> {
 
   //#region FormSubcomponentInterface implementation
 
-  @Input() model: WindowsVaultItem;
+  @Input() model: WindowsSecret;
 
   @Input() reset: Observable<void>;
 
@@ -27,7 +27,7 @@ export class WindowsVaultItemComponent implements OnInit, FormSubcomponentInterf
   /**
    * Change event, will be throw every time the form suffer any change.
    */
-  @Output() subFormChange = new EventEmitter<FormSubcomponentEventData<WindowsVaultItem>>();
+  @Output() subFormChange = new EventEmitter<FormSubcomponentEventData<WindowsSecret>>();
 
   get isValid(): boolean {
     return (this.fg) ? this.fg.valid : true;
@@ -42,7 +42,7 @@ export class WindowsVaultItemComponent implements OnInit, FormSubcomponentInterf
   private requestCount$: EventEmitter<number>;
   fg: FormGroup;
   viewPassword: boolean = false;
-  previousValue: WindowsVaultItem;
+  previousValue: WindowsSecret;
 
   constructor(private core: CoreService) {
 

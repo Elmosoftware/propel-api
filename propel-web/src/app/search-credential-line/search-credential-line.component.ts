@@ -7,7 +7,8 @@ import { SystemHelper } from 'src/util/system-helper';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Credential } from "../../../../propel-shared/models/credential";
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
-import { Vault } from '../../../../propel-shared/models/vault';
+import { Secret } from '../../../../propel-shared/models/secret';
+import { SecretValue } from '../../../../propel-shared/models/secret-value';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
@@ -53,10 +54,10 @@ Fields: ${(item.fields.length > 0) ? `${item.fields.length} field(s) defined.` :
   getTooltipForCredentialType(item: Credential): string {
     let ret: string = "Credential type: ";
 
-    if (Utils.testEnumKey(CredentialTypes, item.type) ) {
+    if (Utils.testEnumKey(CredentialTypes, item.credentialType) ) {
 
       ret += String(Utils.getEnum(CredentialTypes)
-        .find((elem) => { return elem.key == item.type })
+        .find((elem) => { return elem.key == item.credentialType })
         .value)
     }
 
@@ -91,10 +92,10 @@ Also: This can cause to fail any script that is currently using the credential.`
     ).subscribe((result: DialogResult<any>) => {
       if (!result.isCancel) {
 
-        //First we try t delete the vault item:
-        this.core.data.delete(DataEntity.Vault, item.vaultId)
+        //First we try t0 delete the Secret:
+        this.core.data.delete(DataEntity.Secret, item.secretId)
           .subscribe((results: APIResponse<string>) => {
-            //Old Vault item id was deleted!                      
+            //Old Secret was deleted!                      
           }, err => {
             //We give our best!
           })
@@ -120,9 +121,9 @@ Also: This can cause to fail any script that is currently using the credential.`
       item["testStatus"] = TestStatus.NotTested
     }
 
-    //Fetching the Vault item holding the credential secrets:
-    this.core.data.getById(DataEntity.Vault, item.vaultId, true)
-      .subscribe((data: APIResponse<Vault<any>>) => {
+    //Fetching the Secret holding the Credential secrets:
+    this.core.data.getById(DataEntity.Secret, item.secretId, true)
+      .subscribe((data: APIResponse<Secret<SecretValue>>) => {
         if (data.count == 0) {
           //If the secret is missing:
           item["testStatus"] = TestStatus.Error;
@@ -135,7 +136,7 @@ Also: This can cause to fail any script that is currently using the credential.`
           this.core.toaster.showSuccess(`Credential "${item.name}" is healthy!`, "Succesful Credential test")
         }
       },
-        err => { //If There was an error loading the Vault item:
+        err => { //If There was an error loading the Secret part of the Credential:
           item["testStatus"] = TestStatus.Error;
           this.core.toaster.showError("There was an error testing the credential. Please edit the credential to see more details.",
             "Credential test error.");

@@ -1,9 +1,11 @@
 import { Credential } from "../models/credential";
 import { ParameterValue } from "../models/parameter-value";
 import { CredentialTypes } from "../models/credential-types";
-import { Vault } from "../models/vault";
+import { Secret } from "../models/secret";
+import { SecretValue } from "../models/secret-value";
 import { PropelError } from "../core/propel-error";
-import { WindowsVaultItem } from "../models/windows-vault-item";
+import { WindowsSecret } from "../models/windows-secret";
+import { AWSSecret } from "../models/aws-secret";
 
 export const POWERSHELL_NULL_LITERAL = "$null"
 
@@ -525,21 +527,26 @@ export class Utils {
     }
 
     /**
-     * Returns the code to create a PSCredential object with the secret user and paswword in the VaultItem specified.
-     * @param vaultItem Vault item of type "WindowsVaultItem".
-     * @returns Astring containing the PowerShell code to create a PSCredential object withthe Vault item data.
+     * Returns the code to create a PSCredential object with the user and paswword in the Secret specified.
+     * @param secret Secret that must be of type "WindowsSecret".
+     * @returns A string containing the PowerShell code to create a PSCredential object with the Secret data.
      */
-    static getPSCredentialFromVaultItem(vaultItem: Vault<WindowsVaultItem>): string {
+    static getPSCredentialFromSecret(secret: Secret<SecretValue>): string {
         let user: string;
-        if (!vaultItem || !vaultItem.value) throw new PropelError(`The supplied vault item is a null reference. Supplied value is: "${String(vaultItem)}".`);
-        if (!vaultItem.value?.userName) throw new PropelError(`The supplied vault item doesn't have a "userName" property. Supplied object is: ${JSON.stringify(String(vaultItem))}.`);
+        let secretValue: WindowsSecret;
 
-        user = this.getFullyQualifiedUserName(vaultItem.value.userName, vaultItem.value?.domain);
-        return `New-Object System.Management.Automation.PSCredential "${user}", (ConvertTo-SecureString "${vaultItem.value?.password}" -AsPlainText -Force)`;
+        if (!secret || !secret.value) throw new PropelError(`The supplied secret is a null reference. Supplied value is: "${JSON.stringify(String(secret))}".`);
+
+        secretValue = (secret.value as WindowsSecret);
+
+        if (!secretValue.userName) throw new PropelError(`The supplied secret value doesn't have a "userName" property. Supplied object is: ${JSON.stringify(String(secret))}.`);
+
+        user = this.getFullyQualifiedUserName(secretValue.userName, secretValue?.domain);
+        return `New-Object System.Management.Automation.PSCredential "${user}", (ConvertTo-SecureString "${secretValue?.password}" -AsPlainText -Force)`;
     }
 
     /**
-     * By getting the user and domain this method return a string containing the fully quilified user name.
+     * By getting the user and domain this method return a string containing the fully qualified user name.
      * e.g: 
      * @example
      *  getFullyQualifiedUserName("john.doe") --> "john.doe"
@@ -563,18 +570,18 @@ export class Utils {
     }
 
     /**
-     * Returns a serialized verion of a PowerShell custom object containing the informatin of 
+     * Returns a serialized version of a PowerShell custom object containing the information of 
      * the supplied credential and secret.
-     * @param credential Credential bject 
-     * @param vaultItem Vault item object holding the secret part of the credential.
-     * @returns A string containingthecode to create a PowerShell custom object with the credential information.
+     * @param credential Credential object 
+     * @param secret Secret object holding the secret part of the credential.
+     * @returns A string containing the code to create a PowerShell custom object with the credential information.
      */
-    static credentialToPowerShellCustomObject(credential: Credential, vaultItem: Vault<any>): string {
+    static credentialToPowerShellCustomObject(credential: Credential, secret: Secret<SecretValue>): string {
         let ret: string = "";
 
         if (!credential) throw new PropelError(`We expect a valid Credential. the parameter "credential" is a null reference.`);
-        if (!credential.type) throw new PropelError(`The supplied credential instance doesn't have a valid CredentialType assigned."type" attribute value: "${String(credential.type)}".`);
-        if (!vaultItem || !vaultItem.value) throw new PropelError(`The supplied vault item is a null reference. Supplied value is: "${JSON.stringify(String(vaultItem))}".`);
+        if (!credential.credentialType) throw new PropelError(`The supplied credential instance doesn't have a valid CredentialType assigned."credentialType" attribute value: "${String(credential.credentialType)}".`);
+        if (!secret || !secret.value) throw new PropelError(`The supplied secret is a null reference. Supplied value is: "${JSON.stringify(String(secret))}".`);
 
         //Building the credential part of the object:
         ret = `[pscustomobject]@{
@@ -585,16 +592,17 @@ ${this.tabs(2)}${credential.fields
                 .join(`\r\n`)}\r\n${this.tabs(2)}};\r\n`
 
         //Building the secret part:    
-        switch (credential.type) {
+        switch (credential.credentialType) {
             case CredentialTypes.Windows:
-                ret += `${this.tabs(1)}cred = (${this.getPSCredentialFromVaultItem(vaultItem)});`
+                ret += `${this.tabs(1)}cred = (${this.getPSCredentialFromSecret(secret)});`
                 break;
             case CredentialTypes.AWS:
-                ret += `${this.tabs(1)}AccessKey = "${vaultItem.value?.accessKey}";
-${this.tabs(1)}SecretKey = "${vaultItem.value?.secretKey}";`
+                let secretValue: AWSSecret = (secret.value as AWSSecret)
+                ret += `${this.tabs(1)}AccessKey = "${secretValue?.accessKey}";
+${this.tabs(1)}SecretKey = "${secretValue?.secretKey}";`
                 break;
             default:
-                throw new PropelError(`The specified credential type is not defined. Credential type: "${credential.type}"`);
+                throw new PropelError(`The specified credential type is not defined. Credential type: "${credential.credentialType}"`);
         }
 
         ret += `\r\n};`

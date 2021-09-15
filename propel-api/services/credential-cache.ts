@@ -2,7 +2,8 @@ import { db } from "../core/database";
 import { DataService } from "../services/data-service";
 import { Workflow } from "../../propel-shared/models/workflow";
 import { Credential } from "../../propel-shared/models/credential";
-import { Vault } from "../../propel-shared/models/vault";
+import { Secret } from "../../propel-shared/models/secret";
+import { SecretValue } from "../../propel-shared/models/secret-value";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { POWERSHELL_NULL_LITERAL } from "../../propel-shared/utils/utils";
@@ -38,15 +39,15 @@ export class CredentialCache {
     }
 
     /**
-     * Build the cache with the complete list of Credentials and Vault Items required by specified 
+     * Build the cache with the complete list of Credentials and his Secret values required by the specified 
      * Workflow.
      * @param workflow Workflow.
      */
     async build(workflow: Workflow): Promise<void> {
         let credentialIds: Set<string> = new Set<string>();
-        let vaultItemIds: Set<string> = new Set<string>();
+        let secretIds: Set<string> = new Set<string>();
         let credentials: Credential[] = [];
-        let vaultItems: Vault<any>[] = [];
+        let secrets: Secret<SecretValue>[] = [];
 
         workflow.steps.map((step) => {
 
@@ -104,29 +105,23 @@ export class CredentialCache {
             }
         }
 
-        //4th - To fetch all the Vault items for all the credentials:
+        //4th - To fetch all the Secrets for all the credentials:
         //===========================================================
 
         credentials.forEach((cred) => {
-            vaultItemIds.add(cred.vaultId);
+            secretIds.add(cred.secretId);
         })
 
-        if (vaultItemIds.size > 0) {
+        if (secretIds.size > 0) {
 
-            // try {
-                vaultItems = await this.getVaultItemsById(Array.from(vaultItemIds));
-            // } catch (error) {
-
-
-                // throw error?.errors[0] //?.errorCode?.key == ErrorCodes.CryptoError.key) {
-            // }
+            secrets = await this.getSecretsById(Array.from(secretIds));
 
             //Verifying the count, throwing if not match:
-            if (vaultItemIds.size != vaultItems.length) {
-                throw new PropelError(`There is a total of ${vaultItemIds.size} credentials specified for this Workflow, ` +
-                    `but we found only ${vaultItems.length} credential secret parts. Please check the credentials specified in the targets and $PropelCredentials parameters.\r\n` +
-                    `Vault Item IDs specified: "${Array.from(vaultItemIds).join()}", ` +
-                    `Vault Item IDs found: "${vaultItems.map((vi) => vi._id).join()}".`)
+            if (secretIds.size != secrets.length) {
+                throw new PropelError(`There is a total of ${secretIds.size} credentials specified for this Workflow, ` +
+                    `but we found the secret part for only ${secrets.length} of them. Please check the credentials specified in the targets and also in any $PropelCredentials parameter in a script.\r\n` +
+                    `Secret IDs specified: "${Array.from(secretIds).join()}", ` +
+                    `Secret IDs found: "${secrets.map((vi) => vi._id).join()}".`)
             }
         }
 
@@ -136,17 +131,17 @@ export class CredentialCache {
         this.initializeCache()
 
         credentials.forEach((credential) => {
-            let vaultItem = (vaultItems.find((vi) => vi._id == credential.vaultId) as Vault<any>);
-            this._cache.set(credential._id.toString(), new CredentialCacheItem(credential, vaultItem));
+            let secret = (secrets.find((vi) => vi._id == credential.secretId) as Secret<SecretValue>);
+            this._cache.set(credential._id.toString(), new CredentialCacheItem(credential, secret));
 
-            Object.getOwnPropertyNames(vaultItem.value).forEach((key: string) => {
-                this._secretStrings.push(vaultItem.value[key]);
+            Object.getOwnPropertyNames(secret.value).forEach((key: string) => {
+                this._secretStrings.push((secret.value as any)[key]);
             });
         })
     }
 
     /**
-     * Search the cache for the specified credential name and retur a CredentialCacheItem if found.
+     * Search the cache for the specified credential name and return a CredentialCacheItem if found.
      * @param credentialId Credential identifier to search for.
      * @returns a *CredentialCacheItem* if found, otherwise *undefined*.
      */
@@ -162,14 +157,14 @@ export class CredentialCache {
         this._secretStrings = [];
     }
 
-    private async getVaultItemsById(vaultIds: string[]): Promise<Vault<any>[]> {
+    private async getSecretsById(secretIds: string[]): Promise<Secret<SecretValue>[]> {
 
-        let svc: DataService = db.getService("Vault");
+        let svc: DataService = db.getService("Secret");
         let qm = new QueryModifier();
 
         qm.filterBy = {
             _id: {
-                $in: vaultIds
+                $in: secretIds
             }
         };
 
@@ -207,10 +202,10 @@ export class CredentialCacheItem {
     /**
      * Secret part of the credential, usually holding user names, API Keys, passwords, etc.
      */
-    public readonly vaultItem: Vault<any>;
+    public readonly secret: Secret<SecretValue>;
 
-    constructor(credential: Credential, vaultItem: Vault<any>) {
+    constructor(credential: Credential, secret: Secret<SecretValue>) {
         this.credential = credential;
-        this.vaultItem = vaultItem
+        this.secret = secret
     }
 }

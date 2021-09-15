@@ -17,7 +17,7 @@ import { Utils } from '../../../../propel-shared/utils/utils';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { Credential } from '../../../../propel-shared/models/credential';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
-import { Vault } from '../../../../propel-shared/models/vault';
+import { Secret } from '../../../../propel-shared/models/secret';
 
 @Component({
   selector: 'app-root',
@@ -276,12 +276,12 @@ export class SandboxComponent implements OnInit {
 
   testInsert() {
 
-    // let svi = new Vault()
+    // let svi = new Secret()
     // svi.value = new Object()
     // svi.value.attr1 = "Hola"
     // svi.value.attr2 = 67.678;
 
-    // this.data.save(DataEntity.Vault, svi)
+    // this.data.save(DataEntity.Secret, svi)
     //   .subscribe(
     //     data => {
     //       svi._id = data.data[0];
@@ -290,7 +290,7 @@ export class SandboxComponent implements OnInit {
 
     //       c.name = "Test Cred 01"
     //       c.description = "Description for credential"
-    //       c.vaultId = svi._id;
+    //       c.secretId = svi._id;
 
     //       this.data.save(DataEntity.Credential, c)
     //         .subscribe(

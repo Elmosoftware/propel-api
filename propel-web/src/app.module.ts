@@ -71,8 +71,8 @@ import { SearchTargetLineComponent } from './app/search-target-line/search-targe
 import { HistoryComponent } from './app/history/history.component';
 import { OfflineComponent } from './app/offline/offline.component';
 import { CredentialComponent } from './app/credential/credential.component';
-import { WindowsVaultItemComponent } from './app/credential/windows-vault-item/windows-vault-item.component';
-import { AWSVaultItemComponent } from "./app/credential/aws-vault-item/aws-vault-item.component";
+import { WindowsSecretComponent } from './app/credential/windows-secret/windows-secret.component';
+import { AWSSecretComponent } from "./app/credential/aws-secret/aws-secret.component";
 import { SearchCredentialLineComponent } from './app/search-credential-line/search-credential-line.component';
 
 @NgModule({
@@ -104,8 +104,8 @@ import { SearchCredentialLineComponent } from './app/search-credential-line/sear
     HistoryComponent,
     OfflineComponent,
     CredentialComponent,
-    WindowsVaultItemComponent,
-    AWSVaultItemComponent,
+    WindowsSecretComponent,
+    AWSSecretComponent,
     SearchCredentialLineComponent
   ],
   imports: [

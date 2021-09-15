@@ -9,7 +9,8 @@ import { DataEntity } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from '../../../../propel-shared/models/credential-types';
-import { Vault, VaultItemFactory } from "../../../../propel-shared/models/vault";
+import { Secret, SecretFactory } from "../../../../propel-shared/models/secret";
+import { SecretValue } from "../../../../propel-shared/models/secret-value";
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { DialogResult } from 'src/core/dialog-result';
@@ -30,7 +31,7 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
   loaded: boolean = false;
   reset: Subject<void>;
   saved: Subject<void>;
-  secret: Vault<any> = null;
+  secret: Secret<SecretValue> = null;
   secretIsValid: boolean = false;
   showInformativeFieldsAlert: boolean = true;
   showMaxFieldsReachedAlert: boolean = true;
@@ -61,8 +62,8 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
       description: new FormControl("", [
         Validators.maxLength(this.validationParams.descriptionMaxLength)
       ]),
-      type: new FormControl(DEFAULT_CREDENTIAL_TYPE),
-      vaultId: new FormControl(""), //It will hold the secret vault item _id.
+      credentialType: new FormControl(DEFAULT_CREDENTIAL_TYPE),
+      secretId: new FormControl(""), 
       fields: new FormArray([], [
         ValidatorsHelper.maxItems(this.validationParams.fieldsMaxCount)])
     }));
@@ -89,11 +90,11 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
     //If a credential id is provided, we are getting the credential type from it, otherwise
     //we must look into the querystring parameters:
     if (!id) {
-      let type: any = Utils.getEnumValue(CredentialTypes,
+      let credentialType: any = Utils.getEnumValue(CredentialTypes,
         this.core.navigation.getCurrentPageSuffix(), false)
 
-      if (type) {
-        this.fh.form.controls.type.patchValue(String(type));
+      if (credentialType) {
+        this.fh.form.controls.credentialType.patchValue(String(credentialType));
       }
     }
     else {
@@ -137,9 +138,9 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
             this._createFieldsFromArray(cred.fields, true);
             this.fh.form.updateValueAndValidity();
 
-            //Fetching the Vault item holding the credential secrets:
-            this.core.data.getById(DataEntity.Vault, this.fh.form.controls.vaultId.value, true)
-              .subscribe((data: APIResponse<Vault<any>>) => {
+            //Fetching the Secret:
+            this.core.data.getById(DataEntity.Secret, this.fh.form.controls.secretId.value, true)
+              .subscribe((data: APIResponse<Secret<SecretValue>>) => {
                 if (data.count == 0) {
                   //If the secret is missing for some reason, we must prepare the form to enter the secret 
                   //part of the credential again:
@@ -150,7 +151,7 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
                   this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Credential information is missing",
                     `The secret part of the credential is missing! This could happen as a result of a database 
 migration or data corruption.
-<p class="mt-2 mb-0">To prevent dependent PowerShell scripts from failing, you can re-enter the 
+<p class="mt-2 mb-0">To prevent dependent PowerShell scripts from failing, you must re-enter the 
 missing sensitive data in the form again.</p>`))
                     .subscribe((result: DialogResult<any>) => {
                     }, err => {
@@ -160,19 +161,19 @@ missing sensitive data in the form again.</p>`))
                 else {
                   this.secret = data.data[0];
                   this.secretIsValid = true;
-                  this.fh.form.controls.vaultId.patchValue(this.secret._id);
+                  this.fh.form.controls.secretId.patchValue(this.secret._id);
                   this.fh.form.updateValueAndValidity();
                   this.loaded = true;
                 }
               },
-                err => { //If There was an error loading the Vault item:
+                err => { //If There was an error loading the Secret:
                   let cryptoError: boolean = false;
 
                   if (err.error?.errors?.length > 0) {
                     cryptoError = (err.error.errors[0].errorCode?.key?.toString() == ErrorCodes.CryptoError.key);
                   }
 
-                  //If the vault item exists, but there was an error decrypting the secret data:
+                  //If the Secret exists, but there was an error decrypting it:
                   if (cryptoError) {
                     this.core.toaster.showError("Not able to retrieve some part of the credential information.", "Error decrypting data.")
                     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Credential information is missing",
@@ -199,9 +200,9 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
                         else { //If the user decide to enter the credential again.
 
                           //We must try to delete the old one first
-                          this.core.data.delete(DataEntity.Vault, this.fh.form.controls.vaultId.value)
+                          this.core.data.delete(DataEntity.Secret, this.fh.form.controls.secretId.value)
                             .subscribe((results: APIResponse<string>) => {
-                              //Old Vault item id was deleted!                      
+                              //Old Secret was deleted!                      
                             }, err => {
                               //We give our best!
                             })
@@ -236,20 +237,20 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
     }
   }
 
-  newItem(vaultItemOnly: boolean = false) {
+  newItem(secretOnly: boolean = false) {
     let cred: Credential = new Credential();
 
-    cred.type = this.fh.value.type
-    this.secret = VaultItemFactory.createFromCredential(cred);
+    cred.credentialType = this.fh.value.credentialType
+    this.secret = SecretFactory.createFromCredential(cred);
 
-    //If we need to create not only a Vault Item but also the credentials:
-    if (!vaultItemOnly) {
+    //If we need to create not only a Credential Secret but the whole Credentials object:
+    if (!secretOnly) {
       this.fh.setValue(cred);
       this._createFieldsFromArray(cred.fields, true);
     }
 
-    //Ensuring we are going to create a new Vault item:
-    this.fh.form.controls.vaultId.patchValue(this.secret._id);
+    //Ensuring we are going to create a new Secret:
+    this.fh.form.controls.secretId.patchValue(this.secret._id);
     this.fh.form.updateValueAndValidity();
   }
 
@@ -344,14 +345,14 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
   save(): void {
 
-    this.core.data.save(DataEntity.Vault, this.secret)
+    this.core.data.save(DataEntity.Secret, this.secret)
       .subscribe((results: APIResponse<string>) => {
 
-        this.secret._id = results.data[0];
-        //Updating the vault id in the credential:
-        this.fh.form.controls.vaultId.patchValue(this.secret._id);
-        //Signaling the Vault item component to indicate the data was saved:
-        this.saved.next();
+        // this.secret._id = results.data[0];
+        //Updating the secret id in the credential:
+        this.fh.form.controls.secretId.patchValue(results.data[0]);
+        //Signaling the inner component to indicate the data was saved:
+        // this.saved.next();
 
         //Now we save the credential:
         this.core.data.save(DataEntity.Credential, this.fh.value)
@@ -362,8 +363,28 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
             //will allow the "Cancel" button to come back to this version.
             this.fh.form.markAsPristine();
             this.fh.form.markAsUntouched();
+            
+            //Signaling the inner component to indicate the data was saved:
+            this.secret._id = this.fh.value.secretId;
+            this.saved.next();
+    
           },
             (err) => {
+              //If there was an error trying to save the Credential and is a new credential,
+              //we need to try to remove the Secret that was already saved in the previous
+              //transaction:
+              if (!this.fh.value._id) {
+
+                this.core.data.delete(DataEntity.Secret, this.fh.value.secretId)
+                .subscribe((results: APIResponse<string>) => {
+                  //Our best attempt here.
+                },
+                (err) => {});
+
+                //Removing the Id from the credential:
+                this.fh.form.controls.secretId.patchValue("");
+              }
+
               throw err
             }
           );

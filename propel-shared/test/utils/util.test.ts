@@ -1,8 +1,8 @@
 import { Credential } from "../../models/credential";
 import { CredentialTypes } from "../../models/credential-types";
 import { ParameterValue } from "../../models/parameter-value";
-import { Vault, VaultItemFactory } from "../../models/vault";
-import { WindowsVaultItem } from "../../models/windows-vault-item";
+import { Secret, SecretFactory } from "../../models/secret";
+import { WindowsSecret } from "../../models/windows-secret";
 import { Utils } from "../../utils/utils";
 
 enum StringValuesEnum {
@@ -808,29 +808,30 @@ describe("Utils Class - getFullyQualifiedUserName", () => {
     })
 })
 
-describe("Utils Class - PSCredentialFromVaultItem", () => {
+describe("Utils Class - PSCredentialFromSecret", () => {
 
-    test(`Missing vault item`, () => {
+    test(`Missing Secret`, () => {
         expect(() => {
             //@ts-ignore
-            Utils.getPSCredentialFromVaultItem(null);
-        }).toThrow(`The supplied vault item is a null reference`);
+            Utils.getPSCredentialFromSecret(null);
+        }).toThrow(`The supplied secret is a null reference`);
     })
-    test(`Missing vault item "value" attribute`, () => {
+    test(`Missing Secret "value" attribute`, () => {
         expect(() => {
             //@ts-ignore
-            Utils.getPSCredentialFromVaultItem({});
-        }).toThrow(`The supplied vault item is a null reference`);
+            Utils.getPSCredentialFromSecret({});
+        }).toThrow(`The supplied secret is a null reference`);
     })
-    test(`Missing vault item "userName" attribute`, () => {
+    test(`Missing Secret "userName" attribute`, () => {
         expect(() => {
-            Utils.getPSCredentialFromVaultItem({
+            Utils.getPSCredentialFromSecret(
                 //@ts-ignore
-                value: {}
-            });
-        }).toThrow(`The supplied vault item doesn't have a "userName" property`);
+                {
+                    value: {}
+                });
+        }).toThrow(`The supplied secret doesn't have a "userName" property`);
     })
-    test(`Passing the right vault item object`, () => {
+    test(`Passing the right Secret object`, () => {
         let obj = {
             value: {
                 userName: "john.doe",
@@ -839,7 +840,7 @@ describe("Utils Class - PSCredentialFromVaultItem", () => {
             }
         }
         //@ts-ignore
-        expect(Utils.getPSCredentialFromVaultItem(obj))
+        expect(Utils.getPSCredentialFromSecret(obj))
             .toEqual(`New-Object System.Management.Automation.PSCredential "${obj.value.domain}\\${obj.value.userName}", (ConvertTo-SecureString "${obj.value.password}" -AsPlainText -Force)`);
     })
 })
@@ -856,19 +857,19 @@ describe("Utils Class - toPowerShellCustomObject", () => {
         expect(() => {
             //@ts-ignore
             Utils.credentialToPowerShellCustomObject({
-                type: ""
+                credentialType: ""
             });
         }).toThrow(`The supplied credential instance doesn't have a valid CredentialType assigned`);
     })
-    test(`Missing Vault item`, () => {
+    test(`Missing Secret`, () => {
         let cred: Credential = new Credential();
-        cred.type = CredentialTypes.AWS;
+        cred.credentialType = CredentialTypes.AWS;
 
         expect(() => {
             Utils.credentialToPowerShellCustomObject(cred,
                 //@ts-ignore
                 {});
-        }).toThrow(`The supplied vault item is a null reference`);
+        }).toThrow(`The supplied secret is a null reference`);
     })
     test(`Windows Credential to PSCustomObject`, () => {
         //Credential fields:
@@ -881,16 +882,16 @@ describe("Utils Class - toPowerShellCustomObject", () => {
         //Creating the credential:
         let cred: Credential = new Credential();
         cred.name = "TestCred";
-        cred.type = CredentialTypes.Windows;
+        cred.credentialType = CredentialTypes.Windows;
         cred.fields.push(f1);
         cred.fields.push(f2);
-        //Creating the Vault item:
-        let vaultItem = (VaultItemFactory.createFromCredential(cred) as Vault<WindowsVaultItem>);
-        vaultItem.value.userName = "john.doe";
-        vaultItem.value.domain = "mydomain";
-        vaultItem.value.password = "mypassword";
+        //Creating the Secret:
+        let secret = (SecretFactory.createFromCredential(cred) as Secret<WindowsSecret>);
+        secret.value.userName = "john.doe";
+        secret.value.domain = "mydomain";
+        secret.value.password = "mypassword";
 
-        let actual = Utils.credentialToPowerShellCustomObject(cred, vaultItem)
+        let actual = Utils.credentialToPowerShellCustomObject(cred, secret)
             .replace(/(\r\n|\n|\r)/gm, "") //Removing any break lines
             .replace(/\s+/g, ""); //Removing spaces.
         let expected = (`[pscustomobject]@{

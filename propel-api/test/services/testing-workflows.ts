@@ -7,9 +7,10 @@ import { WorkflowStep } from "../../../propel-shared/models/workflow-step";
 import { Credential } from "../../../propel-shared/models/credential";
 import { CredentialTypes } from "../../../propel-shared/models/credential-types";
 import { ParameterValue } from "../../../propel-shared/models/parameter-value";
-import { WindowsVaultItem } from "../../../propel-shared/models/windows-vault-item";
-import { Vault } from "../../../propel-shared/models/vault";
-import { AWSVaultItem } from "../../../propel-shared/models/aws-vault-item";
+import { Secret } from "../../../propel-shared/models/secret";
+import { SecretValue } from "../../../propel-shared/models/secret-value";
+import { WindowsSecret } from "../../../propel-shared/models/windows-secret";
+import { AWSSecret } from "../../../propel-shared/models/aws-secret";
 import { ScriptParameter } from "../../../propel-shared/models/script-parameter";
 
 export class TestingWorkflows {
@@ -17,8 +18,8 @@ export class TestingWorkflows {
     constructor() {
     }
 
-    get SecretWindows01(): Vault<WindowsVaultItem>{
-        let ret = new Vault<WindowsVaultItem>(WindowsVaultItem);
+    get SecretWindows01(): Secret<WindowsSecret>{
+        let ret = new Secret<WindowsSecret>(WindowsSecret);
 
         ret._id = "SecretWindows01"
         ret.value.userName = "UserName";
@@ -41,15 +42,15 @@ export class TestingWorkflows {
         ret._id = "CredentialWindows01"
         ret.name = ret._id
         ret.description = "Windows Credential for testing"
-        ret.type = CredentialTypes.Windows
+        ret.credentialType = CredentialTypes.Windows
         ret.fields = [pv1, pv2]
-        ret.vaultId = "SecretWindows01"
+        ret.secretId = "SecretWindows01"
 
         return ret;
     }
 
-    get SecretAWS02(): Vault<AWSVaultItem>{
-        let ret = new Vault<AWSVaultItem>(AWSVaultItem);
+    get SecretAWS02(): Secret<AWSSecret>{
+        let ret = new Secret<AWSSecret>(AWSSecret);
 
         ret._id = "SecretAWS02"
         ret.value.accessKey = "AccessKey";
@@ -71,15 +72,15 @@ export class TestingWorkflows {
         ret._id = "CredentialAWS02"
         ret.name = ret._id
         ret.description = "AWS Credential for testing"
-        ret.type = CredentialTypes.AWS
+        ret.credentialType = CredentialTypes.AWS
         ret.fields = [pv1, pv2]
-        ret.vaultId = "SecretAWS02"
+        ret.secretId = "SecretAWS02"
 
         return ret;
     }
 
-    get SecretWindows03(): Vault<WindowsVaultItem>{
-        let ret = new Vault<WindowsVaultItem>(WindowsVaultItem);
+    get SecretWindows03(): Secret<WindowsSecret>{
+        let ret = new Secret<WindowsSecret>(WindowsSecret);
 
         ret._id = "SecretWindows03"
         ret.value.userName = "UserName3";
@@ -102,9 +103,9 @@ export class TestingWorkflows {
         ret._id = "CredentialWindows03"
         ret.name = ret._id
         ret.description = "Windows Credential for testing"
-        ret.type = CredentialTypes.Windows
+        ret.credentialType = CredentialTypes.Windows
         ret.fields = [pv1, pv2]
-        ret.vaultId = "SecretWindows03"
+        ret.secretId = "SecretWindows03"
 
         return ret;
     }
