@@ -38,7 +38,7 @@ export class Target extends AuditedEntity {
      * Always invoke this target server using this specific credentials.
      * This is an optional value.
      */
-     public invokeAs!: Credential;
+     public invokeAs: Credential | null = null;
 
     constructor() {
         super();
