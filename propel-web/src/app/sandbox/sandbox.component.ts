@@ -211,7 +211,8 @@ export class SandboxComponent implements OnInit {
 
   ngOnInit() {
     this.testWithDataChanged();
-    this.totalResultsChange()
+    this.totalResultsChange();
+    this.chartExample();
   }
 
   goToHome() {
@@ -385,6 +386,782 @@ export class SandboxComponent implements OnInit {
   toggleViewPassword() {
     this.viewpw = !this.viewpw;
   }
+
+  /* CHARTS  */
+
+  single: any[] = [
+    {
+      "name": "Germany",
+      "value": 40
+    },
+    {
+      "name": "USA",
+      "value": 5000000
+    },
+    {
+      "name": "France",
+      "value": 7200000
+    },
+    {
+      "name": "Portugal",
+      "value": 4200000
+    },
+    {
+      "name": "Europe",
+      "value": 9200000
+    }
+  ];
+
+  // multi: any[] = [
+  //   {
+  //     "name": "Germany",
+  //     "series": [
+  //       {
+  //         "name": "2010",
+  //         "value": 7300000
+  //       },
+  //       {
+  //         "name": "2011",
+  //         "value": 8940000
+  //       }
+  //     ]
+  //   },
+  
+  //   {
+  //     "name": "USA",
+  //     "series": [
+  //       {
+  //         "name": "2010",
+  //         "value": 7870000
+  //       },
+  //       {
+  //         "name": "2011",
+  //         "value": 8270000
+  //       }
+  //     ]
+  //   },
+  
+  //   {
+  //     "name": "France",
+  //     "series": [
+  //       {
+  //         "name": "2010",
+  //         "value": 5000002
+  //       },
+  //       {
+  //         "name": "2011",
+  //         "value": 5800000
+  //       }
+  //     ]
+  //   }
+  // ];
+  multi: any[] = [
+    {
+      "name": "July 1st",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 7
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "July 2nd",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 8
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 3rd",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 0
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 4th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 3
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "July 5ht",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 2
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "name": "July 6th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 9
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "name": "July 7th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 2
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 8th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 4
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 7
+        }
+      ]
+    },
+    {
+      "name": "July 9th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 9
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "name": "July 10th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 8
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "July 11th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 0
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "July 11th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 3
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "name": "July 12th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 4
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 13th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 11
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "name": "July 14th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 11
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "name": "July 15yh",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 7
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "name": "July 16th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 3
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "July 17th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 2
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "name": "July 18th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 13
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 19th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 1
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "July 20th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 4
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "July 21th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 3
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "name": "July 22th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 10
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "July 23th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 2
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 24th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 0
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 25th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 0
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 26th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 5
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 27th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 3
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "name": "July 28th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 7
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "July 29th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 13
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "July 30th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 2
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "July 31th",
+      "series": [
+        {
+          "name": "Workflows",
+          "value": 5
+        },
+        {
+          "name": "Quick Tasks",
+          "value": 1
+        }
+      ]
+    }       
+  ];
+
+  multiRotated: any[] = [
+    {
+      "name": "Workflows",
+      "series": [
+        {
+          "name": "July 1st",
+          "value": 7
+        },
+        {
+          "name": "July 2",
+          "value": 2
+        },
+        {
+          "name": "July 3",
+          "value": 11
+        },
+        {
+          "name": "July 4",
+          "value": 4
+        },
+        {
+          "name": "July 5",
+          "value": 1
+        },
+        {
+          "name": "July 6",
+          "value": 7
+        },
+        {
+          "name": "July 7",
+          "value": 2
+        },
+        {
+          "name": "July 8",
+          "value": 11
+        },
+        {
+          "name": "July 9",
+          "value": 4
+        },
+        {
+          "name": "July 10",
+          "value": 1
+        },
+        {
+          "name": "July 11",
+          "value": 7
+        },
+        {
+          "name": "July 12",
+          "value": 2
+        },
+        {
+          "name": "July 13",
+          "value": 11
+        },
+        {
+          "name": "July 14",
+          "value": 4
+        },
+        {
+          "name": "July 15",
+          "value": 1
+        },
+        {
+          "name": "July 16",
+          "value": 7
+        },
+        {
+          "name": "July 17",
+          "value": 2
+        },
+        {
+          "name": "July 18",
+          "value": 11
+        },
+        {
+          "name": "July 19",
+          "value": 4
+        },
+        {
+          "name": "July 20",
+          "value": 1
+        },
+        {
+          "name": "July 21",
+          "value": 7
+        },
+        {
+          "name": "July 22",
+          "value": 2
+        },
+        {
+          "name": "July 23",
+          "value": 11
+        },
+        {
+          "name": "July 24",
+          "value": 4
+        },
+        {
+          "name": "July 25",
+          "value": 1
+        },
+        {
+          "name": "July 26",
+          "value": 7
+        },
+        {
+          "name": "July 27",
+          "value": 2
+        },
+        {
+          "name": "July 28",
+          "value": 11
+        },
+        {
+          "name": "July 29",
+          "value": 4
+        },
+        {
+          "name": "July 30",
+          "value": 1
+        },
+        {
+          "name": "July 31",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "name": "Quick Tasks",
+      "series": [
+        {
+          "name": "July 1st",
+          "value": 1
+        },
+        {
+          "name": "July 2",
+          "value": 1
+        },
+        {
+          "name": "July 3",
+          "value": 0
+        },
+        {
+          "name": "July 4",
+          "value": 3
+        },
+        {
+          "name": "July 5",
+          "value": 0
+        },
+        {
+          "name": "July 6",
+          "value": 1
+        },
+        {
+          "name": "July 7",
+          "value": 4
+        },
+        {
+          "name": "July 8",
+          "value": 6
+        },
+        {
+          "name": "July 9",
+          "value": 2
+        },
+        {
+          "name": "July 10",
+          "value": 1
+        },
+        {
+          "name": "July 11",
+          "value": 3
+        },
+        {
+          "name": "July 12",
+          "value": 2
+        },
+        {
+          "name": "July 13",
+          "value": 1
+        },
+        {
+          "name": "July 14",
+          "value": 0
+        },
+        {
+          "name": "July 15",
+          "value": 1
+        },
+        {
+          "name": "July 16",
+          "value": 2
+        },
+        {
+          "name": "July 17",
+          "value": 2
+        },
+        {
+          "name": "July 18",
+          "value": 5
+        },
+        {
+          "name": "July 19",
+          "value": 1
+        },
+        {
+          "name": "July 20",
+          "value": 1
+        },
+        {
+          "name": "July 21",
+          "value": 3
+        },
+        {
+          "name": "July 22",
+          "value": 2
+        },
+        {
+          "name": "July 23",
+          "value": 3
+        },
+        {
+          "name": "July 24",
+          "value": 4
+        },
+        {
+          "name": "July 25",
+          "value": 0
+        },
+        {
+          "name": "July 26",
+          "value": 4
+        },
+        {
+          "name": "July 27",
+          "value": 2
+        },
+        {
+          "name": "July 28",
+          "value": 2
+        },
+        {
+          "name": "July 29",
+          "value": 1
+        },
+        {
+          "name": "July 30",
+          "value": 0
+        },
+        {
+          "name": "July 31",
+          "value": 4
+        }
+      ]
+    }
+  ];
+
+  view: any[] = null; //[700, 400];
+
+  // options
+  showXAxis = true;
+  showYAxis = true;
+  gradient = false;
+  showLegend = false;
+  showXAxisLabel = true;
+  xAxisLabel = 'Country';
+  showYAxisLabel = true;
+  yAxisLabel = 'Population';
+
+  // colorScheme = "air"
+  colorScheme = {
+    domain: ["#ffe89e", "#ff7878", "#328AAB", "#e6c761", "#e69a9a", "#487e92", "#ab3a32", "#924d48"] 
+  };
+  cardColor: string = '#232837';
+
+  onSelectChart($event) {
+    console.log(JSON.stringify($event));
+  }
+
+  chartExample() {
+
+  }
+
+
 }
 
 class SampleData {

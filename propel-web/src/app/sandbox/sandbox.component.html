@@ -66,6 +66,54 @@
         <h2>Dependencies:</h2>
       </strong></p>
     <hr>
+
+    <div>
+      <p><strong>
+          <h3>Charts:</h3>
+        </strong></p>
+      <div class="row">
+        <ngx-charts-number-card [results]="single" [view]="view" [scheme]="colorScheme"  
+          [cardColor]="cardColor"
+          (select)="onSelectChart($event)">
+        </ngx-charts-number-card>
+      </div>
+      <div class="row">
+        <ngx-charts-bar-vertical [results]="single"  
+          [view]="view" [scheme]="colorScheme" 
+          [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" 
+          [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" 
+          [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
+          (select)="onSelectChart($event)">
+        </ngx-charts-bar-vertical>
+      </div>
+      <div class="row">
+        <ngx-charts-bar-vertical-2d [results]="multi"  
+          [view]="view" [scheme]="colorScheme" 
+          [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" 
+          [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" 
+          [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
+          (select)="onSelectChart($event)">
+        </ngx-charts-bar-vertical-2d>
+      </div>
+      <div class="row">
+        <ngx-charts-line-chart [results]="multiRotated"  
+          [view]="view" [scheme]="colorScheme" 
+          [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" 
+          [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" 
+          [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
+          (select)="onSelectChart($event)">
+        </ngx-charts-line-chart>
+      </div>
+      <div class="row">
+        <ngx-charts-area-chart [results]="multiRotated"  
+          [view]="view" [scheme]="colorScheme" 
+          [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" 
+          [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" 
+          [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
+          (select)="onSelectChart($event)">
+        </ngx-charts-area-chart>
+      </div>
+    </div>
     <div>
       <p><strong>
           <h3>Bootstrap NavBar:</h3>
@@ -585,8 +633,8 @@
             <label for="name" class="data-required">Name</label>
             <input type="text" class="form-control" id="name" aria-describedby="name"
               placeholder="Enter your name (min: 3 chars, max: 10 chars)" formControlName="name" required>
-            <small *ngIf="getErrorText(this.sampleForm.controls.name)"
-              class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.name) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls.name)" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls.name) }}</small>
             <small class="form-text text-muted">Current control status:
               {{ sampleFormOrControlStatus(this.sampleForm.controls.name) }}</small>
           </div>
@@ -595,8 +643,8 @@
             <mat-slide-toggle color="primary" id="enabled" formControlName="enabled">
             </mat-slide-toggle>
             <label class="ml-2">Enabled</label>
-            <small *ngIf="getErrorText(this.sampleForm.controls.enabled)"
-              class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.enabled) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls.enabled)" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls.enabled) }}</small>
             <small class="form-text text-muted">Current control status:
               {{ sampleFormOrControlStatus(this.sampleForm.controls.enabled) }}</small>
           </div>
@@ -606,8 +654,8 @@
               labelForId="simpleSelect" [compareWith]="compareFn" placeholder="Select a country"
               formControlName="country">
             </ng-select>
-            <small *ngIf="getErrorText(this.sampleForm.controls.country)"
-              class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.country) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls.country)" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls.country) }}</small>
             <small class="form-text text-muted">Current control status:
               {{ sampleFormOrControlStatus(this.sampleForm.controls.country) }}</small>
           </div>
@@ -615,37 +663,34 @@
             <label class="mr-2" for="multipleSelect">Selection of multiple values</label>
             <ng-select [items]="allColors" [multiple]="true" labelForId="multipleSelect" [closeOnSelect]="false"
               [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name" clearAllText="Clear"
-              [compareWith]="compareFn" placeholder="Select all the colors" formControlName="colors" 
-              #MyNGSelect>
+              [compareWith]="compareFn" placeholder="Select all the colors" formControlName="colors" #MyNGSelect>
               <!-- NGSelect does not allow disabled items to be removed from the selection list. 
                 I think is a bug :-(.
                 In order to do that we must use a template and handle ourselves the item removal -->
               <ng-template ng-label-tmp let-item="item">
                 <span class="ng-value-custom-icon" (click)="dropItem(item)">×</span>
-                <span class="ng-value-label"
-                [ngClass]="{
+                <span class="ng-value-label" [ngClass]="{
                   'item-disabled': !item.enabled }">{{item.name}}</span>
               </ng-template>
             </ng-select>
-            <small *ngIf="getErrorText(this.sampleForm.controls.colors)"
-              class="form-text data-invalid-message">{{ getErrorText(this.sampleForm.controls.colors) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls.colors)" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls.colors) }}</small>
             <small class="form-text text-muted">Current control status:
               {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
           </div>
           <div class="form-group">
             <label for="password" class="data-required">Password</label>
             <div class="form-inline">
-              <input [type]="viewpw ? 'text' : 'password'" 
-                class="form-control" id="password" aria-describedby="password"
-                placeholder="Enter your password here" formControlName="password" required>
-              <button class="btn btn-primary button-icon-regular ml-1" (click)="toggleViewPassword()" >
+              <input [type]="viewpw ? 'text' : 'password'" class="form-control" id="password"
+                aria-describedby="password" placeholder="Enter your password here" formControlName="password" required>
+              <button class="btn btn-primary button-icon-regular ml-1" (click)="toggleViewPassword()">
                 <i class="fas" [ngClass]="{
                   'fa-eye-slash': !viewpw,
                   'fa-eye': viewpw
                 }"></i>
               </button>
-            </div>           
-        </div>
+            </div>
+          </div>
           <button class="btn btn-primary" type="submit" [disabled]="!sampleForm.valid">Save</button>
           <br>
           <span>Current form status: {{ sampleFormOrControlStatus(sampleForm) }}</span><br>

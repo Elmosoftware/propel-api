@@ -25,6 +25,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { ToastrModule } from 'ngx-toastr';
 import { NgxPageScrollCoreModule } from 'ngx-page-scroll-core';
 import { NgxPageScrollModule } from 'ngx-page-scroll';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 //Services & Others
 import { CoreService } from './services/core.service';
@@ -136,7 +137,8 @@ import { SearchCredentialLineComponent } from './app/search-credential-line/sear
     MatPaginatorModule,
     InfiniteScrollingModule,
     NgxPageScrollCoreModule,
-    NgxPageScrollModule
+    NgxPageScrollModule,
+    NgxChartsModule
   ],
   providers: [
     ErrorHandlerService,
