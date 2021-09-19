@@ -124,6 +124,17 @@ class Config {
     }
 
     /**
+     * This is the amount of days configured in the database to retain execution logs.
+     * Execution Logs older wil be automatically eliminated from the database.
+     * 
+     * **IMPORTANT**: This need to be kept on sync with the expiration date set in 
+     * the *"I_StartedAt"* index of *"ExecutionLogs"* collection.  
+     */
+    get executionLogRetentionDays(): number {
+        return Number(process.env.EXECUTIONLOG_RETENTION_DAYS)
+    }
+
+    /**
      * Encryption key to be used in some database operations.
      */
     get encryptionKey(): string {

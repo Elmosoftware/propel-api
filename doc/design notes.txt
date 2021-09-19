@@ -483,11 +483,72 @@ Next steps:
 v - Commit Propel credentials changes.
 v - Add "credentials" menu in Nav bar
 v - Add Visual hints and additional information in the Credentials form.   
-v  - Work on Browse credentials
-  - Modify Credentials component to redirect to the new browse when there is a CRYPTO_ERROR
+v - Work on Browse credentials
+v - Modify Credentials component to redirect to the new browse when there is a CRYPTO_ERROR
+v - Add icons in the menues of the navigation bar, (Browse and credentials).
+  - Add a text or navigational help to indicate which is the current page.
   - In home page add counter for total credentials get also an icon representing all credentials 
   from font-awesome
-  - Add icons in the menues of the navigation bar, (Browse and credentials).
-  - Add a text or navigational help to indicate which is the current page.
   - Add a graph tp the hme page indcating some metrics, like usage in last month, most used workflows, etc...
   - Upgrade ALL, (Node, Mongo, angular, all dependencies, etc.)
+
+=============================================================================
+
+Propel Usage Statistics:
+------------------------
+
+UsageStats {
+	totals: {
+		executions: number -> Total amount of executions in the current period.
+		workflows: number -> Total of Workflows defined.
+		targets: number -> Total of Targets created.
+		scripts: number -> Amount of script uploaded in Propel.
+		credentials: number -> Total amount of Credentials Propel is keeping safe.
+	},
+	dailyExecutions: [
+		{
+			name: string
+			series: [{
+				name: date,
+				value: number
+			}]
+		}
+	]
+	mostUsedWorkflows: [
+		{
+			_id: string,
+			name: string,
+			lastDate: date,
+			value: number
+		}
+	]
+	latestExecutions: [
+		{
+			_id: string,
+			name: string,
+			lastDate: date,
+			value: number
+		}
+	]
+	lastExecutionErrors: [
+		{
+			_id: string,
+			name: string,
+			lastDate: date,
+			value: number
+		}
+	]
+}
+
+-------------------------------------------------------------
+Next steps:
+------------
+
+ - Implement a route to retrieve the stats.
+	If there is no stats
+		return a message saying the stats are being refreshed.
+	else
+		return the current stats.
+ - Persist The Stats
+ - Implemet a batch process to update the stats if required and in fixed intervals.
+ - "If required" means that we need to be able to define if we have stale stats.

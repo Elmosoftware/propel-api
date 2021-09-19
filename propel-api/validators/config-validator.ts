@@ -89,6 +89,13 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`ENCRYPTION_KEY is required and need to be 64 characters length.`);
         }
 
+        if (!process.env.EXECUTIONLOG_RETENTION_DAYS) {
+            super._addError("EXECUTIONLOG_RETENTION_DAYS is required.");
+        }
+        else if(isNaN(parseInt(String(process.env.EXECUTIONLOG_RETENTION_DAYS))) || Number(process.env.EXECUTIONLOG_RETENTION_DAYS) <= 0) {
+            super._addError(`EXECUTIONLOG_RETENTION_DAYS is not a number or it has a value less or equal to zero. Supplied value: "${process.env.EXECUTIONLOG_RETENTION_DAYS}".`);
+        }
+
         return this;
     }
 }

@@ -829,7 +829,7 @@ describe("Utils Class - PSCredentialFromSecret", () => {
                 {
                     value: {}
                 });
-        }).toThrow(`The supplied secret doesn't have a "userName" property`);
+        }).toThrow(`The supplied secret value doesn't have a "userName" property`);
     })
     test(`Passing the right Secret object`, () => {
         let obj = {
@@ -895,7 +895,7 @@ describe("Utils Class - toPowerShellCustomObject", () => {
             .replace(/(\r\n|\n|\r)/gm, "") //Removing any break lines
             .replace(/\s+/g, ""); //Removing spaces.
         let expected = (`[pscustomobject]@{
-  Name = "TestCred"
+  Name = "TestCred";
   Fields = [pscustomobject]@{
       Field1 = "Field1Value";
       Field2 = "Field2Value";
@@ -907,5 +907,148 @@ describe("Utils Class - toPowerShellCustomObject", () => {
 
         expect(actual)
             .toEqual(expected);
+    })
+})
+
+describe("Utils Class - removeTimeFromDate", () => {
+
+    test(`Null value`, () => {
+        //@ts-ignore
+        expect(Utils.removeTimeFromDate(null)).toBe(null)
+    })
+    test(`Non Date value`, () => {
+        //@ts-ignore
+        expect(Utils.removeTimeFromDate({})).toStrictEqual({})
+    })
+    test(`Date with Time`, () => {
+        ;
+        expect(Utils.removeTimeFromDate(new Date(2021, 9, 17, 8, 30, 25, 416)))
+            .toEqual(new Date(2021, 9, 17, 0, 0, 0, 0))
+    })
+})
+
+describe("Utils Class - addDays", () => {
+    test(`Null value for parameter "date"`, () => {
+        //@ts-ignore
+        expect(Utils.addDays(null)).toBe(null)
+    })
+    test(`Null value for parameter "days"`, () => {
+        //@ts-ignore
+        expect(Utils.addDays(new Date(2021, 9, 17, 8, 30, 25, 416), null)).toEqual(new Date(2021, 9, 17, 8, 30, 25, 416))
+    })
+    test(`Non Date value for parameter "date"`, () => {
+        //@ts-ignore
+        expect(Utils.addDays({}, 2)).toStrictEqual({})
+    })
+    test(`Adding 1 day`, () => {
+        expect(Utils.addDays(new Date(2021, 9, 17, 8, 30, 25, 416), 1))
+            .toEqual(new Date(2021, 9, 18, 8, 30, 25, 416))
+    })
+    test(`Subtracting 1 day`, () => {
+        expect(Utils.addDays(new Date(2021, 9, 17, 8, 30, 25, 416), -1))
+            .toEqual(new Date(2021, 9, 16, 8, 30, 25, 416))
+    })
+})
+
+describe("Utils Class - getGetOrdinalSuffix", () => {
+    test(`Null value for parameter "number"`, () => {
+        //@ts-ignore
+        expect(Utils.getOrdinalSuffix(null)).toEqual("");
+    })
+    test(`0	Zero 	0th	Zeroth`, () => {
+        expect(Utils.getOrdinalSuffix(1)).toEqual("st");
+    })
+    test(` 1st – first`, () => {
+        expect(Utils.getOrdinalSuffix(1)).toEqual('st');
+    })
+    test(` 2nd – second`, () => {
+        expect(Utils.getOrdinalSuffix(2)).toEqual('nd');
+    })
+    test(` 3rd – third`, () => {
+        expect(Utils.getOrdinalSuffix(3)).toEqual('rd');
+    })
+    test(` 4th – fourth`, () => {
+        expect(Utils.getOrdinalSuffix(4)).toEqual('th');
+    })
+    test(` 5th – fifth`, () => {
+        expect(Utils.getOrdinalSuffix(5)).toEqual('th');
+    })
+    test(` 6th – sixth`, () => {
+        expect(Utils.getOrdinalSuffix(6)).toEqual('th');
+    })
+    test(` 7th – seventh`, () => {
+        expect(Utils.getOrdinalSuffix(7)).toEqual('th');
+    })
+    test(` 8th – eighth`, () => {
+        expect(Utils.getOrdinalSuffix(8)).toEqual('th');
+    })
+    test(` 9th – ninth`, () => {
+        expect(Utils.getOrdinalSuffix(9)).toEqual('th');
+    })
+    test(`10th – tenth`, () => {
+        expect(Utils.getOrdinalSuffix(10)).toEqual('th');
+    })
+    test(`11th – eleventh`, () => {
+        expect(Utils.getOrdinalSuffix(11)).toEqual('th');
+    })
+    test(`12th – twelfth`, () => {
+        expect(Utils.getOrdinalSuffix(12)).toEqual('th');
+    })
+    test(`13th – thirteenth`, () => {
+        expect(Utils.getOrdinalSuffix(13)).toEqual('th');
+    })
+    test(`14th – fourteenth`, () => {
+        expect(Utils.getOrdinalSuffix(14)).toEqual('th');
+    })
+    test(`15th – fifteenth`, () => {
+        expect(Utils.getOrdinalSuffix(15)).toEqual('th');
+    })
+    test(`16th – sixteenth`, () => {
+        expect(Utils.getOrdinalSuffix(16)).toEqual('th');
+    })
+    test(`17th – seventeenth`, () => {
+        expect(Utils.getOrdinalSuffix(17)).toEqual('th');
+    })
+    test(`18th – eighteenth`, () => {
+        expect(Utils.getOrdinalSuffix(18)).toEqual('th');
+    })
+    test(`19th – nineteenth`, () => {
+        expect(Utils.getOrdinalSuffix(19)).toEqual('th');
+    })
+    test(`20th – twentieth`, () => {
+        expect(Utils.getOrdinalSuffix(20)).toEqual('th');
+    })
+    test(`21st – twenty-first`, () => {
+        expect(Utils.getOrdinalSuffix(21)).toEqual('st');
+    })
+    test(`22nd – twenty-second`, () => {
+        expect(Utils.getOrdinalSuffix(22)).toEqual('nd');
+    })
+    test(`23rd – twenty-third`, () => {
+        expect(Utils.getOrdinalSuffix(23)).toEqual('rd');
+    })
+    test(`24th – twenty-fourth`, () => {
+        expect(Utils.getOrdinalSuffix(24)).toEqual('th');
+    })
+    test(`25th – twenty-fifth`, () => {
+        expect(Utils.getOrdinalSuffix(25)).toEqual('th');
+    })
+    test(`26th – twenty-sixth`, () => {
+        expect(Utils.getOrdinalSuffix(26)).toEqual('th');
+    })
+    test(`27th – twenty-seventh`, () => {
+        expect(Utils.getOrdinalSuffix(27)).toEqual('th');
+    })
+    test(`28th – twenty-eighth`, () => {
+        expect(Utils.getOrdinalSuffix(28)).toEqual('th');
+    })
+    test(`29th – twenty-ninth`, () => {
+        expect(Utils.getOrdinalSuffix(29)).toEqual('th');
+    })
+    test(`30th – thirtieth`, () => {
+        expect(Utils.getOrdinalSuffix(30)).toEqual('th');
+    })
+    test(`31st – thirty-first`, () => {
+        expect(Utils.getOrdinalSuffix(31)).toEqual('st');
     })
 })

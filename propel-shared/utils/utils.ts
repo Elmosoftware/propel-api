@@ -8,6 +8,7 @@ import { WindowsSecret } from "../models/windows-secret";
 import { AWSSecret } from "../models/aws-secret";
 
 export const POWERSHELL_NULL_LITERAL = "$null"
+export const MILLISECONDS_DAY: number = 1000*60*60*24;
 
 /**
  * Utilities.
@@ -609,4 +610,62 @@ ${this.tabs(1)}SecretKey = "${secretValue?.secretKey}";`
 
         return ret;
     }
+
+    /**
+     * Remove the time portion from the suppied Date object.
+     * If no date is specified, it returns the current date.
+     * @example
+     * removeTimeFromDate(new Date(2021, 9, 17, 8, 24, 0)) -->  2021-09-17 00:00:00.000
+     * @param d Date from which we would like to remove the time portion. 
+     * @returns A new Date instance that has only date portion, (hours, minutes, seconds and ms 
+     * are been set to the value "0").
+     */
+    static removeTimeFromDate(date: Date = new Date()): Date {
+
+        let ret: Date = date;
+
+        if (date && date instanceof Date) {
+            ret = new Date(date.setHours(0, 0, 0, 0));
+        }
+
+        return ret;
+    }
+
+    /**
+     * Add or subtract days to the specified Date instance. If you wouldlike to add days, you must 
+     * pass a positive value. To subtract days a negative one.
+     * @example
+     * addDays(newDate(2021, 9, 17, 3, 28, 0), 1) -> new Date(2021, 9, 18, 3, 28, 0);
+     * addDays(newDate(2021, 9, 17, 3, 28, 0), -1) -> new Date(2021, 9, 16, 3, 28, 0);
+     * @param date Date to add or substract days.
+     * @param days Amount of days to add, (positive number) or subtract, (negative number).
+     * @returns The resultant date.
+     */
+    static addDays(date: Date, days: number): Date {
+        let ret: Date = date;
+
+        if (date && date instanceof Date && !isNaN(parseInt(String(days)))) {
+            ret = new Date(Number(date) + (days * MILLISECONDS_DAY));
+        }
+
+        return ret;
+    }
+
+    /**
+     * For a defined number it will return the suffix thatcorrespond to his ordinal.
+     * @example
+     * getOrdinalSuffix(1) -> "st"
+     * @param n Number which ordinal we would like to found.
+     * @returns A string containing the ordinal suffix for the specified number
+     */
+    static getOrdinalSuffix(n: number): string {
+        //Thanks to: https://gist.github.com/jlbruno/1535691/db35b4f3af3dcbb42babc01541410f291a8e8fac
+
+        if(isNaN(parseInt(String(n)))) return ""
+
+        let s = ["th","st","nd","rd"]
+        let v = n % 100;
+
+        return s[(v-20)%10] || s[v] || s[0];
+     }
 }

@@ -11,6 +11,7 @@ function setAllValid() {
     process.env.POOL_PRE_ALLOC="10"
     process.env.POOL_QUEUE_SIZE="5"
     process.env.MAX_WORKFLOW_RESULTS_SIZE="12582912"
+    process.env.EXECUTIONLOG_RETENTION_DAYS="30"
 }
 
 describe("ConfigValidator Class", () => {
@@ -229,6 +230,50 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`ENCRYPTION_KEY is required`);
+        cfgVal.reset();
+    })
+    test(`Missing EXECUTIONLOG_RETENTION_DAYS value`, () => {
+        //@ts-ignore
+        process.env.EXECUTIONLOG_RETENTION_DAYS = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`EXECUTIONLOG_RETENTION_DAYS is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid EXECUTIONLOG_RETENTION_DAYS value`, () => {
+        //@ts-ignore
+        process.env.EXECUTIONLOG_RETENTION_DAYS = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`EXECUTIONLOG_RETENTION_DAYS is not a number or it has a value less or equal to zero`);
+        cfgVal.reset();
+    })
+    test(`Invalid EXECUTIONLOG_RETENTION_DAYS numeric value (0)`, () => {
+        //@ts-ignore
+        process.env.EXECUTIONLOG_RETENTION_DAYS = "0"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`EXECUTIONLOG_RETENTION_DAYS is not a number or it has a value less or equal to zero`);
+        cfgVal.reset();
+    })
+    test(`Invalid EXECUTIONLOG_RETENTION_DAYS numeric value (-1)`, () => {
+        //@ts-ignore
+        process.env.EXECUTIONLOG_RETENTION_DAYS = "-1"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`EXECUTIONLOG_RETENTION_DAYS is not a number or it has a value less or equal to zero`);
         cfgVal.reset();
     })
 })
