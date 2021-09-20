@@ -1,5 +1,4 @@
 // @ts-check
-import { AuditedEntity } from "./audited-entity";
 import { GraphSeries } from "./graph-series";
 import { GraphSeriesData } from "./graph-series-data";
 
@@ -8,7 +7,12 @@ import { GraphSeriesData } from "./graph-series-data";
  * Represents the usage statistics of the app, this include the amount of items created, the 
  * most used items, amount of execution in a period of time, etc...
  */
-export class UsageStats extends AuditedEntity {
+export class UsageStats {
+
+    /**
+     * Indicates how fresh are our stats.
+     */
+    statsTimestamp: Date = new Date();
 
     /**
      * Total amount of executions in the current period.
@@ -56,6 +60,6 @@ export class UsageStats extends AuditedEntity {
     public lastExecutionErrors: GraphSeriesData[] = [];
 
     constructor() {
-        super();
+        
     }
 }

@@ -96,6 +96,13 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`EXECUTIONLOG_RETENTION_DAYS is not a number or it has a value less or equal to zero. Supplied value: "${process.env.EXECUTIONLOG_RETENTION_DAYS}".`);
         }
 
+        if (!process.env.USAGE_STATS_STALE_MINUTES) {
+            super._addError("USAGE_STATS_STALE_MINUTES is required.");
+        }
+        else if(isNaN(parseInt(String(process.env.USAGE_STATS_STALE_MINUTES))) || Number(process.env.USAGE_STATS_STALE_MINUTES) < 0) {
+            super._addError(`USAGE_STATS_STALE_MINUTES is not a number or it has a value less than zero. Supplied value: "${process.env.USAGE_STATS_STALE_MINUTES}".`);
+        }
+
         return this;
     }
 }

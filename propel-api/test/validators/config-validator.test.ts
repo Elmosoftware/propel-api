@@ -12,6 +12,7 @@ function setAllValid() {
     process.env.POOL_QUEUE_SIZE="5"
     process.env.MAX_WORKFLOW_RESULTS_SIZE="12582912"
     process.env.EXECUTIONLOG_RETENTION_DAYS="30"
+    process.env.USAGE_STATS_STALE_MINUTES="30"
 }
 
 describe("ConfigValidator Class", () => {
@@ -274,6 +275,39 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`EXECUTIONLOG_RETENTION_DAYS is not a number or it has a value less or equal to zero`);
+        cfgVal.reset();
+    })
+    test(`Missing USAGE_STATS_STALE_MINUTES value`, () => {
+        //@ts-ignore
+        process.env.USAGE_STATS_STALE_MINUTES = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`USAGE_STATS_STALE_MINUTES is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid USAGE_STATS_STALE_MINUTES value`, () => {
+        //@ts-ignore
+        process.env.USAGE_STATS_STALE_MINUTES = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`USAGE_STATS_STALE_MINUTES is not a number or it has a value less than zero`);
+        cfgVal.reset();
+    })
+    test(`Invalid USAGE_STATS_STALE_MINUTES numeric value (-1)`, () => {
+        //@ts-ignore
+        process.env.USAGE_STATS_STALE_MINUTES = "-1"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`USAGE_STATS_STALE_MINUTES is not a number or it has a value less than zero`);
         cfgVal.reset();
     })
 })

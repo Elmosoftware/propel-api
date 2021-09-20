@@ -37,11 +37,12 @@ function getUsageStatsServiceInstance(logs: ExecutionLog[], totalWorkflows:numbe
     return ret;
 }
 
-function checkForPositives(seriesName: string, data: GraphSeriesData[], positiveIndexes: number[]): boolean {
+function checkForPositives(seriesName: string | undefined, data: GraphSeriesData[] | undefined, 
+    positiveIndexes: number[]): boolean {
 
     let msg: string = ""
 
-    data.forEach((gd, i) => {
+    data?.forEach((gd, i) => {
         if (positiveIndexes.includes(i) && gd.value == 0) {
             msg += `\r\nEXPECTED POSITIVE for ${seriesName} series data at index: ${i} but it has value "0". ` +
                 `Series name: "${gd.name}", ` +
@@ -92,17 +93,17 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.dailyExecutions.length).toEqual(2);
-            expect(us.currentStats.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
-            expect(us.currentStats.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions.length).toEqual(2);
+            expect(us.currentStats?.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
 
             //Workflows series: The 2nd element, (today - 1), must be positive:
-            expect(checkForPositives(us.currentStats.dailyExecutions[0].name,
-                us.currentStats.dailyExecutions[0].series, [1])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[0].name,
+                us.currentStats?.dailyExecutions[0].series, [1])).toBe(true);
 
             //Quick Task series: All elements must have value 0:
-            expect(checkForPositives(us.currentStats.dailyExecutions[1].name,
-                us.currentStats.dailyExecutions[1].series, [])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[1].name,
+                us.currentStats?.dailyExecutions[1].series, [])).toBe(true);
         });
 
         test(`Single Execution Log Quick Tasks positives only`, async () => {
@@ -114,17 +115,17 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.dailyExecutions.length).toEqual(2);
-            expect(us.currentStats.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
-            expect(us.currentStats.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions.length).toEqual(2);
+            expect(us.currentStats?.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
 
             //Workflows series: All elements must have value 0:
-            expect(checkForPositives(us.currentStats.dailyExecutions[0].name,
-                us.currentStats.dailyExecutions[0].series, [])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[0].name,
+                us.currentStats?.dailyExecutions[0].series, [])).toBe(true);
 
             //Quick Task series: The 2nd element, (today - 1), must be positive:
-            expect(checkForPositives(us.currentStats.dailyExecutions[1].name,
-                us.currentStats.dailyExecutions[1].series, [1])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[1].name,
+                us.currentStats?.dailyExecutions[1].series, [1])).toBe(true);
         });
 
         test(`Multiple Execution Logs With Workflows and Quick Tasks positives`, async () => {
@@ -143,17 +144,17 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.dailyExecutions.length).toEqual(2);
-            expect(us.currentStats.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
-            expect(us.currentStats.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions.length).toEqual(2);
+            expect(us.currentStats?.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
 
             //Workflows series:
-            expect(checkForPositives(us.currentStats.dailyExecutions[0].name,
-                us.currentStats.dailyExecutions[0].series, [7, 13])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[0].name,
+                us.currentStats?.dailyExecutions[0].series, [7, 13])).toBe(true);
 
             //Quick Task series:
-            expect(checkForPositives(us.currentStats.dailyExecutions[1].name,
-                us.currentStats.dailyExecutions[1].series, [3, 6])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[1].name,
+                us.currentStats?.dailyExecutions[1].series, [3, 6])).toBe(true);
         });
 
         test(`Multiple Execution Logs With Workflows and Quick Tasks positives`, async () => {
@@ -172,17 +173,17 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.dailyExecutions.length).toEqual(2);
-            expect(us.currentStats.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
-            expect(us.currentStats.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions.length).toEqual(2);
+            expect(us.currentStats?.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
 
             //Workflows series:
-            expect(checkForPositives(us.currentStats.dailyExecutions[0].name,
-                us.currentStats.dailyExecutions[0].series, [7, 13])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[0].name,
+                us.currentStats?.dailyExecutions[0].series, [7, 13])).toBe(true);
 
             //Quick Task series:
-            expect(checkForPositives(us.currentStats.dailyExecutions[1].name,
-                us.currentStats.dailyExecutions[1].series, [3, 6])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[1].name,
+                us.currentStats?.dailyExecutions[1].series, [3, 6])).toBe(true);
         });
 
         test(`Multiple Execution Logs With Workflows and Quick Tasks positives on repeated days`, async () => {
@@ -208,28 +209,28 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.dailyExecutions.length).toEqual(2);
-            expect(us.currentStats.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
-            expect(us.currentStats.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions.length).toEqual(2);
+            expect(us.currentStats?.dailyExecutions[0].series.length).toEqual(cfg.executionLogRetentionDays);
+            expect(us.currentStats?.dailyExecutions[1].series.length).toEqual(cfg.executionLogRetentionDays);
 
             //Workflows series:
-            expect(checkForPositives(us.currentStats.dailyExecutions[0].name,
-                us.currentStats.dailyExecutions[0].series, [10, 14, 29])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[0].name,
+                us.currentStats?.dailyExecutions[0].series, [10, 14, 29])).toBe(true);
 
             //Quick Task series:
-            expect(checkForPositives(us.currentStats.dailyExecutions[1].name,
-                us.currentStats.dailyExecutions[1].series, [0, 7, 9, 10])).toBe(true);
+            expect(checkForPositives(us.currentStats?.dailyExecutions[1].name,
+                us.currentStats?.dailyExecutions[1].series, [0, 7, 9, 10])).toBe(true);
 
             //Checking the values:
             //Workflows:
-            expect(us.currentStats.dailyExecutions[0].series[10].value).toEqual(2);
-            expect(us.currentStats.dailyExecutions[0].series[14].value).toEqual(1);
-            expect(us.currentStats.dailyExecutions[0].series[29].value).toEqual(2);
+            expect(us.currentStats?.dailyExecutions[0].series[10].value).toEqual(2);
+            expect(us.currentStats?.dailyExecutions[0].series[14].value).toEqual(1);
+            expect(us.currentStats?.dailyExecutions[0].series[29].value).toEqual(2);
             //Quick Tasks:
-            expect(us.currentStats.dailyExecutions[1].series[0].value).toEqual(1);
-            expect(us.currentStats.dailyExecutions[1].series[7].value).toEqual(1);
-            expect(us.currentStats.dailyExecutions[1].series[9].value).toEqual(3);
-            expect(us.currentStats.dailyExecutions[1].series[10].value).toEqual(1);
+            expect(us.currentStats?.dailyExecutions[1].series[0].value).toEqual(1);
+            expect(us.currentStats?.dailyExecutions[1].series[7].value).toEqual(1);
+            expect(us.currentStats?.dailyExecutions[1].series[9].value).toEqual(3);
+            expect(us.currentStats?.dailyExecutions[1].series[10].value).toEqual(1);
         });
     });
 
@@ -245,8 +246,8 @@ describe("UsageStatsService Class - updateStats", () => {
 
             await us.updateStats();
 
-            expect(us.currentStats.mostUsedWorkflows).not.toBe(null);
-            expect(us.currentStats.mostUsedWorkflows.length).toEqual(0);
+            expect(us.currentStats?.mostUsedWorkflows).not.toBe(null);
+            expect(us.currentStats?.mostUsedWorkflows.length).toEqual(0);
         });
 
         test(`Single Execution Log`, async () => {
@@ -258,10 +259,10 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.mostUsedWorkflows.length).toEqual(1);
-            expect(us.currentStats.mostUsedWorkflows[0]._id).toEqual("0");
-            expect(us.currentStats.mostUsedWorkflows[0].name).toEqual("Workflow 0");
-            expect(us.currentStats.mostUsedWorkflows[0].value).toEqual(1);
+            expect(us.currentStats?.mostUsedWorkflows.length).toEqual(1);
+            expect(us.currentStats?.mostUsedWorkflows[0]._id).toEqual("0");
+            expect(us.currentStats?.mostUsedWorkflows[0].name).toEqual("Workflow 0");
+            expect(us.currentStats?.mostUsedWorkflows[0].value).toEqual(1);
         });
 
         test(`Multiple Execution Logs`, async () => {
@@ -290,11 +291,11 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.mostUsedWorkflows.length).toEqual(4);
-            expect(us.currentStats.mostUsedWorkflows[0].value).toEqual(3); //The last 3 workflows.
-            expect(us.currentStats.mostUsedWorkflows[1].value).toEqual(2); //The second and third workflows.
-            expect(us.currentStats.mostUsedWorkflows[2].value).toEqual(1);
-            expect(us.currentStats.mostUsedWorkflows[3].value).toEqual(1);
+            expect(us.currentStats?.mostUsedWorkflows.length).toEqual(4);
+            expect(us.currentStats?.mostUsedWorkflows[0].value).toEqual(3); //The last 3 workflows.
+            expect(us.currentStats?.mostUsedWorkflows[1].value).toEqual(2); //The second and third workflows.
+            expect(us.currentStats?.mostUsedWorkflows[2].value).toEqual(1);
+            expect(us.currentStats?.mostUsedWorkflows[3].value).toEqual(1);
         });
     });
 
@@ -310,8 +311,8 @@ describe("UsageStatsService Class - updateStats", () => {
 
             await us.updateStats();
 
-            expect(us.currentStats.latestExecutions).not.toBe(null);
-            expect(us.currentStats.latestExecutions.length).toEqual(0);
+            expect(us.currentStats?.latestExecutions).not.toBe(null);
+            expect(us.currentStats?.latestExecutions.length).toEqual(0);
         });
 
         test(`Single Execution Log`, async () => {
@@ -323,11 +324,11 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.latestExecutions.length).toEqual(1);
-            expect(us.currentStats.latestExecutions[0]._id).toEqual(logs[0]._id);
-            expect(us.currentStats.latestExecutions[0].name).toEqual(logs[0].workflow.name);
-            expect(us.currentStats.latestExecutions[0].value).toEqual(1);
-            expect(us.currentStats.latestExecutions[0].lastTimeUpdated).toEqual(logs[0].startedAt);
+            expect(us.currentStats?.latestExecutions.length).toEqual(1);
+            expect(us.currentStats?.latestExecutions[0]._id).toEqual(logs[0]._id);
+            expect(us.currentStats?.latestExecutions[0].name).toEqual(logs[0].workflow.name);
+            expect(us.currentStats?.latestExecutions[0].value).toEqual(1);
+            expect(us.currentStats?.latestExecutions[0].lastTimeUpdated).toEqual(logs[0].startedAt);
         });
 
         test(`Multiple Execution Logs`, async () => {
@@ -349,7 +350,7 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.latestExecutions.length).toEqual(5);
+            expect(us.currentStats?.latestExecutions.length).toEqual(5);
         });
     });
 
@@ -365,8 +366,8 @@ describe("UsageStatsService Class - updateStats", () => {
 
             await us.updateStats();
 
-            expect(us.currentStats.lastExecutionErrors).not.toBe(null);
-            expect(us.currentStats.lastExecutionErrors.length).toEqual(0);
+            expect(us.currentStats?.lastExecutionErrors).not.toBe(null);
+            expect(us.currentStats?.lastExecutionErrors.length).toEqual(0);
         });
 
         test(`Single Execution Log`, async () => {
@@ -383,10 +384,10 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.lastExecutionErrors.length).toEqual(1);
-            expect(us.currentStats.lastExecutionErrors[0]._id).toEqual(logs[0]._id);
-            // expect(us.currentStats.latestExecutions[0].name).toEqual(logs[0].workflow.name);
-            expect(us.currentStats.lastExecutionErrors[0].lastTimeUpdated?.toLocaleString())
+            expect(us.currentStats?.lastExecutionErrors.length).toEqual(1);
+            expect(us.currentStats?.lastExecutionErrors[0]._id).toEqual(logs[0]._id);
+            // expect(us.currentStats?.latestExecutions[0].name).toEqual(logs[0].workflow.name);
+            expect(us.currentStats?.lastExecutionErrors[0].lastTimeUpdated?.toLocaleString())
                 .toEqual(errorTimestamp.toLocaleString());
         });
 
@@ -429,7 +430,7 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.lastExecutionErrors.length).toEqual(5);
+            expect(us.currentStats?.lastExecutionErrors.length).toEqual(5);
         });
     });
 
@@ -446,11 +447,11 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.totalExecutions).toEqual(0);
-            expect(us.currentStats.totalWorkflows).toEqual(0);
-            expect(us.currentStats.totalScripts).toEqual(0);
-            expect(us.currentStats.totaltargets).toEqual(0);
-            expect(us.currentStats.totalCredentials).toEqual(0);
+            expect(us.currentStats?.totalExecutions).toEqual(0);
+            expect(us.currentStats?.totalWorkflows).toEqual(0);
+            expect(us.currentStats?.totalScripts).toEqual(0);
+            expect(us.currentStats?.totaltargets).toEqual(0);
+            expect(us.currentStats?.totalCredentials).toEqual(0);
         });
 
         test(`Single Execution Log`, async () => {
@@ -464,11 +465,11 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.totalExecutions).toEqual(1);
-            expect(us.currentStats.totalWorkflows).toEqual(1);
-            expect(us.currentStats.totalScripts).toEqual(2);
-            expect(us.currentStats.totaltargets).toEqual(3);
-            expect(us.currentStats.totalCredentials).toEqual(4);
+            expect(us.currentStats?.totalExecutions).toEqual(1);
+            expect(us.currentStats?.totalWorkflows).toEqual(1);
+            expect(us.currentStats?.totalScripts).toEqual(2);
+            expect(us.currentStats?.totaltargets).toEqual(3);
+            expect(us.currentStats?.totalCredentials).toEqual(4);
         });
 
         test(`Multiple Execution Logs`, async () => {
@@ -490,11 +491,11 @@ describe("UsageStatsService Class - updateStats", () => {
             await us.updateStats();
 
             expect(us.currentStats).not.toBe(null);
-            expect(us.currentStats.totalExecutions).toEqual(7);
-            expect(us.currentStats.totalWorkflows).toEqual(1);
-            expect(us.currentStats.totalScripts).toEqual(2);
-            expect(us.currentStats.totaltargets).toEqual(3);
-            expect(us.currentStats.totalCredentials).toEqual(4);
+            expect(us.currentStats?.totalExecutions).toEqual(7);
+            expect(us.currentStats?.totalWorkflows).toEqual(1);
+            expect(us.currentStats?.totalScripts).toEqual(2);
+            expect(us.currentStats?.totaltargets).toEqual(3);
+            expect(us.currentStats?.totalCredentials).toEqual(4);
         });
     });
 

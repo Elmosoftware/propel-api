@@ -146,6 +146,13 @@ class Config {
     }
 
     /**
+     * Amount of minutes after the current application usage stats will be considered stale.
+     */
+    get usageStatsStaleMinutes(): number {
+        return Number(process.env.USAGE_STATS_STALE_MINUTES);
+    }
+
+    /**
      * 
      * @param paramName Parameter name to check.
      * @returns A boolean value indicating if the parameter has the samae name defined 

@@ -544,11 +544,13 @@ UsageStats {
 Next steps:
 ------------
 
- - Implement a route to retrieve the stats.
+v- Implement a route to retrieve the stats.
 	If there is no stats
 		return a message saying the stats are being refreshed.
 	else
 		return the current stats.
- - Persist The Stats
- - Implemet a batch process to update the stats if required and in fixed intervals.
- - "If required" means that we need to be able to define if we have stale stats.
+x- Persist The Stats (Not required, stats take less than a second to be 
+recalculated, we will cache them in memory)
+x- Implemet a batch process to update the stats if required and in fixed intervals."If required" 
+means that we need to be able to define if we have stale stats. (Not required)
+v-Work on state staleness: How to know when this are stale?

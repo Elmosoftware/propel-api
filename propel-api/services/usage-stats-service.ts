@@ -9,6 +9,7 @@ import { PropelError } from "../../propel-shared/core/propel-error";
 import { Utils } from "../../propel-shared/utils/utils";
 import { cfg } from "../core/config";
 import { Workflow } from "../../propel-shared/models/workflow";
+import { logger } from "./logger-service";
 
 const TOP_USED_WORKFLOWS: number = 5;
 const TOP_LATEST_EXECUTIONS: number = 5;
@@ -19,100 +20,150 @@ const TOP_LAST_ERRORS: number = 5;
  */
 export class UsageStatsService {
 
-    private _stats: UsageStats;
+    private _stats: UsageStats | null = null;
+    private _updatingStats: boolean = false;
 
     /**
-     * Return the current application usage stats.
+     * Return the current application usage stats or no value if the stats are not created yet.
+     * If there is no stats or they are stale, it will take care also to schedule a refresh..
      */
-    get currentStats(): UsageStats {
-        return Object.assign({}, this._stats);
+    get currentStats(): UsageStats | null {
+
+        if (this.areStatsStale) {
+            let start: number = (new Date()).getTime();
+            
+            this.updateStats()
+                .then(() => {
+                    logger.logDebug(`Propel usage statistics updated at ` + 
+                    this._stats?.statsTimestamp.toLocaleString() + 
+                    ` (took ${((new Date()).getTime() - start)/1000} seconds).`)
+                })
+                .catch((err) => {
+                    logger.logError(`Propel usage statistics failed to update. Error was: ${String(err)}`)
+                })
+        }
+
+        return (this._stats == null) ? null : Object.assign({}, this._stats);
     }
 
     constructor() {
-        this._stats = new UsageStats();
+
+    }
+
+    /**
+     * Return a Boolean value indicating if the current stats must be considered stale.
+     * If stats has not been calculated yet, this will return also true.
+     */
+    get areStatsStale(): boolean {
+        let statsAge: number;
+
+        if (this._stats == null) return true;
+        statsAge = ((new Date()).getTime() - this._stats.statsTimestamp.getTime())/1000/60
+
+        return statsAge >= cfg.usageStatsStaleMinutes;
     }
 
     /**
      * Trigger a full update of the application usage stats.
+     * In this way you can force stats recalculation. Normal procedure is just to pick the 
+     * current stats. The *currentStats* getter will trigger the stats recalculation process
+     * if the stats are not yet created or they are stale.
      */
     async updateStats(): Promise<void> {
 
-        let allExecLogs: ExecutionLog[] = await this.getAllExecutionLogs();
+        let allExecLogs: ExecutionLog[];
         let currentDate: Date = Utils.removeTimeFromDate();
         let daysCounter: number = 1;
+        let stats = new UsageStats();
 
-        this._stats.totalExecutions = allExecLogs.length;
-        this._stats.totalWorkflows = await this.getAllWorkflowsCount();
-        this._stats.totaltargets = await this.getAllTargetsCount();
-        this._stats.totalScripts = await this.getAllScriptsCount();
-        this._stats.totalCredentials = await this.getAllCredentialsCount();
+        //If the stats are in progress to be updated, we must do nothing.
+        if (this._updatingStats) return;
 
-        //Adding 2 series, one for workflows and the other for Quick Tasks:
-        this._stats.dailyExecutions.push(new GraphSeries("Workflows"));
-        this._stats.dailyExecutions.push(new GraphSeries("Quick Tasks"));
-        this.createDailyExecutionsSeriesData(currentDate);
+        try {
+            this._updatingStats = true;
+            allExecLogs = await this.getAllExecutionLogs();
 
-        allExecLogs.forEach((log: ExecutionLog) => {
+            stats.totalExecutions = allExecLogs.length;
+            stats.totalWorkflows = await this.getAllWorkflowsCount();
+            stats.totaltargets = await this.getAllTargetsCount();
+            stats.totalScripts = await this.getAllScriptsCount();
+            stats.totalCredentials = await this.getAllCredentialsCount();
 
-            //Daily executions:
-            //=================
-            log.startedAt = Utils.removeTimeFromDate(log.startedAt);
+            //Adding 2 series, one for workflows and the other for Quick Tasks:
+            stats.dailyExecutions.push(new GraphSeries("Workflows"));
+            stats.dailyExecutions.push(new GraphSeries("Quick Tasks"));
+            this.createDailyExecutionsSeriesData(stats, currentDate);
 
-            while (log.startedAt < currentDate) {
+            allExecLogs.forEach((log: ExecutionLog) => {
+
+                //Daily executions:
+                //=================
+                log.startedAt = Utils.removeTimeFromDate(log.startedAt);
+
+                while (log.startedAt < currentDate) {
+                    currentDate = Utils.addDays(currentDate, -1);
+                    daysCounter++;
+                    this.createDailyExecutionsSeriesData(stats, currentDate);
+                }
+
+                if (log.startedAt.toUTCString() == currentDate.toUTCString()) {
+                    //Increasing in one the right series:
+                    this.increaseDailyExecutionsLastSeriesValue(stats.dailyExecutions[(log.workflow.isQuickTask) ? 1 : 0])
+                }
+
+                //Most used Workflows:
+                //====================
+                if (!log.workflow.isQuickTask) {
+                    this.addMostUsedWorkflowsSeriesData(stats, log.workflow)
+                }
+
+                //Latest Executions:
+                //==================
+                if (stats.latestExecutions.length < TOP_LATEST_EXECUTIONS) {
+                    stats.latestExecutions.push(new GraphSeriesData(log.workflow.name, 1,
+                        log._id, log.startedAt));
+                }
+
+                //Last Execution errors:
+                //======================
+                if (stats.lastExecutionErrors.length < TOP_LAST_ERRORS) {
+
+                    log.executionSteps
+                        .map((executionStep) => executionStep.targets
+                            .map((execTarget) => {
+                                if (execTarget.execErrors.length > 0) {
+                                    stats.lastExecutionErrors
+                                        .push(new GraphSeriesData(`[${execTarget.name} (${execTarget.FQDN})]: ${execTarget.execErrors[0].message}`,
+                                            1, log._id, execTarget.execErrors[0].throwAt))
+                                }
+                            }))
+                }
+            })
+
+            //We would like to show the stats for all the duration of the log. So if there is no 
+            //older data we will keep addingdatato the series until cover the total days the execution 
+            //log entries can be kept:   
+            while (daysCounter < cfg.executionLogRetentionDays) {
                 currentDate = Utils.addDays(currentDate, -1);
                 daysCounter++;
-                this.createDailyExecutionsSeriesData(currentDate);
+                this.createDailyExecutionsSeriesData(stats, currentDate);
             }
 
-            if (log.startedAt.toUTCString() == currentDate.toUTCString()) {
-                //Increasing in one the right series:
-                this.increaseDailyExecutionsLastSeriesValue(this._stats.dailyExecutions[(log.workflow.isQuickTask) ? 1 : 0])
-            }
+            stats.mostUsedWorkflows = stats.mostUsedWorkflows
+                .sort((sd1, sd2) => sd2.value - sd1.value) //Sorting in descending order
+                .splice(0, TOP_USED_WORKFLOWS) //Keeping only the top of them.
 
-            //Most used Workflows:
-            //====================
-            if (!log.workflow.isQuickTask) {
-                this.addMostUsedWorkflowsSeriesData(log.workflow)
-            }
+            stats.latestExecutions = stats.latestExecutions
+                .splice(0, TOP_LATEST_EXECUTIONS)
 
-            //Latest Executions:
-            //==================
-            if (this._stats.latestExecutions.length < TOP_LATEST_EXECUTIONS) {
-                this._stats.latestExecutions.push(new GraphSeriesData(log.workflow.name, 1,
-                    log._id, log.startedAt));
-            }
+            this._stats = stats;
 
-            //Last Execution errors:
-            //======================
-            if (this._stats.lastExecutionErrors.length < TOP_LAST_ERRORS) {
-
-                log.executionSteps
-                    .map((executionStep) => executionStep.targets
-                        .map((execTarget) => {
-                            if (execTarget.execErrors.length > 0) {
-                                this._stats.lastExecutionErrors
-                                    .push(new GraphSeriesData(`[${execTarget.name} (${execTarget.FQDN})]: ${execTarget.execErrors[0].message}`,
-                                        1, log._id, execTarget.execErrors[0].throwAt))
-                            }
-                        }))
-            }
-        })
-
-        //We would like to show the stats for all the duration of the log. So if there is no 
-        //older data we will keep addingdatato the series until cover the total days the execution 
-        //log entries can be kept:   
-        while (daysCounter < cfg.executionLogRetentionDays) {
-            currentDate = Utils.addDays(currentDate, -1);
-            daysCounter++;
-            this.createDailyExecutionsSeriesData(currentDate);
+        } catch (error) {
+            throw error;
         }
-
-        this._stats.mostUsedWorkflows = this._stats.mostUsedWorkflows
-            .sort((sd1, sd2) => sd2.value - sd1.value) //Sorting in descending order
-            .splice(0, TOP_USED_WORKFLOWS) //Keeping only the top of them.
-
-        this._stats.latestExecutions = this._stats.latestExecutions
-            .splice(0, TOP_LATEST_EXECUTIONS)
+        finally {
+            this._updatingStats = false;
+        }
     }
 
     private async getAllExecutionLogs(): Promise<ExecutionLog[]> {
@@ -148,9 +199,6 @@ export class UsageStatsService {
         qm.top = 1;
         qm.skip = 0;
         qm.populate = false;
-        qm.filterBy = {
-            isQuickTask: { $eq: false }
-        }
 
         return (await svc.find(qm)).totalCount;
     }
@@ -162,9 +210,6 @@ export class UsageStatsService {
         qm.top = 1;
         qm.skip = 0;
         qm.populate = false;
-        qm.filterBy = {
-            isQuickTask: { $eq: false }
-        }
 
         return (await svc.find(qm)).totalCount;
     }
@@ -176,19 +221,16 @@ export class UsageStatsService {
         qm.top = 1;
         qm.skip = 0;
         qm.populate = false;
-        qm.filterBy = {
-            isQuickTask: { $eq: false }
-        }
 
         return (await svc.find(qm)).totalCount;
     }
 
-    private createDailyExecutionsSeriesData(forDate: Date): void {
+    private createDailyExecutionsSeriesData(stats: UsageStats, forDate: Date): void {
         let name: string = forDate.toLocaleString("default", { month: "long", day: "numeric" })
             + Utils.getOrdinalSuffix(forDate.getDate())
         //Adding a new entry with value "0" for both series, Workflows and Quick Tasks:
-        this._stats.dailyExecutions[0].series.push(new GraphSeriesData(name, 0, "", forDate));
-        this._stats.dailyExecutions[1].series.push(new GraphSeriesData(name, 0, "", forDate));
+        stats.dailyExecutions[0].series.push(new GraphSeriesData(name, 0, "", forDate));
+        stats.dailyExecutions[1].series.push(new GraphSeriesData(name, 0, "", forDate));
     }
 
     private increaseDailyExecutionsLastSeriesValue(series: GraphSeries, value: number = 1): void {
@@ -201,14 +243,14 @@ export class UsageStatsService {
         }
     }
 
-    private addMostUsedWorkflowsSeriesData(forWorkflow: Workflow): void {
-        let sd = this._stats.mostUsedWorkflows.find((item) => item._id == forWorkflow._id)
+    private addMostUsedWorkflowsSeriesData(stats: UsageStats, forWorkflow: Workflow): void {
+        let sd = stats.mostUsedWorkflows.find((item) => item._id == forWorkflow._id)
 
         if (sd) {
             sd.value++;
         }
         else {
-            this._stats.mostUsedWorkflows.push(new GraphSeriesData(forWorkflow.name, 1, forWorkflow._id))
+            stats.mostUsedWorkflows.push(new GraphSeriesData(forWorkflow.name, 1, forWorkflow._id))
         }
     }
 }
