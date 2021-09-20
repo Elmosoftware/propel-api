@@ -6,6 +6,7 @@ import { PropelAppError } from "../core/propel-app-error";
 import { APIStatusService } from './api-status.service';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { APIResponse } from '../../../propel-shared/core/api-response';
+import { APIStatus } from '../../../propel-shared/models/api-status';
 
 /**
  * Provides connectivity awareness.
@@ -71,15 +72,16 @@ export class ConnectivityService implements OnDestroy {
             this.svc.getStatus()
                 .pipe(
                     catchError((err) => {
-                        return of({ error: err });
+                        // return of({ error: err });
+                        return of(new APIResponse<APIStatus>(err, []));
                     }),
-                    map((data: any) => {
-                        return this.mapResponse(data, "API", lastError)
+                    map((results: APIResponse<APIStatus>) => {
+                        return this.mapResponse(results, "API", lastError)
                     })
                 );
 
         this.statusAPISubscription$
-            .subscribe((data: APIResponse<any>) => {
+            .subscribe((data: APIResponse<APIStatus>) => {
                 let newStatus: ConnectivityStatus = this.evaluate(data);
 
                 //We will fire the event only if there is a connectivity status change or there was an 
@@ -94,7 +96,7 @@ export class ConnectivityService implements OnDestroy {
                 });
     }
 
-    private mapResponse(data: any, endpointType: string, lastError?: PropelAppError) {
+    private mapResponse(data: APIResponse<APIStatus>, endpointType: string, lastError?: PropelAppError) {
 
         let ret = {
             error: null,
@@ -102,8 +104,8 @@ export class ConnectivityService implements OnDestroy {
             lastError: lastError
         }
 
-        if (data && data.error) {
-            ret.error = data.error;
+        if (data.errors.length > 0) {
+            ret.error = String(data.errors[0]);
         }
 
         return ret;
@@ -170,27 +172,4 @@ export class ConnectivityStatus {
      * Last error sent to this service.
      */
     lastError: PropelAppError;
-
-    // /**
-    //  * Indicates if the user has connectivity issues.
-    //  */
-    // get isNetworkOffline(): boolean {
-    //     return !this.networkOn;
-    // }
-
-    // /**
-    //  * Indicates if the API must report to be offline.
-    //  */
-    // get isAPIUnreachable(): boolean {
-    //     return !this.isNetworkOffline && !this.apiOn;
-    // }
-
-    // /**
-    //  * Indicate if 2 main params are ok, this means:
-    //  *  - The user has network connectivity.
-    //  *  - The user has access to the API.
-    //  */
-    // get isOnline(): boolean {
-    //     return !this.isNetworkOffline && !this.isAPIUnreachable;
-    // }
 }

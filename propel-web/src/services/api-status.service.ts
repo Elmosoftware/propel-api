@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-
 import { Observable } from 'rxjs';
+
 import { environment } from 'src/environments/environment';
+import { APIStatus } from "../../../propel-shared/models/api-status";
 import { APIResponse } from "../../../propel-shared/core/api-response";
 import { logger } from '../../../propel-shared/services/logger-service';
 
@@ -21,10 +22,10 @@ export class APIStatusService {
   /**
    * Retrives the API status.
    */
-  getStatus(): Observable<APIResponse<any>> {
+  getStatus(): Observable<APIResponse<APIStatus>> {
     let url: string = this.buildURL();
 
-    return this.http.get<APIResponse<any>>(url, { headers: this.buildHeaders() });
+    return this.http.get<APIResponse<APIStatus>>(url, { headers: this.buildHeaders() });
   }
 
   private buildURL() {

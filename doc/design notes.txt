@@ -486,12 +486,11 @@ v - Add Visual hints and additional information in the Credentials form.
 v - Work on Browse credentials
 v - Modify Credentials component to redirect to the new browse when there is a CRYPTO_ERROR
 v - Add icons in the menues of the navigation bar, (Browse and credentials).
-  - Add a text or navigational help to indicate which is the current page.
   - In home page add counter for total credentials get also an icon representing all credentials 
   from font-awesome
   - Add a graph tp the hme page indcating some metrics, like usage in last month, most used workflows, etc...
   - Upgrade ALL, (Node, Mongo, angular, all dependencies, etc.)
-
+  - Add a text or navigational help to indicate which is the current page.
 =============================================================================
 
 Propel Usage Statistics:

@@ -6,6 +6,7 @@ import { pool } from "../services/invocation-service-pool";
 import { usageStatsService } from "../services/usage-stats-service";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { UsageStats } from "../../propel-shared/models/usage-stats";
+import { APIStatus } from "../../propel-shared/models/api-status";
 
 /**
  * Status route. Returns the api stats, metrics, etc.
@@ -22,20 +23,15 @@ export class StatusRouter implements Route {
 
         handler.get("", (req, res) => {
 
-            let ret = {
-                config: {
-                    env: cfg.environment,
-                    loggingLevel: cfg.logLevel,
-                    logName: cfg.logName,
-                    logSource: cfg.logSource
-                },
-                pool: {
-                    options: cfg.poolOptions,
-                    stats: pool.stats
-                }
-            }
+            let ret = new APIStatus();
+            ret.environmentName = cfg.environment;
+            ret.loggingLevel = cfg.logLevel;
+            ret.logName = cfg.logName;
+            ret.logSource = cfg.logSource;
+            ret.poolOptions = cfg.poolOptions;
+            ret.poolStats = pool.stats;
 
-            res.json(ret);
+            res.json(new APIResponse<APIStatus>(null, [ret]));
         });
 
         handler.get("/stats", (req, res) => {
