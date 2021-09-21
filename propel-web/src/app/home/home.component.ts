@@ -2,14 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
-import { DataEntity } from "src/services/data.service";
-import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
-import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { SystemHelper } from 'src/util/system-helper';
-import { Workflow } from '../../../../propel-shared/models/workflow';
-import { Script } from '../../../../propel-shared/models/script';
-import { Target } from '../../../../propel-shared/models/target';
+import { UsageStats } from '../../../../propel-shared/models/usage-stats';
+import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
+import { UIHelper } from 'src/util/ui-helper';
+import { environment } from 'src/environments/environment';
 
 const TOP_RESULTS: number = 5;
 
@@ -21,13 +19,13 @@ const TOP_RESULTS: number = 5;
 export class HomeComponent implements OnInit {
 
   loadingResults: boolean = false;
-  lastResults: ExecutionLog[] = [];
-  totalResults: number = -1;
-  totalWorkflows: number = -1;
-  totalScripts: number = -1;
-  totalTargets: number = -1;
+  stats: UsageStats;
+  graphColors: any = environment.graphs.colorScheme;
+  graphExecutionsView: any[] = [650, 200];
 
-  constructor(private core: CoreService, private route: ActivatedRoute) { }
+  constructor(private core: CoreService, private route: ActivatedRoute) {
+
+  }
 
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
@@ -70,87 +68,51 @@ export class HomeComponent implements OnInit {
     this.core.navigation.toBrowseTargets();
   }
 
-  refreshData(): void {
-    this.refreshLastLogs();
-    this.refreshTotalWorkflows();
-    this.refreshTotalScripts();
-    this.refreshTotalTargets();
+  goToBrowseCredentials() {
+    this.core.navigation.toBrowseCredentials();
   }
 
-  refreshLastLogs() {
-    let qm = new QueryModifier();
+  run(id: string) {
+    this.core.navigation.toRun(id);
+  }
 
-    qm.top = TOP_RESULTS;
-    qm.skip = 0;
-    qm.populate = true;
-    qm.sortBy = "-startedAt";
+  goToEditWorkflow(id: string) {
+    this.core.navigation.toWorkflow(id);
+  }
 
+  goToCredentialWin() {
+    this.core.navigation.toCredential(null, CredentialTypes.Windows);
+  }
+
+  goToCredentialAWS() {
+    this.core.navigation.toCredential(null, CredentialTypes.AWS);
+  }
+
+  refreshData(): void {
     this.loadingResults = true
 
-    this.core.data.find(DataEntity.ExecutionLog, qm)
-      .subscribe((results: APIResponse<ExecutionLog>) => {
-        this.loadingResults = false;
-        this.lastResults = results.data;
-        this.totalResults = results.totalCount;
-      },
-        err => {
-          this.loadingResults = false;
-          throw err
-        });
+    this.core.status.getApplicationUsageStats()
+      .subscribe((results: APIResponse<UsageStats>) => {
+            if (results.count > 0) {
+              this.stats = results.data[0];
+              this.loadingResults = false;
+            }            
+          },
+            err => {
+              this.loadingResults = false;
+              throw err
+            });
   }
 
-  refreshTotalWorkflows() {
-    let qm = new QueryModifier();
-
-    qm.top = 1;
-    qm.skip = 0;
-    qm.populate = false;
-    qm.filterBy = {
-      isQuickTask: { $eq: false}
-    }
-
-    this.core.data.find(DataEntity.Workflow, qm)
-      .subscribe((results: APIResponse<Workflow>) => {
-        this.totalWorkflows = results.totalCount;
-      },
-        err => {
-          throw err
-        });
+  getFriendlyStartTime(startTime: Date): string {
+    return SystemHelper.getFriendlyTimeFromNow(startTime);
   }
 
-  refreshTotalScripts() {
-    let qm = new QueryModifier();
-
-    qm.top = 1;
-    qm.skip = 0;
-    qm.populate = false;
-    
-    this.core.data.find(DataEntity.Script, qm)
-      .subscribe((results: APIResponse<Script>) => {
-        this.totalScripts = results.totalCount;
-      },
-        err => {
-          throw err
-        });
+  getShortErrorText(text: string) : string {
+    return UIHelper.getShortText(text, 0, 75);
   }
-
-  refreshTotalTargets() {
-    let qm = new QueryModifier();
-
-    qm.top = 1;
-    qm.skip = 0;
-    qm.populate = false;
-    
-    this.core.data.find(DataEntity.Target, qm)
-      .subscribe((results: APIResponse<Target>) => {
-        this.totalTargets = results.totalCount;
-      },
-        err => {
-          throw err
-        });
-  }
-
-  getFriendlyStartTime(log: ExecutionLog): string {
-    return SystemHelper.getFriendlyTimeFromNow(log.startedAt);
+  
+  onSelectChart($event) {
+    this.goToHistory();
   }
 }

@@ -202,4 +202,15 @@ export class UIHelper {
         
         return text;
     }
+
+    /**
+     * Returns a shortened version of the supplied text.
+     * @param text Test  to be shortened.
+     * @param startPosition Positions of first character to show, default will be the beginning.
+     * @param maxLength Total numbers of characters to show, default will be 150.
+     * @param posfix the posfix or string terminator to add at the end. Default will be "..." html entity "&hellip;".
+     */
+    static getShortText(text: string, startPosition: number = 0, maxLength: number = 150, posfix: string = "&hellip;") {
+        return (text && text.length > maxLength) ? text.substr(startPosition, maxLength - 1) + '&hellip;' : text;
+    }
 }

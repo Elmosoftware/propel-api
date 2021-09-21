@@ -1,5 +1,6 @@
 // @ts-check
 import { ExecutionLog } from "../../../propel-shared/models/execution-log";
+import { ExecutionStatus } from "../../../propel-shared/models/execution-status";
 import { ExecutionStep } from "../../../propel-shared/models/execution-step";
 import { ExecutionTarget } from "../../../propel-shared/models/execution-target";
 import { Workflow } from "../../../propel-shared/models/workflow";
@@ -40,6 +41,7 @@ export class TestingExecutionLogs {
         let ret = new ExecutionLog();
 
         ret.startedAt = startedAt;
+        ret.status = ExecutionStatus.Success;
         ret.workflow = new Workflow()
 
         ret.workflow.name = ((forQuickTask) ? "Quick Task" : "Workflow") + " " + String(identifier);

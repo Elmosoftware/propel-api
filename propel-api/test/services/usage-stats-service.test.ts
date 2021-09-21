@@ -450,7 +450,7 @@ describe("UsageStatsService Class - updateStats", () => {
             expect(us.currentStats?.totalExecutions).toEqual(0);
             expect(us.currentStats?.totalWorkflows).toEqual(0);
             expect(us.currentStats?.totalScripts).toEqual(0);
-            expect(us.currentStats?.totaltargets).toEqual(0);
+            expect(us.currentStats?.totalTargets).toEqual(0);
             expect(us.currentStats?.totalCredentials).toEqual(0);
         });
 
@@ -468,7 +468,7 @@ describe("UsageStatsService Class - updateStats", () => {
             expect(us.currentStats?.totalExecutions).toEqual(1);
             expect(us.currentStats?.totalWorkflows).toEqual(1);
             expect(us.currentStats?.totalScripts).toEqual(2);
-            expect(us.currentStats?.totaltargets).toEqual(3);
+            expect(us.currentStats?.totalTargets).toEqual(3);
             expect(us.currentStats?.totalCredentials).toEqual(4);
         });
 
@@ -494,7 +494,7 @@ describe("UsageStatsService Class - updateStats", () => {
             expect(us.currentStats?.totalExecutions).toEqual(7);
             expect(us.currentStats?.totalWorkflows).toEqual(1);
             expect(us.currentStats?.totalScripts).toEqual(2);
-            expect(us.currentStats?.totaltargets).toEqual(3);
+            expect(us.currentStats?.totalTargets).toEqual(3);
             expect(us.currentStats?.totalCredentials).toEqual(4);
         });
     });

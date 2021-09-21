@@ -89,7 +89,7 @@ body{
 }
 
 .text-mini {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
 .overflowEllipsis {
@@ -116,6 +116,13 @@ body{
     /* width: 1.3rem; */
     text-align: center;
     margin-right: 0.5rem
+}
+
+.icon-binoculars-after-mini::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f1e5";
+    font-weight: 900;
+    font-size: 0.8rem;
 }
 
 .icon-workflows::before {

@@ -9,10 +9,16 @@ import { GraphSeriesData } from "./graph-series-data";
  */
 export class UsageStats {
 
+    /** 
+     * Indicate if the stats must be considered stale. This is also an indication that new 
+     * stats are being calculated.
+     */
+    public areStale: boolean = false;
+
     /**
      * Indicates how fresh are our stats.
      */
-    statsTimestamp: Date = new Date();
+    public statsTimestamp: Date = new Date();
 
     /**
      * Total amount of executions in the current period.
@@ -27,7 +33,7 @@ export class UsageStats {
 	/**
      * Total of Targets created.
      */
-    public totaltargets: number = 0;
+    public totalTargets: number = 0;
 	
     /**
      * Amount of scripts uploaded in Propel.

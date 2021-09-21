@@ -30,6 +30,11 @@ export class UsageStatsService {
     get currentStats(): UsageStats | null {
 
         if (this.areStatsStale) {
+            
+            if (this._stats) {
+                this._stats.areStale = true;
+            }
+
             let start: number = (new Date()).getTime();
             
             this.updateStats()
@@ -85,7 +90,7 @@ export class UsageStatsService {
 
             stats.totalExecutions = allExecLogs.length;
             stats.totalWorkflows = await this.getAllWorkflowsCount();
-            stats.totaltargets = await this.getAllTargetsCount();
+            stats.totalTargets = await this.getAllTargetsCount();
             stats.totalScripts = await this.getAllScriptsCount();
             stats.totalCredentials = await this.getAllCredentialsCount();
 
@@ -121,7 +126,9 @@ export class UsageStatsService {
                 //==================
                 if (stats.latestExecutions.length < TOP_LATEST_EXECUTIONS) {
                     stats.latestExecutions.push(new GraphSeriesData(log.workflow.name, 1,
-                        log._id, log.startedAt));
+                        log._id, log.startedAt, { 
+                            status: log.status.toString()
+                        }));
                 }
 
                 //Last Execution errors:
@@ -226,7 +233,7 @@ export class UsageStatsService {
     }
 
     private createDailyExecutionsSeriesData(stats: UsageStats, forDate: Date): void {
-        let name: string = forDate.toLocaleString("default", { month: "long", day: "numeric" })
+        let name: string = forDate.toLocaleString("default", { month: "short", day: "numeric" })
             + Utils.getOrdinalSuffix(forDate.getDate())
         //Adding a new entry with value "0" for both series, Workflows and Quick Tasks:
         stats.dailyExecutions[0].series.push(new GraphSeriesData(name, 0, "", forDate));
@@ -244,13 +251,13 @@ export class UsageStatsService {
     }
 
     private addMostUsedWorkflowsSeriesData(stats: UsageStats, forWorkflow: Workflow): void {
-        let sd = stats.mostUsedWorkflows.find((item) => item._id == forWorkflow._id)
+        let sd = stats.mostUsedWorkflows.find((item) => item._id.toString() == forWorkflow._id.toString())
 
         if (sd) {
             sd.value++;
         }
         else {
-            stats.mostUsedWorkflows.push(new GraphSeriesData(forWorkflow.name, 1, forWorkflow._id))
+            stats.mostUsedWorkflows.push(new GraphSeriesData(forWorkflow.name, 1, forWorkflow._id.toString()))
         }
     }
 }

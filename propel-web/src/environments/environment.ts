@@ -15,6 +15,11 @@ export const environment = {
       infer: "infer/",
       run: "run/"
     }
+  },
+  graphs: {
+    colorScheme: {
+      domain: ["#ffe89e", "#ff7878", "#328AAB", "#e6c761", "#e69a9a", "#487e92", "#ab3a32", "#924d48"]
+    }
   }
 };
 

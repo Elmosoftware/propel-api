@@ -1,103 +1,184 @@
 <div class="container-fluid">
-    <div class="container mt-4">
-        <div class="row font-weight-bold subtitle not-break text-center">
-            <div *ngIf="totalWorkflows >= 0" class="col-6 col-lg-3 ">
-                <div class="capsule py-2 my-2 rounded" matTooltip="Total amount of workflows created.
+
+    <!-- Totals -->
+        <div *ngIf="stats" class="row justify-content-center mt-3 font-weight-bold subtitle not-break text-center">
+            <div class="capsule py-2 my-2 rounded" matTooltip="Total amount of workflows created.
 Click here to browse them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
-                    (click)="goToBrowseWorkflows()">
-                    <i class="fas fa-list-ol mr-2"></i>{{totalWorkflows}}
-                </div>
+                (click)="goToBrowseWorkflows()">
+                <i class="fas fa-list-ol mr-2"></i>{{stats.totalWorkflows}}
             </div>
-            <div *ngIf="totalResults >= 0" class="col-6 col-lg-3">
-                <div class="capsule py-2 my-2 rounded" matTooltip="Total amount of executions in the last month.
+            <div class="capsule py-2 my-2 rounded" matTooltip="Total amount of executions in the last month.
 Click here to check the execution history." (click)="goToHistory()" matTooltipClass="tooltipsWithBreakLines"
-                    matTooltipPosition="above">
-                    <i class="fas fa-stopwatch mr-2"></i>{{totalResults}}
-                </div>
+                matTooltipPosition="above">
+                <i class="fas fa-stopwatch mr-2"></i>{{stats.totalExecutions}}
             </div>
-            <div *ngIf="totalScripts >= 0" class="col-6 col-lg-3">
-                <div class="capsule py-2 my-2 rounded" matTooltip="Total of scripts already uploaded.
+            <div class="capsule py-2 my-2 rounded" matTooltip="Total of scripts already uploaded.
 Click here to take a look at them." (click)="goToBrowseScripts()" matTooltipClass="tooltipsWithBreakLines"
-                    matTooltipPosition="above">
-                    <i class="fas fa-scroll mr-2"></i>{{totalScripts}}
-                </div>
+                matTooltipPosition="above">
+                <i class="fas fa-scroll mr-2"></i>{{stats.totalScripts}}
             </div>
-            <div *ngIf="totalTargets >= 0" class="col-6 col-lg-3">
-                <div class="capsule py-2 my-2 rounded" matTooltip="Total number of targets registered.
+            <div class="capsule py-2 my-2 rounded" matTooltip="Total number of targets registered.
 Click here to browse them." (click)="goToBrowseTargets()" matTooltipClass="tooltipsWithBreakLines"
-                    matTooltipPosition="above">
-                    <i class="fas fa-server mr-2"></i>{{totalTargets}}
-                </div>
+                matTooltipPosition="above">
+                <i class="fas fa-server mr-2"></i>{{stats.totalTargets}}
+            </div>
+            <div class="capsule py-2 my-2 rounded" matTooltip="Total number of credentials kept safe by Propel.
+Click here to browse them." (click)="goToBrowseCredentials()" matTooltipClass="tooltipsWithBreakLines"
+                matTooltipPosition="above">
+                <i class="fas fa-key mr-2"></i>{{stats.totalCredentials}}
+            </div>
+        </div>
+
+    <!-- Executions -->
+    <div class="row justify-content-center mt-3">
+        <div *ngIf="stats" class="card card-custom-graph mx-2 my-2 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Executions on last 30 days</h4>
+            </div>
+            <div class="align-self-center card-body">
+                <ngx-charts-area-chart [results]="stats.dailyExecutions" 
+                    [view]="graphExecutionsView" [scheme]="graphColors"
+                     xAxis="true" yAxis="true" [legend]="false" [showXAxisLabel]="false"
+                    [showYAxisLabel]="false"  (select)="onSelectChart($event)">
+                </ngx-charts-area-chart>
             </div>
         </div>
     </div>
 
-    <div class="container mt-4">
-        <div class="card-deck mb-3 text-center">
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Get Started</h4>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li class="mt-3">
-                            <button type="button" (click)="goToTarget()" class="btn btn-lg btn-block btn-primary">Add a
-                                Target</button>
-                        </li>
-                        <li class="mt-3">
-                            <button type="button" (click)="goToScript()" class="btn btn-lg btn-block btn-primary">Upload
-                                your
-                                Script</button>
-                        </li>
-                        <li class="mt-3">
-                            <button type="button" (click)="goToWorkflow()"
-                                class="btn btn-lg btn-block btn-primary">Create a
-                                Workflow</button>
-                        </li>
-                        <li class="mt-3">
-                            <button type="button" (click)="goToQuickTask()" class="btn btn-lg btn-block btn-primary">Run
-                                a Quick task</button>
-                        </li>
-                    </ul>
-                </div>
+    <!-- Cards -->
+    <div class="row justify-content-center text-center">
+        <!-- Get Started -->
+        <div class="card card-custom mx-2 mt-3 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Get Started</h4>
             </div>
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Last activity</h4>
-                </div>
-                <div class="card-body">
-                    <div *ngIf="loadingResults; else resultsReady">
-                        <app-status-icon size="small" status="RUNNING"></app-status-icon>
-                        <span class="ml-2">Loading last activity details.</span>
-                    </div>
-                    <ng-template #resultsReady>
-                        <div class="row" *ngFor="let item of lastResults">
-                            <div class="col-3 pr-0">
-                                <app-status-icon class="d-none d-md-block" size="big" [status]="item.status">
-                                </app-status-icon>
-                                <app-status-icon class="d-block d-md-none" size="small" [status]="item.status">
-                                </app-status-icon>
-                            </div>
-                            <div class="col-9 align-self-center pl-0">
-                                <div class="row">
-                                    <div class="col-auto text-left">{{item.workflow.name}}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-auto">
-                                        <a href="javascript:void(0)"
-                                            (click)="goToResults(item._id)">{{getFriendlyStartTime(item)}}</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-muted text-mini mt-1">
-                            <a href="javascript:void(0)" (click)="goToHistory()">{{totalResults}}</a>&nbsp;execution(s)
-                            in
-                            the last month.
-                        </div>
-                    </ng-template>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mt-2">
+                        <button type="button" (click)="goToTarget()"
+                            class="btn btn-lg btn-block btn-primary card-text">Add a
+                            Target</button>
+                    </li>
+                    <li class="mt-2">
+                        <button type="button" (click)="goToScript()"
+                            class="btn btn-lg btn-block btn-primary card-text">Upload
+                            your
+                            Script</button>
+                    </li>
+                    <li class="mt-2">
+                        <button type="button" (click)="goToWorkflow()"
+                            class="btn btn-lg btn-block btn-primary card-text">Create a
+                            Workflow</button>
+                    </li>
+                    <li class="mt-2">
+                        <button type="button" (click)="goToQuickTask()"
+                            class="btn btn-lg btn-block btn-primary card-text">Run
+                            a Quick task</button>
+                    </li>
+                    <li class="mt-2">
+                        <button type="button" class="btn btn-lg btn-block btn-primary card-text">
+                            Save Credentials
+                            <button type="button" class="btn btn-secondary mx-1 icon-credential-windows"
+                                (click)="goToCredentialWin()"></button>
+                            <button type="button" class="btn btn-secondary mx-1 icon-credential-aws"
+                                (click)="goToCredentialAWS()"></button>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
 
-                </div>
+        <!-- Latest Activities -->
+        <div *ngIf="stats" class="card card-custom mx-2 mt-3 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Latest activities</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mt-2 d-flex" *ngFor="let item of stats.latestExecutions">
+                        <div>
+                            <app-status-icon size="small" [status]="item.extra.status">
+                            </app-status-icon>
+                        </div>
+                        <div class="align-self-center ml-2">
+                            <div class="row">
+                                <div class="col-auto text-left text-mini">{{item.name}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto text-mini">
+                                    <a href="javascript:void(0)"
+                                        (click)="goToResults(item._id)">{{getFriendlyStartTime(item.lastTimeUpdated)}}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <div class="text-muted text-mini mt-1">
+                        <a href="javascript:void(0)"
+                            (click)="goToHistory()">{{stats.totalExecutions}}</a>&nbsp;execution(s)
+                        in
+                        the last month.
+                    </div>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Most Popular Workflows -->
+        <div *ngIf="stats" class="card card-custom mx-2 mt-3 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Most Popular Workflows</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mt-2 d-flex" *ngFor="let item of stats.mostUsedWorkflows">
+                        <div>
+                            <button class="btn btn-primary ml-2" type="button" (click)="run(item._id)">Run</button>
+                        </div>
+                        <div class="ml-2">
+                            <div class="row">
+                                <div class="col-auto text-left text-mini">
+                                    <a href="javascript:void(0)" (click)="goToEditWorkflow(item._id)">{{item.name}}</a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <div class="text-left text-mini">Executed {{item.value}} times.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Last Errors -->
+        <div *ngIf="stats" class="card card-custom mx-2 mt-3 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Last errors</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mt-2 d-flex" *ngFor="let item of stats.lastExecutionErrors">
+                        <div>
+                            <app-status-icon size="small" status="FAULTY">
+                            </app-status-icon>
+                        </div>
+                        <div class="align-self-center ml-2">
+                            <div class="row">
+                                <div class="col-auto text-left text-mini icon-binoculars-after-mini"
+                                    [innerHtml]="getShortErrorText(item.name)" matTooltip="{{ item.name }}"
+                                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto text-mini">
+                                    <a href="javascript:void(0)"
+                                        (click)="goToResults(item._id)">{{getFriendlyStartTime(item.lastTimeUpdated)}}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
