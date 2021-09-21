@@ -30,3 +30,11 @@
 .no-wrap-links {
     white-space: nowrap !important;
 }
+
+.nav-menu {
+    border-bottom: 2px solid;
+}
+
+.nav-menu-selected {
+    border-bottom-color: var(--colors-white);
+}

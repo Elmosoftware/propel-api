@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
-import { SearchType } from '../search/search.component';
 import { PAGES } from 'src/services/navigation.service';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 
@@ -19,14 +18,38 @@ export class NavigationBarComponent implements OnInit {
   loading: boolean;
   searchTerm: string = "";
 
-  get isSearchPage(): boolean {
+  get isBrowsePage(): boolean {
     return this.core.navigation.currentPage().startsWith(this.core.navigation.browsePagePrefix);
+  }
+
+  get isCredentialPage(): boolean {
+    return this.core.navigation.currentPage().startsWith(this.core.navigation.credentialsPagePrefix);
   }
   
   get isOffline(): boolean {
     return this.core.navigation.currentPage() == PAGES.Offline;
   }
 
+  get isQuickTask(): boolean {
+    return PAGES.QuickTask == this.core.navigation.currentPage();
+  }
+
+  get isWorkflow(): boolean {
+    return PAGES.Workflow == this.core.navigation.currentPage();
+  }
+
+  get isScript(): boolean {
+    return PAGES.Script == this.core.navigation.currentPage();
+  }
+
+  get isTarget(): boolean {
+    return PAGES.Target == this.core.navigation.currentPage();
+  }
+
+  get isHistory(): boolean {
+    return PAGES.History == this.core.navigation.currentPage();
+  }
+  
   ngOnInit(): void {
 
     this.core.navigation.getHttpRequestCountSubscription()
@@ -57,7 +80,6 @@ export class NavigationBarComponent implements OnInit {
 
   goToSearch(){
     if (this.searchTerm.length < 3)  return;
-    // this.core.navigation.toSearch(SearchType.Workflows, this.searchTerm);
     this.core.navigation.toBrowseWorkflows(this.searchTerm)
     this.searchTerm = "";
   }

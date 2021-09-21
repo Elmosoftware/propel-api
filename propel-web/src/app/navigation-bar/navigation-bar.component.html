@@ -7,27 +7,40 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
+      <li class="nav-item nav-menu" [ngClass]="{
+        'nav-menu-selected': isQuickTask
+      }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToQuickTask()">Quick Task</a>
       </li>
-      <li class="nav-item">
+
+      <li class="nav-item nav-menu" [ngClass]="{
+        'nav-menu-selected':  isWorkflow
+      }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
         data-target=".navbar-collapse.show" (click)="goToWorkflow()">Workflow</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item nav-menu" [ngClass]="{
+        'nav-menu-selected': isScript
+      }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
         data-target=".navbar-collapse.show" (click)="goToScript()">Script</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item nav-menu" [ngClass]="{
+        'nav-menu-selected': isTarget
+      }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
         data-target=".navbar-collapse.show" (click)="goToTarget()">Target</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item nav-menu" [ngClass]="{
+        'nav-menu-selected': isHistory
+      }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
         data-target=".navbar-collapse.show" (click)="goToHistory()">History</a>
       </li>
-      <li class="nav-item dropdown">
+      <li class="nav-item dropdown nav-menu" [ngClass]="{
+        'nav-menu-selected': isBrowsePage
+      }">
         <a class="nav-link dropdown-toggle no-wrap-links menu-item" href="#" id="navbarDropdown" role="button"
           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Browse
@@ -51,7 +64,9 @@
           </a>
         </div>
       </li>
-      <li class="nav-item dropdown">
+      <li class="nav-item dropdown nav-menu" [ngClass]="{
+        'nav-menu-selected': isCredentialPage
+      }">
         <a class="nav-link dropdown-toggle no-wrap-links menu-item" href="#" id="navbarDropdown" role="button"
           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Credential
@@ -68,7 +83,7 @@
         </div>
       </li>
     </ul>
-    <div *ngIf="!isSearchPage" 
+    <div *ngIf="!isBrowsePage" 
       class="input-group input-group-md justify-content-sm-start justify-content-md-end mb-2 mb-sm-2 mb-md-0 menu-item">
       <input type="text" class="form-control search-input" placeholder="Search" aria-label="Search"
         [(ngModel)]="searchTerm" (keyup.enter)="goToSearch()">
