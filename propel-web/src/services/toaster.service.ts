@@ -63,6 +63,9 @@ export class ToasterService {
                         messageOrError = "We got disconnected unexpectedly. The operation will continue anyway, please check later the results.";
                         title = "Connectivity issue ..."
                     }
+                    else { //For any other kind of error:
+                        messageOrError = STDERRMSG;
+                    }
                 }
                 else if (typeof messageOrError !== "string") {
                     messageOrError = STDERRMSG;
