@@ -437,7 +437,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
             ret += ` -ComputerName ${target.FQDN}`
 
             if (target.invokeAs) {
-                let cacheItem = this._credentialCache.getById(target.invokeAs._id);
+                let cacheItem = this._credentialCache.getById(target.invokeAs._id.toString());
 
                 if (!cacheItem) {
                     throw new PropelError(`Error building the command. Credential with name "${target.invokeAs.name}" was not found in cache.`)
