@@ -34,16 +34,19 @@ try {
                 //By Mistake in previous Propel version we added the attribut with capital "I" at the begining.
                 //Like "IsPropelParameter" instead of "isPropelParameter". this can cause some issues because of 
                 //repeated fields. So we need to remove those cases:
-                if (p.IsPropelParameter !== undefined) {
+                if (!(p.IsPropelParameter === undefined)) {
                     delete p.IsPropelParameter
                     alreadyPatched = false
                 }
 
+                let isPropelCred = (p.name == "PropelCredentials");
+
                 //Regarding the right "isPropelParameter", (with lower case "i"): 
                 //If exists we need to ensure is set to "false", because the name of the 
                 //parameter now in V2.0.0 changed from "$Propel" to "$PropelCredentials":
-                if (p.isPropelParameter !== undefined) {
-                    p.isPropelParameter = (p.name == "PropelCredentials")
+                //if (p.isPropelParameter !== undefined && p.isPropelParameter !== isPropelCred) {
+                if (p.isPropelParameter === undefined || (p.isPropelParameter !== undefined && p.isPropelParameter !== isPropelCred)) {
+                    p.isPropelParameter = isPropelCred;
                     alreadyPatched = false
                 }
             })

@@ -29,14 +29,15 @@ try {
         print(`Reviewing "${doc.friendlyName}", ("${doc._id.toString()}")`)
         let alreadyPatched = true;
 
-        //Adding the field "invokeAs" with the default value "" (empty string):
-        if(doc.invokeAs == undefined){
+        //Adding the field "invokeAs" with the default value null:
+        if (doc.invokeAs === undefined) {
             doc.invokeAs = null;
             alreadyPatched = false;
         }
 
-        if(!alreadyPatched) {
+        if (!alreadyPatched) {
             collection.save(doc);
+            print(` -> Updating the document.`)
             counter++;
         }
         else {
@@ -52,8 +53,3 @@ try {
     Error details:${error}${sep}`)
     throw error
 }
-
-
-
-
-

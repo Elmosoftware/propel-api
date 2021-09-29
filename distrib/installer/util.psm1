@@ -200,6 +200,23 @@ function InstallPropelService() {
 }
 Export-ModuleMember -Function "InstallPropelService"
 
+function StartingPropelService() {
+    
+    [console]::ForegroundColor = "DarkGray"    
+    
+    Util.Msg ("Trying to start service """ + $cfg.serviceName + """ ...");
+    Start-Service $cfg.serviceName
+    $code = $LASTEXITCODE 
+
+    $svc = Get-Service $cfg.serviceName
+    Util.Msg ("Current service status is: """ + $svc.Status + """.")
+    
+    [console]::ForegroundColor = "White"
+
+    return $code
+}
+Export-ModuleMember -Function "StartingPropelService"
+
 function SetPropelServiceCredentials() {
     $service = $null;
     $user = ""

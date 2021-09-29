@@ -50,6 +50,11 @@ if((Util.InstallPropelService) -gt 0) {
     Util.ExitByPressingKey "There was an error during Propel Service installation. The process can not continue."
 }
 
+Util.Msg "Starting Propel service..."
+if((Util.StartingPropelService) -gt 0) {
+    Util.ExitByPressingKey "There was an error trying to start the Propel Service. The process can not continue."
+}
+
 Util.Msg "Installing Propel application..."
 Util.InstallShell
 
