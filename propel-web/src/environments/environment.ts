@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   appName: "Propel Dev",
-  appVersion: "2.0.0",
+  appVersion: "2.1.0",
   appURL: "http://localhost:8080",
   api: {
     url: "localhost:3000/api/",
