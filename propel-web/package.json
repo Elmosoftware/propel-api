@@ -37,7 +37,7 @@
     "ngx-page-scroll": "^7.0.5",
     "ngx-page-scroll-core": "^7.0.5",
     "ngx-toastr": "^12.1.0",
-    "prismjs": "^1.25.0",
+    "prismjs": "^1.27.0",
     "rxjs": "~6.5.4",
     "shortid": "^2.2.16",
     "stemmer": "^1.0.5",
