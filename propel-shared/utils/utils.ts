@@ -6,6 +6,7 @@ import { SecretValue } from "../models/secret-value";
 import { PropelError } from "../core/propel-error";
 import { WindowsSecret } from "../models/windows-secret";
 import { AWSSecret } from "../models/aws-secret";
+import { GenericAPIKeySecret } from "../models/generic-apikey-secret";
 
 export const POWERSHELL_NULL_LITERAL = "$null"
 export const MILLISECONDS_DAY: number = 1000*60*60*24;
@@ -598,9 +599,14 @@ ${this.tabs(2)}${credential.fields
                 ret += `${this.tabs(1)}cred = (${this.getPSCredentialFromSecret(secret)});`
                 break;
             case CredentialTypes.AWS:
-                let secretValue: AWSSecret = (secret.value as AWSSecret)
-                ret += `${this.tabs(1)}AccessKey = "${secretValue?.accessKey}";
-${this.tabs(1)}SecretKey = "${secretValue?.secretKey}";`
+                let AWSSecretValue: AWSSecret = (secret.value as AWSSecret)
+                ret += `${this.tabs(1)}AccessKey = "${AWSSecretValue?.accessKey}";
+${this.tabs(1)}SecretKey = "${AWSSecretValue?.secretKey}";`
+                break;
+            case CredentialTypes.APIKey:
+                let APIKeySecretValue: GenericAPIKeySecret = (secret.value as GenericAPIKeySecret)
+                ret += `${this.tabs(1)}AppId = "${APIKeySecretValue?.appId}";
+${this.tabs(1)}APIKey = "${APIKeySecretValue?.apiKey}";`
                 break;
             default:
                 throw new PropelError(`The specified credential type is not defined. Credential type: "${credential.credentialType}"`);

@@ -1,5 +1,6 @@
 import { Credential } from "../../models/credential";
 import { CredentialTypes } from "../../models/credential-types";
+import { GenericAPIKeySecret } from "../../models/generic-apikey-secret";
 import { ParameterValue } from "../../models/parameter-value";
 import { Secret, SecretFactory } from "../../models/secret";
 import { WindowsSecret } from "../../models/windows-secret";
@@ -901,6 +902,43 @@ describe("Utils Class - toPowerShellCustomObject", () => {
       Field2 = "Field2Value";
   };
   cred = (New-Object System.Management.Automation.PSCredential "mydomain\\john.doe", (ConvertTo-SecureString "mypassword" -AsPlainText -Force));
+};`)
+            .replace(/(\r\n|\n|\r)/gm, "")
+            .replace(/\s+/g, "");
+
+        expect(actual)
+            .toEqual(expected);
+    })
+    test(`Generick API Key to PSCustomObject`, () => {
+        //Credential fields:
+        let f1: ParameterValue = new ParameterValue();
+        f1.name = "Field1";
+        f1.value = "Field1Value"
+        let f2: ParameterValue = new ParameterValue();
+        f2.name = "Field2";
+        f2.value = "Field2Value"
+        //Creating the credential:
+        let cred: Credential = new Credential();
+        cred.name = "TestCred";
+        cred.credentialType = CredentialTypes.APIKey;
+        cred.fields.push(f1);
+        cred.fields.push(f2);
+        //Creating the Secret:
+        let secret = (SecretFactory.createFromCredential(cred) as Secret<GenericAPIKeySecret>);
+        secret.value.appId = "myAppId";
+        secret.value.apiKey = "secretAPIKey";
+
+        let actual = Utils.credentialToPowerShellCustomObject(cred, secret)
+            .replace(/(\r\n|\n|\r)/gm, "") //Removing any break lines
+            .replace(/\s+/g, ""); //Removing spaces.
+        let expected = (`[pscustomobject]@{
+  Name = "TestCred";
+  Fields = [pscustomobject]@{
+      Field1 = "Field1Value";
+      Field2 = "Field2Value";
+  };
+  AppId = "myAppId";
+  APIKey = "secretAPIKey";
 };`)
             .replace(/(\r\n|\n|\r)/gm, "")
             .replace(/\s+/g, "");

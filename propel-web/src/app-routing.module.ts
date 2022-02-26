@@ -167,6 +167,14 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
+    path: PAGES.CredentialAPIKey,
+    component: CredentialComponent,
+    data: {
+      title: "New Generic API Key Credential"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
     path: PAGES.Sandbox,
     component: ((environment.production)? HomeComponent : SandboxComponent)
   },

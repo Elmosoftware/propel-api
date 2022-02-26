@@ -77,11 +77,16 @@ Click here to browse them." (click)="goToBrowseCredentials()" matTooltipClass="t
                     </li>
                     <li class="mt-2">
                         <button type="button" class="btn btn-lg btn-block btn-primary card-text">
-                            Save Credentials
+                            Credentials
                             <button type="button" class="btn btn-secondary mx-1 icon-credential-windows"
-                                (click)="goToCredentialWin()"></button>
+                                matTooltip="Create a new windows credential." matTooltipClass="tooltipsWithBreakLines" 
+                                matTooltipPosition="above" (click)="goToCredentialWin()"></button>
                             <button type="button" class="btn btn-secondary mx-1 icon-credential-aws"
-                                (click)="goToCredentialAWS()"></button>
+                                matTooltip="Create a new AWS credential." matTooltipClass="tooltipsWithBreakLines" 
+                                matTooltipPosition="above" (click)="goToCredentialAWS()"></button>
+                            <button type="button" class="btn btn-secondary mx-1 icon-credential-apikey"
+                                matTooltip="Create a new Generic API Key credential." matTooltipClass="tooltipsWithBreakLines" 
+                                matTooltipPosition="above" (click)="goToCredentialGenericAPIKey()"></button>
                         </button>
                     </li>
                 </ul>

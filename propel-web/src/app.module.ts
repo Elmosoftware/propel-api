@@ -75,6 +75,7 @@ import { CredentialComponent } from './app/credential/credential.component';
 import { WindowsSecretComponent } from './app/credential/windows-secret/windows-secret.component';
 import { AWSSecretComponent } from "./app/credential/aws-secret/aws-secret.component";
 import { SearchCredentialLineComponent } from './app/search-credential-line/search-credential-line.component';
+import { APIKeySecretComponent } from './app/credential/apikey-secret/apikey-secret.component';
 
 @NgModule({
   declarations: [
@@ -107,7 +108,8 @@ import { SearchCredentialLineComponent } from './app/search-credential-line/sear
     CredentialComponent,
     WindowsSecretComponent,
     AWSSecretComponent,
-    SearchCredentialLineComponent
+    SearchCredentialLineComponent,
+    APIKeySecretComponent
   ],
   imports: [
     BrowserModule,

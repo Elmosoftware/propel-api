@@ -81,7 +81,8 @@
                                     <span class="ml-1 menu-icon"
                                         [ngClass]="{
                                             'icon-credential-windows': getCredentialType(item.name) == credentialTypes.Windows,
-                                            'icon-credential-aws': getCredentialType(item.name) == credentialTypes.AWS
+                                            'icon-credential-aws': getCredentialType(item.name) == credentialTypes.AWS,
+                                            'icon-credential-apikey': getCredentialType(item.name) == credentialTypes.APIKey
                                         }"></span>
                                     <span class="ng-value-label" [ngClass]="{
                                                 'item-disabled': false }">{{item.name}}</span>

@@ -88,6 +88,10 @@ export class HomeComponent implements OnInit {
     this.core.navigation.toCredential(null, CredentialTypes.AWS);
   }
 
+  goToCredentialGenericAPIKey() {
+    this.core.navigation.toCredential(null, CredentialTypes.APIKey);
+  }
+
   refreshData(): void {
     this.loadingResults = true
 

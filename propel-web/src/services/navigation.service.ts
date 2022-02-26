@@ -24,7 +24,8 @@ export const enum PAGES {
     Offline = "offline",
     EditCredential = "credential",
     CredentialWindows = "credential-windows",
-    CredentialAWS = "credential-aws"
+    CredentialAWS = "credential-aws",
+    CredentialAPIKey = "credential-apikey"
 }
 
 export const SUFFIX_SEPARATOR: string = "-";

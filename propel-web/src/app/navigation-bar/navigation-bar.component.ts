@@ -111,4 +111,8 @@ export class NavigationBarComponent implements OnInit {
   goToCredentialAWS() {
     this.core.navigation.toCredential(null, CredentialTypes.AWS);
   }
+
+  goToCredentialGenericAPIKey() {
+    this.core.navigation.toCredential(null, CredentialTypes.APIKey);
+  }
 }
