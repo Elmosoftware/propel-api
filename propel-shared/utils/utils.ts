@@ -178,6 +178,44 @@ export class Utils {
     }
 
     /**
+     * Add a backtick before any double quote in the supplied string. This helps on Powershell 
+     * strings parsing when the string delimiter is a double quote.
+     * @example
+     * BacktickDoubleQuotesForPowershell('Hello my name is Tom!') -> 'Hello my name is Tom!'
+     * BacktickDoubleQuotesForPowershell('Hello my name " is Tom!') -> 'Hello my name `" is Tom!'
+     * //If is already backticked, nothing changes:
+     * BacktickDoubleQuotesForPowershell('Hello my name `" is Tom!') -> 'Hello my name `" is Tom!'
+     * @param value Text to convert.
+     * @returns A new string with any double quotes backticked.
+     */
+    static backtickDoubleQuotes(value: string): string {
+    
+        if (!value || typeof value != "string") {
+            return value;
+        }
+
+        return this.removeBacktickDoubleQuotes(value)
+            .replace(/"/gi, "`\"")
+    }
+
+    /**
+     * Remove any backticked double quotes.
+     * @example
+     * removeBacktickDoubleQuotes('Hello my name is `" Tom!') -> 'Hello my name is " Tom!'
+     * removeBacktickDoubleQuotes('Hello my name " is Tom!') -> 'Hello my name " is Tom!'
+     * @param value Text to convert.
+     * @returns A new string without any double quotes backticked.
+     */
+    static removeBacktickDoubleQuotes(value: string): string {
+    
+        if (!value || typeof value != "string") {
+            return value;
+        }
+
+        return value.replace(/`"/gi, "\"")
+    }
+
+    /**
      * This method convert the parameter value supplied, from a native Javascript value to a 
      * one can be understood by PowerShell during the script execution.
      * @param pv Parameter value to convert.
@@ -200,7 +238,7 @@ export class Utils {
         }
         //Double quoted strings in PowerShell works differently, so we need to convert any:
         else if (pv.nativeType == "String") {
-            pv.value = pv.value.replace(/"/gi, "`\"")
+            pv.value = this.backtickDoubleQuotes(pv.value)
         }
         //If the native type is not a string and the value is an empty string, we must replace 
         //it by the null PowerShell literal:
@@ -230,7 +268,7 @@ export class Utils {
         }
         //Double quoted strings in PowerShell works differently, so we need to convert any:
         else if (pv.nativeType == "String") {
-            pv.value = pv.value.replace(/`"/gi, "\"")
+            pv.value = this.removeBacktickDoubleQuotes(pv.value)
         }
         //If the native type is not a string and the value is a null PowerShell literal, we 
         //must replace it by an empty string:
@@ -544,7 +582,7 @@ export class Utils {
         if (!secretValue.userName) throw new PropelError(`The supplied secret value doesn't have a "userName" property. Supplied object is: ${JSON.stringify(String(secret))}.`);
 
         user = this.getFullyQualifiedUserName(secretValue.userName, secretValue?.domain);
-        return `New-Object System.Management.Automation.PSCredential "${user}", (ConvertTo-SecureString "${secretValue?.password}" -AsPlainText -Force)`;
+        return `New-Object System.Management.Automation.PSCredential "${this.backtickDoubleQuotes(user)}", (ConvertTo-SecureString "${this.backtickDoubleQuotes(secretValue?.password)}" -AsPlainText -Force)`;
     }
 
     /**
@@ -590,7 +628,7 @@ export class Utils {
 ${this.tabs(1)}Name = "${credential.name}";
 ${this.tabs(1)}Fields = [pscustomobject]@{
 ${this.tabs(2)}${credential.fields
-                .map((item, i) => { return `${(i > 0) ? this.tabs(2) : ""}${item.name} = "${item.value}";` })
+                .map((item, i) => { return `${(i > 0) ? this.tabs(2) : ""}${item.name} = "${this.backtickDoubleQuotes(item.value)}";` })
                 .join(`\r\n`)}\r\n${this.tabs(2)}};\r\n`
 
         //Building the secret part:    
@@ -600,13 +638,13 @@ ${this.tabs(2)}${credential.fields
                 break;
             case CredentialTypes.AWS:
                 let AWSSecretValue: AWSSecret = (secret.value as AWSSecret)
-                ret += `${this.tabs(1)}AccessKey = "${AWSSecretValue?.accessKey}";
-${this.tabs(1)}SecretKey = "${AWSSecretValue?.secretKey}";`
+                ret += `${this.tabs(1)}AccessKey = "${this.backtickDoubleQuotes(AWSSecretValue?.accessKey)}";
+${this.tabs(1)}SecretKey = "${this.backtickDoubleQuotes(AWSSecretValue?.secretKey)}";`
                 break;
             case CredentialTypes.APIKey:
                 let APIKeySecretValue: GenericAPIKeySecret = (secret.value as GenericAPIKeySecret)
-                ret += `${this.tabs(1)}AppId = "${APIKeySecretValue?.appId}";
-${this.tabs(1)}APIKey = "${APIKeySecretValue?.apiKey}";`
+                ret += `${this.tabs(1)}AppId = "${this.backtickDoubleQuotes(APIKeySecretValue?.appId)}";
+${this.tabs(1)}APIKey = "${this.backtickDoubleQuotes(APIKeySecretValue?.apiKey)}";`
                 break;
             default:
                 throw new PropelError(`The specified credential type is not defined. Credential type: "${credential.credentialType}"`);

@@ -1090,3 +1090,26 @@ describe("Utils Class - getGetOrdinalSuffix", () => {
         expect(Utils.getOrdinalSuffix(31)).toEqual('st');
     })
 })
+
+describe("Utils Class - BacktickDoubleQuotesForPowerShell", () => {
+    test(`Null value for parameter "value"`, () => {
+        //@ts-ignore
+        expect(Utils.backtickDoubleQuotes(null)).toBe(null)
+    })
+    test(`Non String value for parameter "value"`, () => {
+        //@ts-ignore
+        expect(Utils.backtickDoubleQuotes(23)).toStrictEqual(23)
+    })
+    test(`String value without double quotes`, () => {
+        expect(Utils.backtickDoubleQuotes("This is 'a sample#$% value")).toEqual("This is 'a sample#$% value")
+    })
+    test(`String value with double quotes Case 1`, () => {
+        expect(Utils.backtickDoubleQuotes("This is \"a sample#$% value")).toEqual("This is `\"a sample#$% value")
+    })
+    test(`String value with double quotes Case 2`, () => {
+        expect(Utils.backtickDoubleQuotes("This is \"\"a sample#$% value")).toEqual("This is `\"`\"a sample#$% value")
+    })
+    test(`String already backticked`, () => {
+        expect(Utils.backtickDoubleQuotes("This is `\" an already backticked string `\"")).toEqual("This is `\" an already backticked string `\"")
+    })
+})
