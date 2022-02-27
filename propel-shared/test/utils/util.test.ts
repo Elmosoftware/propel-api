@@ -897,6 +897,7 @@ describe("Utils Class - toPowerShellCustomObject", () => {
             .replace(/\s+/g, ""); //Removing spaces.
         let expected = (`[pscustomobject]@{
   Name = "TestCred";
+  Type = "Windows";
   Fields = [pscustomobject]@{
       Field1 = "Field1Value";
       Field2 = "Field2Value";
@@ -933,6 +934,7 @@ describe("Utils Class - toPowerShellCustomObject", () => {
             .replace(/\s+/g, ""); //Removing spaces.
         let expected = (`[pscustomobject]@{
   Name = "TestCred";
+  Type = "APIKey";
   Fields = [pscustomobject]@{
       Field1 = "Field1Value";
       Field2 = "Field2Value";

@@ -626,6 +626,7 @@ export class Utils {
         //Building the credential part of the object:
         ret = `[pscustomobject]@{
 ${this.tabs(1)}Name = "${credential.name}";
+${this.tabs(1)}Type = "${credential.credentialType}";
 ${this.tabs(1)}Fields = [pscustomobject]@{
 ${this.tabs(2)}${credential.fields
                 .map((item, i) => { return `${(i > 0) ? this.tabs(2) : ""}${item.name} = "${this.backtickDoubleQuotes(item.value)}";` })
