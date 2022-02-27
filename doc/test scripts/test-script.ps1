@@ -15,6 +15,7 @@ param (
     [Parameter(HelpMessage='Indicates if any message will be displayed.')]
     [boolean]$ShowMessages = $true,
 
+    [Parameter(HelpMessage='Testing Personalized help message here for this credentials. Select any credentials!')]
     $PropelCredentials,
 
     [Parameter(Mandatory=$true, HelpMessage='Indicates if a text result will be send.Otherwise the result type will be JSONonly text results  any message will be displayed.')]

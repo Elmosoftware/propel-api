@@ -96,7 +96,10 @@ export class InferenceService {
                                                     }
                                                     else { //Is a valid $Propel parameter:
                                                         sp.isPropelParameter = true;
-                                                        sp.description = `This parameter is managed by Propel. The value is going be set automatically by Propel, per each one of the requested credentials. For more information, please check the documentation.`
+                                                        //If there is no help message, we will provide a customized one:
+                                                        if (sp.description == "") {
+                                                            sp.description = `This parameter is managed by Propel. The value is going to be set automatically by Propel on runtime per each one of the requested credentials. If you have doubts about which credentials to select here, please contact the script owner.`
+                                                        }
                                                     }
                                                 }
 
