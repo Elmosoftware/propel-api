@@ -25,6 +25,12 @@
             <div class="d-flex flex-column">
                 <button class="btn btn-primary ml-2" type="button" (click)="run(item._id)">Run</button>
             </div>
+            
+        </div>
+        <div class="d-flex justify-content-end">
+            <span class="text-subtle description" [innerHtml]="getLastUpdate(item)"
+            [matTooltip]="getLastUpdateTooltip(item)"
+            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
         </div>
     </li>
 </ul>

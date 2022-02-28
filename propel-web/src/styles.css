@@ -92,6 +92,10 @@ body{
     font-size: 0.9rem;
 }
 
+.text-subtle {
+    font-size: 0.7rem;
+}
+
 .overflowEllipsis {
     overflow: hidden;
     text-overflow: ellipsis;

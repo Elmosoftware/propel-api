@@ -1,10 +1,11 @@
 import * as stemmer from 'stemmer';
 import { removeStopwords } from 'stopword';
 
+import { SystemHelper } from "./system-helper";
 import { WorkflowStep } from '../../../propel-shared/models/workflow-step';
 import { ExecutionStep } from '../../../propel-shared/models/execution-step';
 import { ParameterValue } from '../../../propel-shared/models/parameter-value';
-
+import { AuditedEntity } from "../../../propel-shared/models/audited-entity";
 
 /**
  * UI Helper class.
@@ -213,4 +214,34 @@ export class UIHelper {
     static getShortText(text: string, startPosition: number = 0, maxLength: number = 150, posfix: string = "&hellip;") {
         return (text && text.length > maxLength) ? text.substr(startPosition, maxLength - 1) + '&hellip;' : text;
     }
+
+    /**
+     * For an audited entity object, return the last modification date as an exact date or as a friendly date.
+     * @example
+     *     getLastUpdateMessage(obj) //"Last modified a month ago"
+     *     getLastUpdateMessage(obj, false) //"Last modified Sunday, February 27th 2022, 9:21:03 am (-0300)"
+     *     getLastUpdateMessage(obj, false, "My prefix") //"My prefix Sunday, February 27th 2022, 9:21:03 am (-0300)"
+     * @param item Audited entity
+     * @param friendly If we must return a friendly data like "2 hours ago" or "the past month".
+     * @param prefix Prefix text to add to the returned value.
+     * @returns The last update or the creation date in the specified format.
+     * If the supplied AuditedEntity object does not contain the properties "lastUpdateOn" 
+     * and "createdOn" or they are not set, this method will return an empty string.
+     */
+    static getLastUpdateMessage(item: AuditedEntity, friendly: boolean = true, prefix: string = "Last modified"): string {
+        let ret: string = "";
+        let lastUpdate: Date;
+
+        if (!item || item.lastUpdateOn === undefined || item.createdOn === undefined) return ret
+        lastUpdate = (item.lastUpdateOn) ? item.lastUpdateOn : item.createdOn;
+    
+        if (friendly) {
+          ret = SystemHelper.getFriendlyTimeFromNow(lastUpdate);
+        }
+        else {
+          ret = SystemHelper.formatDate(lastUpdate);
+        }
+    
+        return `${prefix} ${ret}`;
+      }
 }

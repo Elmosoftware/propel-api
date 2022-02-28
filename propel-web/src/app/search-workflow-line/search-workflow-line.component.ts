@@ -7,6 +7,7 @@ import { DialogResult } from 'src/core/dialog-result';
 import { DataEntity } from 'src/services/data.service';
 import { SearchLineInterface } from 'src/core/search-line-interface';
 import { Entity } from '../../../../propel-shared/models/entity';
+import { UIHelper } from 'src/util/ui-helper';
 
 @Component({
   selector: 'app-search-workflow-line',
@@ -78,5 +79,13 @@ export class SearchWorkflowLineComponent implements SearchLineInterface, OnInit 
 
   run(id: string) {
     this.core.navigation.toRun(id);
+  }  
+
+  getLastUpdate(item: Workflow): string {
+    return UIHelper.getLastUpdateMessage(item, true)
+  }
+
+  getLastUpdateTooltip(item: Workflow): string {
+    return UIHelper.getLastUpdateMessage(item, false)
   }
 }

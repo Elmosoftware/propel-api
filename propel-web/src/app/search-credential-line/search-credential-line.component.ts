@@ -4,6 +4,7 @@ import { SearchLineInterface } from 'src/core/search-line-interface';
 import { CoreService } from 'src/services/core.service';
 import { DataEntity } from 'src/services/data.service';
 import { SystemHelper } from 'src/util/system-helper';
+import { UIHelper } from 'src/util/ui-helper';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Credential } from "../../../../propel-shared/models/credential";
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
@@ -42,11 +43,11 @@ export class SearchCredentialLineComponent implements SearchLineInterface, OnIni
   }
 
   getTooltipMessage(item: Credential): string {
-    let ret: string = "";
-    let lastUpdate: Date = (item.lastUpdateOn) ? item.lastUpdateOn : item.createdOn;
+    let ret: string = "No defined fields.";
 
-    ret = `Last modification: ${SystemHelper.getFriendlyTimeFromNow(lastUpdate)}, (${SystemHelper.formatDate(lastUpdate)})
-Fields: ${(item.fields.length > 0) ? `${item.fields.length} field(s) defined.` : "No defined fields."}`;
+    if (item.fields.length > 0) {
+       ret = `${item.fields.length} field(s) defined.\r\n${UIHelper.getParameterValuesList(item.fields)}`;
+    }   
 
     return ret;
   }
@@ -141,5 +142,13 @@ Also: This can cause to fail any script that is currently using the credential.`
           this.core.toaster.showError("There was an error testing the credential. Please edit the credential to see more details.",
             "Credential test error.");
         });
+  }
+  
+  getLastUpdate(item: Credential): string {
+    return UIHelper.getLastUpdateMessage(item, true)
+  }
+
+  getLastUpdateTooltip(item: Credential): string {
+    return UIHelper.getLastUpdateMessage(item, false)
   }
 }

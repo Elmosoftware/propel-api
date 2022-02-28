@@ -9,6 +9,7 @@ import { SearchLineInterface } from 'src/core/search-line-interface';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
 import { Entity } from '../../../../propel-shared/models/entity';
+import { UIHelper } from 'src/util/ui-helper';
 
 @Component({
   selector: 'app-search-target-line',
@@ -92,5 +93,13 @@ If there is a Workflow that already have it, the execution on this target will b
     }, err => {
       throw err
     });
+  }
+
+  getLastUpdate(item: Target): string {
+    return UIHelper.getLastUpdateMessage(item, true)
+  }
+
+  getLastUpdateTooltip(item: Target): string {
+    return UIHelper.getLastUpdateMessage(item, false)
   }
 }

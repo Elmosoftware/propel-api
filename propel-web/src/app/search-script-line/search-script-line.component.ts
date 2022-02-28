@@ -8,6 +8,7 @@ import { DialogResult } from 'src/core/dialog-result';
 import { DataEntity } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { SearchLineInterface } from 'src/core/search-line-interface';
+import { UIHelper } from 'src/util/ui-helper';
 
 @Component({
   selector: 'app-search-script-line',
@@ -69,5 +70,13 @@ Is targetting: ${(item.isTargettingServers) ? "Servers, (like Web servers, Datab
     }, err => {
       throw err
     });
+  }
+  
+  getLastUpdate(item: Script): string {
+    return UIHelper.getLastUpdateMessage(item, true)
+  }
+
+  getLastUpdateTooltip(item: Script): string {
+    return UIHelper.getLastUpdateMessage(item, false)
   }
 }
