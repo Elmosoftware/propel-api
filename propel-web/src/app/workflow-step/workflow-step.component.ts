@@ -20,10 +20,37 @@ import { Utils } from "../../../../propel-shared/utils/utils";
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 
-
+/**
+ * Minimum step name length.
+ */
 const NAME_MIN: number = 3;
-const NAME_MAX: number = 50;
-const TARGETS_MAX: number = 10;
+
+/**
+ * Maximum step name length.
+ */
+ const NAME_MAX: number = 50;
+
+/**
+ * TARGETS_MAX is the maximum amount of targets you can add to a step.
+ * 
+ * Be aware this number is related to the following Propel API environment variables:
+ * 
+ *  - **POOL_MAX_SIZE**: Total pool size, this mean the total amount of PowerShell processes 
+ * the API is allowed to create.
+ *  - **POOL_QUEUE_SIZE**: This is the maximum amount of requests that will be queued when all the 
+ * current PowerShell processes are busy.
+ * 
+ * The relationship between this configuration settings is:
+ * 
+ * **TARGETS_MAX** have to be less than **POOL_MAX_SIZE** + **POOL_QUEUE_SIZE**
+ * 
+ * If this is not the case you will have a "ObjectPool memory queue overflow" exception.
+ */
+const TARGETS_MAX: number = 20;
+
+/**
+ * Maximum amount of credentials you can set for a $PropelCredentials script parameter value.
+ */
 const CREDENTIALS_MAX: number = 5;
 
 @Component({
