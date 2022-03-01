@@ -103,6 +103,13 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`USAGE_STATS_STALE_MINUTES is not a number or it has a value less than zero. Supplied value: "${process.env.USAGE_STATS_STALE_MINUTES}".`);
         }
 
+        if (!process.env.UPLOAD_PAYLOAD_LIMIT_MB) {
+            super._addError("UPLOAD_PAYLOAD_LIMIT_MB is required.");
+        }
+        else if ((isNaN(Number(process.env.UPLOAD_PAYLOAD_LIMIT_MB)) || Number(process.env.UPLOAD_PAYLOAD_LIMIT_MB) < 0 || Number(process.env.UPLOAD_PAYLOAD_LIMIT_MB) > 100)) {
+            super._addError(`UPLOAD_PAYLOAD_LIMIT_MB is not a number or is less than zero or higher than 100. Supplied value: "${process.env.UPLOAD_PAYLOAD_LIMIT_MB}".`);
+        }
+
         return this;
     }
 }

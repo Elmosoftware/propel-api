@@ -29,9 +29,9 @@ class WebServer {
 
     start() {
         //Setting up Middlewares:
-        this.app.use(bodyParser.json()); // to support JSON-encoded bodies.
-        this.app.use(bodyParser.urlencoded({ extended: true })); // to support URL-encoded bodies.
-        this.app.use(bodyParser.text({ type: "text/plain" })); //to support plain text in the body. 
+        this.app.use(bodyParser.json({ limit: cfg.uploadPayloadLimit })); // to support JSON-encoded bodies.
+        this.app.use(bodyParser.urlencoded({ limit: cfg.uploadPayloadLimit, extended: true })); // to support URL-encoded bodies.
+        this.app.use(bodyParser.text({ limit: cfg.uploadPayloadLimit, type: "text/plain" })); //to support plain text in the body. 
         //Used to infer script parameters.
         this.app.use(cors()); //CORS.
 

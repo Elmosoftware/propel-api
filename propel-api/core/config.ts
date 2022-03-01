@@ -153,6 +153,21 @@ class Config {
     }
 
     /**
+     * Maximum upload payload set for the API in Megabytes.
+     */
+    get uploadPayloadLimit(): string {
+        let limit = Number(process.env.UPLOAD_PAYLOAD_LIMIT_MB);
+        let ret = "100kb"; //The value "0" in the configuration means to set 
+        //the default upload payload value that is 100KB.
+
+        if (limit > 0) {
+            ret = Number(process.env.UPLOAD_PAYLOAD_LIMIT_MB).toString() + "mb";
+        }
+
+        return ret;
+    }
+
+    /**
      * 
      * @param paramName Parameter name to check.
      * @returns A boolean value indicating if the parameter has the samae name defined 

@@ -13,6 +13,7 @@ function setAllValid() {
     process.env.MAX_WORKFLOW_RESULTS_SIZE="12582912"
     process.env.EXECUTIONLOG_RETENTION_DAYS="30"
     process.env.USAGE_STATS_STALE_MINUTES="30"
+    process.env.UPLOAD_PAYLOAD_LIMIT_MB="0"
 }
 
 describe("ConfigValidator Class", () => {
@@ -308,6 +309,50 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`USAGE_STATS_STALE_MINUTES is not a number or it has a value less than zero`);
+        cfgVal.reset();
+    })
+    test(`Missing UPLOAD_PAYLOAD_LIMIT_MB value`, () => {
+        //@ts-ignore
+        process.env.UPLOAD_PAYLOAD_LIMIT_MB = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`UPLOAD_PAYLOAD_LIMIT_MB is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid UPLOAD_PAYLOAD_LIMIT_MB value`, () => {
+        //@ts-ignore
+        process.env.UPLOAD_PAYLOAD_LIMIT_MB = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`UPLOAD_PAYLOAD_LIMIT_MB is not a number or is less than zero or`);
+        cfgVal.reset();
+    })
+    test(`Invalid UPLOAD_PAYLOAD_LIMIT_MB numeric value (-1)`, () => {
+        //@ts-ignore
+        process.env.UPLOAD_PAYLOAD_LIMIT_MB = "-1"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`UPLOAD_PAYLOAD_LIMIT_MB is not a number or is less than zero or`);
+        cfgVal.reset();
+    })
+    test(`Invalid UPLOAD_PAYLOAD_LIMIT_MB numeric value (101)`, () => {
+        //@ts-ignore
+        process.env.UPLOAD_PAYLOAD_LIMIT_MB = "101"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`UPLOAD_PAYLOAD_LIMIT_MB is not a number or is less than zero or`);
         cfgVal.reset();
     })
 })

@@ -31,10 +31,10 @@ const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
 const DESCRIPTION_MAX: number = 512;
 const FILE_EXT: string = "ps1"
-const MAX_FILE_SIZE: number = 2097152
-const MAX_FILE_SIZE_TEXT: string = "2MB"
+const MAX_FILE_SIZE: number = 1048576
+const MAX_FILE_SIZE_TEXT: string = "1MB"
 
-@Component({
+@Component({  
   selector: 'app-script',
   templateUrl: './script.component.html',
   styleUrls: ['./script.component.css']

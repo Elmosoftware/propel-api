@@ -367,7 +367,25 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
 
   save(run: boolean = false): void {
 
-    this.core.data.save(DataEntity.Workflow, this.fh.value)
+    //We can reduce the payload by excluding the entire script object and the targets and 
+    //sending only the ObjectId for each one of them:
+    let data:any = Object.assign({}, this.fh.value);
+
+    if (data.steps) {
+      data.steps.forEach((step)  => {
+        if (step.script) {
+          step.script = step.script._id;
+        }
+
+        if (step.targets) {
+          step.targets.forEach((target, i) => {
+            step.targets[i] = target._id;
+          });
+        }
+      });    
+    }
+
+    this.core.data.save(DataEntity.Workflow, data)
       .subscribe((results: APIResponse<string>) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.fh.setId(results.data[0]);
