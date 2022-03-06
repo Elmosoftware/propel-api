@@ -373,13 +373,15 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
 
     if (data.steps) {
       data.steps.forEach((step)  => {
-        if (step.script) {
+        if (step.script && step.script._id) {
           step.script = step.script._id;
         }
 
         if (step.targets) {
           step.targets.forEach((target, i) => {
-            step.targets[i] = target._id;
+            if(target && target._id) {
+              step.targets[i] = target._id;
+            }
           });
         }
       });    
