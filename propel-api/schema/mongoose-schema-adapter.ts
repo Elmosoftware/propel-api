@@ -119,10 +119,8 @@ export class MongooseSchemaAdapter {
 
         fields.forEach((field: SchemaField) => {
 
-            // if (this._typeIsSchema(field.type)) {
             if (field.typeIsSchema) {
 
-                // if (this._fieldIsReference(field)) {
                 if (field.isReference) {
                     //If the field is a reference it need to be populated always. 
                     //The only consideration is: If the parent is an embedded object, this entry will 
@@ -139,8 +137,8 @@ export class MongooseSchemaAdapter {
                 //references that need to be populated too:
                 populate = this._buildPopulateSchema(childFields, field);
 
-                //If there is any child references:
-                if (populate.length > 0) {
+                //If there is any child references or the field itself is a reference:
+                if (populate.length > 0 || (populate.length == 0 && field.isReference)) {
                     //In the case of embedded fields there is no point to add the populate path 
                     //at least they have some reference subfields that need to be populated too. That's
                     //why we add this entry at this point after checking if there is any child references:
@@ -158,7 +156,9 @@ export class MongooseSchemaAdapter {
                     }
                     else {  
                         //If is a reference of another reference we need to ad it as a child:
-                        populateSchema[populateSchema.length - 1].populate = populate;
+                        if (populate.length > 0) {
+                            populateSchema[populateSchema.length - 1].populate = populate;
+                        }
                     }
                 }
             }
