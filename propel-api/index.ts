@@ -60,7 +60,7 @@ Server is ready and listening on port: ${cfg.port}.
     })
 
 function closeHandler(err:any, origin?: any, code: number = 1) {
-    logger.logError(`There was an error on: "${origin}", error details are: \r\n${String(err)}`);
+    logger.logError(`There was an error on: "${origin}", error details are: \r\n${JSON.stringify(err)}`);
     logger.logInfo(`Exiting now with code ${code}`);
     process.exit(code);
 }
