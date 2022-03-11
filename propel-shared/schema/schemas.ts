@@ -12,8 +12,6 @@ class Schemas {
         //We will only exclude entity and auditedEntity on the all Schemas list: 
         this._allSchemas = [
             this.user,
-            this.category,
-            this.group,
             this.script,
             this.target,
             this.workflow,
@@ -135,44 +133,6 @@ class Schemas {
     }
 
     /**
-     * **Category** schema definition.
-     * @extends AuditedEntity schema definition
-     */
-    get category(): Readonly<SchemaDefinition> {
-
-        return new SchemaDefinition("Category", "Categories", true)
-            .setFields([
-                new SchemaField("name", `Category name.`,
-                    {
-                        type: String,
-                        isRequired: true
-                    })
-            ])
-            .merge(this.auditedEntity)
-            .setDescription("Categories used to tag both Workflows and Scripts.")
-            .freeze();
-    }
-
-    /**
-     * **Group** schema definition.
-     * @extends AuditedEntity schema definition
-     */
-    get group(): Readonly<SchemaDefinition> {
-
-        return new SchemaDefinition("Group", "Groups", true)
-            .setFields([
-                new SchemaField("name", `Group name.`,
-                    {
-                        type: String,
-                        isRequired: true
-                    })
-            ])
-            .merge(this.auditedEntity)
-            .setDescription("Used to group servers based in some specific characteristics.")
-            .freeze();
-    }
-
-    /**
      * **Script** schema definition.
      * @implements ScriptParameter embedded schema
      * @extends AuditedEntity schema definition
@@ -193,11 +153,6 @@ class Schemas {
                 new SchemaField("isTargettingServers", `Boolean value indicating if this script requires a target selection or not.`,
                     {
                         type: Boolean,
-                        isRequired: true
-                    }),
-                new SchemaField("category", `The script category, group scripts that have similar functionality. Helping in the creation of workflows to find and pick the right one.`,
-                    {
-                        type: this.category,
                         isRequired: true
                     }),
                 new SchemaField("code", `Base 64 encoded script code.`,
@@ -243,11 +198,6 @@ class Schemas {
                     {
                         type: String
                     }),
-                new SchemaField("groups", `Groups this target is member of. Helping in the creation of workflows by finding appropiate targets.`,
-                    {
-                        type: this.group,
-                        isArray: true
-                    }),
                 new SchemaField("enabled", `Indicate if the server is enabled as target. If the value is "false", the execution will be skipped on any Workflow or Task that have it.`,
                     {
                         type: Boolean,
@@ -287,11 +237,6 @@ class Schemas {
                 new SchemaField("isQuickTask", `Indicate if this is a quick task.`,
                     {
                         type: Boolean,
-                        isRequired: true
-                    }),
-                new SchemaField("category", `Workflow category.`,
-                    {
-                        type: this.category,
                         isRequired: true
                     }),
                 new SchemaField("steps", `Collection of workflow steps.`,

@@ -12,8 +12,6 @@ import { Utils } from '../../../propel-shared/utils/utils';
 import { PropelAppError } from "../core/propel-app-error";
 
 export enum DataEntity {
-  Category = "Category",
-  Group = "Group",
   ExecutionLog = "ExecutionLog",
   Script = "Script",
   Target = "Target",

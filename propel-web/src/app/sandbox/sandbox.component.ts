@@ -6,9 +6,7 @@ import { ThemePalette } from '@angular/material/core';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { Entity, compareEntities } from '../../../../propel-shared/models/entity';
 import { ValidatorsHelper } from 'src/core/validators-helper';
-import { Group } from '../../../../propel-shared/models/group';
 import { DialogResult } from 'src/core/dialog-result';
-import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
 import { MatAccordion } from '@angular/material/expansion';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -271,8 +269,6 @@ export class SandboxComponent implements OnInit {
     // qm.sortBy = "name";
     // qm.populate = true;
 
-    // this.data.find(Group,qm)
-
   }
 
   testInsert() {
@@ -361,16 +357,6 @@ export class SandboxComponent implements OnInit {
     }, err => {
       throw err
     });
-  }
-
-  showEntityDialog() {
-    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(DataEntity.Group, new Group()))
-      .subscribe((results: DialogResult<Group>) => {
-        alert(`Result is: "${JSON.stringify(results)}".`);
-      },
-        err => {
-          throw err
-        });
   }
 
   expandAll() {

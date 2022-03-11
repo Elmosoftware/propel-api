@@ -10,7 +10,6 @@ import { WorkflowStep } from '../../../propel-shared/models/workflow-step';
 //Dialog Components:
 import { DialogResult } from "../core/dialog-result";
 import { StandardDialogComponent, StandardDialogConfiguration } from "../app/dialogs/standard-dialog/standard-dlg.component";
-import { EntityDialogComponent, EntityDialogConfiguration } from "../app/dialogs/entity-group-dlg/entity-dlg.component";
 import { WorkflowStepDialogComponent } from 'src/app/dialogs/workflow-step-dlg/workflow-step-dlg.component';
 import { ParameterValue } from '../../../propel-shared/models/parameter-value';
 import { CustomFieldDialogComponent } from 'src/app/dialogs/custom-field-dlg/custom-field-dlg.component';
@@ -35,23 +34,6 @@ export class DialogService {
                 map((value) => {
                     //I find difficult to capture ESC key or a click on the backdrop. Both will 
                     //close the dialog,so i'm patching here the result object:
-                    if (!value) return new DialogResult<any>(0, null)
-                    else return value;
-                })
-            )
-    }
-
-    /**
-     * Open a dialog to enable edit one specific entity.
-     * @param options Entity dialog options.
-     */
-    showEntityDialog(options: EntityDialogConfiguration<any>): Observable<DialogResult<any>> {
-
-        let dialogRef = this.dialog.open(EntityDialogComponent, { data: options });
-
-        return dialogRef.afterClosed()
-            .pipe(
-                map((value) => {
                     if (!value) return new DialogResult<any>(0, null)
                     else return value;
                 })

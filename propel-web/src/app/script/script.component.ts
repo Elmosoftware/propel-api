@@ -7,13 +7,11 @@ import 'prismjs/components/prism-powershell';
 
 import { FormHandler } from 'src/core/form-handler';
 import { Script } from '../../../../propel-shared/models/script';
-import { Category } from '../../../../propel-shared/models/category';
 import { compareEntities } from '../../../../propel-shared/models/entity';
 import { CoreService } from 'src/services/core.service';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
-import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
 import { ScriptParameter } from "../../../../propel-shared/models/script-parameter";
 import { SystemHelper } from "../../util/system-helper";
@@ -41,12 +39,9 @@ const MAX_FILE_SIZE_TEXT: string = "1MB"
 })
 export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
-  @ViewChild("category") category;
-
   private requestCount$: EventEmitter<number>;
   activeTab: Tabs = Tabs.Details;
   fh: FormHandler<Script>;
-  allCategories: Category[] = [];
   uploadProgress: number;
   uploadEnabled: boolean;
   completed: boolean;
@@ -83,9 +78,6 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
         Validators.maxLength(DESCRIPTION_MAX)
       ]),
       isTargettingServers: new FormControl(""),
-      category: new FormControl("", [
-        Validators.required
-      ]),
       enabled: new FormControl(""),
       code: new FormControl(""), //Didn't set this as required, because will be handled 
       //in a separate tab.
@@ -109,7 +101,6 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData();
-    this.refreshCategories();
   }
 
   resetForm() {
@@ -153,21 +144,6 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
     this.resetForm();
   }
 
-  refreshCategories() {
-    let qm: QueryModifier = new QueryModifier();
-
-    qm.sortBy = "name";
-
-    this.core.data.find(DataEntity.Category, qm)
-      .subscribe((results: APIResponse<Category>) => {
-        this.allCategories = results.data;
-      },
-        err => {
-          throw err
-        });
-  }
-
-
   /**
    * Used by the dropdowns to compare the values.
    */
@@ -175,30 +151,6 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
   dataChanged(): boolean | Observable<boolean> | Promise<boolean> {
     return this.core.dataChanged(this.fh);
-  }
-
-  addCategory() {
-    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(DataEntity.Category, new Category()))
-      .subscribe((dlgResults: DialogResult<Category>) => {
-
-        if (!dlgResults.isCancel) {
-          this.core.data.save(DataEntity.Category, dlgResults.value)
-            .subscribe((results: APIResponse<string>) => {
-              dlgResults.value._id = results.data[0];
-              //Adding in this way for the On Push change detection, 
-              //(See: https://github.com/ng-select/ng-select#change-detection).
-              this.allCategories = [...this.allCategories, dlgResults.value];
-              this.category.select({ name: dlgResults.value.name, value: dlgResults.value });
-            },
-              (err) => {
-                throw err
-              }
-            );
-        }
-      },
-        err => {
-          throw err
-        });
   }
 
   handleFileDrop(files: FileList): void {

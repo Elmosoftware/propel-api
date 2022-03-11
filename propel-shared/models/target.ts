@@ -1,6 +1,5 @@
 // @ts-check
 import { AuditedEntity } from "./audited-entity";
-import { Group } from "./group";
 import { Credential } from "../models/credential";
 
 /**
@@ -22,11 +21,6 @@ export class Target extends AuditedEntity {
      * Brief description of the target server. It must help to clarify server purpose, usage, location, etc.
      */
     public description: string = "";
-
-    /**
-     * List of groups this server is member of.
-     */
-    public groups: Group[] = [];
 
     /**
      * Indicate if the server is enabled as target. If the value is "false", the execution will be 

@@ -1,7 +1,6 @@
 // @ts-check
 import { AuditedEntity } from "./audited-entity";
 import { ScriptParameter } from "./script-parameter";
-import { Category } from "./category";
 
 /**
  * Represents a Script uploaded by the user.
@@ -22,12 +21,6 @@ export class Script extends AuditedEntity {
      * Boolean value indicating if this script requires a target selection or not.
      */
     public isTargettingServers: boolean = true;
-
-    /**
-     * Target categories that could be a possible selection for this script. If no 
-     * categories defined, any target could apply.
-     */
-    public category!: Category;
 
     /**
      * Script code.

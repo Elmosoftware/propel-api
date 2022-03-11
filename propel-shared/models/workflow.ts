@@ -1,6 +1,5 @@
 // @ts-check
 import { AuditedEntity } from "./audited-entity";
-import { Category } from "./category";
 import { WorkflowStep } from "./workflow-step";
 
 /**
@@ -25,11 +24,6 @@ export class Workflow extends AuditedEntity {
      * Quick tasks are not intended to endure, they are like "one time only" Workflows.
      */
     public isQuickTask: boolean = false
-
-    /**
-     * Woekflow category.
-     */
-    public category!: Category;
 
     /**
      * Collection of steps, each one defining a task to be executed.

@@ -13,7 +13,6 @@ import { CoreService } from 'src/services/core.service';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { ScriptParameter } from '../../../../propel-shared/models/script-parameter';
 import { SystemHelper } from 'src/util/system-helper';
-import { Category } from '../../../../propel-shared/models/category';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { DataEntity } from 'src/services/data.service';
 import { Utils } from "../../../../propel-shared/utils/utils";
@@ -268,7 +267,6 @@ export class WorkflowStepComponent implements OnInit {
           Boolean(value.toLowerCase() == "valid"),
           this.fh.form.dirty,
           step,
-          (this.selectedScript) ? this.selectedScript.category : null,
           (this.selectedScript) ? this.selectedScript.name : "",
           this.getselectedTargetNames());
         this.change.emit(status);
@@ -557,16 +555,14 @@ export class WorkflowStepComponentStatus {
   readonly isValid: boolean;
   readonly isDirty: boolean;
   readonly step?: WorkflowStep;
-  readonly category?: Category;
   readonly scriptName?: string;
   readonly targetNames?: string[];
 
   constructor(isValid: boolean, isDirty: boolean, step?: WorkflowStep,
-    category?: Category, scriptName?: string, targetNames?: string[]) {
+    scriptName?: string, targetNames?: string[]) {
     this.isValid = isValid,
       this.isDirty = isDirty;
     this.step = step;
-    this.category = category;
     this.scriptName = scriptName;
     this.targetNames = (targetNames) ? targetNames : [];
   }

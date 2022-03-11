@@ -53,7 +53,6 @@ import { SandboxComponent } from './app/sandbox/sandbox.component';
 import { RootComponent } from './app/root/root.component';
 import { RunComponent } from './app/run/run.component';
 import { TargetComponent } from './app/target/target.component';
-import { EntityDialogComponent } from './app/dialogs/entity-group-dlg/entity-dlg.component';
 import { ValidationMessageComponent } from './app/validation-message/validation-message.component';
 import { ScriptComponent } from './app/script/script.component';
 import { FileDropperComponent } from './app/file-dropper/file-dropper.component';
@@ -87,7 +86,6 @@ import { APIKeySecretComponent } from './app/credential/apikey-secret/apikey-sec
         ConsoleLineComponent,
         StatusIconComponent,
         TargetComponent,
-        EntityDialogComponent,
         ValidationMessageComponent,
         ScriptComponent,
         FileDropperComponent,

@@ -6,21 +6,18 @@ import { CoreService } from 'src/services/core.service';
 import { compareEntities } from '../../../../propel-shared/models/entity';
 import { Target } from "../../../../propel-shared/models/target";
 import { ValidatorsHelper } from 'src/core/validators-helper';
-import { Group } from '../../../../propel-shared/models/group';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
 import { forkJoin, Observable } from 'rxjs';
 import { DialogResult } from 'src/core/dialog-result';
 import { FormHandler } from "../../core/form-handler";
-import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
 import { DataEntity } from 'src/services/data.service';
 import { Credential } from "../../../../propel-shared/models/credential";
 
 const FRIENDLY_NAME_MIN: number = 3;
 const FRIENDLY_NAME_MAX: number = 25;
 const DESCRIPTION_MAX: number = 256;
-const GROUPS_MAX: number = 5
 
 @Component({
   selector: 'app-target',
@@ -29,12 +26,10 @@ const GROUPS_MAX: number = 5
 })
 export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
-  @ViewChild("groups") groups;
   @ViewChild("invokeAs") invokeAs;
 
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<Target>
-  allGroups: Group[] = [];
   allWindowsCredentials: Credential[];
   showAddNewButton: boolean = false;
   credentialIsDisabled: boolean = false;
@@ -58,10 +53,6 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
       description: new FormControl("", [
         Validators.maxLength(DESCRIPTION_MAX)
       ]),
-      groups: new FormControl("", [
-        ValidatorsHelper.maxItems(GROUPS_MAX)
-      ]
-      ),
       invokeAs: new FormControl(""),
       enabled: new FormControl(""),
     }));
@@ -93,8 +84,8 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     //Doing this with a timeout to avoid the "ExpressionChangedAfterItHasBeenCheckedError" error:
     setTimeout(() => {
       forkJoin([
-        this.refreshGroups(),
         this.refreshCredentials()
+        //if there is anything else to refresh, add it here...
       ])
         .subscribe((results) => {
 
@@ -103,14 +94,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
           //them to be selected:
 
           //@ts-ignore
-          this.allGroups = results[0].data.map(item => {
-            //@ts-ignore
-            item.disabled = false;
-            return item;
-          });
-
-          //@ts-ignore
-          this.allWindowsCredentials = results[1].data.map(item => {
+          this.allWindowsCredentials = results[0].data.map(item => {
             //@ts-ignore
             item.disabled = false;
             return item;
@@ -167,14 +151,6 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     }
   }
 
-  refreshGroups() {
-    let qm: QueryModifier = new QueryModifier();
-
-    qm.sortBy = "name";
-
-    return this.core.data.find(DataEntity.Group, qm)
-  }
-
   refreshCredentials() {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
@@ -195,30 +171,6 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     return this.allWindowsCredentials.find((credential: Credential) => {
       return credential._id == String(id);
     });
-  }
-
-  addGroup() {
-    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(DataEntity.Group, new Group()))
-      .subscribe((dlgResults: DialogResult<Group>) => {
-
-        if (!dlgResults.isCancel) {
-          this.core.data.save(DataEntity.Group, dlgResults.value)
-            .subscribe((results: APIResponse<string>) => {
-              dlgResults.value._id = results.data[0];
-              //Adding in this way for the On Push change detection, 
-              //(See: https://github.com/ng-select/ng-select#change-detection).
-              this.allGroups = [...this.allGroups, dlgResults.value];
-              this.groups.select({ name: dlgResults.value.name, value: dlgResults.value });
-            },
-              (err) => {
-                throw err
-              }
-            );
-        }
-      },
-        err => {
-          throw err
-        });
   }
 
   newItem() {

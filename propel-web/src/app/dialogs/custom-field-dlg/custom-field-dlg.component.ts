@@ -3,7 +3,6 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { DialogResult } from 'src/core/dialog-result';
-import { FormHandler } from 'src/core/form-handler';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { DataEntity } from 'src/services/data.service';
 import { ParameterValue } from '../../../../../propel-shared/models/parameter-value';
@@ -19,7 +18,7 @@ const DEFAULT_NATIVETYPE: string = "String"
 })
 export class CustomFieldDialogComponent implements OnInit {
 
-  fh: FormHandler<ParameterValue>;
+  fh: FormGroup;
 
   get title(): string {
     return "Custom field"
@@ -28,7 +27,7 @@ export class CustomFieldDialogComponent implements OnInit {
   constructor(public dialogRef: MatDialogRef<ParameterValue>,
     @Inject(MAT_DIALOG_DATA) public config: any) {
       
-      this.fh = new FormHandler(DataEntity.Group, new FormGroup({
+      this.fh = new FormGroup({
         name: new FormControl("", [
           Validators.required,
           Validators.maxLength(NAME_MAX),
@@ -40,21 +39,24 @@ export class CustomFieldDialogComponent implements OnInit {
           Validators.maxLength(VALUE_MAX)
         ]),
         nativeType: new FormControl(DEFAULT_NATIVETYPE)
-      }));
+      });
 
       if (config) {
         config.nativeType = DEFAULT_NATIVETYPE;
-        this.fh.setValue(config);
+        this.fh.patchValue(config);
       }
       else {
         let p = new ParameterValue();
         p.nativeType =  DEFAULT_NATIVETYPE;
-        this.fh.setValue(p);
+        this.fh.patchValue(p);
       }
+      
+      this.fh.markAsPristine();
+      this.fh.markAsUntouched();
   }
 
   closeDlg(id): void {
-    this.dialogRef.close(new DialogResult<any>(id, this.fh.value));
+    this.dialogRef.close(new DialogResult<any>(id, this.fh.getRawValue()));
   }
 
   ngOnInit(): void {

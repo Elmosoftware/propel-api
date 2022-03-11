@@ -1,18 +1,15 @@
 import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
-import { Component, OnInit, ViewChild, EventEmitter } from '@angular/core';
+import { Component, OnInit, EventEmitter } from '@angular/core';
 import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 
 import { CoreService } from 'src/services/core.service';
-import { EntityDialogConfiguration } from '../dialogs/entity-group-dlg/entity-dlg.component';
-import { Category } from '../../../../propel-shared/models/category';
 import { DialogResult } from 'src/core/dialog-result';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Workflow } from '../../../../propel-shared/models/workflow';
 import { FormHandler } from 'src/core/form-handler';
 import { compareEntities } from '../../../../propel-shared/models/entity';
-import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { WorkflowStep } from '../../../../propel-shared/models/workflow-step';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { WorkflowStepComponentStatus } from '../workflow-step/workflow-step.component';
@@ -33,11 +30,8 @@ const STEPS_MAX: number = 10;
 })
 export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
-  @ViewChild("category") category;
-
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<Workflow>;
-  allCategories: Category[] = [];
   scriptNames: Map<string, string> = new Map<string, string>();
   targetNames: Map<string, string[]> = new Map<string, string[]>();
   showAddNewButton: boolean = false;
@@ -66,9 +60,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
         Validators.maxLength(DESCRIPTION_MAX)
       ]),
       isQuickTask: new FormControl(""),
-      category: new FormControl("", [
-        Validators.required
-      ]),
       steps: new FormArray([], [
         ValidatorsHelper.minItems(1),
         ValidatorsHelper.maxItems(STEPS_MAX)])
@@ -93,7 +84,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData();
-    this.refreshCategories();
   }
 
   refreshData(): void {
@@ -125,44 +115,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   newItem() {
     this.fh.setValue(new Workflow());
     this.showAddNewButton = false;
-  }
-
-  refreshCategories() {
-    let qm: QueryModifier = new QueryModifier();
-
-    qm.sortBy = "name";
-
-    this.core.data.find(DataEntity.Category, qm)
-      .subscribe((results: APIResponse<Category>) => {
-        this.allCategories = results.data;
-      },
-        err => {
-          throw err
-        });
-  }
-
-  addCategory() {
-    this.core.dialog.showEntityDialog(new EntityDialogConfiguration(DataEntity.Category, new Category()))
-      .subscribe((dlgResults: DialogResult<Category>) => {
-
-        if (!dlgResults.isCancel) {
-          this.core.data.save(DataEntity.Category, dlgResults.value)
-            .subscribe((results: APIResponse<string>) => {
-              dlgResults.value._id = results.data[0];
-              //Adding in this way for the On Push change detection, 
-              //(See: https://github.com/ng-select/ng-select#change-detection).
-              this.allCategories = [...this.allCategories, dlgResults.value];
-              this.category.select({ name: dlgResults.value.name, value: dlgResults.value });
-            },
-              (err) => {
-                throw err
-              }
-            );
-        }
-      },
-        err => {
-          throw err
-        });
   }
 
   extractScriptNameAndTargetFromStatus(status: WorkflowStepComponentStatus): void {
@@ -410,13 +362,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
     this.fh.resetForm();
     
     //Sadly the form array values are not restored automatically to the previous values: 
-    this.createStepsFormArray(this.fh.previousValue.steps, true);  
-    
-    //Also, the category is restored fine if it has a previous value, otherwise the 
-    //selected values is not cleared from the dropdown, so we need to do it manually:
-    if (!this.fh.previousValue.category) {
-      this.category.handleClearClick();
-    }    
+    this.createStepsFormArray(this.fh.previousValue.steps, true);      
   }
 
   drop(event: CdkDragDrop<string[]>) {

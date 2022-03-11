@@ -13,20 +13,6 @@
                 rows="4" formControlName="description"></textarea>
             <app-validation-message [control]="fh.form.controls.description"></app-validation-message>
         </div>
-        <div class="form-group">
-            <label class="mr-2" for="category">Category</label>
-            <button class="btn btn-primary button-icon-small" type="button" [disabled]="fh.form.disabled"
-                (click)="addCategory()">
-                <i class="fas fa-plus"></i>
-            </button>
-            <ng-select #category [items]="allCategories" [multiple]="false" labelForId="category"
-                [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id"
-                bindLabel="name" clearAllText="Clear" [compareWith]="compareFn"
-                placeholder="Select the category that fits better or create a new one by clicking on the plus button."
-                formControlName="category">
-            </ng-select>
-            <app-validation-message [control]="fh.form.controls.category"></app-validation-message>
-        </div>
         <div class="form-group mb-0">
             <div class="d-flex justify-content-center mb-2">
                 <button class="btn btn-primary" type="button" (click)="addStep()"><i class="fas fa-list-ol mr-2"></i>Add Step</button>

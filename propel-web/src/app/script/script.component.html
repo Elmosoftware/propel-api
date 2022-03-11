@@ -35,20 +35,6 @@
                         </app-validation-message>
                     </div>
                     <div class="form-group">
-                        <label class="mr-2" for="category">Category</label>
-                        <button class="btn btn-primary button-icon-small" type="button" [disabled]="fh.form.disabled"
-                            (click)="addCategory()">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                        <ng-select #category [items]="allCategories" [multiple]="false" labelForId="category"
-                            [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id"
-                            bindLabel="name" clearAllText="Clear" [compareWith]="compareFn"
-                            placeholder="Select the script category that fits or create a new one."
-                            formControlName="category">
-                        </ng-select>
-                        <app-validation-message [control]="fh.form.controls.category"></app-validation-message>
-                    </div>
-                    <div class="form-group">
                         <label class="mr-2 w-100">Availability</label>
                         <div class="d-flex justify-content-center">
                             <label class="mr-2 mt-1 text-mini">Disabled for now</label>

@@ -12,7 +12,7 @@ describe("DataRouter class - processFind()", () => {
     beforeEach(() => {
         action = "find"
         d = new DataRouter();
-        svc = db.getService("Group") //Any model name will be fine, we wiil mock the methods inside.
+        svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.find = (qm: any) => { //To avoid hitting the DB.
             return Promise.resolve(new APIResponse<any>(null, "FIND"));
         }
@@ -66,7 +66,7 @@ describe("DataRouter class - processSave()", () => {
     beforeEach(() => {
         action = "save"
         d = new DataRouter();
-        svc = db.getService("Group") //Any model name will be fine, we wiil mock the methods inside.
+        svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.update = (document: any) => { //To avoid hitting the DB.
             return Promise.resolve(new APIResponse<any>(null, "UPDATE"));
         }
@@ -123,7 +123,7 @@ describe("DataRouter class - processDelete()", () => {
     beforeEach(() => {
         action = "delete"
         d = new DataRouter();
-        svc = db.getService("Group") //Any model name will be fine, we wiil mock the methods inside.
+        svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.delete = (id: string) => { //To avoid hitting the DB.
             return Promise.resolve(new APIResponse<any>(null, "DELETE"));
         }

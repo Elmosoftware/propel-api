@@ -6,23 +6,23 @@
 </div>
 <div mat-dialog-content class="m-1">    
     <div class="container mt-2">
-        <form [formGroup]="fh.form">
+        <form [formGroup]="fh">
             <div class="form-group">
                 <label for="name" class="data-required">Field name</label>
                 <input type="text" class="form-control" id="name" aria-describedby="name"
                     placeholder="Enter the field name." formControlName="name" required>
-                <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
+                <app-validation-message [control]="fh.controls.name"></app-validation-message>
             </div>
             <div class="form-group">
                 <label for="value" class="data-required">Value</label>
                 <input type="text" class="form-control" id="value" aria-describedby="value"
                     placeholder="Enter the field value." formControlName="value" required>
-                <app-validation-message [control]="fh.form.controls.value"></app-validation-message>
+                <app-validation-message [control]="fh.controls.value"></app-validation-message>
             </div>
         </form>
     </div>
 </div>
 <div mat-dialog-actions class="d-flex justify-content-between m-3">
-    <button class="btn btn-primary mr-1" (click)="closeDlg(1)" [disabled]="!fh.form.valid">Save</button>
+    <button class="btn btn-primary mr-1" (click)="closeDlg(1)" [disabled]="!fh.valid">Save</button>
     <button class="btn btn-secondary" (click)="closeDlg(2)">Cancel</button>
 </div>
