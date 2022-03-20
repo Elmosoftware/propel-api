@@ -2,7 +2,7 @@
 import { Entity } from "./entity";
 import { Workflow } from "./workflow";
 import { ExecutionStep } from "./execution-step";
-import { User } from "./user";
+import { UserAccount } from "./user-account";
 import { ExecutionStatus } from "./execution-status";
 
 /**
@@ -33,7 +33,7 @@ export class ExecutionLog extends Entity {
     /**
      * User that trigger the Workflow execution.
      */
-    public user!: User;
+    public user!: UserAccount;
 
     /**
      * Details of each one of the steps in the workflow execution.

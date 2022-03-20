@@ -164,9 +164,9 @@ try {
     showIndexes(coll);
 
     /**
-     * Users
+     * UserAccounts
      */
-    collName = "Users"
+    collName = "UserAccounts"
     print(`\n------------------------------------------------\nAdding collection "${collName}"`)
     db.createCollection(collName);
 
@@ -174,7 +174,7 @@ try {
     coll = db.getCollection(collName);
 
     coll.createIndex({
-        email: 1,
+        name: 1,
         deletedOn: 1
     }, {
         name: "IU_EntityConstraint",
@@ -182,12 +182,28 @@ try {
         background: true
     })
 
+    coll.createIndex(
+        {
+            fullName: "text",
+            name: "text",
+            email: "text"
+        }, {
+        name: "TEXT_FullName_Name_Email",
+        weights: {
+            fullName: 3,
+            name: 2,
+            email: 1
+        }
+    });
+
     coll.createIndex({
-        name: 1
+        email: 1
     }, {
-        name: "I_Name",
+        name: "IU_Email",
+        unique: true,
         background: true
     })
+    
     showIndexes(coll);
 
     /**

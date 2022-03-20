@@ -43,6 +43,19 @@ try {
         print(`\nNot able to drop "Groups", most probably was already deleted.`)
     }
 
+    /**
+     * Users
+     */
+    print(`\n------------------------------------------------\nRemoving collection "Users"`)
+    result = db.Users.drop();
+
+    if (result) {
+        print(`\nCollection "Users" was dropped successfully!`)
+    }
+    else {
+        print(`\nNot able to drop "Users", most probably was already deleted.`)
+    }
+
     print(`\nScript have been finished.\n===============================================`)
 
 } catch (error) {

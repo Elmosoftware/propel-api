@@ -11,7 +11,7 @@ class Schemas {
     constructor() {
         //We will only exclude entity and auditedEntity on the all Schemas list: 
         this._allSchemas = [
-            this.user,
+            this.userAccount,
             this.script,
             this.target,
             this.workflow,
@@ -99,19 +99,20 @@ class Schemas {
     //#region Entity schemas
 
     /**
-     * **User** schema definition.
-     * @extends Entity schema definition
+     * **UserAccount** schema definition.
+     * @extends AuditedEntity schema definition
      */
-    get user(): Readonly<SchemaDefinition> {
+    get userAccount(): Readonly<SchemaDefinition> {
 
-        return new SchemaDefinition("User", "Users", true)
+        return new SchemaDefinition("UserAccount", "UserAccounts", true)
             .setFields([
-                new SchemaField("name", `User name.`,
+                new SchemaField("name", `Account name. This is an unique account identifier, can be mapped with a OS user name.`,
                     {
                         type: String,
-                        isRequired: true
+                        isRequired: true,
+                        isUnique: true
                     }),
-                new SchemaField("email", `User email. Act also as unique identifier.`,
+                new SchemaField("fullName", `User full name.`,
                     {
                         type: String,
                         isRequired: true
@@ -121,14 +122,35 @@ class Schemas {
                         type: String,
                         isRequired: true
                     }),
-                new SchemaField("picture", `Optional user picture URL.`,
+                new SchemaField("email", `User email. Act also as unique identifier.`,
                     {
                         type: String,
+                        isRequired: true,
+                        isUnique: true
+                    }),
+                new SchemaField("secretId", `User secret.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("role", `User role.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("lastPasswordChange", `Timestamp (UTC) for the last time the user changes his password.`,
+                    {
+                        type: Date,
+                        isRequired: false
+                    }),
+                new SchemaField("lastLogin", `Timestamp (UTC) for the last user login.`,
+                    {
+                        type: Date,
                         isRequired: false
                     })
             ])
-            .merge(this.entity)
-            .setDescription("Authenticated User")
+            .merge(this.auditedEntity)
+            .setDescription("User Account")
             .freeze();
     }
 
@@ -281,10 +303,10 @@ class Schemas {
                         type: String,
                         isRequired: true
                     }),
-                new SchemaField("user", `User that starts the execution.`,
+                new SchemaField("user", `User account that starts the execution.`,
                     {
-                        type: this.user
-                        //isRequired: true   <--- Need to set this back as soon User management is implemented
+                        type: this.userAccount,
+                        isRequired: true
                     }),
                 new SchemaField("executionSteps", `Execution details of each one of the Workflow steps.`,
                     {
