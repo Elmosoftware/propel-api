@@ -1,0 +1,40 @@
+<ul class="list-group">
+    <li class="list-group-item mx-3" *ngFor="let item of model">
+        <div class="d-flex justify-content-between">
+            <div class="d-flex">
+                <div class="d-flex flex-column mr-2">
+                    <div class="text-circle" matTooltip="{{ getTooltipMessage(item) }}" 
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                        {{item.initials}}
+                    </div>
+                </div>
+                <div class="d-flex flex-column ml-1">
+                    <span  matTooltip="{{ getTooltipRoleMessage(item) }}" [ngClass]="{
+                            'icon-user': !userIsAdmin(item) && !userIsLocked(item), 
+                            'icon-user-admin': userIsAdmin(item) && !userIsLocked(item),
+                            'icon-user-locked': userIsLocked(item) 
+                        }" matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
+                </div>
+                <div class="d-flex flex-column ml-1">
+                    <a href="javascript:void(0)" (click)="goToEdit(item._id)">
+                        <span [innerHtml]="item.fullName" matTooltip="{{ getTooltipMessage(item) }}"
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
+                    </a>
+                    <span class="ml-1 text-muted">({{item.name}})</span>
+                </div>
+            </div>
+            <div class="d-flex flex-column">
+                <button class="btn btn-primary ml-2 mb-1" type="button" (click)="resetPassword(item)" 
+                    matTooltip="Resetting the password will force the user to change it on next login." 
+                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+                    [disabled]="!passwordCanBeResetted(item)">Reset</button>
+                <button class="btn btn-primary ml-2" type="button" (click)="toggleLockUser(item)"
+                    matTooltip="By locking the user you prevent the user to login."
+                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">{{getToggleLockUserButtonName(item)}}</button>
+            </div>
+        </div>
+        <div class="d-flex justify-content-start">
+            <span class="text-subtle description">{{getUserStats(item)}}</span>
+        </div>
+    </li>
+</ul>

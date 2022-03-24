@@ -38,3 +38,8 @@
 .nav-menu-selected {
     border-bottom-color: var(--colors-white);
 }
+
+.dropdown-user {
+    right: 0;
+    left: auto;
+}

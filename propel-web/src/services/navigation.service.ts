@@ -20,12 +20,14 @@ export const enum PAGES {
     BrowseScripts = "browse-scripts",
     BrowseTargets = "browse-targets",
     BrowseCredentials = "browse-credentials",
+    BrowseUserAccounts = "browse-useraccounts",
     History = "history",
     Offline = "offline",
     EditCredential = "credential",
     CredentialWindows = "credential-windows",
     CredentialAWS = "credential-aws",
-    CredentialAPIKey = "credential-apikey"
+    CredentialAPIKey = "credential-apikey",
+    UserAccount = "user-account"
 }
 
 export const SUFFIX_SEPARATOR: string = "-";
@@ -106,11 +108,16 @@ export class NavigationService {
      * For example sif the value in SUFFIX_SEPARATOR is set to "-". Then if we navigate to the 
      * page "sample-withsuffix". A call to this method will return "withsuffix". 
      */
-    getCurrentPageSuffix() {
-        let parts = this.currentPage().split(SUFFIX_SEPARATOR);
+    getCurrentPageSuffix(): string {
+        let ret = "";
+        let page = this.currentPage();
+        let index: number = page.indexOf("-");
 
-        if (parts.length > 1) return parts[parts.length - 1];
-        return "";        
+        if (index != -1) {
+            ret = page.substring(index + 1)
+        }
+
+        return ret;
     }
 
     /**
@@ -221,6 +228,15 @@ export class NavigationService {
     }
 
     /**
+     * Navigate to search page but setting up to browse user accounts.
+     */
+    toBrowseUserAccounts(term:string = "", browse:boolean = true): void {
+        this.router.navigate([this.getRelativePath(PAGES.BrowseUserAccounts)], {
+            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
+        });
+    }
+
+    /**
      * Navigates to History page.
      */
     toHistory(): void {
@@ -254,6 +270,19 @@ export class NavigationService {
      */
     toOffline(): void {
         this.router.navigate([this.getRelativePath(PAGES.Offline)]);
+    }
+
+     /**
+     * Allows to create or edit a user account.
+     * @param targetId Target to edit.
+     */
+    toUserAccount(userAccountId?: string): void {
+        if (userAccountId) {
+            this.router.navigate([this.getRelativePath(PAGES.UserAccount), userAccountId]);
+        }
+        else {
+            this.router.navigate([this.getRelativePath(PAGES.UserAccount)]);
+        }
     }
 
     /**

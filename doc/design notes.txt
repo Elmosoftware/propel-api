@@ -555,3 +555,27 @@ recalculated, we will cache them in memory)
 x- Implemet a batch process to update the stats if required and in fixed intervals."If required" 
 means that we need to be able to define if we have stale stats. (Not required)
 v-Work on state staleness: How to know when this are stale?
+
+
+====================================================================================
+
+Propel v2.1
+__________________________________________________
+
+Password reset:
+==================
+
+New user -> The user need to set his password on next login. 
+Active fields: Password, Password verification.
+	secretId is empty
+	mustReset is false
+
+Existent user -> The user will login as usual.
+	secretId is NOT empty
+	mustReset is false
+Active fields: Password
+
+Existent user, Password reset -> The user must set a new password on next login.
+Active fields: Password, New Password, New Password verification.
+	secretId is NOT empty
+	mustReset is true

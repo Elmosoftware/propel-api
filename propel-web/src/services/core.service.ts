@@ -18,6 +18,7 @@ import { DialogResult } from 'src/core/dialog-result';
 import { PSParametersInferrerService } from './ps-parameters-inferrer.service';
 import { APIStatusService } from './api-status.service';
 import { ConnectivityService, ConnectivityStatus } from './connectivity.service';
+import { SecurityService } from './security.service';
 
 /**
  * This core class help inject common services to the app. 
@@ -41,7 +42,8 @@ export class CoreService {
     private injData: DataService,
     private injInfer: PSParametersInferrerService,
     private injAPIStatus: APIStatusService,
-    private injConn: ConnectivityService) {
+    private injConn: ConnectivityService,
+    private injSec: SecurityService) {
     logger.logInfo("CoreService instance created")
 
     this._init()
@@ -81,6 +83,10 @@ export class CoreService {
 
   get psParametersinferrer(): PSParametersInferrerService {
     return this.injInfer;
+  }
+
+  get security(): SecurityService {
+    return this.injSec;
   }
 
   getPageTitle(): string {

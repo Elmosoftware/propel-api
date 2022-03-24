@@ -24,7 +24,6 @@
     --colors-disabled: #92b0bb;
     --colors-soft-disabled: #bbd3dc;
     --colors-danger: #ff7878;
-    /* --colors-danger-darker: #ff5b5b; */
     --colors-danger-darker: #f54a44;
     --colors-warning: #ffe89e;
     --colors-warning-dark: #e8ca51;
@@ -96,6 +95,10 @@ body{
     font-size: 0.7rem;
 }
 
+.text-upper{
+    text-transform: uppercase;
+}
+
 .overflowEllipsis {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -104,6 +107,30 @@ body{
 .item-disabled {
 	font-weight: normal !important;
 	text-decoration: line-through !important;
+}
+
+.text-circle {
+    display: inline-flex;
+    text-align: center !important;
+    align-items: center!important;
+    justify-content: center!important;
+    border-radius: 50% !important;
+    background-color: var(--colors-soft-highlight);
+    color: var(--colors-primary);
+    border: var(--colors-soft-primary) 0.15em solid;
+    font-size: 1.5em;
+    font-weight: 600;
+    width: 2em;
+    height: 2em;
+    padding-top: 0.05em;
+}
+
+.text-circle-mini {
+    font-size: 1em;
+    /* font-weight: 600;
+    width: 2em;
+    height: 2em;
+    padding-top: 0.05em; */
 }
 
 /* 
@@ -116,15 +143,100 @@ body{
     margin-top: 4px;
 }
 
+.menu-divider {
+    font-style: italic;
+    display: block;
+    width: 100%;
+    padding: 0.25rem 1.5rem;
+    clear: both;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    background-color: var(--colors-primary);
+    color: var(--colors-white);
+    margin-top: 0.4rem;
+    margin-bottom: 0.4rem;
+}
+
+.menu-divider-line {
+    max-width: 87%;
+    margin-left: 6%;
+}
+
+.menu-divider-text:hover, .menu-divider-text:focus {
+    background-color: var(--list-background);
+}
+
 .menu-icon {
     /* width: 1.3rem; */
     text-align: center;
     margin-right: 0.5rem
 }
 
+.icon-white {
+    color: var(--colors-white);
+}
+
 .icon-binoculars-after-mini::after {
     font-family: "Font Awesome 5 Free";
     content: "\f1e5";
+    font-weight: 900;
+    font-size: 0.8rem;
+}
+
+.icon-user::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f007";
+    font-weight: 900;
+    font-size: 1rem;;
+}
+
+.icon-user-mini::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f007";
+    font-weight: 900;
+    font-size: 0.8rem;
+}
+
+.icon-users::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f0c0";
+    font-weight: 900;
+    font-size: 1rem;;
+}
+
+.icon-users-mini::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f0c0";
+    font-weight: 900;
+    font-size: 0.8rem;;
+}
+
+.icon-user-admin::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f504";
+    font-weight: 900;
+    font-size: 1rem;;
+}
+
+.icon-user-locked::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f506";
+    font-weight: 900;
+    font-size: 1rem;;
+}
+
+.icon-user-admin-mini::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f504";
+    font-weight: 900;
+    font-size: 0.8rem;
+}
+
+.icon-logoff-mini::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f2f5";
     font-weight: 900;
     font-size: 0.8rem;
 }

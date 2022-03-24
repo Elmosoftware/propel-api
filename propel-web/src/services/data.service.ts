@@ -15,7 +15,7 @@ export enum DataEntity {
   ExecutionLog = "ExecutionLog",
   Script = "Script",
   Target = "Target",
-  User = "User",
+  UserAccount = "UserAccount",
   Workflow = "Workflow",
   Secret = "Secret",
   Credential = "Credential"

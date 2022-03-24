@@ -57,6 +57,15 @@
                 </div>
             </div>
         </mat-tab>
+        <mat-tab label="Users">
+            <div *ngIf="searchType == searchTypeEnum.UserAccounts">
+                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+                    <app-search-user-account-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+                    </app-search-user-account-line>
+                </div>
+            </div>
+        </mat-tab>
     </mat-tab-group>
     <!-- Tabs end -->
     <div class="mt-4" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0">

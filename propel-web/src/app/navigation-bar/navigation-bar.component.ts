@@ -21,10 +21,6 @@ export class NavigationBarComponent implements OnInit {
   get isBrowsePage(): boolean {
     return this.core.navigation.currentPage().startsWith(this.core.navigation.browsePagePrefix);
   }
-
-  get isCredentialPage(): boolean {
-    return this.core.navigation.currentPage().startsWith(this.core.navigation.credentialsPagePrefix);
-  }
   
   get isOffline(): boolean {
     return this.core.navigation.currentPage() == PAGES.Offline;
@@ -100,6 +96,10 @@ export class NavigationBarComponent implements OnInit {
     this.core.navigation.toBrowseCredentials();
   }
 
+  goToBrowseUsers() {
+    this.core.navigation.toBrowseUserAccounts();
+  }
+
   goToHistory() {
     this.core.navigation.toHistory();
   }
@@ -114,5 +114,13 @@ export class NavigationBarComponent implements OnInit {
 
   goToCredentialGenericAPIKey() {
     this.core.navigation.toCredential(null, CredentialTypes.APIKey);
+  }
+
+  goToUserAccount() {
+    this.core.navigation.toUserAccount();
+  }
+
+  doNotPropagate($event) {
+    $event.stopPropagation();
   }
 }

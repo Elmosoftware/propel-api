@@ -75,6 +75,9 @@ import { WindowsSecretComponent } from './app/credential/windows-secret/windows-
 import { AWSSecretComponent } from "./app/credential/aws-secret/aws-secret.component";
 import { SearchCredentialLineComponent } from './app/search-credential-line/search-credential-line.component';
 import { APIKeySecretComponent } from './app/credential/apikey-secret/apikey-secret.component';
+import { UserAccountComponent } from './app/user-account/user-account.component';
+import { SearchUserAccountLineComponent } from './app/search-user-account-line/search-user-account-line.component';
+import { SecurityService } from './services/security.service';
 
 @NgModule({
     declarations: [
@@ -107,7 +110,9 @@ import { APIKeySecretComponent } from './app/credential/apikey-secret/apikey-sec
         WindowsSecretComponent,
         AWSSecretComponent,
         SearchCredentialLineComponent,
-        APIKeySecretComponent
+        APIKeySecretComponent,
+        UserAccountComponent,
+        SearchUserAccountLineComponent
     ],
     imports: [
         BrowserModule,
@@ -152,7 +157,8 @@ import { APIKeySecretComponent } from './app/credential/apikey-secret/apikey-sec
         { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
         DataLossPreventionGuard,
         PSParametersInferrerService,
-        APIStatusService
+        APIStatusService,
+        SecurityService
     ],
     bootstrap: [RootComponent]
 })

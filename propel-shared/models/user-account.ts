@@ -43,6 +43,16 @@ export class UserAccount extends AuditedEntity {
      */
     public lastLogin: Date | null = null;
 
+    /**
+     * Indicates if the user must reset his password on his next login.
+     */
+    public mustReset: boolean = false;
+
+    /**
+     * Indicates if the user can login or not.
+     */
+    public lockedSince: Date | null = null;
+
     constructor() {
         super();
     }

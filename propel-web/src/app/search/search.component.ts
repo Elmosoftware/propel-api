@@ -12,21 +12,7 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { UIHelper } from 'src/util/ui-helper';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { InfiniteScrollingService, PagingHelper, SCROLL_POSITION } from 'src/core/infinite-scrolling-module';
-import { PropelError } from '../../../../propel-shared/core/propel-error';
-import { DataEntity } from 'src/services/data.service';
-
-/**
- * Search types defined.
- * IMPORTANT NOTE: They must match in count and order with the tabs in the component.
- */
-export enum SearchType {
-  Workflows = "workflows",
-  Scripts = "scripts",
-  Targets = "targets",
-  Credentials = "credentials"
-}
-
-export const DEFAULT_SEARCH_TYPE: SearchType = SearchType.Workflows;
+import { SearchType, SearchTypeDefinition, DEFAULT_SEARCH_TYPE } from "./search-type";
 
 /**
  * Size of each data page.
@@ -46,7 +32,7 @@ export class SearchComponent implements OnInit {
   private requestCount$: EventEmitter<number>;
 
   searchTypeEnum = SearchType;
-  activeTab: number; // = SearchTabs.Scripts;
+  activeTab: number;
   fg: FormGroup;
   svcInfScroll: InfiniteScrollingService<Entity>;
   onDataFeed: EventEmitter<PagingHelper>;
@@ -118,8 +104,6 @@ export class SearchComponent implements OnInit {
 
   search() {
     this.resetSearch();
-    // this.currentSearchType = this.fg.controls.searchType.value;
-    //TODO: Crear el metodo de abajo.
     this.activateTab(this.fg.controls.searchType.value)
     this.fetchData(this.svcInfScroll.pageSize, 0);
   }
@@ -158,24 +142,21 @@ export class SearchComponent implements OnInit {
 
       //If the term to search is quoted, we are going to perform an exact search:
       if (strictSearch) {
+
         qm.filterBy = {
-          $or: [
-            {
-              "name": {
-                $regex: termsToSearch[0],
-                $options: "gi"
-              }
-            },
-            {
-              "description": {
-                $regex: termsToSearch[0],
-                $options: "gi"
-              }
-            }
-          ]
+          $or: []
         };
 
-        qm.sortBy = "name";
+        SearchTypeDefinition.getFullTextFields(this.searchType).forEach((field) => {
+          qm.filterBy.$or.push({
+                  [field]: {
+                    $regex: termsToSearch[0],
+                    $options: "gi"
+                  }
+                })
+        });
+
+        qm.sortBy = SearchTypeDefinition.getDefaultSort(this.searchType);
       }
       //Otherwise we are going to perform a full text search:
       else {
@@ -189,26 +170,25 @@ export class SearchComponent implements OnInit {
     //If we are in browsing mode, this is, we need to show all the results. We are 
     //going to sort by main field: 
     else {
-      qm.sortBy = (this.fg.controls.searchType.value == SearchType.Targets) ? "friendlyName" : "name";
+      qm.sortBy = SearchTypeDefinition.getDefaultSort(this.searchType);
     }
 
-    //Adding conditions specific to Workflows here:
-    if (this.fg.controls.searchType.value == SearchType.Workflows) {
-      qm.filterBy.isQuickTask = {
-        $eq: false
-      }
-    }
+    //Adding any additional filter condition specified for this search type:
+    let additionalFilter = SearchTypeDefinition.getAdditionalFilterConditions(this.searchType);
+
+    Object.getOwnPropertyNames(additionalFilter).forEach((condition) => {
+      qm.filterBy[condition] = additionalFilter[condition];
+    });
 
     this.getData(this.fg.controls.searchType.value, qm)
       .subscribe((results: APIResponse<Entity>) => {
 
-        let f1: string = (this.fg.controls.searchType.value == SearchType.Targets) ? "friendlyName" : "name";
-        let f2: string = "description";
         let d = results.data;
 
         //If we are showing all the results, there is no need to highlight any word matches:
         if (!this.showAll) {
-          d = this._processMatches(d, termsToSearch, f1, f2)
+          d = this._processMatches(d, termsToSearch, 
+            SearchTypeDefinition.getFullTextFields(this.fg.controls.searchType.value))
         }
 
         this.svcInfScroll.feed(results.totalCount, d);
@@ -224,24 +204,6 @@ export class SearchComponent implements OnInit {
   }
 
   getData(type: SearchType, qm: QueryModifier): Observable<APIResponse<any>> {
-    let entityType: DataEntity;
-
-    switch (type) {
-      case SearchType.Workflows:
-        entityType = DataEntity.Workflow;
-        break;
-      case SearchType.Scripts:
-        entityType = DataEntity.Script;
-        break;
-      case SearchType.Targets:
-        entityType = DataEntity.Target;
-        break;
-      case SearchType.Credentials:
-        entityType = DataEntity.Credential;
-        break;
-      default:
-        throw new PropelError(`There is no search type define with name ${type}`)
-    }
 
     /////////////////////////////////////////////////////////////////////////////////
     //DEBUG:       For testing purposes only of the infinite scrrolling feature:
@@ -251,7 +213,7 @@ export class SearchComponent implements OnInit {
     // throw new Error("FAKE ERROR!!!");
     /////////////////////////////////////////////////////////////////////////////////
 
-    return this.core.data.find(entityType, qm);
+    return this.core.data.find(SearchTypeDefinition.getDataEntity(type), qm);
   }
 
   resetSearch() {
@@ -284,10 +246,19 @@ export class SearchComponent implements OnInit {
     this.svcInfScroll.fullScrollDown();
   }
 
-  private _processMatches(data: any[], words: string[], field1Name: string, field2Name: string): any[] {
-    data.forEach((ent: any) => {
-      ent[field1Name] = UIHelper.highlighText(ent[field1Name], words);
-      ent[field2Name] = UIHelper.highlighText(ent[field2Name], words, 30);
+  /**
+   * This adds some HTML to the fields text to remark the matches.
+   * @param data returned data.
+   * @param words search criteria
+   * @param fields search fields
+   * @returns Highlighted text.
+   */
+  private _processMatches(data: any[], words: string[], fields: string[]): any[] {
+    data.forEach((entity: any) => {
+      fields.forEach((fieldName, i) => {
+        let chunk: number | null = (i == 0) ? null : 30;
+        entity[fieldName] = UIHelper.highlighText(entity[fieldName], words, chunk);
+      })      
     })
 
     return data;

@@ -16,6 +16,7 @@ import { HistoryComponent } from './app/history/history.component';
 import { environment } from './environments/environment';
 import { OfflineComponent } from './app/offline/offline.component';
 import { CredentialComponent } from './app/credential/credential.component';
+import { UserAccountComponent } from './app/user-account/user-account.component';
 
 const routes: Routes = [
   {
@@ -129,6 +130,13 @@ const routes: Routes = [
     }
   },
   {
+    path: PAGES.BrowseUserAccounts,
+    component: SearchComponent,
+    data: {
+      title: "Browsing User Accounts"
+    }
+  },
+  {
     path: PAGES.History,
     component: HistoryComponent,
     data: {
@@ -171,6 +179,22 @@ const routes: Routes = [
     component: CredentialComponent,
     data: {
       title: "New Generic API Key Credential"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: PAGES.UserAccount,
+    component: UserAccountComponent,
+    data: {
+      title: "New User account"
+    },
+    canDeactivate: [DataLossPreventionGuard]
+  },
+  {
+    path: `${PAGES.UserAccount}/:id`,
+    component: UserAccountComponent,
+    data: {
+      title: "Editing User account"
     },
     canDeactivate: [DataLossPreventionGuard]
   },
