@@ -61,7 +61,7 @@
     "**/*", 
     "../propel-shared/test/utils/util.test.ts", 
     "../propel-shared/utils/utils.ts", 
-    "../propel-shared/test/core/api-error.test.ts", 
+    "../propel-shared/test/core/propel-error.test.ts", 
     "../propel-shared/validators/query-validator.ts", 
     "../propel-shared/validators/validator-base.ts", 
     "../propel-shared/core/query-modifier.ts", 
