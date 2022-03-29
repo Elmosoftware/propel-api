@@ -19,6 +19,8 @@ export class PropelAppError extends PropelError {
 
         if (typeof error == "object") {
             if (error.name && error.name == "HttpErrorResponse") {
+                //if is an HTTP error response, is better to patch any http status provided 
+                //by a PropelError with this one:
                 this.httpStatus = ((error as any).status) ? (error as any).status.toString() : "";
                 this.httpStatusText = ((error as any).statusText) ? (error as any).statusText.toString() : "";
                 this.url = ((error as any).url) ? (error as any).url.toString() : "";
@@ -66,11 +68,6 @@ export class PropelAppError extends PropelError {
      * Source URL, (if applies).
      */
     public readonly url: string = "";
-
-    /**
-     * If the error is XHR based, is the HTTP status returned by the call.
-     */
-    public readonly httpStatus: string = "";
 
     /**
      * If the error is XHR based, is the HTTP status text received.

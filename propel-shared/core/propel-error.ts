@@ -11,41 +11,70 @@ export class PropelError extends Error {
      * @param {Error | string} error Can be an error message or a native Error instance.
      * @param {Code} errorCode Is a Code error instance.
      */
-    constructor(error: Error | string, errorCode?: Code) {
+    constructor(error: Error | string, errorCode?: Code, httpStatus?: string) {
 
+        // super(((error as Error).message) ? (error as Error).message : String(error));
+        super((error) ? String(error) : "");
+
+        const MIN_HTTPSTATUS: number = 100 //First valid HTTP status code.
+        const MAX_HTTPSTATUS: number = 599 //Last valid HTTP status code.
+        
         if (!error) {
-            throw new Error(`The APIError class constructor cannot receive null value in the "error" parameter. 
+            throw new Error(`The PropelError class constructor cannot receive null value in the "error" parameter. 
             Value provided was of type "${typeof error}", with value "${error}" `)
         } else if (!(typeof error == "object" || typeof error == "string")) {
-            throw new Error(`APIError class constructor must receive an Error object or an error message in the "error" argument. 
+            throw new Error(`PropelError class constructor must receive an Error object or an error message in the "error" argument. 
             Value provided was of type "${typeof error}", with value "${error}" `)
         }
 
-        super(((error as Error).message) ? (error as Error).message : String(error));
-        
         if (error instanceof PropelError) {
             this.message = error.message;
             this.name = error.name;
             this.stack = error.stack;
             this.stackArray = error.stackArray;
             this.errorCode = error.errorCode;
+            this.httpStatus = error.httpStatus;
         }
         else {
             if (errorCode && typeof errorCode != "object") {
-                throw new Error(`APIError class constructor optional paramater "errorCode" requires a "Code" object. 
-            Value provided was of type "${typeof errorCode}", with value "${errorCode}" `)
+                throw new Error(`PropelError class constructor optional paramater "errorCode" requires a "Code" object. 
+                Value provided was of type "${typeof errorCode}", with value "${errorCode}" `)
             }
 
+            if (!(httpStatus === null || httpStatus === undefined || httpStatus == "")) {
+                if (isNaN(parseInt(httpStatus))) {
+                    throw new Error(`PropelError class constructor optional paramater "httpStatus" requires a numeric value. 
+                Value provided was of type "${typeof httpStatus}", with value "${httpStatus}" `)
+                }
+                else if (parseInt(httpStatus) < MIN_HTTPSTATUS || parseInt(httpStatus) > MAX_HTTPSTATUS) {
+                    throw new Error(`PropelError class constructor optional paramater "httpStatus" requires a valid HTTP status code.
+                Status code must be greater or equal to ${MIN_HTTPSTATUS.toString()} and less than or equal to ${MAX_HTTPSTATUS.toString()}.
+                Value provided was of type "${typeof httpStatus}", with numeric value "${parseInt(httpStatus).toString()}" `)
+                }
+            }
             this.name = this.parseName(error);
             this.message = this.parseMessage(error);
             this.stack = this.parseStack(error);
             this.stackArray = this.parseStackArray(error);
             this.errorCode = this.parseErrorCode(errorCode);
+            this.httpStatus = this.parseHTTPStatus(httpStatus)
         }
     }
 
+    /**
+     * A better way to see the stack calls.
+     */
     public readonly stackArray: string[];
+
+    /**
+     * One of the define Propel Error codes
+     */
     public readonly errorCode: Code;
+
+    /**
+     * If the error is XHR based, is the HTTP status returned by the call.
+     */
+    public httpStatus: string = "";
 
     /**
      * Parse the name attribute of the error.
@@ -109,5 +138,13 @@ export class PropelError extends Error {
      */
     parseErrorCode(errorCode?: Code) {
         return (errorCode) ? errorCode : new Code();
+    }
+
+    /**
+     * Parse the HTTP status.
+     * @param {string | undefined} httpStatus Error message or original Error instance.
+     */
+    parseHTTPStatus(httpStatus?: string | undefined): string {
+        return (httpStatus === null || httpStatus === undefined || httpStatus == "") ? "" : parseInt(httpStatus).toString();
     }
 }
