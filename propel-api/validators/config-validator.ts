@@ -110,6 +110,13 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`UPLOAD_PAYLOAD_LIMIT_MB is not a number or is less than zero or higher than 100. Supplied value: "${process.env.UPLOAD_PAYLOAD_LIMIT_MB}".`);
         }
 
+        if (!process.env.TOKEN_EXPIRATION_MINUTES) {
+            super._addError("TOKEN_EXPIRATION_MINUTES is required.");
+        }
+        else if ((isNaN(Number(process.env.TOKEN_EXPIRATION_MINUTES)) || Number(process.env.TOKEN_EXPIRATION_MINUTES) < 0)) {
+            super._addError(`TOKEN_EXPIRATION_MINUTES is not a number or is less than zero. Supplied value: "${process.env.TOKEN_EXPIRATION_MINUTES}".`);
+        }
+
         return this;
     }
 }

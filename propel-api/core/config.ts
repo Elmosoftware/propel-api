@@ -146,6 +146,14 @@ class Config {
     }
 
     /**
+     * Token expiration in minutes in zeit/ms format.
+     * For more information: https://github.com/vercel/ms
+     */
+    get tokenExpiration(): string {
+        return `${process.env.TOKEN_EXPIRATION_MINUTES}Min`; 
+    }
+
+    /**
      * Amount of minutes after the current application usage stats will be considered stale.
      */
     get usageStatsStaleMinutes(): number {

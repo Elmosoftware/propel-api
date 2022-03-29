@@ -5,6 +5,7 @@ function setAllValid() {
     process.env.PORT = "3000"
     process.env.DB_ENDPOINT = "mongodb://localhost:27017/propel-api"
     process.env.ENCRYPTION_KEY = "2129B972482115C8CEBEB4180F362D3BEEFAE97CE5D61F54F36D6628AE8745CC"
+    process.env.TOKEN_EXPIRATION_MINUTES = "60"
     process.env.PS_SCRIPT_PROPEL_PARAM = "Propel"
     process.env.MODELS_FOLDER = "models"
     process.env.POOL_MAX_SIZE="40"
@@ -20,6 +21,10 @@ describe("ConfigValidator Class", () => {
 
     beforeEach(() => {
         setAllValid();
+    })
+
+    afterEach(() => {
+        cfgVal.reset();
     })
 
     test(`Valid Configuration`, () => {
@@ -353,6 +358,39 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`UPLOAD_PAYLOAD_LIMIT_MB is not a number or is less than zero or`);
+        cfgVal.reset();
+    })
+    test(`Missing TOKEN_EXPIRATION_MINUTES value`, () => {
+        //@ts-ignore
+        process.env.TOKEN_EXPIRATION_MINUTES = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- TOKEN_EXPIRATION_MINUTES is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid TOKEN_EXPIRATION_MINUTES value`, () => {
+        //@ts-ignore
+        process.env.TOKEN_EXPIRATION_MINUTES = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- TOKEN_EXPIRATION_MINUTES is not a number or is less than zero`);
+        cfgVal.reset();
+    })
+    test(`Invalid TOKEN_EXPIRATION_MINUTES numeric value (-1)`, () => {
+        //@ts-ignore
+        process.env.TOKEN_EXPIRATION_MINUTES = "-1"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- TOKEN_EXPIRATION_MINUTES is not a number or is less than zero`);
         cfgVal.reset();
     })
 })
