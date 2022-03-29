@@ -19,84 +19,32 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug API Tests",
+      "name": "Debug API Test current file", //Allows to debug the file that is opened in the editor.
       "preLaunchTask": "Build API",
-      "outFiles": [
-        "${workspaceFolder}/propel-api/dist/**/*.js"
-      ],
-      "cwd": "${workspaceFolder}/propel-api",
+      "program": "${workspaceFolder}/propel-api/node_modules/jest/bin/jest.js",
       "windows": {
         "args": [
-          "--inspect-brk",
-          "${workspaceRoot}/propel-api/node_modules/jest/bin/jest.js",
-          "./dist",
+          "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
           "--runInBand"   
         ],
       },
-      "console": "externalTerminal",
-      "internalConsoleOptions": "neverOpen"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug API Opened Test",
-      "preLaunchTask": "Build API",
-      "outFiles": [
-        "${workspaceFolder}/propel-api/dist/**/*.js"
-      ],
       "cwd": "${workspaceFolder}/propel-api",
-      "windows": {
-        "args": [
-          "--inspect-brk",
-          "${workspaceRoot}/propel-api/node_modules/jest/bin/jest.js",
-          "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
-          "--runInBand",
-          "--detectOpenHandles"   
-        ],
-      },
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "console": "integratedTerminal"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug SHD Test",
+      "name": "Debug SHD Test current file", //Allows to debug the file that is opened in the editor.
       "preLaunchTask": "Build SHD",
-      "outFiles": [
-        "${workspaceFolder}/propel-shared/dist/**/*.js"
-      ],
-      "cwd": "${workspaceFolder}/propel-shared",
+      "program": "${workspaceFolder}/propel-shared/node_modules/jest/bin/jest.js",
       "windows": {
         "args": [
-          "--inspect-brk",
-          "${workspaceRoot}/propel-shared/node_modules/jest/bin/jest.js",
-          "./dist",
+          "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
           "--runInBand"   
         ],
       },
-      "console": "externalTerminal",
-      "internalConsoleOptions": "neverOpen"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug SHD Opened Test",
-      "preLaunchTask": "Build SHD",
-      "outFiles": [
-        "${workspaceFolder}/propel-shared/dist/**/*.js"
-      ],
       "cwd": "${workspaceFolder}/propel-shared",
-      "windows": {
-        "args": [
-          "--inspect-brk",
-          "${workspaceRoot}/propel-shared/node_modules/jest/bin/jest.js",
-          "--testPathPattern=./dist/[^]+/${fileBasenameNoExtension}.*",
-          "--runInBand",
-          "--detectOpenHandles"   
-        ],
-      },
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "console": "integratedTerminal"
     }
   ]
 }
