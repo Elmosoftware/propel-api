@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 import { QueryModifier } from '../../../propel-shared/core/query-modifier';
 import { environment } from 'src/environments/environment';
 import { APIResponse } from "../../../propel-shared/core/api-response";
-import { APIRequest, APIRequestAction } from "../../../propel-shared/core/api-request";
+import { DataRequest, DataRequestAction } from "../../../propel-shared/core/data-request";
 import { logger } from '../../../propel-shared/services/logger-service';
 import { Utils } from '../../../propel-shared/utils/utils';
 import { PropelAppError } from "../core/propel-app-error";
@@ -41,7 +41,7 @@ export class DataService {
    */
   getById(entityType: DataEntity, id: string, populate: boolean = true): Observable<APIResponse<Entity>> {
     let url: string = this.buildURL(entityType);
-    let req: APIRequest = new APIRequest();
+    let req: DataRequest = new DataRequest();
     let qm: QueryModifier = null;
 
     if (!populate) {
@@ -49,7 +49,7 @@ export class DataService {
       qm.populate = false;
     }
 
-    req.action = APIRequestAction.Find;
+    req.action = DataRequestAction.Find;
     req.entity = id;
     req.qm = qm;
 
@@ -63,9 +63,9 @@ export class DataService {
    */
   find(entityType: DataEntity, qm: QueryModifier): Observable<APIResponse<Entity>> {
     let url: string = this.buildURL(entityType);
-    let req: APIRequest = new APIRequest();
+    let req: DataRequest = new DataRequest();
 
-    req.action = APIRequestAction.Find;
+    req.action = DataRequestAction.Find;
     req.qm = qm;
 
     return this.http.post<APIResponse<Entity>>(url, req, { headers: this.buildHeaders() });
@@ -78,9 +78,9 @@ export class DataService {
    */
   save(entityType: DataEntity, doc: any): Observable<APIResponse<string>> {
     let url: string = this.buildURL(entityType);
-    let req: APIRequest = new APIRequest();
+    let req: DataRequest = new DataRequest();
 
-    req.action = APIRequestAction.Save;
+    req.action = DataRequestAction.Save;
     req.entity = doc;
 
     return this.http.post<APIResponse<string>>(url, req, { headers: this.buildHeaders() });
@@ -93,9 +93,9 @@ export class DataService {
    */
   delete(entityType: DataEntity, id: string): Observable<APIResponse<string>> {
     let url: string = this.buildURL(entityType);
-    let req: APIRequest = new APIRequest();
+    let req: DataRequest = new DataRequest();
 
-    req.action = APIRequestAction.Delete;
+    req.action = DataRequestAction.Delete;
     req.entity = id;
 
     return this.http.post<APIResponse<string>>(url, req, { headers: this.buildHeaders() });

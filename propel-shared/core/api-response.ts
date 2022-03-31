@@ -28,7 +28,7 @@ export class APIResponse<T>{
      */
     public readonly totalCount: number;
 
-    constructor(errors: any[] | any, data: T[] | T, totalCount: number = 0){
+    constructor(errors: any[] | any, data: T[] | T | undefined | null, totalCount: number = 0){
         this.errors = this._toArray(errors, (error: any) => errorFormatter.format(new PropelError(error)));
         this.data = this._toArray(data, (item: T) => item);
         this.count = this.data.length;

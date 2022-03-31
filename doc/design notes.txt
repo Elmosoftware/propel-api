@@ -562,20 +562,55 @@ v-Work on state staleness: How to know when this are stale?
 Propel v2.1
 __________________________________________________
 
-Password reset:
-==================
+User Login - Use cases:
+=======================
 
-New user -> The user need to set his password on next login. 
-Active fields: Password, Password verification.
+CASE 1: Locked User -> The user should not login.
+	secretId any value
+	lastlogin any value
+	mustReset any value
+	lockedSince is not null
+
+CASE 2: New user -> The user need to set his password on next login. 
 	secretId is empty
+	lastLogin is null
 	mustReset is false
+	lockedSince is null
 
-Existent user -> The user will login as usual.
+CASE 3:Existent user -> The user will login as usual.
 	secretId is NOT empty
+	lastlogin is not null
 	mustReset is false
-Active fields: Password
+	lockedSince is null
 
-Existent user, Password reset -> The user must set a new password on next login.
-Active fields: Password, New Password, New Password verification.
-	secretId is NOT empty
+
+CASE 4: System Password reset -> An Admin reset another user password.
+	secretId is NOT empty   (See waht to do if is empty)
+	lastlogin any value
 	mustReset is true
+	lockedSince is null
+
+
+TBD if to implement:
+
+User Password reset -> The user reset his own password.
+	secretId is NOT empty
+	lastlogin any value
+	mustReset is true
+	lockedSince is null
+
+Error codes
+
+- Nouser was found
+- User is locked
+- Wrong password
+
+
+security endpoints
+GET  /security/?id   --> UserAccount
+POST /security/login
+POST /security/register -->
+PUT /security/register
+POST /security/lock
+POST /security/unlock
+POST /security/reset

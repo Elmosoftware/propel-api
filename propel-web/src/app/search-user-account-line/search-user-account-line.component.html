@@ -20,7 +20,7 @@
                         <span [innerHtml]="item.fullName" matTooltip="{{ getTooltipMessage(item) }}"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
                     </a>
-                    <span class="ml-1 text-muted">({{item.name}})</span>
+                    <span class="ml-1 text-muted" [innerHtml]="item.name"></span>
                 </div>
             </div>
             <div class="d-flex flex-column">

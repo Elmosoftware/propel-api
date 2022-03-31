@@ -1,12 +1,12 @@
 import { QueryModifier } from "./query-modifier";
 import { Entity } from "../models/entity";
 
-export class APIRequest {
+export class DataRequest {
 
     /**
      * Action to request.
      */
-    action: APIRequestAction = APIRequestAction.Find;
+    action: DataRequestAction = DataRequestAction.Find;
 
     /**
      * QueryModifier instance, applies only to a APIRequestAction.Find. 
@@ -32,7 +32,7 @@ export class APIRequest {
 /**
  * Possible actions for a request to the Data API:
  */
-export enum APIRequestAction {
+export enum DataRequestAction {
     /**
      * Save or update the supplied entity document.
      */

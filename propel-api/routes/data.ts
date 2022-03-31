@@ -3,7 +3,7 @@ import express from "express";
 
 import { Route } from "./route";
 import { db } from "../core/database";
-import { APIRequest, APIRequestAction } from "../../propel-shared/core/api-request";
+import { DataRequest, DataRequestAction } from "../../propel-shared/core/data-request";
 import { DataService } from "../services/data-service";
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "http-status-codes";
 import { APIResponse } from "../../propel-shared/core/api-response";
@@ -28,7 +28,7 @@ export class DataRouter implements Route {
             //Creating the service instance:
             let entityName = req.url.slice(req.url.startsWith("/") ? 1 : 0);
             let svc: DataService;
-            let body: APIRequest;
+            let body: DataRequest;
             let e: PropelError | null = null;
             let result$: Promise<APIResponse<any>> | null = null;
 
@@ -38,13 +38,13 @@ export class DataRouter implements Route {
 
                 if (body && body.action) {
                     switch (body.action) {
-                        case APIRequestAction.Find:
+                        case DataRequestAction.Find:
                             result$ = this.processFind(body, svc);
                             break;
-                        case APIRequestAction.Save:
+                        case DataRequestAction.Save:
                             result$ = this.processSave(body, svc);
                             break;
-                        case APIRequestAction.Delete:
+                        case DataRequestAction.Delete:
                             result$ = this.processDelete(body, svc);
                             break;
                         default:
@@ -75,7 +75,7 @@ export class DataRouter implements Route {
         return handler;
     }
 
-    processFind(body: APIRequest, svc: DataService): Promise<APIResponse<any>> {
+    processFind(body: DataRequest, svc: DataService): Promise<APIResponse<any>> {
         let e: PropelError | null = null;
         let ret$: Promise<APIResponse<any>>;
 
@@ -108,7 +108,7 @@ export class DataRouter implements Route {
         return ret$;
     }
 
-    processSave(body: APIRequest, svc: DataService): Promise<APIResponse<any>> {
+    processSave(body: DataRequest, svc: DataService): Promise<APIResponse<any>> {
         let e: PropelError | null = null;
         let ret$: Promise<APIResponse<any>>;
 
@@ -128,7 +128,7 @@ export class DataRouter implements Route {
         return ret$
     }
 
-    processDelete(body: APIRequest, svc: DataService): Promise<APIResponse<any>> {
+    processDelete(body: DataRequest, svc: DataService): Promise<APIResponse<any>> {
         let e: PropelError | null = null;
         let ret$: Promise<APIResponse<any>>;
 

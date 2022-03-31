@@ -10,7 +10,7 @@ import { DataEntity } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { compareEntities } from '../../../../propel-shared/models/entity';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
-import { UserAccountRoles, DEFAULT_USER_ROLE } from '../../../../propel-shared/models/user-account-roles';
+import { UserAccountRoles } from '../../../../propel-shared/models/user-account-roles';
 import { Utils } from '../../../../propel-shared/utils/utils';
 
 @Component({
@@ -130,7 +130,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
 
     if (this.fh.form.controls._id.value) {
       //Fetching the user account:
-      this.core.data.getById(DataEntity.UserAccount, this.fh.form.controls._id.value, true)
+      this.core.security.getUser(this.fh.form.controls._id.value)
         .subscribe((data: APIResponse<UserAccount>) => {
 
           //If the user account doesn't exists:
@@ -170,7 +170,6 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
     let item: any;
 
     this.fh.setValue(value);
-    
 
     item = this.roleDropdown.itemsList.items.find((item) => {
       return item.value.key == value.role
@@ -186,7 +185,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
   }
 
   save(): void {
-    this.core.data.save(DataEntity.UserAccount, this.fh.value)
+    this.core.security.saveUser(this.fh.value)
       .subscribe((results: APIResponse<string>) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.fh.setId(results.data[0]);

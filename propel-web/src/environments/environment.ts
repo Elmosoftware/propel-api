@@ -13,7 +13,8 @@ export const environment = {
       status: "status/",
       data: "data/",
       infer: "infer/",
-      run: "run/"
+      run: "run/",
+      security: "security/"
     }
   },
   graphs: {

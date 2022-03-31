@@ -1,9 +1,11 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Observable } from 'rxjs';
 import { DialogResult } from 'src/core/dialog-result';
 import { SearchLineInterface } from 'src/core/search-line-interface';
 import { CoreService } from 'src/services/core.service';
 import { SystemHelper } from 'src/util/system-helper';
 import { UIHelper } from 'src/util/ui-helper';
+import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
@@ -54,17 +56,23 @@ Last login on: ${lastLogin}`
     return ret;
   }
 
-  async resetPassword(item: UserAccount): Promise<void> {
+  resetPassword(item: UserAccount): void {
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
       "Reset user password",
       `By resetting the user password, <i>${item.fullName}</i> will be forced to set a new password on next login. 
       <b>Are you ok to continue?</b>"<br>Please be aware that this operation can't be undone.`)
     ).subscribe(async (result: DialogResult<any>) => {
-      if (!result.isCancel) {
 
-        await this.core.security.resetPassword(item._id)
-        this.core.toaster.showSuccess("Password was resetted succesfully!");
-        this.dataChanged.emit(true);
+      if (!result.isCancel) {
+        this.core.security.resetPassword(item._id)
+          .subscribe((results: APIResponse<string>) => {
+
+            this.core.toaster.showSuccess("Password was resetted succesfully!");
+            this.dataChanged.emit(true);
+          },
+            (err) => {
+              throw err
+            });
       }
     }, err => {
       throw err
@@ -91,16 +99,22 @@ Last login on: ${lastLogin}`
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(title, msg)
     ).subscribe(async (result: DialogResult<any>) => {
       if (!result.isCancel) {
+        let $obs: Observable<APIResponse<string>>;
 
         if (locked) {
-          await this.core.security.unlockUser(item._id)
+          $obs = this.core.security.unlockUser(item._id)
         }
         else {
-          await this.core.security.lockUser(item._id)
+          $obs = this.core.security.lockUser(item._id)
         }
 
-        this.core.toaster.showSuccess(`User ${item.fullName} was ${(locked) ? "locked" : "unlocked"} succesfully!`);
-        this.dataChanged.emit(true);
+        $obs.subscribe((results: APIResponse<string>) => {
+          this.core.toaster.showSuccess(`User ${item.fullName} was ${(locked) ? "locked" : "unlocked"} succesfully!`);
+          this.dataChanged.emit(true);
+        },
+          (err) => {
+            throw err
+          });
       }
     }, err => {
       throw err

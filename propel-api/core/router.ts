@@ -5,6 +5,7 @@ import { InferRouter } from "../routes/infer";
 import { RunRouter } from "../routes/run";
 import { FrontendRouter } from "../routes/frontend";
 import { StatusRouter } from "../routes/status";
+import { SecurityRouter } from "../routes/security";
 
 /**
  * Router for the Express JS Web Server
@@ -24,6 +25,7 @@ export class Router {
         let inferRouter = new InferRouter();
         let runRouter = new RunRouter();
         let frontendRouter = new FrontendRouter();
+        let securityRouter = new SecurityRouter();
 
         //Home:
         this._app.use("/api", homeRouter.route());
@@ -35,6 +37,8 @@ export class Router {
         this._app.use("/api/infer", inferRouter.route());
         //Run:
         this._app.use("/api/run", runRouter.route());
+        //Security:
+        this._app.use("/api/security", securityRouter.route());
         //Propel Frontend:
         this._app.use("/", frontendRouter.route());
     }

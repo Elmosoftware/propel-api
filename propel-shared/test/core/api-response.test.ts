@@ -11,6 +11,16 @@ describe("APIResponse Class - Construct", () => {
         expect(r.errors.length).toEqual(0);
         expect(r.data.length).toEqual(0);
     })
+    test(`"new APIResponse() With undefined values"`, () => {
+        let error = undefined;
+        let data = undefined;
+        let r = new APIResponse(error, data);
+
+        expect(Array.isArray(r.errors)).toBe(true);
+        expect(Array.isArray(r.data)).toBe(true);
+        expect(r.errors.length).toEqual(0);
+        expect(r.data.length).toEqual(0);
+    })
     test(`"new APIResponse() With single error and single data item"`, () => {
         let error = new Error("Test Error");
         let data = "Data";

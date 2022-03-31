@@ -81,11 +81,44 @@ This could happen when a script is updated with breaking changes. Please review 
             false);
     }
 
+    /**
+     * Indicates an error when retrieveing or storing a Propel Secret.
+     */
     static get CryptoError(): Code {
         return new Code("CRYPTO_ERROR",
             `Encryption or decryption of a database collection field failed. Possible cause: Change of Propel Encryption key in the configuration.`,
             `There was an error trying to encrypt or decrypt sensitive data in the database. 
 Most likely cause, is you trying to fetch information encrypted with a different key than the actual. If you try to fetch information when this error happened, best course of action is to recreated the data.`,
+            false);
+    }
+
+    /**
+     * Indicates that during the login process the user wasn't found in Propel database.
+     */
+    static get LoginWrongUser(): Code {
+        return new Code("LOGIN_WRONG_USER",
+            `The user that try to login is not granted in Propel.`,
+            `You have no permission to access this application yet. Please feel free to contact any Propel administrator about.`,
+            false);
+    }
+
+    /**
+     * Indicates that during the login process the user was prevented to login because was locked.
+     */
+    static get LoginLockedUser(): Code {
+        return new Code("LOGIN_LOCKED_USER",
+            `The user that try to login is locked.`,
+            `Your user account is currently locked. Please contact any Propel administrator in order to unlock your account.`,
+            false);
+    }
+
+    /**
+     * Indicates that during the login process the user wasn't found in Propel database.
+     */
+     static get LoginWrongPassword(): Code {
+        return new Code("LOGIN_WRONG_PASSWORD",
+            `The user that try to login entered a wrong password.`,
+            `The submitted password is wrong. In the case you forgot it, please contact any Propel administrator to reset it.`,
             false);
     }
 }
