@@ -78,6 +78,7 @@ import { APIKeySecretComponent } from './app/credential/apikey-secret/apikey-sec
 import { UserAccountComponent } from './app/user-account/user-account.component';
 import { SearchUserAccountLineComponent } from './app/search-user-account-line/search-user-account-line.component';
 import { SecurityService } from './services/security.service';
+import { AuthenticationCodeComponent } from './app/authentication-code/authentication-code.component';
 
 @NgModule({
     declarations: [
@@ -112,7 +113,8 @@ import { SecurityService } from './services/security.service';
         SearchCredentialLineComponent,
         APIKeySecretComponent,
         UserAccountComponent,
-        SearchUserAccountLineComponent
+        SearchUserAccountLineComponent,
+        AuthenticationCodeComponent
     ],
     imports: [
         BrowserModule,
