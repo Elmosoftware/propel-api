@@ -1,10 +1,27 @@
 const { app, shell, BrowserWindow, screen, Menu, dialog } = require("electron")
 const url = require("url");
 const path = require("path");
-
-// const APP_URL = "http://localhost:3000"
+const execFile = require('child_process').execFile;
+const util = require('./util');
+const os = require("os");
 
 let mainWindow;
+
+function createPropelRuntimeInfo(cb) {
+
+  process.PropelRuntimeInfo = {
+    processId: process.pid,
+    userName: (os && os.userInfo) ? String(os.userInfo().username) : "",
+    RDPUsers: [],
+    error: ""
+  }
+
+  execFile('qwinsta', ['/VM'], (err, stdout, stderr) => {
+      process.PropelRuntimeInfo.error = err | stderr
+      process.PropelRuntimeInfo.RDPUsers = util.processQWINSTAOutput(stdout);
+      cb();
+  });
+}
 
 function reload() {
   mainWindow.loadURL(url.format({
@@ -14,7 +31,7 @@ function reload() {
   }));
 }
 
-function createWindow() {
+function createWindow(data) {
   const electronScreen = screen;
   const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
@@ -34,7 +51,8 @@ function createWindow() {
       */
       allowRunningInsecureContent: false,
       contextIsolation: false,  
-      enableRemoteModule : true
+      enableRemoteModule : true,
+      preload: path.join(__dirname, 'preload.js')
     }
   })
 
@@ -149,7 +167,7 @@ function createWindow() {
               buttons: ["Ok"],
               title: "Propel",
               message: `${app.getName()} - v${app.getVersion()}`,
-              detail: `Reach your servers!`
+              detail: `Reach your servers ${(process.PropelRuntimeInfo && process.PropelRuntimeInfo.userName) ? process.PropelRuntimeInfo.userName : ""}!`
             };
 
             dialog.showMessageBox(null, options, (response, checkboxChecked) => {});
@@ -167,12 +185,25 @@ function createWindow() {
 
   reload();
 
+  //Communicating with the render process and sending the runtime info to be stored at session level:
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('ping', ["PropelRuntimeInfo", JSON.stringify(process.PropelRuntimeInfo)])
+  })
+
   mainWindow.on("closed", function () {
     mainWindow = null;
   })
 }
 
-app.on("ready", createWindow)
+function startApp() {
+  //Creating the Propel runtime window, which includes the user that is running the 
+  //app and also a list of RDP connected users.
+  createPropelRuntimeInfo(() => {
+    createWindow(); //Creating the application window.
+  })
+}
+
+app.on("ready", startApp)
 
 app.on("window-all-closed", function () {
   if (process.platform !== "darwin") {
@@ -182,6 +213,6 @@ app.on("window-all-closed", function () {
 
 app.on("activate", function () {
   if (mainWindow === null) {
-    createWindow()
+    startApp()
   }
 })

@@ -5,6 +5,8 @@
     },
     "files": [
         "main.js",
+        "preload.js",
+        "util.js",
         "dist",
         "!node_modules"
     ],
