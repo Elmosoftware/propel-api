@@ -1115,3 +1115,53 @@ describe("Utils Class - BacktickDoubleQuotesForPowerShell", () => {
         expect(Utils.backtickDoubleQuotes("This is `\" an already backticked string `\"")).toEqual("This is `\" an already backticked string `\"")
     })
 })
+
+describe("Utils Class - getRandomIntFromInterval", () => {
+    test(`Call it with No params`, () => {
+        //@ts-ignore
+        expect(() => {
+            //@ts-ignore
+            Utils.getRandomIntFromInterval();
+        }).toThrow(`You need to supply both paramters`);
+    })
+    test(`Call it with No numeric params`, () => {
+        //@ts-ignore
+        expect(() => {
+            //@ts-ignore
+            Utils.getRandomIntFromInterval("not a number", { notANumber: "Neither"});
+        }).toThrow(`"min" and "max" parameters need to be numbers.`);
+    })
+    test(`Call it with "max" value less than "min" value`, () => {
+        //@ts-ignore
+        expect(() => {
+            //@ts-ignore
+            Utils.getRandomIntFromInterval(10, 3);
+        }).toThrow(`Parameter "min" need to be less than "max"`);
+    })
+    test(`Expect a number between the interval (1,100)`, () => {
+        let min: number = 1
+        let max: number = 100
+        let n: number = Utils.getRandomIntFromInterval(min, max);
+
+        expect(n).not.toBeNaN()
+        expect(n).toBeGreaterThanOrEqual(min);
+        expect(n).toBeLessThanOrEqual(max);
+    })
+    test(`Expect min value when min and max are the same value`, () => {
+        let min: number = 45
+        let max: number = 45
+        let n: number = Utils.getRandomIntFromInterval(min, max);
+
+        expect(n).not.toBeNaN()
+        expect(n).toEqual(min);
+    })
+    test(`Expect a number between a negative interval (-34,-100)`, () => {
+        let min: number = 1
+        let max: number = 100
+        let n: number = Utils.getRandomIntFromInterval(min, max);
+
+        expect(n).not.toBeNaN()
+        expect(n).toBeGreaterThanOrEqual(min);
+        expect(n).toBeLessThanOrEqual(max);
+    })
+})

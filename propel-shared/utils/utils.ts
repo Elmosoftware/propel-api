@@ -713,4 +713,32 @@ ${this.tabs(1)}APIKey = "${this.backtickDoubleQuotes(APIKeySecretValue?.apiKey)}
 
         return s[(v-20)%10] || s[v] || s[0];
      }
+
+     /**
+     * Returns a random integer between the specified interval.
+     * @param {number} min Minimum random integer to include in the results.
+     * @param {number} max Maximum random integer to include in the results.
+     * @author Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+     */
+    static getRandomIntFromInterval(min: number, max: number) {
+
+        if (min == undefined || min == null || max == undefined || max == null) {
+            throw new PropelError(`You need to supply both paramters "min" and "max". 
+Supplied values are: "min":${JSON.stringify(min)}", "max":${JSON.stringify(max)}".`);
+        }
+
+        if (isNaN(parseInt(String(min))) || isNaN(parseInt(String(max)))) {
+            throw new PropelError(`"min" and "max" parameters need to be numbers. 
+Supplied values are: "min":${JSON.stringify(min)}", "max":${JSON.stringify(max)}".`);
+        }
+
+        if (Math.max(min, max) != max) {
+            throw new PropelError(`Parameter "min" need to be less than "max". 
+Supplied values are: "min":${JSON.stringify(min)}", "max":${JSON.stringify(max)}".`);
+        }
+
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 }
