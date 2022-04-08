@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { APIResponse } from '../../../propel-shared/core/api-response';
 import { UserAccount } from '../../../propel-shared/models/user-account';
 import { UserAccountRolesUtil } from '../../../propel-shared/models/user-account-roles';
+import { UserRegistrationResponse } from '../../../propel-shared/core/user-registration-response';
 import { Observable } from 'rxjs';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { environment } from 'src/environments/environment';
@@ -56,10 +57,10 @@ export class SecurityService {
      * @param userId User identifier
      * @returns The same user ID if the reset was successful.
      */
-    resetPassword(userId: string): Observable<APIResponse<string>> {
+    resetPassword(userId: string): Observable<APIResponse<UserRegistrationResponse>> {
         let url: string = this.buildURL(SecurityEndpointActions.ResetUserPassword, userId);
         
-        return this.http.post<APIResponse<string>>(url, null, { headers: this.buildHeaders() });
+        return this.http.post<APIResponse<UserRegistrationResponse>>(url, null, { headers: this.buildHeaders() });
     }
 
     /**
@@ -81,18 +82,6 @@ export class SecurityService {
     }
 
     /**
-     * Returns a bolean value indicating in the user password can be reset.
-     * @param user User 
-     * @returns A boolean value indicating if the user password can be reset.
-     */
-    passwordCanBeResetted(user: UserAccount): boolean {
-        //If the user still not have a secret set, means he/she didn't login and set the password yet, 
-        //so there is no point to mark the record for reset. 
-        //The same case if the "mustReset" flag is already set:
-        return (user.secretId && !user.mustReset);
-    }
-
-    /**
      * Retieves the specified user account
      * @param userIdOrName User ID or name, (The name of the user is equally unique as the id).
      * @returns The user account if exists.
@@ -108,10 +97,10 @@ export class SecurityService {
      * @param user User acount with the updates.
      * @returns The useraccount id if no error.
      */
-    saveUser(user: UserAccount): Observable<APIResponse<string>> {
+    saveUser(user: UserAccount): Observable<APIResponse<UserRegistrationResponse>> {
         let url: string = this.buildURL(SecurityEndpointActions.SaveUser);
         
-        return this.http.post<APIResponse<string>>(url, user, { headers: this.buildHeaders() });       
+        return this.http.post<APIResponse<UserRegistrationResponse>>(url, user, { headers: this.buildHeaders() });       
     }
 
     private buildURL(action: SecurityEndpointActions, param: string = "") {

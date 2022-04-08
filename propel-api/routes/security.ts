@@ -8,6 +8,7 @@ import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityService } from "../services/security-service";
 import { SecurityRequest } from "../../propel-shared/core/security-request";
 import { UserAccount } from "../../propel-shared/models/user-account";
+import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
 
 /**
  * Security route implements security related features like, user login and user managment.
@@ -43,8 +44,8 @@ export class SecurityRouter implements Route {
             let user: UserAccount = req.body;
 
             try {
-                let id = await ss.registerOrUpdateUser(user);
-                res.json(new APIResponse<string>(null, id));
+                let regResponse = await ss.registerOrUpdateUser(user);
+                res.json(new APIResponse<UserRegistrationResponse>(null, regResponse));
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -57,8 +58,8 @@ export class SecurityRouter implements Route {
             let id: string = req.params.id;
 
             try {
-                let userId = await ss.resetUserPassword(id);
-                res.json(new APIResponse<string>(null, userId));
+                let regResponse: UserRegistrationResponse = await ss.resetUserPassword(id);
+                res.json(new APIResponse<UserRegistrationResponse>(null, regResponse));
             } catch (error) {
                 this.handleError(res, error);
             }

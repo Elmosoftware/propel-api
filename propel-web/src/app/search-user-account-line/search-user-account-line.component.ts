@@ -6,6 +6,7 @@ import { CoreService } from 'src/services/core.service';
 import { SystemHelper } from 'src/util/system-helper';
 import { UIHelper } from 'src/util/ui-helper';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
+import { UserRegistrationResponse } from '../../../../propel-shared/core/user-registration-response';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
@@ -28,20 +29,17 @@ export class SearchUserAccountLineComponent implements SearchLineInterface, OnIn
     this.core.navigation.toUserAccount(id);
   }
 
-  getTooltipMessage(item: UserAccount): string {
-    let lastUpdated: string = (item.lastUpdateOn) ? SystemHelper.formatDate(item.lastUpdateOn) : "never"
-    let lastPasswordChange: string = (item.lastPasswordChange) ? SystemHelper.formatDate(item.lastPasswordChange) : "never"
-    let lastLogin: string = (item.lastLogin) ? SystemHelper.formatDate(item.lastLogin) : "never"
+  getTooltipMessage(user: UserAccount): string {
+    let lastUpdated: string = (user.lastUpdateOn) ? SystemHelper.formatDate(user.lastUpdateOn) : "never"
+    let lastPasswordChange: string = (user.lastPasswordChange) ? SystemHelper.formatDate(user.lastPasswordChange) : "never"
+    let lastLogin: string = (user.lastLogin) ? SystemHelper.formatDate(user.lastLogin) : "never"
 
     let ret: string = `User stats:
-Added on: ${SystemHelper.formatDate(item.createdOn)}
+Added on: ${SystemHelper.formatDate(user.createdOn)}
 Last updated on: ${lastUpdated}
 Last password change: ${lastPasswordChange}
-Last login on: ${lastLogin}`
-
-    if (!this.passwordCanBeResetted(item)) {
-      ret += `\r\n\r\n Password reset is not available, the user never login to Propel or his password is already marked for reset on next login.`
-    }
+Last login on: ${lastLogin}
+User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
 
     return ret;
   }
@@ -65,10 +63,11 @@ Last login on: ${lastLogin}`
 
       if (!result.isCancel) {
         this.core.security.resetPassword(item._id)
-          .subscribe((results: APIResponse<string>) => {
-
-            this.core.toaster.showSuccess("Password was resetted succesfully!");
-            this.dataChanged.emit(true);
+          .subscribe((results: APIResponse<UserRegistrationResponse>) => {
+            let result: UserRegistrationResponse = results.data[0];
+            this.core.toaster.showSuccess("Password was reseted succesfully!");
+            (item as any).authCode = result.authCode;
+            // this.dataChanged.emit(true);
           },
             (err) => {
               throw err
@@ -77,6 +76,11 @@ Last login on: ${lastLogin}`
     }, err => {
       throw err
     });
+  }
+
+  getAuthCode(item: UserAccount): string {
+    if((item as any).authCode) return (item as any).authCode;
+    else return "" 
   }
 
   toggleLockUser(item: UserAccount): void {
@@ -131,10 +135,6 @@ Last login on: ${lastLogin}`
 
   userIsLocked(item: UserAccount): boolean {
     return this.core.security.userIsLocked(item)
-  }
-
-  passwordCanBeResetted(item: UserAccount): boolean {
-    return this.core.security.passwordCanBeResetted(item);
   }
 
   getToggleLockUserButtonName(item: UserAccount): string {

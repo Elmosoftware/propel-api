@@ -8,6 +8,7 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
 import { DataEntity } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
+import { UserRegistrationResponse } from '../../../../propel-shared/core/user-registration-response';
 import { compareEntities } from '../../../../propel-shared/models/entity';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 import { UserAccountRoles } from '../../../../propel-shared/models/user-account-roles';
@@ -26,6 +27,8 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
   fh: FormHandler<UserAccount>;
   allRoles: any[] = [];
   loaded: boolean = false;
+  authCode: string = "";
+
   //Form validation constant parameters:
   validationParams: any = {
     get nameMaxLength() { return 25 },
@@ -186,12 +189,17 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
 
   save(): void {
     this.core.security.saveUser(this.fh.value)
-      .subscribe((results: APIResponse<string>) => {
+      .subscribe((results: APIResponse<UserRegistrationResponse>) => {
+        let response: UserRegistrationResponse = results.data[0];
+
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
-        this.fh.setId(results.data[0]);
-        this.setFormValue(this.fh.value)
+        
+        this.fh.setId(response.userId);
+        this.fh.form.controls.secretId.patchValue(response.secretId);
+        this.setFormValue(this.fh.value);
         this.fh.form.markAsPristine();
         this.fh.form.markAsUntouched();
+        this.authCode = response.authCode //If is a new user an auth code will be generated.
       },
         (err) => {
           throw err

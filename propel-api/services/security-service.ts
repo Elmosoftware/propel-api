@@ -1,11 +1,13 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED, FORBIDDEN } from "http-status-codes";
+import { nanoid } from 'nanoid'
 
 import { cfg } from "../core/config";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityRequest } from "../../propel-shared/core/security-request";
 import { SecurityToken } from "../../propel-shared/core/security-token";
+import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
 import { DataService } from "../services/data-service";
 import { UserAccount } from "../../propel-shared/models/user-account";
 import { UserAccountSecret } from "../../propel-shared/models/user-account-secret";
@@ -32,17 +34,29 @@ export class SecurityService {
      * @param user User to register or update.
      * @returns A String containing the user ID if the operation was succesful.
      */
-    async registerOrUpdateUser(user: UserAccount): Promise<string> {
+    async registerOrUpdateUser(user: UserAccount): Promise<UserRegistrationResponse> {
 
-        //Enforcing the setup of some initial values for every new user:
+        let authCode: string = "";
+
+        //If is a new user:
         if (!user._id) {
+            //Enforcing the setup of some initial values for every new user:
             user.lastLogin = null;
             user.lastPasswordChange = null;
             user.lockedSince = null;
             user.mustReset = false;
-        }        
 
-        return this.saveUser(user)
+            //If is a new user we need to generate a secret with an authentication code:
+            authCode = this.createAuthCode(); 
+            user.secretId = await this.createNewSecret(authCode);
+        }
+
+        let ret: UserRegistrationResponse = new UserRegistrationResponse();
+        ret.userId = await this.saveUser(user);
+        ret.secretId = user.secretId;
+        ret.authCode = authCode;
+
+        return ret;
     }
 
     /**
@@ -133,14 +147,21 @@ export class SecurityService {
      * @throws 
      *  - **User doesn't exist** (**HTTP status 500** Internal Server error).
      */
-    async resetUserPassword(nameOrId: string): Promise<string> {
+    async resetUserPassword(nameOrId: string): Promise<UserRegistrationResponse> {
 
         let user: UserAccount | undefined = await this.getUserByIdOrName(nameOrId);
-
+        let ret: UserRegistrationResponse = new UserRegistrationResponse();
+        
         this.throwIfNoUser(user, nameOrId, "The reset password process can't continue.");
-        user!.mustReset = true;
+        
+        user!.mustReset = true; //Flag the user for reset on next login
+        ret.authCode = this.createAuthCode(); //Getting an auth code, (the user must use on next login). 
+        //Creating the secret and associating it to the user:
+        user!.secretId = await this.createNewSecret(ret.authCode);
+        ret.secretId = user!.secretId
+        ret.userId = await this.saveUser(user!); //Saving the user.
 
-        return this.saveUser(user!);
+        return ret;
     }
 
 
@@ -367,6 +388,15 @@ export class SecurityService {
         else return undefined;
     }
 
+    private async createNewSecret(passwordOrAuthCode: string): Promise<string> {
+
+        let secret = new Secret<UserAccountSecret>(UserAccountSecret)
+        secret.value.passwordHash = await this.createHash(passwordOrAuthCode);
+
+        //Now we must persist the secret and return the secret id:
+        return await this.saveUserSecret(secret);
+    }
+
     private async saveUserSecret(secret: Secret<UserAccountSecret>): Promise<string> {
         let svc: DataService = db.getService("secret");
         let result: APIResponse<string>;
@@ -398,6 +428,10 @@ export class SecurityService {
         if (result.count == 1) return result.data[0].toString();
         else throw new PropelError(`There was an error creating or updating the user. Following details: ${JSON.stringify(result.errors[0])}`, 
             undefined, INTERNAL_SERVER_ERROR.toString())
+    }
+
+    private createAuthCode(): string {
+        return nanoid(6);
     }
 }
 
