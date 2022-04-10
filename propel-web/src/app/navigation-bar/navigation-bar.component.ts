@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
-import { PAGES } from 'src/services/navigation.service';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 
 @Component({
@@ -19,38 +18,57 @@ export class NavigationBarComponent implements OnInit {
   searchTerm: string = "";
 
   get isBrowsePage(): boolean {
-    return this.core.navigation.currentPage().startsWith(this.core.navigation.browsePagePrefix);
-  }
-  
-  get isOffline(): boolean {
-    return this.core.navigation.currentPage() == PAGES.Offline;
+    return this.core.navigation.currentPage.name.startsWith(this.core.navigation.browsePagePrefix);
   }
 
   get isQuickTask(): boolean {
-    return PAGES.QuickTask == this.core.navigation.currentPage();
+    // return PAGES.QuickTask == this.core.navigation.currentPage();
+    return this.core.navigation.currentPageIs(this.core.navigation.pages.QuickTask)
   }
 
   get isWorkflow(): boolean {
-    return PAGES.Workflow == this.core.navigation.currentPage();
+    return this.core.navigation.currentPageIs(this.core.navigation.pages.Workflow)
   }
 
   get isScript(): boolean {
-    return PAGES.Script == this.core.navigation.currentPage();
+    return this.core.navigation.currentPageIs(this.core.navigation.pages.Script)
   }
 
   get isTarget(): boolean {
-    return PAGES.Target == this.core.navigation.currentPage();
+    return this.core.navigation.currentPageIs(this.core.navigation.pages.Target)
   }
 
   get isHistory(): boolean {
-    return PAGES.History == this.core.navigation.currentPage();
+    return this.core.navigation.currentPageIs(this.core.navigation.pages.History)
   }
-  
+
+  get showNavBar(): boolean {
+    let page = this.core.navigation.currentPage;
+    let ret: boolean = true; //By default the navbar must be visible.
+
+    if (page) {
+      ret = Boolean(page.showNavBar);
+    }
+
+    return ret;
+  }
+
+  get showSearchBox(): boolean {
+    let page = this.core.navigation.currentPage;
+    let ret: boolean = true;
+
+    if (page) {
+      ret = Boolean(page.showSearchBox);
+    }
+
+    return ret;
+  }
+
   ngOnInit(): void {
 
     this.core.navigation.getHttpRequestCountSubscription()
       .subscribe((counter: number) => {
-          this.loading = counter > 0;
+        this.loading = counter > 0;
       })
   }
 
@@ -74,8 +92,8 @@ export class NavigationBarComponent implements OnInit {
     this.core.navigation.toWorkflow();
   }
 
-  goToSearch(){
-    if (this.searchTerm.length < 3)  return;
+  goToSearch() {
+    if (this.searchTerm.length < 3) return;
     this.core.navigation.toBrowseWorkflows(this.searchTerm)
     this.searchTerm = "";
   }
@@ -105,15 +123,18 @@ export class NavigationBarComponent implements OnInit {
   }
 
   goToCredentialWin() {
-    this.core.navigation.toCredential(null, CredentialTypes.Windows);
+    // this.core.navigation.toCredential(null, CredentialTypes.Windows);
+    this.core.navigation.toNewCredential(CredentialTypes.Windows);
   }
 
   goToCredentialAWS() {
-    this.core.navigation.toCredential(null, CredentialTypes.AWS);
+    // this.core.navigation.toCredential(null, CredentialTypes.AWS);
+    this.core.navigation.toNewCredential(CredentialTypes.AWS);
   }
 
   goToCredentialGenericAPIKey() {
-    this.core.navigation.toCredential(null, CredentialTypes.APIKey);
+    // this.core.navigation.toCredential(null, CredentialTypes.APIKey);
+    this.core.navigation.toNewCredential(CredentialTypes.APIKey);
   }
 
   goToUserAccount() {

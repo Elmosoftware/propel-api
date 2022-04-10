@@ -30,6 +30,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 //Services & Others
 import { CoreService } from './services/core.service';
 import { NavigationService } from './services/navigation.service';
+import { AppPages } from './services/app-pages.service';
 import { ErrorHandlerService } from "./services/error-handler.service";
 import { ToasterService } from './services/toaster.service';
 import { DataService } from './services/data.service';
@@ -151,6 +152,7 @@ import { AuthenticationCodeComponent } from './app/authentication-code/authentic
         ErrorHandlerService,
         { provide: ErrorHandler, useExisting: ErrorHandlerService },
         NavigationService,
+        AppPages,
         ToasterService,
         DataService,
         RunnerService,

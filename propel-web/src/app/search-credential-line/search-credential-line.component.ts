@@ -39,7 +39,7 @@ export class SearchCredentialLineComponent implements SearchLineInterface, OnIni
   }
 
   goToEdit(id: string) {
-    this.core.navigation.toCredential(id);
+    this.core.navigation.toEditCredential(id);
   }
 
   getTooltipMessage(item: Credential): string {

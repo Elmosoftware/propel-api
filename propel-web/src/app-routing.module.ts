@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { PAGES } from "./services/navigation.service";
 import { SandboxComponent } from './app/sandbox/sandbox.component';
 import { HomeComponent } from './app/home/home.component';
 import { RunComponent } from './app/run/run.component';
@@ -17,29 +16,38 @@ import { environment } from './environments/environment';
 import { OfflineComponent } from './app/offline/offline.component';
 import { CredentialComponent } from './app/credential/credential.component';
 import { UserAccountComponent } from './app/user-account/user-account.component';
+import { LoginComponent } from './app/login/login.component';
+import { pages } from './services/app-pages.service';
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: PAGES.Home,
+    redirectTo: pages.Home.name,
     pathMatch: 'full'
   },
   {
-    path: PAGES.Home,
+    path: pages.Home.name,
     component: HomeComponent,
     data: {
       title: "Home"
     }
   },
   {
-    path: `${PAGES.Run}/:id`,
+    path: pages.Login.name,
+    component: LoginComponent,
+    data: {
+      title: "User login"
+    }
+  },
+  {
+    path: `${pages.Run.name}/:id`,
     component: RunComponent,
     data: {
       title: "Run"
     }
   },
   {
-    path: PAGES.Target,
+    path: pages.Target.name,
     component: TargetComponent,
     data: {
       title: "New Target"
@@ -47,7 +55,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: `${PAGES.Target}/:id`,
+    path: `${pages.Target.name}/:id`,
     component: TargetComponent,
     data: {
       title: "Editing Target"
@@ -55,7 +63,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: PAGES.Script,
+    path: pages.Script.name,
     component: ScriptComponent,
     data: {
       title: "New Script"
@@ -63,7 +71,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: `${PAGES.Script}/:id`,
+    path: `${pages.Script.name}/:id`,
     component: ScriptComponent,
     data: {
       title: "Editing Script"
@@ -71,7 +79,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: PAGES.QuickTask,
+    path: pages.QuickTask.name,
     component: QuickTaskComponent,
     data: {
       title: "New Quick task"
@@ -79,7 +87,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: PAGES.Workflow,
+    path: pages.Workflow.name,
     component: WorkflowComponent,
     data: {
       title: "New Workflow"
@@ -87,7 +95,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: `${PAGES.Workflow}/:id`,
+    path: `${pages.Workflow.name}/:id`,
     component: WorkflowComponent,
     data: {
       title: "Editing Workflow"
@@ -95,63 +103,63 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: `${PAGES.Results}/:id`,
+    path: `${pages.Results.name}/:id`,
     component: ResultsComponent,
     data: {
       title: "Displaying execution results"
     }
   },
   {
-    path: PAGES.BrowseWorkflows,
+    path: pages.BrowseWorkflows.name,
     component: SearchComponent,
     data: {
       title: "Browsing Workflows"
     }
   },
   {
-    path: PAGES.BrowseScripts,
+    path: pages.BrowseScripts.name,
     component: SearchComponent,
     data: {
       title: "Browsing Scripts"
     }
   },
   {
-    path: PAGES.BrowseTargets,
+    path: pages.BrowseTargets.name,
     component: SearchComponent,
     data: {
       title: "Browsing Targets"
     }
   },
   {
-    path: PAGES.BrowseCredentials,
+    path: pages.BrowseCredentials.name,
     component: SearchComponent,
     data: {
       title: "Browsing Credentials"
     }
   },
   {
-    path: PAGES.BrowseUserAccounts,
+    path: pages.BrowseUserAccounts.name,
     component: SearchComponent,
     data: {
       title: "Browsing User Accounts"
     }
   },
   {
-    path: PAGES.History,
+    path: pages.History.name,
     component: HistoryComponent,
     data: {
       title: "Seeing Execution History"
     }
   },
   {
-    path: PAGES.Offline,
+    path: pages.Offline.name,
     component: OfflineComponent,
     data: {
       title: "There are connectivity issues"
     }
   },
   {
-    path: `${PAGES.EditCredential}/:id`,
+    path: `${pages.Credential.name}/:id`,
     component: CredentialComponent,
     data: {
       title: "Editing Credential"
@@ -159,7 +167,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: PAGES.CredentialWindows,
+    path: pages.CredentialWindows.name,
     component: CredentialComponent,
     data: {
       title: "New Windows Credential"
@@ -167,7 +175,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: PAGES.CredentialAWS,
+    path: pages.CredentialAWS.name,
     component: CredentialComponent,
     data: {
       title: "New AWS Credential"
@@ -175,7 +183,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: PAGES.CredentialAPIKey,
+    path: pages.CredentialAPIKey.name,
     component: CredentialComponent,
     data: {
       title: "New Generic API Key Credential"
@@ -183,7 +191,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: PAGES.UserAccount,
+    path: pages.UserAccount.name,
     component: UserAccountComponent,
     data: {
       title: "New User account"
@@ -191,7 +199,7 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: `${PAGES.UserAccount}/:id`,
+    path: `${pages.UserAccount.name}/:id`,
     component: UserAccountComponent,
     data: {
       title: "Editing User account"
@@ -199,8 +207,11 @@ const routes: Routes = [
     canDeactivate: [DataLossPreventionGuard]
   },
   {
-    path: PAGES.Sandbox,
-    component: ((environment.production)? HomeComponent : SandboxComponent)
+    path: pages.Sandbox.name,
+    component: ((environment.production)? HomeComponent : SandboxComponent),
+    data: {
+      title: "SANDBOX... feel free to create!"
+    }
   },
   {
     path: '**',
@@ -212,4 +223,6 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {
+
+}

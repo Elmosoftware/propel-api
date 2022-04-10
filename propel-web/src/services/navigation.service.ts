@@ -3,34 +3,9 @@ import { Router } from '@angular/router';
 
 import { logger } from "../../../propel-shared/services/logger-service";
 import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from "../../../propel-shared/models/credential-types";
+import { PageMetadata, AppPages } from "src/services/app-pages.service";
 
-/**
- * This enums all the Pages in the app.
- */
-export const enum PAGES {
-    Home = "home",
-    Run = "run",
-    Sandbox = "sandbox",
-    Target = "target",
-    Script = "script",
-    QuickTask = "quick-task",
-    Workflow = "workflow",
-    Results = "results",
-    BrowseWorkflows = "browse-workflows",
-    BrowseScripts = "browse-scripts",
-    BrowseTargets = "browse-targets",
-    BrowseCredentials = "browse-credentials",
-    BrowseUserAccounts = "browse-useraccounts",
-    History = "history",
-    Offline = "offline",
-    EditCredential = "credential",
-    CredentialWindows = "credential-windows",
-    CredentialAWS = "credential-aws",
-    CredentialAPIKey = "credential-apikey",
-    UserAccount = "user-account"
-}
 
-export const SUFFIX_SEPARATOR: string = "-";
 
 /**
  * This class acts as a helper to navigate the different pages in the app.
@@ -42,7 +17,11 @@ export class NavigationService {
 
     private _currPageRXP: RegExp;
     private _requestCounter: number = 0;
-    private httpRequestCountEmitter$: EventEmitter<number> = new EventEmitter<number>(); 
+    private httpRequestCountEmitter$: EventEmitter<number> = new EventEmitter<number>();
+
+    get pages(): AppPages {
+        return this.appPages;
+    }
 
     /**
      * Returns the amount of requests currently in progress.
@@ -51,15 +30,34 @@ export class NavigationService {
         return this._requestCounter;
     }
 
-    get credentialsPagePrefix(): string{
+    get credentialsPagePrefix(): string {
         return "credential"
     }
 
-    get browsePagePrefix(): string{
+    get browsePagePrefix(): string {
         return "browse"
     }
 
-    constructor(private router: Router) {
+    /**
+    * Retrieves the name of the current active page.
+    */
+    get currentPage(): PageMetadata {
+        let matches: any;
+        let ret: PageMetadata;
+
+        matches = this.router.url.match(this._currPageRXP);
+
+        if (matches && matches.length > 0) {
+            ret = this.appPages.getPageFromName(matches[0].slice(1)); //Removing the initial forwardslash.
+        }
+        else {
+            ret = new PageMetadata();
+        }
+
+        return ret;
+    }
+
+    constructor(private router: Router, private appPages: AppPages) {
         this._currPageRXP = new RegExp("^/[A-Za-z-]*", "gi");
         logger.logInfo("Navigationservice instance created")
     }
@@ -86,19 +84,12 @@ export class NavigationService {
     }
 
     /**
-     * Retrieves the name of the current active page.
+     * Returns aboolean value indicating if the current page is the provided one.
+     * @param page Page to check
+     * @returns A boolean value indicating in the provided page is the current page.
      */
-    currentPage(): string {
-        let matches: any;
-        let ret: string = "";
-
-        matches = this.router.url.match(this._currPageRXP);
-
-        if (matches && matches.length > 0) {
-            ret = matches[0].slice(1); //Removing the initial forwardslash.
-        }
-
-        return ret;
+    currentPageIs(page: PageMetadata): boolean {
+        return this.currentPage.name == page.name;
     }
 
     /**
@@ -110,11 +101,14 @@ export class NavigationService {
      */
     getCurrentPageSuffix(): string {
         let ret = "";
-        let page = this.currentPage();
-        let index: number = page.indexOf("-");
+        let page: PageMetadata = this.currentPage;
+
+        if (!page) return ret;
+
+        let index: number = page.name.indexOf("-");
 
         if (index != -1) {
-            ret = page.substring(index + 1)
+            ret = page.name.substring(index + 1)
         }
 
         return ret;
@@ -124,7 +118,14 @@ export class NavigationService {
      * Navigate to Home page.
      */
     toHome(): void {
-        this.router.navigate([this.getRelativePath(PAGES.Home)]);
+        this.router.navigate([this.getRelativePath(this.pages.Home.name)]);
+    }
+
+    /**
+     * Navigate to Login page.
+     */
+    toLogin(): void {
+        this.router.navigate([this.getRelativePath(this.pages.Login.name)]);
     }
 
     /**
@@ -132,7 +133,7 @@ export class NavigationService {
      * @param workflowId Workflow to run
      */
     toRun(workflowId: string): void {
-        this.router.navigate([this.getRelativePath(PAGES.Run), workflowId]);
+        this.router.navigate([this.getRelativePath(this.pages.Run.name), workflowId]);
     }
 
     /**
@@ -140,7 +141,7 @@ export class NavigationService {
      * @param executionLogId Log id.
      */
     toResults(executionLogId: string): void {
-        this.router.navigate([this.getRelativePath(PAGES.Results), executionLogId]);
+        this.router.navigate([this.getRelativePath(this.pages.Results.name), executionLogId]);
     }
 
     /**
@@ -149,10 +150,10 @@ export class NavigationService {
      */
     toTarget(targetId?: string): void {
         if (targetId) {
-            this.router.navigate([this.getRelativePath(PAGES.Target), targetId]);
+            this.router.navigate([this.getRelativePath(this.pages.Target.name), targetId]);
         }
         else {
-            this.router.navigate([this.getRelativePath(PAGES.Target)]);
+            this.router.navigate([this.getRelativePath(this.pages.Target.name)]);
         }
     }
 
@@ -162,10 +163,10 @@ export class NavigationService {
      */
     toScript(scriptId?: string): void {
         if (scriptId) {
-            this.router.navigate([this.getRelativePath(PAGES.Script), scriptId]);
+            this.router.navigate([this.getRelativePath(this.pages.Script.name), scriptId]);
         }
         else {
-            this.router.navigate([this.getRelativePath(PAGES.Script)]);
+            this.router.navigate([this.getRelativePath(this.pages.Script.name)]);
         }
     }
 
@@ -173,7 +174,7 @@ export class NavigationService {
      * Navigate to Quick Task page.
      */
     toQuickTask(): void {
-        this.router.navigate([this.getRelativePath(PAGES.QuickTask)]);
+        this.router.navigate([this.getRelativePath(this.pages.QuickTask.name)]);
     }
 
     /**
@@ -182,10 +183,10 @@ export class NavigationService {
      */
     toWorkflow(workflowId?: string): void {
         if (workflowId) {
-            this.router.navigate([this.getRelativePath(PAGES.Workflow), workflowId]);
+            this.router.navigate([this.getRelativePath(this.pages.Workflow.name), workflowId]);
         }
         else {
-            this.router.navigate([this.getRelativePath(PAGES.Workflow)]);
+            this.router.navigate([this.getRelativePath(this.pages.Workflow.name)]);
         }
     }
 
@@ -194,8 +195,8 @@ export class NavigationService {
      * @param term Term to search for.
      * @param browse Indicates if even no term is specified, we must show all items.
      */
-    toBrowseWorkflows(term:string = "", browse:boolean = true): void {
-        this.router.navigate([this.getRelativePath(PAGES.BrowseWorkflows)], {
+    toBrowseWorkflows(term: string = "", browse: boolean = true): void {
+        this.router.navigate([this.getRelativePath(this.pages.BrowseWorkflows.name)], {
             queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
         });
     }
@@ -203,8 +204,8 @@ export class NavigationService {
     /**
      * Navigate to search page but setting up to browse scripts.
      */
-    toBrowseScripts(term:string = "", browse:boolean = true): void {
-        this.router.navigate([this.getRelativePath(PAGES.BrowseScripts)], {
+    toBrowseScripts(term: string = "", browse: boolean = true): void {
+        this.router.navigate([this.getRelativePath(this.pages.BrowseScripts.name)], {
             queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
         });
     }
@@ -212,8 +213,8 @@ export class NavigationService {
     /**
      * Navigate to search page but setting up to browse targets.
      */
-    toBrowseTargets(term:string = "", browse:boolean = true): void {
-        this.router.navigate([this.getRelativePath(PAGES.BrowseTargets)], {
+    toBrowseTargets(term: string = "", browse: boolean = true): void {
+        this.router.navigate([this.getRelativePath(this.pages.BrowseTargets.name)], {
             queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
         });
     }
@@ -221,8 +222,8 @@ export class NavigationService {
     /**
      * Navigate to search page but setting up to browse credentials.
      */
-    toBrowseCredentials(term:string = "", browse:boolean = true): void {
-        this.router.navigate([this.getRelativePath(PAGES.BrowseCredentials)], {
+    toBrowseCredentials(term: string = "", browse: boolean = true): void {
+        this.router.navigate([this.getRelativePath(this.pages.BrowseCredentials.name)], {
             queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
         });
     }
@@ -230,8 +231,8 @@ export class NavigationService {
     /**
      * Navigate to search page but setting up to browse user accounts.
      */
-    toBrowseUserAccounts(term:string = "", browse:boolean = true): void {
-        this.router.navigate([this.getRelativePath(PAGES.BrowseUserAccounts)], {
+    toBrowseUserAccounts(term: string = "", browse: boolean = true): void {
+        this.router.navigate([this.getRelativePath(this.pages.BrowseUserAccounts.name)], {
             queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
         });
     }
@@ -240,48 +241,51 @@ export class NavigationService {
      * Navigates to History page.
      */
     toHistory(): void {
-        this.router.navigate([this.getRelativePath(PAGES.History)]);
+        this.router.navigate([this.getRelativePath(this.pages.History.name)]);
+    }
+
+    /**
+     * Navigate to one of the alias of Credential page to prepare a form for the creation
+     * of a new credential of the specified type.
+     * If no type is specified, a new credential of type DEFAULT_CREDENTIAL_TYPE 
+     * will be created.
+     * @param type The credential type.
+     */
+    toNewCredential(type?: CredentialTypes) {
+        let prefix = this.appPages.getPrefix(this.appPages.CredentialWindows); //Getting the prefix 
+        //from any credential page.
+        let page: string = prefix + ((type) ? type : DEFAULT_CREDENTIAL_TYPE).toString()
+            .toLowerCase();
+
+        this.router.navigate([page]);
     }
 
     /**
      * Navigates to credential page passing a credential ID. This method will provide everything 
      * required to the Credential component to edit the credential.
-     * If instead of a credential ID, a credential type is provided, the Credential component
-     * will prepare a form to create a new credential of the specified type.
-     * If neither CredentialId or type is specified, a new credential of type DEFAULT_CREDENTIAL_TYPE 
-     * will be created and ready.
      * @param credentialId The credential to edit
      */
-    toCredential(credentialId?: string, type?: CredentialTypes) {
-        let page: string = this.credentialsPagePrefix + SUFFIX_SEPARATOR + 
-            ((type) ? type : DEFAULT_CREDENTIAL_TYPE).toString()
-            .toLowerCase();
-        
-        if (credentialId) {
-            this.router.navigate([this.getRelativePath(PAGES.EditCredential), credentialId]);
-        }
-        else {
-            this.router.navigate([page]);
-        }
+    toEditCredential(credentialId: string) {
+        this.router.navigate([this.getRelativePath(this.pages.Credential.name), credentialId]);
     }
 
     /**
-     * Used by the system tonavigate to the offline page if a network issue is detected.
+     * Used by the system to navigate to the offline page if a network issue is detected.
      */
     toOffline(): void {
-        this.router.navigate([this.getRelativePath(PAGES.Offline)]);
+        this.router.navigate([this.getRelativePath(this.pages.Offline.name)]);
     }
 
-     /**
-     * Allows to create or edit a user account.
-     * @param targetId Target to edit.
-     */
+    /**
+    * Allows to create or edit a user account.
+    * @param targetId Target to edit.
+    */
     toUserAccount(userAccountId?: string): void {
         if (userAccountId) {
-            this.router.navigate([this.getRelativePath(PAGES.UserAccount), userAccountId]);
+            this.router.navigate([this.getRelativePath(this.pages.UserAccount.name), userAccountId]);
         }
         else {
-            this.router.navigate([this.getRelativePath(PAGES.UserAccount)]);
+            this.router.navigate([this.getRelativePath(this.pages.UserAccount.name)]);
         }
     }
 
@@ -290,10 +294,10 @@ export class NavigationService {
      * This will not be available in production.
      */
     toSandbox(): void {
-        this.router.navigate([this.getRelativePath(PAGES.Sandbox)]);
+        this.router.navigate([this.getRelativePath(this.pages.Sandbox.name)]);
     }
 
-    private getRelativePath(page: PAGES): string {
+    private getRelativePath(page: string): string {
         return `/${page}`;
     }
 }
