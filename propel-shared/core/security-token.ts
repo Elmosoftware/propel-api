@@ -40,11 +40,27 @@ export class SecurityToken {
     public roleIsAdmin!: boolean
 
     /**
+     * iat
+     */
+    public issuedAt!: Date;
+
+    /**
+     * exp
+     */
+    public expiresAt!: Date;
+
+    /**
+     * The provided access token.
+     */
+    public accessToken: string = "";
+
+    /**
      * Constructor. Requires a valid User account.
      * @param user The user account that own the token.
      */
-    constructor(user: UserAccount) {
-        if (!user) throw new PropelError(`The constructor parameter "user" can't be a null reference.`)
+    constructor(user?: UserAccount) {
+        // if (!user) throw new PropelError(`The constructor parameter "user" can't be a null reference.`)
+        if (!user) return;
 
         this.userId = user._id;
         this.userName = user.name;
@@ -53,5 +69,19 @@ export class SecurityToken {
         this.userEmail = user.email;
         this.role = user.role;
         this.roleIsAdmin = UserAccountRolesUtil.IsAdmin(user.role);
+    }
+
+    hydrateFromTokenPayload(token: { data: SecurityToken, iat: number, exp: number }) {
+        
+        this.userId = token.data.userId
+        this.userName = token.data.userName
+        this.userFullName = token.data.userFullName
+        this.userInitials = token.data.userInitials
+        this.userEmail = token.data.userEmail
+        this.role = token.data.role;
+        this.roleIsAdmin = UserAccountRolesUtil.IsAdmin(token.data.role);
+
+        this.issuedAt = new Date(token.iat * 1000);
+        this.expiresAt = new Date(token.exp * 1000);
     }
 }

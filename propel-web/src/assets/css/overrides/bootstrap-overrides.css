@@ -203,7 +203,7 @@ button:focus {
 /* Forms */
 
 .form-control {
-    color: var(--colors-primary);
+    color: var(--colors-primary) !important;
     border: 1px solid var(--colors-soft-border);   
     height: auto;
 }
@@ -234,6 +234,12 @@ button:focus {
 .custom-control-input:not(:disabled):active ~ .custom-control-label::before {
     background-color: var(--colors-highlight);
     border-color: var(--colors-primary);
+}
+
+.input-group-text {
+    color: var(--colors-primary);
+    background-color: var(--colors-white) !important;
+    border: 1px solid var(--colors-soft-border);
 }
 
 /* Lists */

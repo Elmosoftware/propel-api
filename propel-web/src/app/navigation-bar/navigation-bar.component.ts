@@ -22,7 +22,6 @@ export class NavigationBarComponent implements OnInit {
   }
 
   get isQuickTask(): boolean {
-    // return PAGES.QuickTask == this.core.navigation.currentPage();
     return this.core.navigation.currentPageIs(this.core.navigation.pages.QuickTask)
   }
 
@@ -65,7 +64,6 @@ export class NavigationBarComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
     this.core.navigation.getHttpRequestCountSubscription()
       .subscribe((counter: number) => {
         this.loading = counter > 0;
@@ -123,22 +121,23 @@ export class NavigationBarComponent implements OnInit {
   }
 
   goToCredentialWin() {
-    // this.core.navigation.toCredential(null, CredentialTypes.Windows);
     this.core.navigation.toNewCredential(CredentialTypes.Windows);
   }
 
   goToCredentialAWS() {
-    // this.core.navigation.toCredential(null, CredentialTypes.AWS);
     this.core.navigation.toNewCredential(CredentialTypes.AWS);
   }
 
   goToCredentialGenericAPIKey() {
-    // this.core.navigation.toCredential(null, CredentialTypes.APIKey);
     this.core.navigation.toNewCredential(CredentialTypes.APIKey);
   }
 
   goToUserAccount() {
     this.core.navigation.toUserAccount();
+  }
+
+  goToLogin() {
+    this.core.navigation.toLogin();
   }
 
   doNotPropagate($event) {

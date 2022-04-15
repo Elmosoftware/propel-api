@@ -1,6 +1,7 @@
 import { SecurityRequest } from "../../../propel-shared/core/security-request";
 import { UserAccountRoles } from "../../../propel-shared/models/user-account-roles";
 import { SecurityService } from "../../services/security-service";
+import { cfg } from "../../core/config";
 
 let ss: SecurityService;
 
@@ -58,10 +59,17 @@ function mockSecurityService(ss: SecurityService, options: any) {
 
 }
 
+function setEnVars() {
+    process.env.AUTH_CODE_LENGTH = "6"
+    process.env.PASSWORD_MIN_LENGTH = "8"
+    process.env.PASSWORD_MAX_LENGTH = "20"
+}
+
 describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
 
     beforeEach(() => {
 
+        setEnVars()
         ss = new SecurityService();
 
         mockSecurityService(ss, {
@@ -73,23 +81,24 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
                 initials: "JD",
                 email: "john.doe.propel.com",
                 role: UserAccountRoles.User,
-                lockedSince: null
+                lockedSince: null,
+                lastLogin: new Date()
             },
             userSecret: {
                 _id: "2",
                 value: {
-                    passwordHash: "123456" //Recall this will be actually the 
+                    passwordHash: "12345678" //Recall this will be actually the 
                     //user password for this test.
                 }
             }
         })        
     })
    
-    test(`handleUserLogin() - Regular login - Locked user`, (done) => {
+    test(`Locked user`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
         sr.userNameOrId="john.doe" //right user
-        sr.password = "123456" //right password
+        sr.password = "12345678" //right password
 
         //@ts-ignore
         ss.testOptions.user.lockedSince = new Date()
@@ -106,11 +115,11 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
 
     }, 1000);
 
-    test(`handleUserLogin() - Regular login - Successful case`, (done) => {
+    test(`Successful case`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
         sr.userNameOrId="john.doe" //right user
-        sr.password = "123456" //right password
+        sr.password = "12345678" //right password
 
         ss.handleUserLogin(sr)
             .then((result) => {
@@ -123,11 +132,11 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
 
     }, 1000);
 
-    test(`handleUserLogin() - Regular login - Non-existent user.`, (done) => {
+    test(`Non-existent user.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
         sr.userNameOrId="wrong.user" //WRONG user
-        sr.password = "123456" //right password
+        sr.password = "12345678" //right password
 
         ss.handleUserLogin(sr)
             .then((result) => {
@@ -141,11 +150,11 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
 
     }, 1000);
 
-    test(`handleUserLogin() - Regular login - wrong password.`, (done) => {
+    test(`Wrong password.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
         sr.userNameOrId="john.doe" //right user
-        sr.password = "xxxx" //wrong password
+        sr.password = "xxxxxxxx" //wrong password
 
         ss.handleUserLogin(sr)
             .then((result) => {
@@ -154,6 +163,42 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
             })
             .catch((err) => {
                 expect(String(err)).toMatch(`PropelError: Wrong password supplied`)
+                done();
+            })
+
+    }, 1000);
+
+    test(`Bad format password - Short password.`, (done) => {
+
+        let sr: SecurityRequest = new SecurityRequest();
+        sr.userNameOrId="john.doe" //right user
+        sr.password = "x" //short password
+
+        ss.handleUserLogin(sr)
+            .then((result) => {
+                expect(result).toEqual("We expected to throw an exception instead!"); //No token must be generated, Anyway we expect to throw.
+                done();
+            })
+            .catch((err) => {
+                expect(String(err)).toMatch(`PropelError: Password bad format`)
+                done();
+            })
+
+    }, 1000);
+
+    test(`Bad format password - Long password.`, (done) => {
+
+        let sr: SecurityRequest = new SecurityRequest();
+        sr.userNameOrId="john.doe" //right user
+        sr.password = "x".repeat(cfg.passwordMaxLength + 1) //very long password
+
+        ss.handleUserLogin(sr)
+            .then((result) => {
+                expect(result).toEqual("We expected to throw an exception instead!"); //No token must be generated, Anyway we expect to throw.
+                done();
+            })
+            .catch((err) => {
+                expect(String(err)).toMatch(`PropelError: Password bad format`)
                 done();
             })
 
@@ -170,7 +215,7 @@ describe("SecurityService Class - handleUserLogin() - First Login", () => {
         mockSecurityService(ss, {
             user: {
                 _id: "1",
-                secretId: "",
+                secretId: "2",
                 name: "john.doe",
                 fullName: "John Doe",
                 initials: "JD",
@@ -182,24 +227,25 @@ describe("SecurityService Class - handleUserLogin() - First Login", () => {
             userSecret: {
                 _id: "2",
                 value: {
-                    passwordHash: "" //Recall this will be actually the 
-                    //user password for this test.
+                    passwordHash: "123456" //Recall this will be actually the 
+                    //authentication code for this test.
                 }
             }
         })        
     })
 
-    test(`handleUserLogin() - First login - Successful case`, (done) => {
+    test(`Successful case`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
         sr.userNameOrId="john.doe" //right user
-        sr.password = "123456" //right password
+        sr.password = "123456" //right auth code
+        sr.newPassword = "12345678" //right auth code
 
         ss.handleUserLogin(sr)
             .then((result) => {
                 expect(result).not.toBe(null);
                 //@ts-ignore
-                expect(ss.testOptions.userSecret.value.passwordHash).toEqual(sr.password)
+                expect(ss.testOptions.userSecret.value.passwordHash).toEqual(sr.newPassword)
                 done();
             })
             .catch((err) => {
@@ -234,18 +280,18 @@ describe("SecurityService Class - handleUserLogin() - Password reset Login", () 
                 _id: "2",
                 value: {
                     passwordHash: "123456" //Recall this will be actually the 
-                    //user password for this test.
+                    //authentication code for this test.
                 }
             }
         })        
     })
 
-    test(`handleUserLogin() - Password reset login - Successful case`, (done) => {
+    test(`Successful case`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
         sr.userNameOrId="john.doe" //right user
         sr.password = "123456" //right password
-        sr.newPassword = "654321"; //new password
+        sr.newPassword = "12345678"; //new password
 
         ss.handleUserLogin(sr)
             .then((result) => {

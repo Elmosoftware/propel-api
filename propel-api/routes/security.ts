@@ -9,6 +9,7 @@ import { SecurityService } from "../services/security-service";
 import { SecurityRequest } from "../../propel-shared/core/security-request";
 import { UserAccount } from "../../propel-shared/models/user-account";
 import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
+import { SecuritySharedConfiguration } from "../../propel-shared/core/security-shared-config";
 
 /**
  * Security route implements security related features like, user login and user managment.
@@ -22,6 +23,17 @@ export class SecurityRouter implements Route {
     route(): express.Router {
 
         const handler = express.Router();
+
+        //Returning the shared configuration of the security endpoint:
+        handler.get("", (req, res) => {
+            let ss: SecurityService = new SecurityService();
+
+            try {
+                res.json(new APIResponse<SecuritySharedConfiguration>(null, ss.getSharedConfig()));
+            } catch (error) {
+                this.handleError(res, error);
+            }
+        });
 
         //Get user by id or name:
         handler.get("/user/:id", async (req, res) => {

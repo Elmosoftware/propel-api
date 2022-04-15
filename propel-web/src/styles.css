@@ -118,7 +118,7 @@ body{
     background-color: var(--colors-soft-highlight);
     color: var(--colors-primary);
     border: var(--colors-soft-primary) 0.15em solid;
-    font-size: 1.5em;
+    font-size: 2em;
     font-weight: 600;
     width: 2em;
     height: 2em;
@@ -230,6 +230,13 @@ body{
 .icon-user-admin-mini::after {
     font-family: "Font Awesome 5 Free";
     content: "\f504";
+    font-weight: 900;
+    font-size: 0.8rem;
+}
+
+.icon-login-mini::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f2f6";
     font-weight: 900;
     font-size: 0.8rem;
 }
@@ -398,6 +405,10 @@ textarea::placeholder {
     border-width: 3px;
     border-style: dashed;
     border-color: var(--accent-lighter-color);
+}
+
+.remove-border-right {
+    border-right: none;
 }
 
 /*

@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid'
 import { cfg } from "../core/config";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityRequest } from "../../propel-shared/core/security-request";
+import { SecuritySharedConfiguration } from "../../propel-shared/core/security-shared-config";
 import { SecurityToken } from "../../propel-shared/core/security-token";
 import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
 import { DataService } from "../services/data-service";
@@ -27,6 +28,20 @@ export class SecurityService {
 
     constructor() {
     
+    }
+
+    /**
+     * Returns the shared security configuration.
+     * @returns The shared configuration of the Security API.
+     */
+    getSharedConfig(): SecuritySharedConfiguration {
+        let ret: SecuritySharedConfiguration = new SecuritySharedConfiguration();
+        
+        ret.authCodeLength = cfg.authorizationCodeLength;
+        ret.passwordMinLength = cfg.passwordMinLength;
+        ret.passwordMaxLength = cfg.passwordMaxLength;
+
+        return ret;
     }
 
     /**
@@ -86,11 +101,9 @@ export class SecurityService {
     /**
      * Handle the user login for all the possible scenarios.
      * Scenarios at the moment handled by this method are:
-     *  - First login: The user has been created but never login before. The password entered will be hashed and
-     * saved as his new on.
+     *  - First login: The user has been created but never login before. 
      *  - Regular login: The user already have a password set and it would like to login using it.
-     *  - System password reset login: The password of the user was resetted by an administrator and 
-     * the user need to set a new password on his login.
+     *  - System password reset login: The password of the user was reseted by an administrator.
      * @param request Security request
      * @returns The security token if the user auth process finish successfully.
      * @throws This method is going to throw exceptions under the following conditions:
@@ -108,6 +121,10 @@ export class SecurityService {
         //with the below methods they are executin sequentially but in async way and they are filling the 
         // "loginData" until the point the authentication succeed or fail: 
         let toEval = [
+            /**
+             * Basic validation of the security request.
+             */
+            this.validateSecurityRequestFormat,
             /**
              * Retrieves the user information and verify if the user is not locked.
              */
@@ -164,7 +181,6 @@ export class SecurityService {
         return ret;
     }
 
-
     async lockUser(nameOrId: string): Promise<string> {
         return this.internalLockOrUnlockUser(nameOrId, true)
     }
@@ -195,28 +211,39 @@ export class SecurityService {
         }
     }
 
-    private validateSecurityRequest(context: SecurityService, validateNewPassword: boolean = false): void {
+    private validateSecurityRequestFormat(context: SecurityService): Promise<LoginData> {
 
-        let loginData = context.loginData;
+        let sr: SecurityRequest = context.loginData.request;
 
-        if (!loginData.request?.userNameOrId || !loginData.request?.password) {
+        if (!sr?.userNameOrId || !sr?.password) {
             throw new PropelError(`Bad format in the request body, we expect the user name or id and the user password. 
-            Property "userNameOrId": ${(loginData.request?.userNameOrId) ? "is present" : "Is missing"}, Property "password": ${(loginData.request?.password) ? "is present" : "Is missing"}.`, 
+            Property "userNameOrId": ${(sr?.userNameOrId) ? "is present" : "Is missing"}, Property "password": ${(sr?.password) ? "is present" : "Is missing"}.`, 
                 undefined, BAD_REQUEST.toString());
         }
 
-        if (validateNewPassword && !loginData.request?.newPassword) {
-            throw new PropelError(`Bad format in the request body, we expect the new user password. 
-            Property "newPassword": ${(loginData.request?.newPassword) ? "is present" : "Is missing"}.`, 
-                undefined, BAD_REQUEST.toString());
+        return Promise.resolve(context.loginData);
+    }
+
+    private validateAuthenticationCode(authCode: string): void {
+
+        if (!authCode || authCode.length !== cfg.authorizationCodeLength) {
+            throw new PropelError(`Authorization code bad format. Authorization code must have exactly ${cfg.authorizationCodeLength} characters. 
+The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long." : "\"" +  String(authCode) + "\""}.`, 
+                ErrorCodes.AuthCodeBadFormat, BAD_REQUEST.toString());
+        }
+    }
+
+    private validatePassword(password: string): void {
+
+        if (!password || password.length < cfg.passwordMinLength || password.length > cfg.passwordMaxLength) {
+            throw new PropelError(`Password bad format. Allowed passwords must have at least ${cfg.passwordMinLength} characters and no more than ${cfg.passwordMaxLength}. The one provided have ${password.length}.`, 
+                ErrorCodes.PasswordBadFormat, BAD_REQUEST.toString());
         }
     }
 
     private async getAndVerifyUser(context: SecurityService): Promise<LoginData> {
 
         let loginData = context.loginData;
-
-        context.validateSecurityRequest(context);
 
         loginData.user = await context.getUserByIdOrName(loginData.request.userNameOrId);
         
@@ -235,17 +262,18 @@ export class SecurityService {
 
         let loginData = context.loginData;
 
-        context.validateSecurityRequest(context);
-
-        //If the user doesn't have a secret Id yet there is nothing else to do: 
-        if (!loginData.user?.secretId) return Promise.resolve(loginData)
+        //Corrupted data:
+        if (!loginData.user?.secretId) {
+            throw new PropelError(`No secretId found for user with Name or ID "${loginData.request.userNameOrId}". 
+                Will require a System admin to reset the password.`, undefined, INTERNAL_SERVER_ERROR.toString());
+        }
 
         loginData.secret = await context.getUserSecret(loginData.user.secretId);
 
             /*
-                Note: This is a very unlikely case, but er need to check anyway because 
+                Note: This is a very unlikely case, but we need to check anyway because 
                 the login can't complete if we don't have the current user secret!.
-                If the secretisgone for some reason, the only option is that one administrator
+                If the secret is gone for some reason, the only option is that one administrator
                 reset his password or even to null the "lastLogin" date so the user can do 
                 a first login again. 
             */
@@ -259,35 +287,6 @@ export class SecurityService {
         return Promise.resolve(loginData);
     }
 
-    private async handleFirstLogin(context: SecurityService): Promise<LoginData> {
-
-        let loginData = context.loginData;        
-
-        //If the token was already created, we have nothing else to do here:
-        if (loginData.token) return Promise.resolve(loginData);
-
-        context.validateSecurityRequest(context);
-
-        //2nd CASE: First login ever.
-        //The user never login before and therefore doesn't have a secret created yet.
-        if (!loginData.secret && !loginData.user?.lastLogin) {
-
-            //First we must create the user secret:
-            loginData.secret = new Secret<UserAccountSecret>(UserAccountSecret)
-            loginData.secret.value.passwordHash = await context.createHash(loginData.request.password);
-
-            //Now we must persist the secret and link the user to that secret:
-            loginData.user!.secretId = await context.saveUserSecret(loginData.secret); //Associating the secret to the user.
-            loginData.user!.lastLogin = new Date(); //Setting the first login date for the user... Hurray!!.
-            await context.saveUser(loginData.user!);
-
-            //Now we have all ready to create and return the token:
-            loginData.token = context.createToken(loginData.user!)    
-        }
-
-        return Promise.resolve(loginData);
-    }
-
     private async handleRegularLogin(context: SecurityService): Promise<LoginData> {
 
         let loginData = context.loginData;        
@@ -295,14 +294,13 @@ export class SecurityService {
         //If the token was already created, we have nothing else to do here:
         if (loginData.token) return Promise.resolve(loginData);
 
-        context.validateSecurityRequest(context);
+        //Regular login: The user already login at least once, and his password wasn't flag for reset:
+        if (loginData.user?.lastLogin && !loginData.user?.mustReset) {
 
-        //3rd CASE: Regular login.
-        //The user already have a secret and the "mustReset" flag is not set.
-        if (loginData.secret && !loginData.user?.mustReset) {
+            context.validatePassword(loginData.request.password)
 
             //If the password is ok, we must return the token and update the user last login:
-            if(await context.verifyHash(loginData.request.password, loginData.secret.value.passwordHash)){
+            if(await context.verifyHash(loginData.request.password, loginData.secret!.value.passwordHash!)){
                 
                 loginData.user!.lastLogin = new Date();
                 await context.saveUser(loginData.user!);
@@ -317,6 +315,42 @@ export class SecurityService {
         return Promise.resolve(loginData);
     }
 
+    private async handleFirstLogin(context: SecurityService): Promise<LoginData> {
+
+        let loginData = context.loginData;        
+
+        //If the token was already created, we have nothing else to do here:
+        if (loginData.token) return Promise.resolve(loginData);
+
+        //First login ever:
+        if (!loginData.user?.lastLogin) {
+            
+            context.validateAuthenticationCode(loginData.request.password) //For a first login, 
+            //the "password" field in the request is the auth code.
+            context.validatePassword(loginData.request.newPassword)
+
+            //If both auth code and the new password are ok:
+            if (await context.verifyHash(loginData.request.password, loginData.secret?.value.passwordHash!)) {
+
+                //We must create the new user secret:
+                loginData.secret = new Secret<UserAccountSecret>(UserAccountSecret)
+                loginData.secret.value.passwordHash = await context.createHash(loginData.request.newPassword);
+
+                //Now we must persist the secret and link the user to that secret:
+                loginData.user!.secretId = await context.saveUserSecret(loginData.secret);
+                loginData.user!.lastLogin = new Date(); //Setting the first login date for the user... Hurray!!.
+                await context.saveUser(loginData.user!);                
+                loginData.token = context.createToken(loginData.user!) //All ready to generate and return the token.
+            }
+            else {
+                throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
+                    ErrorCodes.LoginWrongPassword, UNAUTHORIZED.toString());
+            }
+        }
+
+        return Promise.resolve(loginData);
+    }
+
     private async handlePasswordResetLogin(context: SecurityService): Promise<LoginData> {
 
         let loginData = context.loginData;        
@@ -324,19 +358,19 @@ export class SecurityService {
         //If the token was already created, we have nothing else to do here:
         if (loginData.token) return Promise.resolve(loginData);
 
-        context.validateSecurityRequest(context, true);
+        //System Password reset: An Administratoe reset the user password.
+        if (loginData.user?.lastLogin && loginData.user?.mustReset) {
 
-        //4th CASE: System Password reset -> An Admin reset the user password.
-        //The user already have a secret and the "mustReset" flag is set.
-        if (loginData.secret && loginData.user?.mustReset) {
+            context.validateAuthenticationCode(loginData.request.password) //For a password reset, the "password" in the request 
+            //is the auth code.
+            context.validatePassword(loginData.request.newPassword)
 
-            //If the current password is ok:
-            if(await context.verifyHash(loginData.request.password, loginData.secret.value.passwordHash)){
-                //Now we can proceed to set the new password:
+            //If the auth code is ok:
+            if(await context.verifyHash(loginData.request.password, loginData.secret?.value.passwordHash!)){
                 
-                //First we must update the user secret with the new password hash:
-                loginData.secret.value.passwordHash = await context.createHash(loginData.request.newPassword);
-                await context.saveUserSecret(loginData.secret);
+                //Updating the user secret with the new password:
+                loginData.secret!.value.passwordHash = await context.createHash(loginData.request.newPassword);
+                await context.saveUserSecret(loginData.secret!);
 
                 loginData.user!.mustReset = false; //Removing the "mustReset" flag.
                 loginData.user!.lastLogin = new Date();
@@ -431,7 +465,7 @@ export class SecurityService {
     }
 
     private createAuthCode(): string {
-        return nanoid(6);
+        return nanoid(cfg.authorizationCodeLength);
     }
 }
 
@@ -452,12 +486,12 @@ class LoginData {
     /**
      * User that is requesting the login.
      */
-    public user?: UserAccount;
+    public user: UserAccount | undefined;
 
     /**
      * User secret
      */
-    public secret?: Secret<UserAccountSecret>
+    public secret: Secret<UserAccountSecret> | undefined
 
     /**
      * Token generated after authentication.

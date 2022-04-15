@@ -80,6 +80,7 @@ import { UserAccountComponent } from './app/user-account/user-account.component'
 import { SearchUserAccountLineComponent } from './app/search-user-account-line/search-user-account-line.component';
 import { SecurityService } from './services/security.service';
 import { AuthenticationCodeComponent } from './app/authentication-code/authentication-code.component';
+import { LoginComponent } from './app/login/login.component';
 
 @NgModule({
     declarations: [
@@ -115,7 +116,8 @@ import { AuthenticationCodeComponent } from './app/authentication-code/authentic
         APIKeySecretComponent,
         UserAccountComponent,
         SearchUserAccountLineComponent,
-        AuthenticationCodeComponent
+        AuthenticationCodeComponent,
+        LoginComponent
     ],
     imports: [
         BrowserModule,
