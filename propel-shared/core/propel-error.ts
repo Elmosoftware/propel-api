@@ -105,7 +105,7 @@ export class PropelError extends Error {
             ret = err.stack;
         }
         else {
-            ret = (Error().stack) ? String(Error().stack) : "";
+            ret = "";
         }
         return ret;
     }
