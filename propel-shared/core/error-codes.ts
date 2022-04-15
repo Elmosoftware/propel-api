@@ -121,6 +121,26 @@ Most likely cause, is you trying to fetch information encrypted with a different
             `The submitted password is wrong. In the case you forgot it, please contact any Propel administrator to reset it.`,
             false);
     }
+
+    /**
+     * Indicates the supplied authentication doesn't have the required format.
+     */
+     static get AuthCodeBadFormat(): Code {
+        return new Code("AUTH_CODE_FORMAT",
+            `The supplied authentication code doesn't meet the defined format.`,
+            `Seems like the provided authentication code is not with the right format. Please verify the supplied code.`,
+            false);
+    }
+
+    /**
+     * Indicates the supplied authentication doesn't have the required format.
+     */
+     static get PasswordBadFormat(): Code {
+        return new Code("PASSWORD_FORMAT",
+            `The supplied password is not of the expected length.`,
+            `The password you entered is too long or too short, please verify and try again.`,
+            false);
+    }
 }
 
 /**

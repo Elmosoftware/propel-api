@@ -6,6 +6,9 @@ function setAllValid() {
     process.env.DB_ENDPOINT = "mongodb://localhost:27017/propel-api"
     process.env.ENCRYPTION_KEY = "2129B972482115C8CEBEB4180F362D3BEEFAE97CE5D61F54F36D6628AE8745CC"
     process.env.TOKEN_EXPIRATION_MINUTES = "60"
+    process.env.AUTH_CODE_LENGTH = "6"
+    process.env.PASSWORD_MIN_LENGTH = "8"
+    process.env.PASSWORD_MAX_LENGTH = "50"
     process.env.PS_SCRIPT_PROPEL_PARAM = "Propel"
     process.env.MODELS_FOLDER = "models"
     process.env.POOL_MAX_SIZE="40"
@@ -391,6 +394,138 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`- TOKEN_EXPIRATION_MINUTES is not a number or is less than zero`);
+        cfgVal.reset();
+    })
+    test(`Missing AUTH_CODE_LENGTH value`, () => {
+        //@ts-ignore
+        process.env.AUTH_CODE_LENGTH = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- AUTH_CODE_LENGTH is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid AUTH_CODE_LENGTH value`, () => {
+        //@ts-ignore
+        process.env.AUTH_CODE_LENGTH = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- AUTH_CODE_LENGTH is not a number or it has a value less than zero or greater than`);
+        cfgVal.reset();
+    })
+    test(`Invalid AUTH_CODE_LENGTH numeric value (-1)`, () => {
+        //@ts-ignore
+        process.env.AUTH_CODE_LENGTH = "-1"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- AUTH_CODE_LENGTH is not a number or it has a value less than zero or greater than`);
+        cfgVal.reset();
+    })
+    test(`Invalid AUTH_CODE_LENGTH numeric value (9999999)`, () => {
+        //@ts-ignore
+        process.env.AUTH_CODE_LENGTH = "9999999"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- AUTH_CODE_LENGTH is not a number or it has a value less than zero or greater than`);
+        cfgVal.reset();
+    })
+    test(`Missing PASSWORD_MIN_LENGTH value`, () => {
+        //@ts-ignore
+        process.env.PASSWORD_MIN_LENGTH = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- PASSWORD_MIN_LENGTH is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid PASSWORD_MIN_LENGTH value`, () => {
+        //@ts-ignore
+        process.env.PASSWORD_MIN_LENGTH = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- PASSWORD_MIN_LENGTH is not a number or it has a value less than zero or greater than`);
+        cfgVal.reset();
+    })
+    test(`Invalid PASSWORD_MIN_LENGTH numeric value (-1)`, () => {
+        //@ts-ignore
+        process.env.PASSWORD_MIN_LENGTH = "-1"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- PASSWORD_MIN_LENGTH is not a number or it has a value less than zero or greater than`);
+        cfgVal.reset();
+    })
+    test(`Invalid PASSWORD_MIN_LENGTH numeric value (9999999)`, () => {
+        //@ts-ignore
+        process.env.PASSWORD_MIN_LENGTH = "9999999"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- PASSWORD_MIN_LENGTH is not a number or it has a value less than zero or greater than`);
+        cfgVal.reset();
+    })
+    test(`Missing PASSWORD_MAX_LENGTH value`, () => {
+        //@ts-ignore
+        process.env.PASSWORD_MAX_LENGTH = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- PASSWORD_MAX_LENGTH is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid PASSWORD_MAX_LENGTH value`, () => {
+        //@ts-ignore
+        process.env.PASSWORD_MAX_LENGTH = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- PASSWORD_MAX_LENGTH is not a number or it has a value less than zero or greater than`);
+        cfgVal.reset();
+    })
+    test(`Invalid PASSWORD_MAX_LENGTH numeric value (-1)`, () => {
+        //@ts-ignore
+        process.env.PASSWORD_MAX_LENGTH = "-1"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- PASSWORD_MAX_LENGTH is not a number or it has a value less than zero or greater than`);
+        cfgVal.reset();
+    })
+    test(`Invalid PASSWORD_MAX_LENGTH numeric value (9999999)`, () => {
+        //@ts-ignore
+        process.env.PASSWORD_MAX_LENGTH = "9999999"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- PASSWORD_MAX_LENGTH is not a number or it has a value less than zero or greater than`);
         cfgVal.reset();
     })
 })
