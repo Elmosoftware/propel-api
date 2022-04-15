@@ -1,5 +1,6 @@
 import { Injectable, EventEmitter } from "@angular/core";
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { Location } from '@angular/common'
 
 import { logger } from "../../../propel-shared/services/logger-service";
 import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from "../../../propel-shared/models/credential-types";
@@ -17,6 +18,7 @@ export class NavigationService {
 
     private _currPageRXP: RegExp;
     private _requestCounter: number = 0;
+    private _navigationHistory: string[] = [];
     private httpRequestCountEmitter$: EventEmitter<number> = new EventEmitter<number>();
 
     get pages(): AppPages {
@@ -57,9 +59,15 @@ export class NavigationService {
         return ret;
     }
 
-    constructor(private router: Router, private appPages: AppPages) {
+    constructor(private router: Router, private appPages: AppPages, private location: Location) {
         this._currPageRXP = new RegExp("^/[A-Za-z-]*", "gi");
-        logger.logInfo("Navigationservice instance created")
+        logger.logInfo("Navigationservice instance created");
+        
+        this.router.events.subscribe((event) => {
+            if (event instanceof NavigationEnd) {
+              this._navigationHistory.push(event.urlAfterRedirects)
+            }
+          })
     }
 
     httpReqStarted() {
@@ -113,6 +121,16 @@ export class NavigationService {
 
         return ret;
     }
+
+    back(): void {
+        this._navigationHistory.pop();
+
+        if (this._navigationHistory.length > 0) {
+          this.location.back()
+        } else {
+          this.router.navigateByUrl("/") //To whoever is our landing page.
+        }
+      }
 
     /**
      * Navigate to Home page.
