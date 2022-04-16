@@ -75,21 +75,20 @@ export class SecurityService {
     }
 
     /**
-     * Allows to obtain one particular user account by specifying the user name or 
-     * his ID, (both are unique identifiers).
-     * @param nameOrId User Name or Identifier.
-     * @returns The requested user or the "undefined" value if the user doesn't exists.
+     * Allows to obtain one particular user account by specifying the user name.
+     * @param name User Name.
+     * @returns The requested user or "undefined" if the user doesn't exists.
      */
-    async getUserByIdOrName(nameOrId: string): Promise<UserAccount | undefined> {
+    async getUserByName(name: string): Promise<UserAccount | undefined> {
         let svc: DataService = db.getService("useraccount");
         let result: APIResponse<UserAccount>;
         let qm = new QueryModifier();
 
-        if (svc.isValidObjectId(nameOrId)) {
-            qm.filterBy = { _id: nameOrId }
+        if (svc.isValidObjectId(name)) {
+            qm.filterBy = { _id: name }
         }
         else {
-            qm.filterBy = { name: { $eq: nameOrId } };
+            qm.filterBy = { name: { $eq: name } };
         }        
 
         result = await svc.find(qm);
@@ -166,7 +165,7 @@ export class SecurityService {
      */
     async resetUserPassword(nameOrId: string): Promise<UserRegistrationResponse> {
 
-        let user: UserAccount | undefined = await this.getUserByIdOrName(nameOrId);
+        let user: UserAccount | undefined = await this.getUserByName(nameOrId);
         let ret: UserRegistrationResponse = new UserRegistrationResponse();
         
         this.throwIfNoUser(user, nameOrId, "The reset password process can't continue.");
@@ -191,7 +190,7 @@ export class SecurityService {
 
     private async internalLockOrUnlockUser(nameOrId: string, mustLock: boolean): Promise<string> {
 
-        let user: UserAccount | undefined = await this.getUserByIdOrName(nameOrId);
+        let user: UserAccount | undefined = await this.getUserByName(nameOrId);
 
         this.throwIfNoUser(user, nameOrId, `The ${(mustLock) ? "lock" : "unlock"} user operation will be aborted.`)
 
@@ -215,9 +214,9 @@ export class SecurityService {
 
         let sr: SecurityRequest = context.loginData.request;
 
-        if (!sr?.userNameOrId || !sr?.password) {
+        if (!sr?.userName || !sr?.password) {
             throw new PropelError(`Bad format in the request body, we expect the user name or id and the user password. 
-            Property "userNameOrId": ${(sr?.userNameOrId) ? "is present" : "Is missing"}, Property "password": ${(sr?.password) ? "is present" : "Is missing"}.`, 
+            Property "userName": ${(sr?.userName) ? "is present" : "Is missing"}, Property "password": ${(sr?.password) ? "is present" : "Is missing"}.`, 
                 undefined, BAD_REQUEST.toString());
         }
 
@@ -245,13 +244,13 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
         let loginData = context.loginData;
 
-        loginData.user = await context.getUserByIdOrName(loginData.request.userNameOrId);
+        loginData.user = await context.getUserByName(loginData.request.userName);
         
-        context.throwIfNoUser(loginData.user, loginData.request.userNameOrId);
+        context.throwIfNoUser(loginData.user, loginData.request.userName);
         
         //If the user is locked, we must prevent the user to login.
         if(loginData.user?.lockedSince){
-            throw new PropelError(`The user "${loginData.request.userNameOrId}" is locked.`, 
+            throw new PropelError(`The user "${loginData.request.userName}" is locked.`, 
                 ErrorCodes.LoginLockedUser, FORBIDDEN.toString());
         } 
 
@@ -264,7 +263,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
         //Corrupted data:
         if (!loginData.user?.secretId) {
-            throw new PropelError(`No secretId found for user with Name or ID "${loginData.request.userNameOrId}". 
+            throw new PropelError(`No secretId found for user with Name or ID "${loginData.request.userName}". 
                 Will require a System admin to reset the password.`, undefined, INTERNAL_SERVER_ERROR.toString());
         }
 
@@ -278,7 +277,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 a first login again. 
             */
             if (!loginData.secret) {
-                throw new PropelError(`No secret was found for user with Name or ID "${loginData.request?.userNameOrId}". 
+                throw new PropelError(`No secret was found for user with Name or ID "${loginData.request?.userName}". 
                 The specified User secret with id:"${loginData.user?.secretId}" doesn't exists. Property "mustReset" is "${String(loginData.user?.mustReset)}".
                 Will require a System admin to reset user password.`, 
                     undefined, INTERNAL_SERVER_ERROR.toString());

@@ -2,9 +2,9 @@
 export class SecurityRequest {
 
     /**
-     * User name or the user identifier.
+     * User name.
      */
-    userNameOrId: string = "";
+    userName: string = "";
 
     /**
      * User password to validate.

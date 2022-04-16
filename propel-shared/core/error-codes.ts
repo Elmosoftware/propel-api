@@ -141,6 +141,16 @@ Most likely cause, is you trying to fetch information encrypted with a different
             `The password you entered is too long or too short, please verify and try again.`,
             false);
     }
+
+    /**
+     * Indicates the supplied authentication doesn't have the required format.
+     */
+     static get UserImpersonation(): Code {
+        return new Code("USER_IMPERSONATION_NOT_ALLOWED",
+            `User impersonation not allowed in Propel.`,
+            `You are not running Propel with the same credentials that you use to log to this machine. Please start Propel using your own credentials.`,
+            false);
+    }
 }
 
 /**

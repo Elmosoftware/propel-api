@@ -90,9 +90,19 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.formFlow = new FormFlow();
-    this.formFlow.activeFormSection = FormsSection.User
-    this.formFlow.message = MSG_USER_REGULAR_LOGIN;
-    this.formFlow.messageIsError = false;
+
+    //If we have the user that is running Propel specified in the runtime info, then we must set it 
+    //in the form and switch directly to the "passwords" section of the login form:
+    if (this.core.security.runtimeUser) {
+      this.fg.controls.name.patchValue(this.core.security.runtimeUser);
+      this.formFlow.isUserSectionEnabled = false;
+      this.continue(); //Moving to the "password" section.
+    }
+    else {
+      this.formFlow.activeFormSection = FormsSection.User;
+      this.formFlow.isUserSectionEnabled = true;
+      this.formFlow.message = MSG_USER_REGULAR_LOGIN;
+    }
   }
 
   toggleViewAuthCodeOrPassword() {
@@ -171,8 +181,8 @@ export class LoginComponent implements OnInit {
             ])
             this.fg.controls.passwordConfirmation.addValidators([
               Validators.required,
-              ValidatorsHelper.fieldsEquality("newPassword", "passwordConfirmation", 
-              `The new passwords do not match. Please verify the values entered.`)
+              ValidatorsHelper.fieldsEquality("newPassword", "passwordConfirmation",
+                `The new passwords do not match. Please verify the values entered.`)
             ])
           }
 
@@ -187,12 +197,12 @@ export class LoginComponent implements OnInit {
   login() {
     let sr: SecurityRequest = new SecurityRequest();
 
-    if(!this.fg.valid) return
+    if (!this.fg.valid) return
 
     this.formFlow.message = MSG_LOGIN_START;
     this.formFlow.messageIsError = false;
 
-    sr.userNameOrId = this.fg.controls.name.value;
+    sr.userName = this.fg.controls.name.value;
     sr.password = this.fg.controls.authCodeOrPassword.value;
 
     //if is a first login or a password reset:
@@ -201,31 +211,42 @@ export class LoginComponent implements OnInit {
     }
 
     this.core.security.login(sr)
-    .subscribe((response: APIResponse<string>) => {
+      .subscribe((response: APIResponse<string>) => {
 
-      //If there was some error:
-      if (response.count == 0) {
-        this.formFlow.message = MSG_LOGIN_ERROR;
-        this.formFlow.messageIsError = true
-      }
-      else {
-        this.formFlow.message = MSG_LOGIN_SUCCESS;
-        this.formFlow.messageIsError = false
-        this.core.navigation.toHome();
-      }
-    },
-      err => {
+        //If there was some error:
+        if (response.count == 0) {
 
-        //Embedding the error in a PropelAppError to get access to the error code, (if any).
-        let appError = new PropelAppError(err);
+          if (response.errors.length !== 0) {
+            //Embedding the error in a PropelAppError to get access to the error code, (if any):
+            let appError = new PropelAppError(response.errors[0]);
 
-        if (appError.userMessage) {
-          this.formFlow.message = appError.userMessage;
+            if (appError.userMessage) {
+              this.formFlow.message = appError.userMessage;
+            }
+          }
+          else {
+            this.formFlow.message = MSG_LOGIN_ERROR;
+          }
+
           this.formFlow.messageIsError = true
         }
+        else {
+          this.formFlow.message = MSG_LOGIN_SUCCESS;
+          this.formFlow.messageIsError = false
+          this.core.navigation.toHome();
+        }
+      },
+        err => {
 
-        throw err;
-      });
+          let appError = new PropelAppError(err);
+
+          if (appError.userMessage) {
+            this.formFlow.message = appError.userMessage;
+            this.formFlow.messageIsError = true
+          }
+
+          throw err;
+        });
   }
 
   goBack() {

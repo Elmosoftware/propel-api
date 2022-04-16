@@ -42,7 +42,7 @@ export class SecurityRouter implements Route {
             let id: string = req.params.id;
 
             try {
-                let user = await ss.getUserByIdOrName(id);
+                let user = await ss.getUserByName(id);
                 res.json(new APIResponse<UserAccount>(null, user));
             } catch (error) {
                 this.handleError(res, error);

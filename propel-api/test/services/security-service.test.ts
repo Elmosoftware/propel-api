@@ -11,7 +11,7 @@ function mockSecurityService(ss: SecurityService, options: any) {
     ss.testOptions = options;
 
     //@ts-ignore
-    ss.getUserByIdOrName = (userNameOrId) => {
+    ss.getUserByName = (userNameOrId) => {
         //@ts-ignore
        if (userNameOrId == ss.testOptions.user.name) {
             //@ts-ignore
@@ -97,7 +97,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Locked user`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userNameOrId="john.doe" //right user
+        sr.userName = "john.doe" //right user
         sr.password = "12345678" //right password
 
         //@ts-ignore
@@ -109,7 +109,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
                 done();
             })
             .catch((err) => {
-                expect(String(err)).toMatch(`The user "${sr.userNameOrId}" is locked.`)
+                expect(String(err)).toMatch(`The user "${sr.userName}" is locked.`)
                 done()
             })
 
@@ -118,7 +118,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Successful case`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userNameOrId="john.doe" //right user
+        sr.userName = "john.doe" //right user
         sr.password = "12345678" //right password
 
         ss.handleUserLogin(sr)
@@ -135,7 +135,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Non-existent user.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userNameOrId="wrong.user" //WRONG user
+        sr.userName="wrong.user" //WRONG user
         sr.password = "12345678" //right password
 
         ss.handleUserLogin(sr)
@@ -153,7 +153,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Wrong password.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userNameOrId="john.doe" //right user
+        sr.userName="john.doe" //right user
         sr.password = "xxxxxxxx" //wrong password
 
         ss.handleUserLogin(sr)
@@ -171,7 +171,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Bad format password - Short password.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userNameOrId="john.doe" //right user
+        sr.userName="john.doe" //right user
         sr.password = "x" //short password
 
         ss.handleUserLogin(sr)
@@ -189,7 +189,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Bad format password - Long password.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userNameOrId="john.doe" //right user
+        sr.userName="john.doe" //right user
         sr.password = "x".repeat(cfg.passwordMaxLength + 1) //very long password
 
         ss.handleUserLogin(sr)
@@ -237,7 +237,7 @@ describe("SecurityService Class - handleUserLogin() - First Login", () => {
     test(`Successful case`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userNameOrId="john.doe" //right user
+        sr.userName="john.doe" //right user
         sr.password = "123456" //right auth code
         sr.newPassword = "12345678" //right auth code
 
@@ -289,7 +289,7 @@ describe("SecurityService Class - handleUserLogin() - Password reset Login", () 
     test(`Successful case`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userNameOrId="john.doe" //right user
+        sr.userName="john.doe" //right user
         sr.password = "123456" //right password
         sr.newPassword = "12345678"; //new password
 

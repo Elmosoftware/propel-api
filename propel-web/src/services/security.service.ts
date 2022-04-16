@@ -2,18 +2,23 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { APIResponse } from '../../../propel-shared/core/api-response';
+import { RuntimeInfo } from '../../../propel-shared/core/runtime-info';
 import { UserAccount } from '../../../propel-shared/models/user-account';
 import { UserAccountRolesUtil } from '../../../propel-shared/models/user-account-roles';
 import { UserRegistrationResponse } from '../../../propel-shared/core/user-registration-response';
 import { SecurityRequest } from '../../../propel-shared/core/security-request';
 import { SecurityToken } from '../../../propel-shared/core/security-token';
 import { SecuritySharedConfiguration } from '../../../propel-shared/core/security-shared-config';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { environment } from 'src/environments/environment';
 import { PropelAppError } from 'src/core/propel-app-error';
 import { SystemHelper } from 'src/util/system-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
+import { RDPUser } from '../../../propel-shared/core/rdp-user';
+import { ErrorCodes } from '../../../propel-shared/core/error-codes';
+
+const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
 
 const enum SecurityEndpointActions {
     GetConfiguration = "",
@@ -35,14 +40,38 @@ export class SecurityService {
 
     private _config: SecuritySharedConfiguration;
     private _securityToken: SecurityToken;
+    private _runtimeInfo: RuntimeInfo;
 
     constructor(private http: HttpClient) {
         logger.logInfo("SecurityService instance created");
+
+        //Caching the security service configuration:
         this.refreshConfig()
             .subscribe((results: APIResponse<SecuritySharedConfiguration>) => {
                 logger.logInfo("SecurityService configuration cached successfully");
             })
-    }
+
+        //Caching the runtime info gather by Electron when the app starts:
+        if (sessionStorage.getItem(RUNTIME_INFO_KEY)) {
+            this._runtimeInfo = JSON.parse(sessionStorage.getItem(RUNTIME_INFO_KEY));
+        }
+
+        if (environment.production == false) {
+            //////////////////////////////////////////////////////////////////////////
+            //DEBUG ONLY:
+            //  For debugging purposes only and to emulate a defined user in a dev env:
+            //  Comment below lines if you would like to login specifying the user in the login form:
+
+            // let x = new RuntimeInfo();
+            // x.userName = "test.admin.1"
+            // x.RDPUsers.push(new RDPUser(x.userName, "Active")) //To test userimpersonation error, comment this line.
+            // x.RDPUsers.push(new RDPUser("user.1", "Active"))
+            // x.RDPUsers.push(new RDPUser("user.2", "Disconected"))
+            // this._runtimeInfo = x;
+
+            //////////////////////////////////////////////////////////////////////////
+        }    
+   }
 
     /**
      * Returns the security configuration.
@@ -65,6 +94,13 @@ export class SecurityService {
         return Object.assign({}, this._securityToken);
     }
 
+    /**
+     * User that starts the propel app. (Only when running from Electron).
+     */
+    get runtimeUser(): string {
+        return (this._runtimeInfo ? this._runtimeInfo.userName : "");
+    }
+    
     /**
      * Fetch the current security configuration between backend and frontend.
      */
@@ -160,8 +196,26 @@ export class SecurityService {
      * @param sr SecurityRequest including all the infoneded for the user login process.
      * @returns A JWT token.
      */
-     login(sr: SecurityRequest): Observable<APIResponse<string>> {
+    login(sr: SecurityRequest): Observable<APIResponse<string>> {
         let url: string = this.buildURL(SecurityEndpointActions.Login);
+
+        if (this._runtimeInfo && this._runtimeInfo.userName && this._runtimeInfo.RDPUsers.length !== 0) {
+            let user = this._runtimeInfo.RDPUsers.find((u: RDPUser) => {
+                if (u.userName == sr.userName) {
+                    return u;
+                }
+            })
+
+            //If the login user is not one in the list of the connected RDP users:
+            if (!user) {
+                //More details in the console:
+                logger.logError(`${ErrorCodes.UserImpersonation.key} error was raised. Details are:
+Propel is running with the user "${sr.userName}" credentials.
+List of connected users in this machine are: ${this._runtimeInfo.RDPUsers.map((u: RDPUser) => u.userName).join(", ")}`)
+
+                return of(new APIResponse<string>(new PropelAppError("Impersonation is not allowed in Propel", ErrorCodes.UserImpersonation), ""));
+            }
+        }
 
         return this.http.post<APIResponse<string>>(url, sr, { headers: this.buildHeaders() })
         .pipe(
