@@ -40,13 +40,21 @@ export class PropelAppError extends PropelError {
                 this.url = ((error as any).srcElement.url) ? String((error as any).srcElement.url) : "";
                 this.httpStatus = ((error as any).srcElement.readyState) ? String((error as any).srcElement.readyState) : "";
                 this.isWSError = true;
-                if (error instanceof CloseEvent) {
-                    this.httpStatusText = `Websocket connection closed unexpectedly. Code:${error.code}.`;
+                if (error instanceof CloseEvent || error.name == "CloseEvent") {
+                    this.httpStatusText = `Websocket connection closed unexpectedly. Code:${(error as any).code}.`;
                 }
-            }          
+            }
+            else if(error.name && error.name.startsWith("Propel")) {
+                userMessage = (error as PropelAppError).errorCode ? (error as PropelAppError).errorCode.userMessage : "";
+            }         
         }
 
-        this.userMessage = userMessage;
+        if (userMessage) {
+            this.userMessage = userMessage;
+        }
+        else {
+            this.userMessage = errorCode ? errorCode.userMessage : ""; 
+        }
     }
 
     /**

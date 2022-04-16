@@ -27,13 +27,24 @@ export class PropelError extends Error {
             Value provided was of type "${typeof error}", with value "${error}" `)
         }
 
-        if (error instanceof PropelError) {
+        if (typeof error != "string" && (error instanceof PropelError || error.name == "PropelError")) {
             this.message = error.message;
             this.name = error.name;
             this.stack = error.stack;
-            this.stackArray = error.stackArray;
-            this.errorCode = error.errorCode;
-            this.httpStatus = error.httpStatus;
+            if ((error as PropelError).stackArray) {
+                this.stackArray = (error as PropelError).stackArray;
+            }
+            else {
+                this.stackArray = [];
+            }
+
+            if ((error as PropelError).errorCode) {
+                this.errorCode = (error as PropelError).errorCode;
+            }
+
+            if ((error as PropelError).httpStatus) {
+                this.httpStatus = (error as PropelError).httpStatus;
+            }  
         }
         else {
             if (errorCode && typeof errorCode != "object") {
@@ -69,7 +80,7 @@ export class PropelError extends Error {
     /**
      * One of the define Propel Error codes
      */
-    public readonly errorCode: Code;
+    public readonly errorCode!: Code;
 
     /**
      * If the error is XHR based, is the HTTP status returned by the call.
