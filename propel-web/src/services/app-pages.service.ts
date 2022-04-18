@@ -14,107 +14,200 @@ export class AppPages {
     Home: PageMetadata = {
         name: "home",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: false, //Indicates if non-authenticated users can access the page.
+          adminOnly:  false, //Indicates if only Administrators can access.
+        }
     }
     Run: PageMetadata = {
         name: "run",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  false, 
+        }
     }
     Sandbox: PageMetadata = {
         name: "sandbox",
         showNavBar: false,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: false, 
+          adminOnly:  false, 
+        }
     }
     Target: PageMetadata = {
         name: "target",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     Script: PageMetadata = {
         name: "script",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     QuickTask: PageMetadata = {
         name: "quick-task",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  false, 
+        }
     }
     Workflow: PageMetadata = {
         name: "workflow",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     Results: PageMetadata = {
         name: "results",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: false, 
+          adminOnly:  false, 
+        }
     }
     BrowseWorkflows: PageMetadata = {
         name: "browse-workflows",
         showNavBar: true,
-        showSearchBox: false
+        showSearchBox: false,
+        security : {
+          restricted: true, 
+          adminOnly:  false, 
+        }
     }
     BrowseScripts: PageMetadata = {
         name: "browse-scripts",
         showNavBar: true,
-        showSearchBox: false
+        showSearchBox: false,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     BrowseTargets: PageMetadata = {
         name: "browse-targets",
         showNavBar: true,
-        showSearchBox: false
+        showSearchBox: false,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     BrowseCredentials: PageMetadata = {
         name: "browse-credentials",
         showNavBar: true,
-        showSearchBox: false
+        showSearchBox: false,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     BrowseUserAccounts: PageMetadata = {
         name: "browse-useraccounts",
         showNavBar: true,
-        showSearchBox: false
+        showSearchBox: false,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     History: PageMetadata = {
         name: "history",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: false, 
+          adminOnly:  false, 
+        }
     }
     Offline: PageMetadata = {
         name: "offline",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: false, 
+          adminOnly:  false, 
+        }
+    }
+    Unauthorized: PageMetadata = {
+        name: "unauthorized",
+        showNavBar: true,
+        showSearchBox: true,
+        security : {
+          restricted: false, 
+          adminOnly:  false, 
+        }
     }
     Credential: PageMetadata = {
         name: "credential",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     CredentialWindows: PageMetadata = {
         name: "credential-windows",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     CredentialAWS: PageMetadata = {
         name: "credential-aws",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     CredentialAPIKey: PageMetadata = {
         name: "credential-apikey",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     UserAccount: PageMetadata = {
         name: "useraccount",
         showNavBar: true,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        }
     }
     Login: PageMetadata = {
         name: "login",
         showNavBar: false,
-        showSearchBox: true
+        showSearchBox: true,
+        security : {
+          restricted: false, 
+          adminOnly:  false, 
+        }
     }
 
     constructor() {    
@@ -190,9 +283,34 @@ export class AppPages {
      */
     showSearchBox: boolean = false;
 
+    /**
+     * Page security details, indicating theroles that are granting access, etc..
+     */
+    security: PageSecurity;
+
     constructor() {
         
     }
 }
 
+/**
+ * Page security class contains attributes that indicates some security features like if 
+ * non authenticated users can acces or which roles will be forbidden and which not.
+ */
+export class PageSecurity {
+
+    /**
+     * Indicates if non-authenticated users can access the page.
+     */
+    restricted: boolean;
+    
+    /**
+     * Indicates if only Administrators can access.
+     */
+    adminOnly: boolean;
+    
+    constructor() {
+        
+    }
+}
 export let pages: AppPages = new AppPages();

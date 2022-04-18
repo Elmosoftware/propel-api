@@ -43,7 +43,6 @@ import { InfiniteScrollingModule } from './core/infinite-scrolling-module';
 import { APIStatusService } from "./services/api-status.service";
 
 //Dialogs
-import { StandardDialogComponent } from "./app/dialogs/standard-dialog/standard-dlg.component";
 import { WorkflowStepDialogComponent } from './app/dialogs/workflow-step-dlg/workflow-step-dlg.component';
 import { CustomFieldDialogComponent } from './app/dialogs/custom-field-dlg/custom-field-dlg.component';
 
@@ -71,6 +70,7 @@ import { SearchScriptLineComponent } from './app/search-script-line/search-scrip
 import { SearchTargetLineComponent } from './app/search-target-line/search-target-line.component';
 import { HistoryComponent } from './app/history/history.component';
 import { OfflineComponent } from './app/offline/offline.component';
+import { UnauthorizedComponent } from './app/unauthorized/unauthorized.component';
 import { CredentialComponent } from './app/credential/credential.component';
 import { WindowsSecretComponent } from './app/credential/windows-secret/windows-secret.component';
 import { AWSSecretComponent } from "./app/credential/aws-secret/aws-secret.component";
@@ -81,6 +81,7 @@ import { SearchUserAccountLineComponent } from './app/search-user-account-line/s
 import { SecurityService } from './services/security.service';
 import { AuthenticationCodeComponent } from './app/authentication-code/authentication-code.component';
 import { LoginComponent } from './app/login/login.component';
+import { SecurityGuard } from './services/security-guard';
 
 @NgModule({
     declarations: [
@@ -109,6 +110,7 @@ import { LoginComponent } from './app/login/login.component';
         SearchTargetLineComponent,
         HistoryComponent,
         OfflineComponent,
+        UnauthorizedComponent,
         CredentialComponent,
         WindowsSecretComponent,
         AWSSecretComponent,
@@ -164,7 +166,8 @@ import { LoginComponent } from './app/login/login.component';
         DataLossPreventionGuard,
         PSParametersInferrerService,
         APIStatusService,
-        SecurityService
+        SecurityService,
+        SecurityGuard
     ],
     bootstrap: [RootComponent]
 })

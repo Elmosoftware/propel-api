@@ -1,0 +1,17 @@
+.retry-button {
+    width: 35%;
+}
+
+.icon-size {
+    font-size: 3em;
+}
+
+.vertical-center {
+    margin-bottom: 0; 
+    min-height: 100%;
+    min-height: 100vh;
+    display: flex; 
+    align-items : center;
+    width: 100%;
+    justify-content : center;
+}

@@ -1,5 +1,6 @@
 import { Component, EventEmitter, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { PropelAppError } from 'src/core/propel-app-error';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
@@ -52,12 +53,13 @@ export class LoginComponent implements OnInit {
   viewAuthCodeOrPassword: boolean = false;
   viewNewPassword: boolean = false;
   viewPasswordConfirmation: boolean = false;
+  referrerURL: string = "";
 
   //Form validation constant parameters:
   validationParams: any;
   formFlow: FormFlow;
 
-  constructor(private core: CoreService) {
+  constructor(private core: CoreService, private route: ActivatedRoute) {
 
     this.validationParams = {
       get nameMaxLength() { return 25 },
@@ -89,6 +91,7 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.referrerURL = this.route.snapshot.queryParamMap.get("referrerURL")
     this.formFlow = new FormFlow();
 
     //If we have the user that is running Propel specified in the runtime info, then we must set it 
@@ -233,7 +236,13 @@ export class LoginComponent implements OnInit {
         else {
           this.formFlow.message = MSG_LOGIN_SUCCESS;
           this.formFlow.messageIsError = false
-          this.core.navigation.toHome();
+
+          if (this.referrerURL) {
+            this.core.navigation.to(this.referrerURL)
+          }
+          else {
+            this.core.navigation.toHome();
+          }
         }
       },
         err => {

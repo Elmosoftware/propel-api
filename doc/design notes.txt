@@ -614,3 +614,14 @@ PUT /security/register
 POST /security/lock
 POST /security/unlock
 POST /security/reset
+
+===================================================================
+AUTH GUARD
+
+data: {
+	title: "My Page"
+	security : {
+		restricted: {true | false}, //Indicates if non-authenticated users can access the page.
+		adminOnly:  {true | false}, //Indicates ifonly Administrators can access.
+	}
+},

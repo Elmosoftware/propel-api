@@ -17,6 +17,7 @@ import { SystemHelper } from 'src/util/system-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
 import { RDPUser } from '../../../propel-shared/core/rdp-user';
 import { ErrorCodes } from '../../../propel-shared/core/error-codes';
+import { PageMetadata } from './app-pages.service';
 
 const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
 
@@ -37,7 +38,7 @@ const enum SecurityEndpointActions {
     providedIn: 'root'
 })
 export class SecurityService {
-
+    
     private _config: SecuritySharedConfiguration;
     private _securityToken: SecurityToken;
     private _runtimeInfo: RuntimeInfo;
@@ -60,17 +61,22 @@ export class SecurityService {
             //////////////////////////////////////////////////////////////////////////
             //DEBUG ONLY:
             //  For debugging purposes only and to emulate a defined user in a dev env:
-            //  Comment below lines if you would like to login specifying the user in the login form:
+            //  Comment below lines if you would like to login specifying a runtime info like the 
+            //  one created by Electron start scripts when the app starts in prod:
 
             // let x = new RuntimeInfo();
-            // x.userName = "test.admin.1"
-            // x.RDPUsers.push(new RDPUser(x.userName, "Active")) //To test userimpersonation error, comment this line.
+            // x.userName = "test.admin.1" //To test as an ADMIN user.
+            // x.userName = "test.regular.one" //To test as a Regular user.
+
+            // x.RDPUsers.push(new RDPUser(x.userName, "Active")) //Comment this line to test user impersonation error.
             // x.RDPUsers.push(new RDPUser("user.1", "Active"))
             // x.RDPUsers.push(new RDPUser("user.2", "Disconected"))
             // this._runtimeInfo = x;
 
             //////////////////////////////////////////////////////////////////////////
-        }    
+        }   
+        
+        this._securityToken = null;
    }
 
     /**
@@ -99,6 +105,34 @@ export class SecurityService {
      */
     get runtimeUser(): string {
         return (this._runtimeInfo ? this._runtimeInfo.userName : "");
+    }
+
+    /**
+     * Indicates if the current user has access to the specified page.
+     * @param page Page
+     * @returns A boolean value indicating if the current user has access.
+     */
+    isAccessGranted(page: PageMetadata): boolean {
+        let ret: boolean = false;
+
+        if (!page) return false; //No page provided, no access can be granted.        
+        if(!page.security.restricted) return true; //Page has no restrictions to access.
+
+        //If authentication is required:
+        if (page.security.restricted && !this.IsUserLoggedIn) {
+            ret = false;
+        }
+
+        if (page.security.restricted && this.IsUserLoggedIn) {
+            if (page.security.adminOnly && !this.sessionDetails.roleIsAdmin) {
+                ret = false;
+            }
+            else {
+                ret = true;
+            }
+        }
+
+        return ret;
     }
     
     /**
@@ -220,12 +254,21 @@ List of connected users in this machine are: ${this._runtimeInfo.RDPUsers.map((u
         return this.http.post<APIResponse<string>>(url, sr, { headers: this.buildHeaders() })
         .pipe(
             map((results: APIResponse<string>) => {
-                //TODO: HERE  STORE THE TOKEN and the user details!!!
                 this.finishLoginProcess(results.data[0]);
                 return results;
             })
         )
     }
+
+    /**
+     * 
+     */
+    logOff() {
+        if (this.IsUserLoggedIn) {
+            this._securityToken = null;       
+        }
+    }
+
 
     private finishLoginProcess(token: string): void {
         let tokenSections: string[] = token.split(".")
@@ -236,11 +279,10 @@ The provided JWT token is not properly formatted. We expect Header, Payload and 
 
         tokenPayload = SystemHelper.decodeBase64(tokenSections[1]);
 
-        if (Utils.isValidJSON(tokenPayload)) {
-            
-        }
-        else throw new PropelAppError(`Invalid token payload. 
+        if (!Utils.isValidJSON(tokenPayload)) {
+            throw new PropelAppError(`Invalid token payload. 
 The payload in the provided JWT token can't be parsed as JSON. Payload content is: ${tokenPayload} sections.`);
+        }
         
         this._securityToken = new SecurityToken();
         this._securityToken.hydrateFromTokenPayload(JSON.parse(tokenPayload));

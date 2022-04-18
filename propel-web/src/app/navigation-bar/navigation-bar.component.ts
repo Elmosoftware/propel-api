@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { DialogResult } from 'src/core/dialog-result';
 
 import { CoreService } from 'src/services/core.service';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
+import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -39,6 +41,90 @@ export class NavigationBarComponent implements OnInit {
 
   get isHistory(): boolean {
     return this.core.navigation.currentPageIs(this.core.navigation.pages.History)
+  }
+
+  get canAccessQuickTask(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.QuickTask)
+  }
+
+  get canAccessWorkflow(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.Workflow)
+  }
+
+  get canAccessScript(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.Script)
+  }
+
+  get canAccessTarget(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.Target)
+  }
+
+  get canAccessHistory(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.History)
+  }
+
+  get canAccessBrowseWorkflows(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.BrowseWorkflows)
+  }
+
+  get canAccessBrowseScripts(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.BrowseScripts)
+  }
+
+  get canAccessBrowseTargets(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.BrowseTargets)
+  }
+
+  get canAccessBrowseMenu(): boolean {
+    return this.canAccessBrowseWorkflows || this.canAccessBrowseScripts || this.canAccessBrowseTargets;
+  }
+
+  get canAccessCredentialWindows(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.CredentialWindows)
+  }
+
+  get canAccessCredentialAWS(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.CredentialAWS)
+  }
+
+  get canAccessCredentialAPIKey(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.CredentialAPIKey)
+  }
+
+  get canAccessCredentials(): boolean {
+    return this.canAccessCredentialWindows || this.canAccessCredentialAWS || this.canAccessCredentialAPIKey;
+  }
+
+  get canBrowseCredentials(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.BrowseCredentials)
+  }
+
+  get canAccessUserAccount(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.UserAccount)
+  }
+
+  get canBrowseUserAccounts(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.BrowseUserAccounts)
+  }
+
+  get userName(): string {
+    let ret:string = "";
+
+    if (this.core.security.IsUserLoggedIn) {
+      ret = `${this.core.security.sessionDetails.userFullName}, (${this.core.security.sessionDetails.userName})`
+    }
+
+    return ret;
+  }
+
+  get userInitials(): string {
+    let ret:string = "";
+
+    if (this.userName) {
+      ret = this.core.security.sessionDetails.userInitials;
+    }
+
+    return ret;
   }
 
   get showNavBar(): boolean {
@@ -138,6 +224,20 @@ export class NavigationBarComponent implements OnInit {
 
   goToLogin() {
     this.core.navigation.toLogin();
+  }
+
+  goToLogoff() {
+    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
+      "Log off",
+      `Are you sure you want to log off?`, "Yes, I want!", "No, I'll stay here a little longer")
+    ).subscribe((result: DialogResult<any>) => {
+      if (!result.isCancel) {
+        this.core.security.logOff();
+        this.core.navigation.toHome();
+      }
+    }, err => {
+      throw err
+    });
   }
 
   doNotPropagate($event) {

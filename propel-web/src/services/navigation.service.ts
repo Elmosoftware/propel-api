@@ -6,8 +6,6 @@ import { logger } from "../../../propel-shared/services/logger-service";
 import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from "../../../propel-shared/models/credential-types";
 import { PageMetadata, AppPages } from "src/services/app-pages.service";
 
-
-
 /**
  * This class acts as a helper to navigate the different pages in the app.
  */
@@ -44,30 +42,18 @@ export class NavigationService {
     * Retrieves the name of the current active page.
     */
     get currentPage(): PageMetadata {
-        let matches: any;
-        let ret: PageMetadata;
-
-        matches = this.router.url.match(this._currPageRXP);
-
-        if (matches && matches.length > 0) {
-            ret = this.appPages.getPageFromName(matches[0].slice(1)); //Removing the initial forwardslash.
-        }
-        else {
-            ret = new PageMetadata();
-        }
-
-        return ret;
+        return this.getPageFromURL(this.router.url);
     }
 
     constructor(private router: Router, private appPages: AppPages, private location: Location) {
         this._currPageRXP = new RegExp("^/[A-Za-z-]*", "gi");
         logger.logInfo("Navigationservice instance created");
-        
+
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
-              this._navigationHistory.push(event.urlAfterRedirects)
+                this._navigationHistory.push(event.urlAfterRedirects)
             }
-          })
+        })
     }
 
     httpReqStarted() {
@@ -92,7 +78,7 @@ export class NavigationService {
     }
 
     /**
-     * Returns aboolean value indicating if the current page is the provided one.
+     * Returns a boolean value indicating if the current page is the specified one.
      * @param page Page to check
      * @returns A boolean value indicating in the provided page is the current page.
      */
@@ -122,15 +108,41 @@ export class NavigationService {
         return ret;
     }
 
+    /**
+     * PageMetadata corresponding to the specified URL.
+     * @param url URL from where to extract the page.
+     * @returns The PageMetadata or a new PageMetadata if the page is not defined.
+     */
+    getPageFromURL(url: string): PageMetadata {
+        let ret: PageMetadata;
+        let matches = String(url).match(this._currPageRXP);
+
+        if (matches && matches.length > 0) {
+            ret = this.appPages.getPageFromName(matches[0].slice(1)); //Removing the initial forwardslash.
+        }
+        else {
+            ret = new PageMetadata();
+        }
+
+        return ret;
+    }
+
     back(): void {
         this._navigationHistory.pop();
 
         if (this._navigationHistory.length > 0) {
-          this.location.back()
+            this.location.back()
         } else {
-          this.router.navigateByUrl("/") //To whoever is our landing page.
+            this.router.navigateByUrl("/") //To whoever is our landing page.
         }
-      }
+    }
+
+    /**
+     * Navigate to the requested url.
+     */
+    to(url: string): void {
+        this.router.navigate([url]);
+    }
 
     /**
      * Navigate to Home page.
@@ -142,8 +154,11 @@ export class NavigationService {
     /**
      * Navigate to Login page.
      */
-    toLogin(): void {
-        this.router.navigate([this.getRelativePath(this.pages.Login.name)]);
+    toLogin(referrerURL: string = ""): void {
+        this.router.navigate([this.getRelativePath(this.pages.Login.name)],
+            {
+                queryParams: { referrerURL: String(referrerURL) }
+            });
     }
 
     /**
@@ -292,6 +307,13 @@ export class NavigationService {
      */
     toOffline(): void {
         this.router.navigate([this.getRelativePath(this.pages.Offline.name)]);
+    }
+
+    /**
+     * Used by the system to indicate the user the access is forbidden.
+     */
+    toUnauthorized(): void {
+        this.router.navigate([this.getRelativePath(this.pages.Unauthorized.name)]);
     }
 
     /**

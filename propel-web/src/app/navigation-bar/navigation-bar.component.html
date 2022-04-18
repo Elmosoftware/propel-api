@@ -8,38 +8,37 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item nav-menu" [ngClass]="{
+      <li *ngIf="canAccessQuickTask" class="nav-item nav-menu" [ngClass]="{
         'nav-menu-selected': isQuickTask
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToQuickTask()">Quick Task</a>
       </li>
-
-      <li class="nav-item nav-menu" [ngClass]="{
+      <li *ngIf="canAccessWorkflow" class="nav-item nav-menu" [ngClass]="{
         'nav-menu-selected':  isWorkflow
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToWorkflow()">Workflow</a>
       </li>
-      <li class="nav-item nav-menu" [ngClass]="{
+      <li *ngIf="canAccessScript" class="nav-item nav-menu" [ngClass]="{
         'nav-menu-selected': isScript
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToScript()">Script</a>
       </li>
-      <li class="nav-item nav-menu" [ngClass]="{
+      <li *ngIf="canAccessTarget" class="nav-item nav-menu" [ngClass]="{
         'nav-menu-selected': isTarget
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToTarget()">Target</a>
       </li>
-      <li class="nav-item nav-menu" [ngClass]="{
+      <li *ngIf="canAccessHistory" class="nav-item nav-menu" [ngClass]="{
         'nav-menu-selected': isHistory
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToHistory()">History</a>
       </li>
-      <li class="nav-item dropdown nav-menu" [ngClass]="{
+      <li *ngIf="canAccessBrowseMenu" class="nav-item dropdown nav-menu" [ngClass]="{
         'nav-menu-selected': isBrowsePage
       }">
         <a class="nav-link dropdown-toggle no-wrap-links menu-item" href="#" id="navbarDropdown" role="button"
@@ -47,22 +46,22 @@
           Browse
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseWorkflows()">
+          <a *ngIf="canAccessBrowseWorkflows" class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseWorkflows()">
             <span class="icon-workflows menu-icon"></span>
             <span>Workflows</span>
           </a>
-          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseScripts()">
+          <a *ngIf="canAccessBrowseScripts" class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseScripts()">
             <span class="icon-scripts menu-icon"></span>
             <span>Scripts</span>
           </a>
-          <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseTargets()">
+          <a *ngIf="canAccessBrowseTargets" class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseTargets()">
             <span class="icon-targets menu-icon"></span>
             <span>Targets</span>
           </a>
         </div>
       </li>
     </ul>
-    <div *ngIf="showSearchBox"
+    <div *ngIf="showSearchBox && canAccessBrowseWorkflows"
       class="input-group input-group-md justify-content-sm-start justify-content-md-end mb-2 mb-sm-2 mb-md-0 menu-item">
       <input type="text" class="form-control search-input" placeholder="Search" aria-label="Search"
         [(ngModel)]="searchTerm" (keyup.enter)="goToSearch()">
@@ -75,59 +74,63 @@
     <div class="nav-item dropdown nav-menu">
       <div class="nav-link dropdown-toggle no-wrap-links menu-item icon-white" data-toggle="dropdown" href="#" aria-expanded="true"
         id="dropdown02">
-        <!-- <div class="text-circle text-circle-mini">
-            CZ
-        </div>     -->
-        <span class="icon-user-mini icon-white menu-icon"></span>
+        <div *ngIf="userName; else noUser" class="text-circle text-circle-mini"
+        [matTooltip]="userName" matTooltipClass="tooltipsWithBreakLines"
+        matTooltipPosition="left">
+          {{userInitials}}
+        </div>
+        <ng-template #noUser>
+          <span class="icon-user-mini icon-white menu-icon"></span>
+        </ng-template> 
       </div>
       <div class="dropdown-menu dropdown-user" aria-labelledby="dropdown02">
-        <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialWin()">
+        <a *ngIf="userName" class="dropdown-item" href="javascript:void(0)">
           <span class="icon-user-mini menu-icon"></span>
           <span>My preferences</span>
         </a>
         <!-- New Script credential submenu -->
-        <div class="menu-divider" (click)="doNotPropagate($event)">
+        <div *ngIf="canAccessCredentials" class="menu-divider" (click)="doNotPropagate($event)">
           <span >Script Credential Management</span>
         </div>
-        <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialWin()">
+        <a *ngIf="canAccessCredentialWindows" class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialWin()">
           <span class="icon-credential-windows menu-icon"></span>
           <span>New Windows credential</span>
         </a>
-        <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialAWS()">
+        <a *ngIf="canAccessCredentialAWS" class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialAWS()">
           <span class="icon-credential-aws menu-icon"></span>
           <span>New Amazon Web Services credential</span>
         </a>
-        <a class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialGenericAPIKey()">
+        <a *ngIf="canAccessCredentialAPIKey" class="dropdown-item" href="javascript:void(0)" (click)="goToCredentialGenericAPIKey()">
           <span class="icon-credential-apikey menu-icon"></span>
           <span>New Generic API Key credential</span>
         </a>
-        <div (click)="doNotPropagate($event)">
+        <div *ngIf="canAccessCredentials && canBrowseCredentials" (click)="doNotPropagate($event)">
           <div class="dropdown-divider menu-divider-line"></div>
         </div>
-        <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseCredentials()">
+        <a *ngIf="canBrowseCredentials" class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseCredentials()">
           <span class="icon-credentials menu-icon"></span>
           <span>Manage Script Credentials</span>
         </a>
         <!-- User Management Submenu -->
-        <div class="menu-divider" (click)="doNotPropagate($event)">
+        <div *ngIf="canAccessUserAccount || canBrowseUserAccounts" class="menu-divider" (click)="doNotPropagate($event)">
           <span >Propel Users Management</span>
         </div>
-        <a class="dropdown-item" href="javascript:void(0)" (click)="goToUserAccount()">
+        <a *ngIf="canAccessUserAccount" class="dropdown-item" href="javascript:void(0)" (click)="goToUserAccount()">
           <span class="icon-user-mini menu-icon"></span>
           <span>New User account</span>
         </a>
-        <a class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseUsers()">
+        <a *ngIf="canBrowseUserAccounts" class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseUsers()">
           <span class="icon-users-mini menu-icon"></span>
           <span>Manage Users</span>
         </a>
-        <div (click)="doNotPropagate($event)">
+        <div *ngIf="canAccessUserAccount || canBrowseUserAccounts" (click)="doNotPropagate($event)">
           <div class="dropdown-divider menu-divider-line"></div>
         </div>        
-        <a class="dropdown-item" href="javascript:void(0)" (click)="goToLogin()">
+        <a *ngIf="!userName" class="dropdown-item" href="javascript:void(0)" (click)="goToLogin()">
           <span class="icon-login-mini menu-icon"></span>
           <span>Login</span>
         </a>
-        <a class="dropdown-item" href="javascript:void(0)">
+        <a *ngIf="userName" class="dropdown-item" href="javascript:void(0)" (click)="goToLogoff()">
           <span class="icon-logoff-mini menu-icon"></span>
           <span>Log off</span>
         </a>

@@ -18,6 +18,8 @@ import { CredentialComponent } from './app/credential/credential.component';
 import { UserAccountComponent } from './app/user-account/user-account.component';
 import { LoginComponent } from './app/login/login.component';
 import { pages } from './services/app-pages.service';
+import { SecurityGuard } from './services/security-guard';
+import { UnauthorizedComponent } from './app/unauthorized/unauthorized.component';
 
 const routes: Routes = [
   {
@@ -30,21 +32,24 @@ const routes: Routes = [
     component: HomeComponent,
     data: {
       title: "Home"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.Login.name,
     component: LoginComponent,
     data: {
       title: "User login"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: `${pages.Run.name}/:id`,
     component: RunComponent,
     data: {
       title: "Run"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.Target.name,
@@ -52,7 +57,8 @@ const routes: Routes = [
     data: {
       title: "New Target"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: `${pages.Target.name}/:id`,
@@ -60,7 +66,8 @@ const routes: Routes = [
     data: {
       title: "Editing Target"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.Script.name,
@@ -68,7 +75,8 @@ const routes: Routes = [
     data: {
       title: "New Script"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: `${pages.Script.name}/:id`,
@@ -76,7 +84,8 @@ const routes: Routes = [
     data: {
       title: "Editing Script"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.QuickTask.name,
@@ -84,7 +93,8 @@ const routes: Routes = [
     data: {
       title: "New Quick task"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.Workflow.name,
@@ -92,7 +102,8 @@ const routes: Routes = [
     data: {
       title: "New Workflow"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: `${pages.Workflow.name}/:id`,
@@ -100,63 +111,80 @@ const routes: Routes = [
     data: {
       title: "Editing Workflow"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: `${pages.Results.name}/:id`,
     component: ResultsComponent,
     data: {
       title: "Displaying execution results"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.BrowseWorkflows.name,
     component: SearchComponent,
     data: {
       title: "Browsing Workflows"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.BrowseScripts.name,
     component: SearchComponent,
     data: {
       title: "Browsing Scripts"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.BrowseTargets.name,
     component: SearchComponent,
     data: {
       title: "Browsing Targets"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.BrowseCredentials.name,
     component: SearchComponent,
     data: {
       title: "Browsing Credentials"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.BrowseUserAccounts.name,
     component: SearchComponent,
     data: {
       title: "Browsing User Accounts"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.History.name,
     component: HistoryComponent,
     data: {
       title: "Seeing Execution History"
-    }
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.Offline.name,
     component: OfflineComponent,
     data: {
       title: "There are connectivity issues"
-    }
+    },
+    canActivate: [SecurityGuard]
+  },
+  {
+    path: pages.Unauthorized.name,
+    component: UnauthorizedComponent,
+    data: {
+      title: "Access is forbidden"
+    },
+    canActivate: [SecurityGuard]
   },
   {
     path: `${pages.Credential.name}/:id`,
@@ -164,7 +192,8 @@ const routes: Routes = [
     data: {
       title: "Editing Credential"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.CredentialWindows.name,
@@ -172,7 +201,8 @@ const routes: Routes = [
     data: {
       title: "New Windows Credential"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.CredentialAWS.name,
@@ -180,7 +210,8 @@ const routes: Routes = [
     data: {
       title: "New AWS Credential"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.CredentialAPIKey.name,
@@ -188,7 +219,8 @@ const routes: Routes = [
     data: {
       title: "New Generic API Key Credential"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.UserAccount.name,
@@ -196,7 +228,8 @@ const routes: Routes = [
     data: {
       title: "New User account"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: `${pages.UserAccount.name}/:id`,
@@ -204,7 +237,8 @@ const routes: Routes = [
     data: {
       title: "Editing User account"
     },
-    canDeactivate: [DataLossPreventionGuard]
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
   },
   {
     path: pages.Sandbox.name,
