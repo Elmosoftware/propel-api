@@ -54,7 +54,6 @@ describe("PropelError Class - Construct from Message", () => {
 
         expect(e.name).toBe("PropelError");
         expect(e.message).toBe(msg);
-        expect(e.stack).not.toBeFalsy();
         expect(e.stackArray).not.toBeFalsy();
         expect(e.stackArray.length).toBeGreaterThan(0);
         expect(e.errorCode).toEqual(new Code())
@@ -66,7 +65,6 @@ describe("PropelError Class - Construct from Message", () => {
 
         expect(e.name).toBe("PropelError");
         expect(e.message).toBe(msg);
-        expect(e.stack).not.toBeFalsy();
         expect(e.stackArray).not.toBeFalsy();
         expect(e.stackArray.length).toBeGreaterThan(0);
         expect(e.errorCode).toEqual(code)
@@ -78,7 +76,6 @@ describe("PropelError Class - Construct from Message", () => {
 
         expect(e.name).toBe("PropelError");
         expect(e.message).toBe(msg);
-        expect(e.stack).not.toBeFalsy();
         expect(e.stackArray).not.toBeFalsy();
         expect(e.stackArray.length).toBeGreaterThan(0);
         expect(e.errorCode).toEqual(code)
@@ -90,7 +87,6 @@ describe("PropelError Class - Construct from Message", () => {
 
         expect(e.name).toBe("PropelError");
         expect(e.message).toBe(msg);
-        expect(e.stack).not.toBeFalsy();
         expect(e.stackArray).not.toBeFalsy();
         expect(e.stackArray.length).toBeGreaterThan(0);
         expect(e.errorCode).toEqual(code)
@@ -105,7 +101,6 @@ describe("PropelError Class - Construct from Error Object", () => {
 
         expect(e.name).toBe("PropelError - Error");
         expect(e.message).toBe(msg.message);
-        expect(e.stack).not.toBeFalsy();
         expect(e.stackArray).not.toBeFalsy();
         expect(e.stackArray.length).toBeGreaterThan(0);
         expect(e.errorCode).toEqual(new Code())
@@ -118,7 +113,6 @@ describe("PropelError Class - Construct from Error Object", () => {
 
         expect(e.name).toBe("PropelError - Error");
         expect(e.message).toBe(msg.message);
-        expect(e.stack).not.toBeFalsy();
         expect(e.stackArray).not.toBeFalsy();
         expect(e.stackArray.length).toBeGreaterThan(0);
         expect(e.errorCode).toEqual(code)
