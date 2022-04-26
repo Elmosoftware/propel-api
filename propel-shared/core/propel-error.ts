@@ -69,6 +69,12 @@ export class PropelError extends Error {
             this.stackArray = this.parseStackArray(error);
             this.errorCode = this.parseErrorCode(errorCode);
             this.httpStatus = this.parseHTTPStatus(httpStatus)
+
+            //We don't want to duplicate data, so if the stackArray is filled, there is no need 
+            //for the stack:
+            if (this.stackArray.length !== 0) {
+                this.stack = "";
+            }
         }
     }
 
@@ -116,7 +122,7 @@ export class PropelError extends Error {
             ret = err.stack;
         }
         else {
-            ret = "";
+            ret = String((new Error()).stack);
         }
         return ret;
     }
@@ -135,7 +141,7 @@ export class PropelError extends Error {
                 .split('\n')
                 .filter((line) => {
                     //Excluding first line and references to this module from the stack:
-                    return !(line.startsWith("Error") || line.indexOf("api-error.") != -1)
+                    return !(line.startsWith("Error") || line.indexOf("PropelError") != -1)
                 })
                 .map((line) => line.trim());
         }
