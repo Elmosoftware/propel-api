@@ -98,58 +98,6 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         return ret;
     }
 
-
-
-    // /**
-    //  * Returns the amount of objects already created and ready to be aquired.
-    //  */
-    // get availableCount(): number {
-    //     return this._availableRepo.length;
-    // }
-
-    // /**
-    //  * Returns the amounts of object already in use. 
-    //  */
-    // get lockedCount(): number {
-    //     return this._lockedRepo.length;
-    // }
-
-    // /**
-    //  * Returns theamount of objects already created by the pool.
-    //  */
-    // get createdCount(): number {
-    //     return this.availableCount + this.lockedCount;
-    // }
-
-    // /**
-    //  * Returns how many objects the pool can create if all the current are aquired and new 
-    //  * requests come in.
-    //  */
-    // get availableToGrow(): number {
-    //     return (this._disposing) ? 0 : this._opt.maxSize - this.createdCount;
-    // }
-
-    // /**
-    //  * Returns a boolean value indicating if there still space to grow by creating more instances of T.
-    //  */
-    // get canGrow(): boolean {
-    //     return (this.availableToGrow > 0);
-    // }
-
-    // /**
-    //  * Current amount of aquire request that have been queud and are waiting for released objects.
-    //  */
-    // get queueSize(): number {
-    //     return this._requestQueue.length;
-    // }
-
-    // /**
-    //  * Remaining queue space. (Maximum queue size less current request queued).
-    //  */
-    // get remainingQueueSpace(): number {
-    //     return this._opt.maxQueueSize - this.queueSize;
-    // }
-
     /**
      * Returns a boolean value indicating if the pool is now disposing object.
      * Disposingall the ibjects in the pool is the final state. All the resouces will be released 
