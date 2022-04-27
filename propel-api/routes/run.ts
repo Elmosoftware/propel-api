@@ -1,7 +1,7 @@
 // @ts-check
 import express from "express";
 
-import { Route } from "./route";
+import { Route } from "../core/route";
 import { Runner } from "../services/runner-service";
 import { db } from "../core/database";
 import { DataService } from "../services/data-service";
@@ -11,18 +11,35 @@ import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/in
 import { logger } from "../services/logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
+import { SecurityRule } from "../core/security-rule";
 
 /**
  * Run endpoint. This receives a Workflowid, takes care of the execution and returns the 
  * corresponding ExecutionLog ID.
  * @implements Route.
  */
-export class RunRouter implements Route {
+export class RunRoute implements Route {
+
+    name: string = "Run";
+
+    path: string = "/api/run";
+
+    security: SecurityRule[] = [
+        {
+            matchFragment: "/*",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [],
+            preventAnon: true,
+            text: `This rule prevents anonymous users to run Quick Tasks or Workflows.`
+        }
+    ];
 
     constructor() {
+        logger.logDebug(`Creating route ${this.name} with path "${this.path}"`)
     }
 
-    route(): express.Router {
+    handler(): express.Router {
 
         const handler = express.Router();
 
@@ -83,7 +100,7 @@ export class RunRouter implements Route {
                 }
             });
         } catch (err) {
-            logger.logError(err);
+            logger.logError((err as Error));
             ws.send(JSON.stringify(new APIResponse(err, null)));
             ws.close();
         }

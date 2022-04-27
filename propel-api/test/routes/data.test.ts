@@ -1,9 +1,9 @@
 import { db } from "../../core/database";
-import { DataRouter } from "../../routes/data";
+import { DataRoute } from "../../routes/data";
 import { DataService } from "../../services/data-service";
 import { APIResponse } from "../../../propel-shared/core/api-response";
 
-let d: DataRouter;
+let d: DataRoute;
 let svc: DataService
 let action: string;
 
@@ -11,7 +11,7 @@ describe("DataRouter class - processFind()", () => {
 
     beforeEach(() => {
         action = "find"
-        d = new DataRouter();
+        d = new DataRoute();
         svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.find = (qm: any) => { //To avoid hitting the DB.
             return Promise.resolve(new APIResponse<any>(null, "FIND"));
@@ -65,7 +65,7 @@ describe("DataRouter class - processSave()", () => {
 
     beforeEach(() => {
         action = "save"
-        d = new DataRouter();
+        d = new DataRoute();
         svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.update = (document: any) => { //To avoid hitting the DB.
             return Promise.resolve(new APIResponse<any>(null, "UPDATE"));
@@ -122,7 +122,7 @@ describe("DataRouter class - processDelete()", () => {
 
     beforeEach(() => {
         action = "delete"
-        d = new DataRouter();
+        d = new DataRoute();
         svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.delete = (id: string) => { //To avoid hitting the DB.
             return Promise.resolve(new APIResponse<any>(null, "DELETE"));

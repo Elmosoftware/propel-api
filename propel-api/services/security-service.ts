@@ -7,7 +7,7 @@ import { cfg } from "../core/config";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityRequest } from "../../propel-shared/core/security-request";
 import { SecuritySharedConfiguration } from "../../propel-shared/core/security-shared-config";
-import { SecurityToken } from "../../propel-shared/core/security-token";
+import { SecurityToken, TokenPayload } from "../../propel-shared/core/security-token";
 import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
 import { DataService } from "../services/data-service";
 import { UserAccount } from "../../propel-shared/models/user-account";
@@ -18,6 +18,8 @@ import { APIResponse } from "../../propel-shared/core/api-response";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { Utils } from '../../propel-shared/utils/utils';
 import { ErrorCodes } from '../../propel-shared/core/error-codes';
+import { SecurityRuleSelector } from '../core/security-rule-selector';
+import { allRoutes } from '../routes/all-routes';
 
 export class SecurityService {
 
@@ -26,8 +28,10 @@ export class SecurityService {
      */
     loginData!: LoginData;
 
+    ruler: SecurityRuleSelector;
+
     constructor() {
-    
+        this.ruler = new SecurityRuleSelector(allRoutes);
     }
 
     /**
@@ -36,7 +40,7 @@ export class SecurityService {
      */
     getSharedConfig(): SecuritySharedConfiguration {
         let ret: SecuritySharedConfiguration = new SecuritySharedConfiguration();
-        
+
         ret.authCodeLength = cfg.authorizationCodeLength;
         ret.passwordMinLength = cfg.passwordMinLength;
         ret.passwordMaxLength = cfg.passwordMaxLength;
@@ -62,7 +66,7 @@ export class SecurityService {
             user.mustReset = false;
 
             //If is a new user we need to generate a secret with an authentication code:
-            authCode = this.createAuthCode(); 
+            authCode = this.createAuthCode();
             user.secretId = await this.createNewSecret(authCode);
         }
 
@@ -89,7 +93,7 @@ export class SecurityService {
         }
         else {
             qm.filterBy = { name: { $eq: name } };
-        }        
+        }
 
         result = await svc.find(qm);
 
@@ -167,9 +171,9 @@ export class SecurityService {
 
         let user: UserAccount | undefined = await this.getUserByName(nameOrId);
         let ret: UserRegistrationResponse = new UserRegistrationResponse();
-        
+
         this.throwIfNoUser(user, nameOrId, "The reset password process can't continue.");
-        
+
         user!.mustReset = true; //Flag the user for reset on next login
         ret.authCode = this.createAuthCode(); //Getting an auth code, (the user must use on next login). 
         //Creating the secret and associating it to the user:
@@ -187,6 +191,56 @@ export class SecurityService {
     async unlockUser(nameOrId: string): Promise<string> {
         return this.internalLockOrUnlockUser(nameOrId, false)
     }
+
+    // /**
+    //  * Express.JS Authorization middleware.
+    //  * Any request will be processed by this method. If the request contains an authorization header,
+    //  * the token will be verified, decoded and stored in the request with the key REQUEST_TOKEN_KEY.
+    //  * @param req Express.Request
+    //  * @param res Express.Response
+    //  * @param next Next function in the middleware chain.
+    //  */
+    // static auth(security:SecurityService) {
+    //     return (req: any, res: any, next: Function) => {
+
+    //         let authHeader: string = req.headers["authorization"];
+    //         let authPrefix: string = "Bearer "
+    //         let accessToken: string = "";
+    //         let rule: SecurityRule | undefined;
+    
+    //         try {
+    
+    //             if (authHeader && authHeader.startsWith(authPrefix)) {
+    //                 accessToken = authHeader.slice(authPrefix.length);
+    
+    //                 if (!accessToken) {
+    //                     throw new PropelError(`No Token data provided. the token was a Bearer token, but we ` +
+    //                         `found no data after the word "Bearer". Please check the data sent in ` + 
+    //                         `the "authorization" header.`, undefined, BAD_REQUEST.toString());
+    //                 }
+    
+    //                 req[REQUEST_TOKEN_KEY] = security.verifyToken(accessToken);
+    //             }
+    
+    //             rule = security.ruler.select(req);
+
+    //             //If there is a security rule that is preventing this invocation: 
+    //             if (rule) {
+    //                 throw new PropelError(`The invocation was prevented by a security rule.`+ 
+    //                     `${(rule.text) ? rule.text : "No additional information available."}`,
+    //                     undefined, (rule.HTTPStatus) ? rule.HTTPStatus.toString() : UNAUTHORIZED.toString())
+    //             }
+    
+    //         } catch (error) {
+    //             let httpStatus: number = Number((error as PropelError).httpStatus) | UNAUTHORIZED;
+    //             return res.status(httpStatus).json(new APIResponse<any>(error, null));
+    //         }
+    
+    //         next();
+    //     }
+    
+    // }
+    
 
     private async internalLockOrUnlockUser(nameOrId: string, mustLock: boolean): Promise<string> {
 
@@ -216,7 +270,7 @@ export class SecurityService {
 
         if (!sr?.userName || !sr?.password) {
             throw new PropelError(`Bad format in the request body, we expect the user name or id and the user password. 
-            Property "userName": ${(sr?.userName) ? "is present" : "Is missing"}, Property "password": ${(sr?.password) ? "is present" : "Is missing"}.`, 
+            Property "userName": ${(sr?.userName) ? "is present" : "Is missing"}, Property "password": ${(sr?.password) ? "is present" : "Is missing"}.`,
                 undefined, BAD_REQUEST.toString());
         }
 
@@ -227,7 +281,7 @@ export class SecurityService {
 
         if (!authCode || authCode.length !== cfg.authorizationCodeLength) {
             throw new PropelError(`Authorization code bad format. Authorization code must have exactly ${cfg.authorizationCodeLength} characters. 
-The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long." : "\"" +  String(authCode) + "\""}.`, 
+The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long." : "\"" + String(authCode) + "\""}.`,
                 ErrorCodes.AuthCodeBadFormat, BAD_REQUEST.toString());
         }
     }
@@ -235,7 +289,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     private validatePassword(password: string): void {
 
         if (!password || password.length < cfg.passwordMinLength || password.length > cfg.passwordMaxLength) {
-            throw new PropelError(`Password bad format. Allowed passwords must have at least ${cfg.passwordMinLength} characters and no more than ${cfg.passwordMaxLength}. The one provided have ${password.length}.`, 
+            throw new PropelError(`Password bad format. Allowed passwords must have at least ${cfg.passwordMinLength} characters and no more than ${cfg.passwordMaxLength}. The one provided have ${password.length}.`,
                 ErrorCodes.PasswordBadFormat, BAD_REQUEST.toString());
         }
     }
@@ -245,14 +299,14 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         let loginData = context.loginData;
 
         loginData.user = await context.getUserByName(loginData.request.userName);
-        
+
         context.throwIfNoUser(loginData.user, loginData.request.userName);
-        
+
         //If the user is locked, we must prevent the user to login.
-        if(loginData.user?.lockedSince){
-            throw new PropelError(`The user "${loginData.request.userName}" is locked.`, 
+        if (loginData.user?.lockedSince) {
+            throw new PropelError(`The user "${loginData.request.userName}" is locked.`,
                 ErrorCodes.LoginLockedUser, FORBIDDEN.toString());
-        } 
+        }
 
         return Promise.resolve(loginData);
     }
@@ -269,26 +323,26 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
         loginData.secret = await context.getUserSecret(loginData.user.secretId);
 
-            /*
-                Note: This is a very unlikely case, but we need to check anyway because 
-                the login can't complete if we don't have the current user secret!.
-                If the secret is gone for some reason, the only option is that one administrator
-                reset his password or even to null the "lastLogin" date so the user can do 
-                a first login again. 
-            */
-            if (!loginData.secret) {
-                throw new PropelError(`No secret was found for user with Name or ID "${loginData.request?.userName}". 
+        /*
+            Note: This is a very unlikely case, but we need to check anyway because 
+            the login can't complete if we don't have the current user secret!.
+            If the secret is gone for some reason, the only option is that one administrator
+            reset his password or even to null the "lastLogin" date so the user can do 
+            a first login again. 
+        */
+        if (!loginData.secret) {
+            throw new PropelError(`No secret was found for user with Name or ID "${loginData.request?.userName}". 
                 The specified User secret with id:"${loginData.user?.secretId}" doesn't exists. Property "mustReset" is "${String(loginData.user?.mustReset)}".
-                Will require a System admin to reset user password.`, 
-                    undefined, INTERNAL_SERVER_ERROR.toString());
-            }
+                Will require a System admin to reset user password.`,
+                undefined, INTERNAL_SERVER_ERROR.toString());
+        }
 
         return Promise.resolve(loginData);
     }
 
     private async handleRegularLogin(context: SecurityService): Promise<LoginData> {
 
-        let loginData = context.loginData;        
+        let loginData = context.loginData;
 
         //If the token was already created, we have nothing else to do here:
         if (loginData.token) return Promise.resolve(loginData);
@@ -299,16 +353,16 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
             context.validatePassword(loginData.request.password)
 
             //If the password is ok, we must return the token and update the user last login:
-            if(await context.verifyHash(loginData.request.password, loginData.secret!.value.passwordHash!)){
-                
+            if (await context.verifyHash(loginData.request.password, loginData.secret!.value.passwordHash!)) {
+
                 loginData.user!.lastLogin = new Date();
                 await context.saveUser(loginData.user!);
-                loginData.token = context.createToken(loginData.user!) 
+                loginData.token = context.createToken(loginData.user!)
             }
             else {
-                throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`, 
+                throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
                     ErrorCodes.LoginWrongPassword, UNAUTHORIZED.toString());
-            }            
+            }
         }
 
         return Promise.resolve(loginData);
@@ -316,14 +370,14 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
     private async handleFirstLogin(context: SecurityService): Promise<LoginData> {
 
-        let loginData = context.loginData;        
+        let loginData = context.loginData;
 
         //If the token was already created, we have nothing else to do here:
         if (loginData.token) return Promise.resolve(loginData);
 
         //First login ever:
         if (!loginData.user?.lastLogin) {
-            
+
             context.validateAuthenticationCode(loginData.request.password) //For a first login, 
             //the "password" field in the request is the auth code.
             context.validatePassword(loginData.request.newPassword)
@@ -338,7 +392,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 //Now we must persist the secret and link the user to that secret:
                 loginData.user!.secretId = await context.saveUserSecret(loginData.secret);
                 loginData.user!.lastLogin = new Date(); //Setting the first login date for the user... Hurray!!.
-                await context.saveUser(loginData.user!);                
+                await context.saveUser(loginData.user!);
                 loginData.token = context.createToken(loginData.user!) //All ready to generate and return the token.
             }
             else {
@@ -352,7 +406,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
     private async handlePasswordResetLogin(context: SecurityService): Promise<LoginData> {
 
-        let loginData = context.loginData;        
+        let loginData = context.loginData;
 
         //If the token was already created, we have nothing else to do here:
         if (loginData.token) return Promise.resolve(loginData);
@@ -365,8 +419,8 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
             context.validatePassword(loginData.request.newPassword)
 
             //If the auth code is ok:
-            if(await context.verifyHash(loginData.request.password, loginData.secret?.value.passwordHash!)){
-                
+            if (await context.verifyHash(loginData.request.password, loginData.secret?.value.passwordHash!)) {
+
                 //Updating the user secret with the new password:
                 loginData.secret!.value.passwordHash = await context.createHash(loginData.request.newPassword);
                 await context.saveUserSecret(loginData.secret!);
@@ -376,12 +430,12 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 await context.saveUser(loginData.user!); //Saving the changes.
 
                 //Now we can create and return the new token:
-                loginData.token = context.createToken(loginData.user!) 
+                loginData.token = context.createToken(loginData.user!)
             }
             else {
-                throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`, 
+                throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
                     ErrorCodes.LoginWrongPassword, UNAUTHORIZED.toString());
-            }            
+            }
         }
 
         return Promise.resolve(loginData);
@@ -398,7 +452,8 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     }
 
     private createToken(user: UserAccount): string {
-        let dataPayload = new SecurityToken(user);
+        let dataPayload = new SecurityToken();
+        dataPayload.hydrateFromUser(user);
         let options = {
             expiresIn: cfg.tokenExpiration
         }
@@ -408,13 +463,25 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         }, cfg.encryptionKey, options);
     }
 
+    verifyToken(token: string): SecurityToken {
+        let ret: SecurityToken = new SecurityToken();
+
+        try {
+            ret.hydrateFromTokenPayload((jwt.verify(token, cfg.encryptionKey) as TokenPayload));
+        } catch (err) {
+            throw new PropelError((err as Error), undefined, UNAUTHORIZED.toString());
+        }
+
+        return ret;
+    }
+
     private async getUserSecret(secretId: string): Promise<Secret<UserAccountSecret> | undefined> {
         let svc: DataService = db.getService("secret");
         let result: APIResponse<Secret<UserAccountSecret>>;
         let qm = new QueryModifier();
 
         qm.filterBy = { _id: secretId }
-        
+
         result = await svc.find(qm);
 
         if (result.count == 1) return (result.data[0] as any).toObject();
@@ -459,7 +526,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         }
 
         if (result.count == 1) return result.data[0].toString();
-        else throw new PropelError(`There was an error creating or updating the user. Following details: ${JSON.stringify(result.errors[0])}`, 
+        else throw new PropelError(`There was an error creating or updating the user. Following details: ${JSON.stringify(result.errors[0])}`,
             undefined, INTERNAL_SERVER_ERROR.toString())
     }
 

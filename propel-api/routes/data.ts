@@ -1,7 +1,8 @@
 // @ts-check
 import express from "express";
 
-import { Route } from "./route";
+import { Route } from "../core/route";
+import { SecurityRule } from "../core/security-rule";
 import { db } from "../core/database";
 import { DataRequest, DataRequestAction } from "../../propel-shared/core/data-request";
 import { DataService } from "../services/data-service";
@@ -10,17 +11,92 @@ import { APIResponse } from "../../propel-shared/core/api-response";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { Entity } from "../../propel-shared/models/entity";
+import { logger } from "../services/logger-service";
+import { UserAccountRoles, UserAccountRolesUtil } from "../../propel-shared/models/user-account-roles";
 
 /**
  * Data endpoint. Allows to manage all data operations for the API.
  * @implements Route.
  */
-export class DataRouter implements Route {
+export class DataRoute implements Route {
+
+    name: string = "Data";
+
+    path: string = "/api/data";
+
+    security: SecurityRule[] = [
+        {
+            matchFragment: "/script", 
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `This rule prevents regular user to query Scripts in the Data API.`
+        },
+        {
+            matchFragment: "/target", 
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `This rule prevents regular user to query Targets in the Data API.`
+        },
+        {
+            matchFragment: "/credential", 
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `This rule prevents regular user to query Credentials in the Data API.`
+        },
+        {
+            matchFragment: "/workflow", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `This rule prevents regular users to Save or Delete Workflows in the Data API.`
+        },
+        {
+            matchFragment: "/executionlog", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
+            preventRoles: [],
+            preventAnon: false,
+            text: `This rule prevents authenticated or anonymous users to Save or Delete Execution logs in the Data API.`
+        },
+        {
+            matchFragment: "/useraccount", 
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: UserAccountRolesUtil.getAllRoles(),
+            preventAnon: true,
+            text: `This rule prevents anyone to access user accounts throught Data API. User accounts must be accessed through Security API.`
+        },
+        {
+            matchFragment: "/secret", 
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: UserAccountRolesUtil.getAllRoles(),
+            preventAnon: true,
+            text: `This rule prevents anyone to access Propel Secrets throught Data API. Secrets are meant to be accessed internally only.`
+        }
+        // ,
+        // {
+        //     matchFragment: "/*", //Rules are evaluated in order so any default rule must be at the end of the list.
+        //     matchMethods: [],
+        //     preventDataActions: [],
+        //     preventRoles: [],
+        //     preventAnon: true,
+        //     text: `This rule prevents anonymous access to Data API.`
+        // }
+    ]
 
     constructor() {
+        logger.logDebug(`Creating route ${this.name} with path ${this.path}"`)
     }
 
-    route(): express.Router {
+    handler(): express.Router {
 
         const handler = express.Router();
 

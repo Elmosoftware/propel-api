@@ -1,3 +1,5 @@
+import { Utils } from "../utils/utils";
+
 /**
  * User account roles enumeration.
  */
@@ -25,5 +27,20 @@ export class UserAccountRolesUtil {
      */
     static IsAdmin(role: UserAccountRoles): boolean {
         return (role == UserAccountRoles.Administrator);
+    }
+
+    /**
+     * Return a list of all the defined roles.
+     * @returns All the defined roles.
+     */
+    static getAllRoles(): UserAccountRoles[] {
+        let ret: UserAccountRoles[] = []
+        
+        Utils.getEnum(UserAccountRoles)
+        .map((item: { key: string; value: string | number; }) => {
+            ret.push((UserAccountRoles as any)[item.key])
+        })
+
+        return ret;
     }
 }

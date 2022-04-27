@@ -28,12 +28,14 @@ export class EventLogger extends Logger {
      */
     logInfo(msg: string) {
         msg = this.timestamp() + msg;
-        super.logInfo(msg);
+        let print: boolean = (cfg.logLevel.toString().toLowerCase() == LogLevel.Info.toString().toLowerCase() || 
+        cfg.logLevel.toString().toLowerCase() == LogLevel.Debug.toString().toLowerCase())
+        
+        super.logInfo((print) ? msg : "");
 
         if(!this.isProd) return;
         
-        if (cfg.logLevel.toString().toLowerCase() == LogLevel.Info.toString().toLowerCase() || 
-            cfg.logLevel.toString().toLowerCase() == LogLevel.Debug.toString().toLowerCase()) {
+        if (print) {
             this.evLog.info(msg);
         }
     }
@@ -45,11 +47,12 @@ export class EventLogger extends Logger {
      */
     logDebug(msg: string) {
         msg = this.timestamp() + msg;
-        super.logInfo(msg);
+        let print: boolean = (cfg.logLevel.toString().toLowerCase() == LogLevel.Debug.toString().toLowerCase());
+        super.logInfo((print) ? msg : "");
 
         if(!this.isProd) return; 
 
-        if (cfg.logLevel.toString().toLowerCase() == LogLevel.Debug.toString().toLowerCase()) {
+        if (print) {
             this.evLog.info(msg);
         }
     }

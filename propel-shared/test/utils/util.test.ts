@@ -1128,7 +1128,7 @@ describe("Utils Class - getRandomIntFromInterval", () => {
         //@ts-ignore
         expect(() => {
             //@ts-ignore
-            Utils.getRandomIntFromInterval("not a number", { notANumber: "Neither"});
+            Utils.getRandomIntFromInterval("not a number", { notANumber: "Neither" });
         }).toThrow(`"min" and "max" parameters need to be numbers.`);
     })
     test(`Call it with "max" value less than "min" value`, () => {
@@ -1165,3 +1165,107 @@ describe("Utils Class - getRandomIntFromInterval", () => {
         expect(n).toBeLessThanOrEqual(max);
     })
 })
+
+describe("Utils Class - getURLPath()", () => {
+
+    test(`Call it with null URL`, () => {
+        //@ts-ignore
+        let u: string = Utils.getURLPath(null);
+        expect(u).toEqual("");
+    })
+
+    test(`Call it with empty URL`, () => {
+        let u: string = Utils.getURLPath("");
+        expect(u).toEqual("");
+    })
+
+    test(`Call it with only path name without slashes `, () => {
+        let u: string = Utils.getURLPath("my-path");
+        expect(u).toEqual("/my-path");
+    })
+
+    test(`Call it with only path name with leading slash `, () => {
+        let u: string = Utils.getURLPath("/my-path");
+        expect(u).toEqual("/my-path");
+    })
+
+    test(`Call it with only path name with trail slash `, () => {
+        let u: string = Utils.getURLPath("my-path/");
+        expect(u).toEqual("/my-path");
+    })
+
+    test(`Call it with relative URL with querystring without trailing slash `, () => {
+        let u: string = Utils.getURLPath("/first/second?key1=value1");
+        expect(u).toEqual("/first/second");
+    })
+
+    test(`Call it with relative URL with querystring with trailing slash `, () => {
+        let u: string = Utils.getURLPath("/first/second/?key1=value1");
+        expect(u).toEqual("/first/second");
+    })
+
+    test(`Call it with relative URL with querystring without any slashes `, () => {
+        let u: string = Utils.getURLPath("first/second?key1=value1");
+        expect(u).toEqual("/first/second");
+    })
+
+    test(`Call it with full URL with querystring without trailing slash `, () => {
+        let u: string = Utils.getURLPath("http://mysite.com/first/second?key1=value1");
+        expect(u).toEqual("/first/second");
+    })
+
+    test(`Call it with full URL with querystring with trailing slash `, () => {
+        let u: string = Utils.getURLPath("http://mysite.com/first/second/?key1=value1");
+        expect(u).toEqual("/first/second");
+    })
+})
+
+describe("Utils Class - joinURLPath()", () => {
+
+    test(`Call it with null URL`, () => {
+        //@ts-ignore
+        let u: string = Utils.joinURLPath(null);
+        expect(u).toEqual("/");
+    })
+
+    test(`Call it with empty URL`, () => {
+        //@ts-ignore
+        let u: string = Utils.joinURLPath("");
+        expect(u).toEqual("/");
+    })
+
+    test(`Single path no slashes`, () => {
+        let u: string = Utils.joinURLPath("this");
+        expect(u).toEqual("/this");
+    })
+
+    test(`Multiple path in the same entry`, () => {
+        let u: string = Utils.joinURLPath("/this/test/ok");
+        expect(u).toEqual("/this/test/ok");
+    })
+
+    test(`Multiple path in the same entry with missing or incorrect slashes`, () => {
+        let u: string = Utils.joinURLPath("this////test/ok///");
+        expect(u).toEqual("/this/test/ok");
+    })
+    
+    test(`Multiple path no slashes`, () => {
+        //@ts-ignore
+        let u: string = Utils.joinURLPath("this", "is", "a", "longjourney", "for", "all-of-us");
+        expect(u).toEqual("/this/is/a/longjourney/for/all-of-us");
+    })
+
+    test(`Multiple path with right slashes`, () => {
+        //@ts-ignore
+        let u: string = Utils.joinURLPath("/this", "/is", "/a", "/longjourney", "/for", "/all-of-us");
+        expect(u).toEqual("/this/is/a/longjourney/for/all-of-us");
+    })
+
+    test(`Multiple path with duplicated and incorrect slashes`, () => {
+        //@ts-ignore
+        let u: string = Utils.joinURLPath("/this", "//is", "////a", "long/journey", "/for//", "/all//of//us");
+        expect(u).toEqual("/this/is/a/long/journey/for/all/of/us");
+    })
+})
+
+

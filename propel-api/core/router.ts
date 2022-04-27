@@ -1,14 +1,12 @@
 // @ts-check
-import { DataRouter } from "../routes/data";
-import { HomeRouter } from "../routes/home";
-import { InferRouter } from "../routes/infer";
-import { RunRouter } from "../routes/run";
-import { FrontendRouter } from "../routes/frontend";
-import { StatusRouter } from "../routes/status";
-import { SecurityRouter } from "../routes/security";
+import { allRoutes } from "../routes/all-routes";
+import { Route } from "./route";
+import { logger } from "../services/logger-service";
+import { SecurityService } from "../services/security-service";
+import { Middleware } from "./middleware";
 
 /**
- * Router for the Express JS Web Server
+ * Router for the Express.JS Web Server
  */
 export class Router {
 
@@ -19,27 +17,11 @@ export class Router {
     }
 
     setup() {
-        let homeRouter = new HomeRouter();
-        let statusRouter = new StatusRouter();      
-        let dataRouter = new DataRouter();
-        let inferRouter = new InferRouter();
-        let runRouter = new RunRouter();
-        let frontendRouter = new FrontendRouter();
-        let securityRouter = new SecurityRouter();
+        this._app.use(Middleware.auth(new SecurityService()));
 
-        //Home:
-        this._app.use("/api", homeRouter.route());
-        //Status:
-        this._app.use("/api/status", statusRouter.route());
-        //Data endpoint:
-        this._app.use("/api/data", dataRouter.route());
-        //Infer:
-        this._app.use("/api/infer", inferRouter.route());
-        //Run:
-        this._app.use("/api/run", runRouter.route());
-        //Security:
-        this._app.use("/api/security", securityRouter.route());
-        //Propel Frontend:
-        this._app.use("/", frontendRouter.route());
+        allRoutes.forEach((route: Route) => {
+            logger.logDebug(`Adding route "${route.name}" to the app instance.`)
+            this._app.use(route.path, route.handler());
+        })
     }
 }

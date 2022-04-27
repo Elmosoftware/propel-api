@@ -2,9 +2,10 @@
 import express from "express";
 import path from "path";
 
-import { Route } from "./route";
+import { Route } from "../core/route";
 import { logger } from "../services/logger-service";
 import { cfg } from "../core/config";
+import { SecurityRule } from "../core/security-rule";
 
 export const WEBSITE_FOLDER = "propel-web"
 
@@ -12,9 +13,16 @@ export const WEBSITE_FOLDER = "propel-web"
  * Frontend route. Returns the Propel APP.
  * @implements Route.
  */
-export class FrontendRouter implements Route {
+export class FrontendRoute implements Route {
 
+    name: string = "Frontend";
+
+    path: string = "/frontend";
+
+    security: SecurityRule[] = [];
+    
     constructor() {
+        logger.logDebug(`Creating route ${this.name} with path "${this.path}"`)
     }
 
     getFrontendPath(): string {
@@ -24,7 +32,7 @@ export class FrontendRouter implements Route {
         return path.join(root.join("\\"), WEBSITE_FOLDER);
     }
 
-    route(): express.Router {
+    handler(): express.Router {
 
         const handler = express.Router();
         const frontendPath: string = this.getFrontendPath();

@@ -2,23 +2,41 @@
 import express from "express";
 import httpstatus from "http-status-codes";
 
-import { Route } from "./route";
+import { Route } from "../core/route";
 import { InferenceService } from "../services/inference-service";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { logger } from "../services/logger-service";
+import { SecurityRule } from "../core/security-rule";
+import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
 
 /**
  * Script parameters inference endpoint. Allows to the API to support parameters inference 
  * for the scripts.
  * @implements Route.
  */
-export class InferRouter implements Route {
+export class InferRoute implements Route {
+
+    name: string = "InferScriptParams";
+
+    path: string = "/api/infer";
+
+    security: SecurityRule[] = [
+        {
+            matchFragment: "/*", 
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `This rule prevents non auth or regular users to infer script parameters, (regular users can't create or modify scripts).`
+        }
+    ];
 
     constructor() {
+        logger.logDebug(`Creating route ${this.name} with path "${this.path}"`)
     }
 
-    route(): express.Router {
+    handler(): express.Router {
 
         const handler = express.Router();
 

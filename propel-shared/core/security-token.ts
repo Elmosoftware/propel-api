@@ -1,87 +1,94 @@
 import { UserAccount } from "../models/user-account";
-import { UserAccountRoles, UserAccountRolesUtil } from "../models/user-account-roles";
-import { PropelError } from "./propel-error";
+import { DEFAULT_USER_ROLE, UserAccountRoles, UserAccountRolesUtil } from "../models/user-account-roles";
+
+export type TokenPayload = { data: SecurityToken, iat: number, exp: number }
 
 export class SecurityToken {
 
     /**
      * User unique identifier.
      */
-    public userId!: string;
+    public userId: string = "";
 
     /**
      * Account name. This is also a unique account identifier.
      */
-    public userName!: string;
+    public userName: string = "";
 
     /**
      * User full name
      */
-    public userFullName!: string;
+    public userFullName: string = "";
 
     /**
      * User initials, for user avatar, picture subtext, etc. 
      */
-    public userInitials!: string;
+    public userInitials: string = "";
 
     /**
      * User Email. This will be used as the unique user identifier.
      */
-    public userEmail!: string;
+    public userEmail: string = "";
 
     /**
      * User role.
      */
-    public role!: UserAccountRoles;
+    public role: UserAccountRoles = DEFAULT_USER_ROLE;
 
     /**
-     * Boolean value that indicates if the current user role is and Administrator role.
+     * Indicates if the user role is an Administrator role.
      */
-    public roleIsAdmin!: boolean
+    public roleIsAdmin: boolean = false;
 
     /**
      * iat
      */
-    public issuedAt!: Date;
+    public issuedAt: Date = new Date();
 
     /**
      * exp
      */
-    public expiresAt!: Date;
+    public expiresAt: Date = new Date();
 
     /**
      * The provided access token.
      */
     public accessToken: string = "";
 
-    /**
-     * Constructor. Requires a valid User account.
-     * @param user The user account that own the token.
-     */
-    constructor(user?: UserAccount) {
-        // if (!user) throw new PropelError(`The constructor parameter "user" can't be a null reference.`)
-        if (!user) return;
+    constructor() {
+        
+    }
 
+    /**
+     * Hydrate the Security token details from the supplied user account. 
+     * @param user User account.
+     */
+    hydrateFromUser(user: UserAccount) {
         this.userId = user._id;
         this.userName = user.name;
         this.userFullName = user.fullName;
         this.userInitials = user.initials;
         this.userEmail = user.email;
         this.role = user.role;
-        this.roleIsAdmin = UserAccountRolesUtil.IsAdmin(user.role);
+        this.roleIsAdmin = UserAccountRolesUtil.IsAdmin(this.role);
     }
 
-    hydrateFromTokenPayload(token: { data: SecurityToken, iat: number, exp: number }) {
-        
-        this.userId = token.data.userId
-        this.userName = token.data.userName
-        this.userFullName = token.data.userFullName
-        this.userInitials = token.data.userInitials
-        this.userEmail = token.data.userEmail
-        this.role = token.data.role;
-        this.roleIsAdmin = UserAccountRolesUtil.IsAdmin(token.data.role);
+    /**
+     * Hydrate the security token from the user data contained in a existing token.
+     * @param tokenPayload Token payload.
+     * @param accessToken Access token.
+     */
+    hydrateFromTokenPayload(tokenPayload: { data: SecurityToken, iat: number, exp: number }, accessToken: string = "") {
+        this.userId = tokenPayload.data.userId
+        this.userName = tokenPayload.data.userName
+        this.userFullName = tokenPayload.data.userFullName
+        this.userInitials = tokenPayload.data.userInitials
+        this.userEmail = tokenPayload.data.userEmail
+        this.role = tokenPayload.data.role;
+        this.roleIsAdmin = UserAccountRolesUtil.IsAdmin(this.role);
 
-        this.issuedAt = new Date(token.iat * 1000);
-        this.expiresAt = new Date(token.exp * 1000);
+        this.issuedAt = new Date(tokenPayload.iat * 1000);
+        this.expiresAt = new Date(tokenPayload.exp * 1000);
+        this.accessToken = (tokenPayload.data.accessToken) ? tokenPayload.data.accessToken : accessToken; 
     }
 }

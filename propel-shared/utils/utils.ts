@@ -9,7 +9,7 @@ import { AWSSecret } from "../models/aws-secret";
 import { GenericAPIKeySecret } from "../models/generic-apikey-secret";
 
 export const POWERSHELL_NULL_LITERAL = "$null"
-export const MILLISECONDS_DAY: number = 1000*60*60*24;
+export const MILLISECONDS_DAY: number = 1000 * 60 * 60 * 24;
 
 /**
  * Utilities.
@@ -189,7 +189,7 @@ export class Utils {
      * @returns A new string with any double quotes backticked.
      */
     static backtickDoubleQuotes(value: string): string {
-    
+
         if (!value || typeof value != "string") {
             return value;
         }
@@ -207,7 +207,7 @@ export class Utils {
      * @returns A new string without any double quotes backticked.
      */
     static removeBacktickDoubleQuotes(value: string): string {
-    
+
         if (!value || typeof value != "string") {
             return value;
         }
@@ -697,7 +697,7 @@ ${this.tabs(1)}APIKey = "${this.backtickDoubleQuotes(APIKeySecretValue?.apiKey)}
     }
 
     /**
-     * For a defined number it will return the suffix thatcorrespond to his ordinal.
+     * For a defined number it will return the suffix that correspond to his ordinal.
      * @example
      * getOrdinalSuffix(1) -> "st"
      * @param n Number which ordinal we would like to found.
@@ -706,20 +706,20 @@ ${this.tabs(1)}APIKey = "${this.backtickDoubleQuotes(APIKeySecretValue?.apiKey)}
     static getOrdinalSuffix(n: number): string {
         //Thanks to: https://gist.github.com/jlbruno/1535691/db35b4f3af3dcbb42babc01541410f291a8e8fac
 
-        if(isNaN(parseInt(String(n)))) return ""
+        if (isNaN(parseInt(String(n)))) return ""
 
-        let s = ["th","st","nd","rd"]
+        let s = ["th", "st", "nd", "rd"]
         let v = n % 100;
 
-        return s[(v-20)%10] || s[v] || s[0];
-     }
+        return s[(v - 20) % 10] || s[v] || s[0];
+    }
 
-     /**
-     * Returns a random integer between the specified interval.
-     * @param {number} min Minimum random integer to include in the results.
-     * @param {number} max Maximum random integer to include in the results.
-     * @author Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
-     */
+    /**
+    * Returns a random integer between the specified interval.
+    * @param {number} min Minimum random integer to include in the results.
+    * @param {number} max Maximum random integer to include in the results.
+    * @author Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+    */
     static getRandomIntFromInterval(min: number, max: number) {
 
         if (min == undefined || min == null || max == undefined || max == null) {
@@ -740,5 +740,70 @@ Supplied values are: "min":${JSON.stringify(min)}", "max":${JSON.stringify(max)}
         min = Math.ceil(min);
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /**
+     * Return the path portion of a URL with a defined slash format. The path will include 
+     * always a leading forwardslash and never a trailing forwardslash.  
+     * @example
+     * getURLPath("http://mysite.com/segment1/segment2?key1=value1") -> "/segment1/segment2"
+     * getURLPath("http://mysite.com/segment1/segment2/?key1=value1") -> "/segment1/segment2"
+     * getURLPath("segment1/segment2?key1=value1") -> "/segment1/segment2"
+     * getURLPath("segment1/segment2") -> "/segment1/segment2"
+     * getURLPath("/segment1/segment2/") -> "/segment1/segment2"
+     * @param url URL to get the path portion.
+     * @returns The Path portion of a URL.
+     */
+    static getURLPath(url: string): string {
+
+        // if (!url) return "";
+        // url = new URL(url.toLowerCase(), "http://.").pathname //Including a dummy base URL in the 
+        // //case the supplied URL not include one, to avoid the contructor throwing a ERR_INVALID_URL error.
+
+        // //We must ensure the format is always the same for the path: Must start with a 
+        // //forward slash and must end without one:
+        // url = ((url.startsWith("/")) ? "" : "/") + url.slice(0, url.length - ((url.endsWith("/")) ? 1 : 0));
+
+        // return url;
+        if (!url) return "";
+
+        return this.joinURLPath(new URL(url.toLowerCase(), "http://.").pathname); //Including a dummy base URL 
+        //in the case the supplied URL not include one, to avoid the constructor throwing a ERR_INVALID_URL error.
+    }
+
+    /**
+     * Join and normalize all the url paths.
+     * This is inspird by the suggestion of [Wojciech Fiderek](https://github.com/fider) in the 
+     * Node.JS [Feature request: url.join(baseUrl, ...others) #18288](https://github.com/nodejs/node/issues/18288)
+     * @example
+     * joinURLPath("mypath") => "/mypath"
+     * joinURLPath("mypath/other") => "/mypath/other"
+     * joinURLPath("mypath", "is", "long") => "/mypath/is/long"
+     * joinURLPath("/mypa//th", "/is//", "/lon///g/") => "/mypa/th/is/lon/g"
+     * @param paths URL paths
+     * @returns The url paths joined with leading forward slash but non trailing slashes.
+     * @
+     */
+    static joinURLPath(...paths: string[]): string {
+
+        let ret: string = paths
+            .filter((path: string, i: number) => path !== "" || i == 0) //Allowing empty strings 
+            //only at the beginning of the array. Ulterior join is going to prevent duplicated forwardslashes.
+            .map((path: string) => {
+
+                if (!path) return "";
+
+                if (path.indexOf("/") !== -1) {
+                    return this.joinURLPath(...path.split("/"))
+                    .substring(1); //removing the extra "/" at the beginning because 
+                    //will be included again in the return.
+                }
+                else {
+                    return path.replace(/\//g, "") //Removing all forwardslashes.
+                }
+            })
+            .join("/")
+
+        return (!ret.startsWith("/") ? "/" : "") + ret;
     }
 }

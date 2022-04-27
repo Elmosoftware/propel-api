@@ -2,7 +2,7 @@
 import express from "express";
 import { INTERNAL_SERVER_ERROR } from "http-status-codes";
 
-import { Route } from "./route";
+import { Route } from "../core/route";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityService } from "../services/security-service";
@@ -10,17 +10,66 @@ import { SecurityRequest } from "../../propel-shared/core/security-request";
 import { UserAccount } from "../../propel-shared/models/user-account";
 import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
 import { SecuritySharedConfiguration } from "../../propel-shared/core/security-shared-config";
+import { SecurityRule } from "../core/security-rule";
+import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
 
 /**
  * Security route implements security related features like, user login and user managment.
  * @implements Route.
  */
-export class SecurityRouter implements Route {
+export class SecurityRoute implements Route {
+
+    name: string = "Security";
+
+    path: string = "/api/security";
+
+    security: SecurityRule[] = [
+        {
+            matchFragment: "/user",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [],
+            preventAnon: true,
+            text: `This rule prevents anonymous users to get users information.`
+        },
+        {
+            matchFragment: "/save",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `Registering/Update users is forbidden to regular users.`
+        },
+        {
+            matchFragment: "/reset",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `Reset any user password is forbidden to regular users.`
+        },
+        {
+            matchFragment: "/lock",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `Locking/Unlocking users is forbidden to regular users.`
+        },
+        {
+            matchFragment: "/unlock",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [UserAccountRoles.User],
+            preventAnon: true,
+            text: `Locking/Unlocking users is forbidden to regular users.`
+        }
+    ];
 
     constructor() {
     }
 
-    route(): express.Router {
+    handler(): express.Router {
 
         const handler = express.Router();
 

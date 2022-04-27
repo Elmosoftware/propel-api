@@ -1,17 +1,26 @@
 // @ts-check
 import express from "express";
-import { Route } from "./route";
+import { logger } from "../services/logger-service";
+import { Route } from "../core/route";
+import { SecurityRule } from "../core/security-rule";
 
 /**
  * API Home route. Returns the API home page.
  * @implements Route.
  */
-export class HomeRouter implements Route {
+export class HomeRoute implements Route {
+
+    name: string = "Home";
+
+    path: string = "/api/home";
+
+    security: SecurityRule[] = [];
 
     constructor() {
+        logger.logDebug(`Creating route ${this.name} with path "${this.path}"`)
     }
 
-    route(): express.Router {
+    handler(): express.Router {
 
         const handler = express.Router();
 
