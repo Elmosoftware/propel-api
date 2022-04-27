@@ -1,6 +1,7 @@
 import { pool } from "../../services/invocation-service-pool";
 import { InferenceService } from "../../services/inference-service";
 import { ScriptParameter } from "../../../propel-shared/models/script-parameter";
+import { LogLevel } from "../../core/config";
 
 let testScripts = {
     EmptyScript:
@@ -106,6 +107,9 @@ afterAll(() => {
 describe("InferenceService Class - infer()", () => {
 
     beforeEach(() => {
+        process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
+        //to void having a flood of logging messages during the test.
+        //You can comment the line if you wouldlike to see extra details.
         infer = new InferenceService();
     })
 

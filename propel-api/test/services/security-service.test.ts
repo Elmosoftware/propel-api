@@ -1,7 +1,7 @@
 import { SecurityRequest } from "../../../propel-shared/core/security-request";
 import { UserAccountRoles } from "../../../propel-shared/models/user-account-roles";
 import { SecurityService } from "../../services/security-service";
-import { cfg } from "../../core/config";
+import { cfg, LogLevel } from "../../core/config";
 
 let ss: SecurityService;
 
@@ -68,6 +68,10 @@ function setEnVars() {
 describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
 
     beforeEach(() => {
+
+        process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
+        //to void having a flood of logging messages during the test.
+        //You can comment the line if you wouldlike to see extra details.
 
         setEnVars()
         ss = new SecurityService();
@@ -210,6 +214,10 @@ describe("SecurityService Class - handleUserLogin() - First Login", () => {
 
     beforeEach(() => {
 
+        process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
+        //to void having a flood of logging messages during the test.
+        //You can comment the line if you wouldlike to see extra details.
+
         ss = new SecurityService();
 
         mockSecurityService(ss, {
@@ -260,6 +268,10 @@ describe("SecurityService Class - handleUserLogin() - First Login", () => {
 describe("SecurityService Class - handleUserLogin() - Password reset Login", () => {
 
     beforeEach(() => {
+
+        process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
+        //to void having a flood of logging messages during the test.
+        //You can comment the line if you wouldlike to see extra details.
 
         ss = new SecurityService();
 

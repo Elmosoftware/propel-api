@@ -8,6 +8,7 @@ import { APIResponse } from "../../../propel-shared/core/api-response";
 import { Secret } from "../../../propel-shared/models/secret";
 import { SecretValue } from "../../../propel-shared/models/secret-value";
 import { Credential } from "../../../propel-shared/models/credential";
+import { LogLevel } from "../../core/config";
 
 let runner: Runner;
 
@@ -21,6 +22,10 @@ describe("Runner Class - execute()", () => {
     beforeEach(() => {
         let tw = testingWorkflows;
 
+        process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
+        //to void having a flood of logging messages during the test.
+        //You can comment the line if you wouldlike to see extra details.
+        
         runner = new Runner();
         runner.saveExecutionLog = (log: ExecutionLog) => {
             return Promise.resolve(new APIResponse<string>(null, "newid"));

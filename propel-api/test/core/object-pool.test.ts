@@ -1,3 +1,4 @@
+import { LogLevel } from "../../core/config";
 import { ObjectPool, Resettable, Disposable } from "../../core/object-pool";
 import { ObjectPoolOptions } from "../../core/object-pool-options";
 
@@ -25,6 +26,14 @@ class TestPool implements Resettable, Disposable {
 }
 
 describe("ObjectPool Class - Constructor", () => {
+
+    beforeEach(() => {
+
+        process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
+        //to void having a flood of logging messages during the test.
+        //You can comment the line if you wouldlike to see extra details.
+    })
+
     test(`new ObjectPool without create instance callback must throw.`, () => {
         expect(() => {
             let pool: ObjectPool<TestPool>;
@@ -131,6 +140,11 @@ describe("ObjectPool Class - Usage", () => {
     let pool: ObjectPool<TestPool>;
 
     beforeEach(() => {
+
+        process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
+        //to void having a flood of logging messages during the test.
+        //You can comment the line if you wouldlike to see extra details.
+
         counter = 0;
 
         let op = new ObjectPoolOptions();
@@ -161,9 +175,9 @@ describe("ObjectPool Class - Usage", () => {
         let myPool: TestPool[] = []
 
         //Aquiring 1st:
-        console.log(`Aquiring 1st. (In use: ${myPool.length}`)
+        // console.log(`Aquiring 1st. (In use: ${myPool.length}`)
         pool.aquire().then((o: TestPool) => {
-            console.log(`Getting 1st. (In use: ${myPool.length}`)
+            // console.log(`Getting 1st. (In use: ${myPool.length}`)
             myPool.push(o);
             expect(pool.stats.objectsAvailable).toEqual(0)
             expect(pool.stats.objectsLocked).toEqual(1)
@@ -171,9 +185,9 @@ describe("ObjectPool Class - Usage", () => {
             expect(pool.stats.objectsCreated).toEqual(1)
 
             //aquiring 2nd:
-            console.log(`Aquiring 2nd. (In use: ${myPool.length}`)
+            // console.log(`Aquiring 2nd. (In use: ${myPool.length}`)
             pool.aquire().then((o: TestPool) => {
-                console.log(`Getting 2nd. (In use: ${myPool.length}`)
+                // console.log(`Getting 2nd. (In use: ${myPool.length}`)
                 myPool.push(o);
                 expect(pool.stats.objectsAvailable).toEqual(0)
                 expect(pool.stats.objectsLocked).toEqual(2)
@@ -181,9 +195,9 @@ describe("ObjectPool Class - Usage", () => {
                 expect(pool.stats.objectsCreated).toEqual(2)
 
                 //aquiring 3rd:
-                console.log(`Aquiring 3rd. (In use: ${myPool.length}`)
+                // console.log(`Aquiring 3rd. (In use: ${myPool.length}`)
                 pool.aquire().then((o: TestPool) => {
-                    console.log(`Getting 3rd. (In use: ${myPool.length}`)
+                    // console.log(`Getting 3rd. (In use: ${myPool.length}`)
                     myPool.push(o);
                     expect(pool.stats.objectsAvailable).toEqual(0)
                     expect(pool.stats.objectsLocked).toEqual(3)
@@ -200,9 +214,9 @@ describe("ObjectPool Class - Usage", () => {
                     }, 1000)
 
                     //First and only queued!!!
-                    console.log(`Aquiring 4th. (In use: ${myPool.length}`)
+                    // console.log(`Aquiring 4th. (In use: ${myPool.length}`)
                     pool.aquire().then((o: TestPool) => {
-                        console.log(`Getting 4th!!!!`)
+                        // console.log(`Getting 4th!!!!`)
                         expect(pool.stats.objectsAvailable).toBeGreaterThan(0);
                         expect(pool.stats.objectsLocked).toBeGreaterThan(0);
                         expect(pool.stats.availableToGrow).toEqual(0)
@@ -217,37 +231,37 @@ describe("ObjectPool Class - Usage", () => {
         let myPool: TestPool[] = []
 
         //Aquiring 1st:
-        console.log(`Aquiring 1st. (In use: ${myPool.length}`)
+        // console.log(`Aquiring 1st. (In use: ${myPool.length}`)
         pool.aquire().then((o: TestPool) => {
-            console.log(`Getting 1st. (In use: ${myPool.length}`)
+            // console.log(`Getting 1st. (In use: ${myPool.length}`)
             myPool.push(o);
 
             //aquiring 2nd:
-            console.log(`Aquiring 2nd. (In use: ${myPool.length}`)
+            // console.log(`Aquiring 2nd. (In use: ${myPool.length}`)
             pool.aquire().then((o: TestPool) => {
-                console.log(`Getting 2nd. (In use: ${myPool.length}`)
+                // console.log(`Getting 2nd. (In use: ${myPool.length}`)
                 myPool.push(o);
 
                 //aquiring 3rd:
-                console.log(`Aquiring 3rd. (In use: ${myPool.length}`)
+                // console.log(`Aquiring 3rd. (In use: ${myPool.length}`)
                 pool.aquire().then((o: TestPool) => {
-                    console.log(`Getting 3rd. (In use: ${myPool.length}`)
+                    // console.log(`Getting 3rd. (In use: ${myPool.length}`)
                     myPool.push(o);
 
                     //First and only queued!!!
-                    console.log(`Aquiring 4th. (In use: ${myPool.length}`)
+                    // console.log(`Aquiring 4th. (In use: ${myPool.length}`)
                     pool.aquire().then((o: TestPool) => {
-                        console.log(`Getting 4th!!!!  (This will never happen!!!)`)
+                        // console.log(`Getting 4th!!!!  (This will never happen!!!)`)
                     });
 
                     //Queue OVERFLOW!!!
-                    console.log(`Aquiring 5th. (In use: ${myPool.length}`)
+                    // console.log(`Aquiring 5th. (In use: ${myPool.length}`)
                     pool.aquire()
                         .then((o: TestPool) => {
-                            console.log(`Getting 5th!!!! (This will never happen!!!)`);
+                            // console.log(`Getting 5th!!!! (This will never happen!!!)`);
                         })
                         .catch((err) => {
-                            console.error(`ERROR!!!!: ${err}`)
+                            // console.error(`ERROR!!!!: ${err}`)
                             expect(err.message).toContain(`ObjectPool memory queue overflow`);
                             done();
                         });
@@ -305,6 +319,10 @@ describe("ObjectPool Class - Disposition", () => {
 
     beforeEach(() => {
         counter = 0;
+
+        process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
+        //to void having a flood of logging messages during the test.
+        //You can comment the line if you wouldlike to see extra details.
 
         let op = new ObjectPoolOptions();
         op.maxSize = 3
