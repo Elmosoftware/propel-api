@@ -11,7 +11,10 @@ import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/in
 import { logger } from "../services/logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
-import { SecurityRule } from "../core/security-rule";
+import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rule";
+import { PropelError } from "../../propel-shared/core/propel-error";
+import { REQUEST_TOKEN_KEY } from "../core/middleware";
+import { SecurityToken } from "../../propel-shared/core/security-token";
 
 /**
  * Run endpoint. This receives a Workflowid, takes care of the execution and returns the 
@@ -29,8 +32,8 @@ export class RunRoute implements Route {
             matchFragment: "/*",
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [],
-            preventAnon: true,
+            preventRoles: [AuthStatus.Anonymous],
+            preventLogic: RulePreventLogic.Or,
             text: `This rule prevents anonymous users to run Quick Tasks or Workflows.`
         }
     ];
@@ -55,6 +58,7 @@ export class RunRoute implements Route {
 
         let workflow: Workflow | undefined;
         let runner: Runner;
+        let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
 
         let subsCallback = (data: any) => {
             ws.send(JSON.stringify(data));
@@ -63,17 +67,20 @@ export class RunRoute implements Route {
         try {
             logger.logDebug(`Retrieving now Workflow details...`);
             workflow = await this.getWorkflow(req.params.workFlowId);
-            runner = new Runner();
 
-            //Starting the execution:
-            logger.logDebug(`Starting execution of Workflow "${(workflow && workflow.name) ? workflow.name : "deleted workflow"}" with id: "${req.params.workFlowId}".`)
-            runner.execute(workflow, subsCallback)
+            //If the Workflow is missing/deleted, we are not able to proceed.
+            if (!workflow) throw new PropelError("The workflow does not exists. Please verify if it was deleted before retrying.");
+
+            logger.logDebug(`Starting execution of Workflow "${(workflow?.name) ? workflow.name : "deleted workflow"}" with id: "${req.params.workFlowId}".`)
+
+            runner = new Runner();
+            runner.execute(workflow, token, subsCallback)
                 .then((msg: InvocationMessage) => {
-                    logger.logDebug(`Execution of Workflow "${(workflow && workflow.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished, Status is "${msg.logStatus}".`);
+                    logger.logDebug(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished, Status is "${msg.logStatus}".`);
                     ws.send(JSON.stringify(msg));
                 })
                 .catch((err) => {
-                    logger.logDebug(`Execution of Workflow "${(workflow && workflow.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" finished with the following error: "${String(err)}".`);
+                    logger.logDebug(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" finished with the following error: "${String(err)}".`);
                     ws.send(JSON.stringify(new APIResponse(err, null)));
                 })
                 .finally(() => {

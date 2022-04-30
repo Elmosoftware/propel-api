@@ -1,6 +1,7 @@
 import { BAD_REQUEST, UNAUTHORIZED } from "http-status-codes";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { PropelError } from "../../propel-shared/core/propel-error";
+import { BEARER_PREFIX, ACCESS_TOKEN_QUERYSTRING_KEY } from "../../propel-shared/core/security-token";
 import { SecurityService } from "../services/security-service";
 import { SecurityRule } from "./security-rule";
 
@@ -20,14 +21,19 @@ export class Middleware {
         return (req: any, res: any, next: Function) => {
 
             let authHeader: string = req.headers["authorization"];
-            let authPrefix: string = "Bearer "
             let accessToken: string = "";
             let rule: SecurityRule | undefined;
     
             try {
+
+                //Websockets protocol doesn't allow to send headers, so for that special case the 
+                //access token issent via query strings.
+                if (!authHeader && req.query[ACCESS_TOKEN_QUERYSTRING_KEY]) {
+                    authHeader = req.query[ACCESS_TOKEN_QUERYSTRING_KEY];
+                }
     
-                if (authHeader && authHeader.startsWith(authPrefix)) {
-                    accessToken = authHeader.slice(authPrefix.length);
+                if (authHeader && authHeader.startsWith(BEARER_PREFIX)) {
+                    accessToken = authHeader.slice(BEARER_PREFIX.length);
     
                     if (!accessToken) {
                         throw new PropelError(`No Token data provided. the token was a Bearer token, but we ` +
@@ -38,9 +44,9 @@ export class Middleware {
                     req[REQUEST_TOKEN_KEY] = security.verifyToken(accessToken);
                 }
     
+                //Checking if there is any security rule preventing this request:
                 rule = security.ruler.select(req);
 
-                //If there is a security rule that is preventing this invocation: 
                 if (rule) {
                     throw new PropelError(`The invocation was prevented by a security rule.`+ 
                         `${(rule.text) ? rule.text : "No additional information available."}`,

@@ -37,6 +37,7 @@ import { DataService } from './services/data.service';
 import { DialogService } from "./services/dialog.service";
 import { RunnerService } from './services/runner.service';
 import { LoaderInterceptor } from './core/loader-interceptor';
+import { AuthInterceptor } from './core/auth-interceptor';
 import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
 import { PSParametersInferrerService } from "./services/ps-parameters-inferrer.service";
 import { InfiniteScrollingModule } from './core/infinite-scrolling-module';
@@ -82,6 +83,7 @@ import { SecurityService } from './services/security.service';
 import { AuthenticationCodeComponent } from './app/authentication-code/authentication-code.component';
 import { LoginComponent } from './app/login/login.component';
 import { SecurityGuard } from './services/security-guard';
+import { SessionService } from './services/session.service';
 
 @NgModule({
     declarations: [
@@ -163,10 +165,12 @@ import { SecurityGuard } from './services/security-guard';
         DialogService,
         CoreService,
         { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
         DataLossPreventionGuard,
         PSParametersInferrerService,
         APIStatusService,
         SecurityService,
+        SessionService,
         SecurityGuard
     ],
     bootstrap: [RootComponent]

@@ -110,8 +110,8 @@ export class NavigationBarComponent implements OnInit {
   get userName(): string {
     let ret:string = "";
 
-    if (this.core.security.IsUserLoggedIn) {
-      ret = `${this.core.security.sessionDetails.userFullName}, (${this.core.security.sessionDetails.userName})`
+    if (this.core.session.IsUserLoggedIn) {
+      ret = `${this.core.session.sessionData.userFullName}, (${this.core.session.sessionData.userName})`
     }
 
     return ret;
@@ -121,7 +121,7 @@ export class NavigationBarComponent implements OnInit {
     let ret:string = "";
 
     if (this.userName) {
-      ret = this.core.security.sessionDetails.userInitials;
+      ret = this.core.session.sessionData.userInitials;
     }
 
     return ret;

@@ -3,6 +3,22 @@ import { UserAccountRoles } from "../../propel-shared/models/user-account-roles"
 import { HTTPMethods } from "./http-methods";
 
 /**
+ * Users Authentication status.
+ */
+export enum AuthStatus {
+    Anonymous = "Anonymous",
+    Authenticated = "Authenticated"
+}
+
+/**
+ * Logic to use to evaluate the rule.
+ */
+export enum RulePreventLogic {
+    Or = 0,
+    And = 1
+}
+
+/**
  * A security rule prevent the access to a defined endpoint when some conditions are met.
  * 
  * **IMPORTANT: A security rule is meant to STOP an action, not to allow it.** So a list of
@@ -17,32 +33,10 @@ import { HTTPMethods } from "./http-methods";
  * applies to any method. 
  *  - **preventDataActions**: A set of data actions that need to be prevented. (Applies only to 
  * the *"/api/data"* route). Not having actions in this list, means any actions are allowed.
- *  - **preventRoles**: A set of User roles that need to be prevented. Not having roles in this list, means any 
- * user roles are allowed.
- * So, let's take a look at the following example:
- * @example
- * /*
- * Suppose to have for the route with path *"/storage"* The following security rules:
- * * /
- * [
- *  {
- *      fragment: "/*",
- *      methods: ["GET"],
- *      preventDataActions: [DataRequestAction.Delete],
- *      preventRoles: []
- *  },
- *  {
- *      fragment: "/resize",
- *      methods: [],
- *      preventDataActions: [],
- *      preventRoles: [UserAccountRoles.User]
- *  }
- * ]
- * @description 
- * Here we have a wildcard fragment "/*" that will prevent the access to any function if is using a 
- * *"GET"* HTTP method and in the body of the request includes the DataRequestAction *"Delete"*.
- * We have also a second rule, preventing the access to users with the role *"User"* to the *"/resize"*
- * function by any HTTP method.
+ *  - **preventRoles**: A set of User roles or user authentication status that need to 
+ * be prevented. 
+ * - **preventLogic**: Indicates the way **preventDataActions** and **preventRoles** should be 
+ * evaluated. 
  */
  export class SecurityRule {
 
@@ -64,25 +58,25 @@ import { HTTPMethods } from "./http-methods";
 
     /**
      * Allows to specify the data actions that you would like to match for this rule.
-     * If no data actions are specified, means any data action (find, save, delete, etc..) is 
-     * allowed by this rule.
+     * If no data actions are specified, means no data action (find, save, delete, etc..) 
+     * will be prevented.
      */
     preventDataActions: DataRequestAction[] = []
 
     /**
-     * The User roles that will have forbidden access to the resource.
-     * If no roles are specified, means any user role, (even anonymous users that for 
-     * definition has no roles), will be allowed.
+     * The User roles that will have forbidden access to the resource or the 
+     * authentication status of the user.
+     * If no roles/status are specified, means no user role, (even anonymous users that for 
+     * definition has no roles), will be prevented.
      */
-    preventRoles: UserAccountRoles[] = []
+    preventRoles: (UserAccountRoles | AuthStatus) [] = []
 
     /**
-     * Indicate if anonymous access must be prevented. 
-     * By default this value is "true", which means if there is no authentication token 
-     * the invocation will return a 401 HTTP status.
-     * A "false" value means an "authorization" header will not be required.
+     * The logictouse to prevent the actions. Default Logic is "Or", this means that if 
+     * *preventDataActions* or *preventRoles* is a positive match, the action will be prevented.
+     * If the logic is "And", both must be a positive match in order to prevent the action. 
      */
-    preventAnon: boolean = true;
+    preventLogic: RulePreventLogic = RulePreventLogic.Or;
 
     /**
      * Optional HTTP status to return if the rule stops a request invocation.

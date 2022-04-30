@@ -2,6 +2,8 @@ import { UserAccount } from "../models/user-account";
 import { DEFAULT_USER_ROLE, UserAccountRoles, UserAccountRolesUtil } from "../models/user-account-roles";
 
 export type TokenPayload = { data: SecurityToken, iat: number, exp: number }
+export const BEARER_PREFIX: string = "Bearer "
+export const ACCESS_TOKEN_QUERYSTRING_KEY: string = "access_token"
 
 export class SecurityToken {
 

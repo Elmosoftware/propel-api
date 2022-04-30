@@ -96,8 +96,8 @@ export class LoginComponent implements OnInit {
 
     //If we have the user that is running Propel specified in the runtime info, then we must set it 
     //in the form and switch directly to the "passwords" section of the login form:
-    if (this.core.security.runtimeUser) {
-      this.fg.controls.name.patchValue(this.core.security.runtimeUser);
+    if (this.core.session.runtimeInfo) {
+      this.fg.controls.name.patchValue(this.core.session.runtimeInfo.userName);
       this.formFlow.isUserSectionEnabled = false;
       this.continue(); //Moving to the "password" section.
     }

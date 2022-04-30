@@ -22,6 +22,8 @@ import { DataService } from "../services/data-service";
 import { CredentialCache, CredentialCacheItem } from "../services/credential-cache";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { logger } from "./logger-service";
+import { SecurityToken } from "../../propel-shared/core/security-token";
+import { UserAccount } from "../../propel-shared/models/user-account";
 
 /**
  * This class responsibility is everything related to run a specified workflow and 
@@ -63,13 +65,18 @@ export class Runner {
         return this._execLog;
     }
 
+    get currentStats(): ExecutionStats {
+        if (this._stats) return this._stats
+        else return new ExecutionStats()
+    }
+
     /**
      * This method takes care of the script execution and returns a promised _"ExecutionLog"_ with all 
      * the execution details.
      * @param workflow The workflow to execute.
      * @param subscriptionCallback A callback function to get any realtime message during the execution.
      */
-    async execute(workflow: Workflow | undefined, subscriptionCallback?: Function): Promise<InvocationMessage> {
+    async execute(workflow: Workflow, token: SecurityToken, subscriptionCallback?: Function): Promise<InvocationMessage> {
 
         let abort: boolean = false;
         let resultsMessage: InvocationMessage;
@@ -79,17 +86,10 @@ export class Runner {
         //Creating stats:
         this._stats = new ExecutionStats();
 
-        //If the Workflow was deleted, we are not able to proceed.
-        if (!workflow) {
-            return new InvocationMessage(InvocationStatus.Failed,
-                "The workflow does not exists. Please verify if it was deleted before retrying.",
-                "", this._stats, "", ExecutionStatus.Faulty);
-        }
-
         try {
             await this._credentialCache.build(workflow)
          } catch (error) {
-            let e = (error?.errors && error.errors.length > 0) ? error.errors[0] : error
+            let e = ((error as any)?.errors && (error as any).errors.length > 0) ? (error as any).errors[0] : error
             let message: string = (e.errorCode?.userMessage) ? e.errorCode?.userMessage : e.message;
 
             return new InvocationMessage(InvocationStatus.Failed,
@@ -115,6 +115,8 @@ export class Runner {
         this._execLog = new ExecutionLog();
         this._execLog.startedAt = new Date();
         this._execLog.workflow = workflow;
+        this._execLog.user = ((token?.userId as unknown) as UserAccount) //To avoid grabbing 
+        //the full UserAccount object.
 
         logger.logDebug(`Pool stats before to start workflow execution:\n${pool.stats.toString()}`)
 
@@ -139,7 +141,7 @@ export class Runner {
                 scriptCode = this._preprocessScriptCode(step.script.code);
             } catch (error) {
                 execStep.status = ExecutionStatus.Faulty;
-                execStep.execError = new ExecutionError(error);
+                execStep.execError = new ExecutionError((error as Error));
             }
 
             if (this._cancelExecution) {
@@ -172,7 +174,7 @@ export class Runner {
                     }
                 } catch (error) {
                     execStep.status = ExecutionStatus.Faulty;
-                    execStep.execError = new ExecutionError(error);
+                    execStep.execError = new ExecutionError((error as Error));
                 }
 
                 //If the step has errors and the workflow is configured to abort in that situation:
@@ -193,10 +195,10 @@ export class Runner {
             resultsMessage.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog))).data[0];
             this._execLog._id = resultsMessage.logId;
         } catch (error) {
-            if (error.errors && error.errors.length > 0) {
-                error = error.errors[0]
+            if ((error as any).errors && (error as any).errors.length > 0) {
+                error = (error as any).errors[0]
             }
-            let e = new PropelError(error, ErrorCodes.saveLogFailed);
+            let e = new PropelError((error as Error), ErrorCodes.saveLogFailed);
             logger.logError(e);
             resultsMessage = new InvocationMessage(InvocationStatus.Failed,
                 e.errorCode.userMessage, "", this._stats, "", ExecutionStatus.Faulty);

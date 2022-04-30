@@ -9,6 +9,7 @@ import { Secret } from "../../../propel-shared/models/secret";
 import { SecretValue } from "../../../propel-shared/models/secret-value";
 import { Credential } from "../../../propel-shared/models/credential";
 import { LogLevel } from "../../core/config";
+import { SecurityToken } from "../../../propel-shared/core/security-token";
 
 let runner: Runner;
 
@@ -19,8 +20,12 @@ afterAll(() => {
 
 describe("Runner Class - execute()", () => {
 
+    let st: SecurityToken;
+
     beforeEach(() => {
         let tw = testingWorkflows;
+        st = new SecurityToken()
+        st.userId = "userid"
 
         process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
         //to void having a flood of logging messages during the test.
@@ -64,9 +69,10 @@ describe("Runner Class - execute()", () => {
 
         let w = testingWorkflows.Worflow_S1EnabledNoParamNoTargetNoThrow;
 
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
+                    expect(runner.executionLog?.user._id).toEqual(st.userId);
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);
@@ -94,7 +100,7 @@ describe("Runner Class - execute()", () => {
 
         let w = testingWorkflows.Worflow_S1EnabledNoParamNoTargetThrow;
 
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Faulty);
@@ -125,7 +131,7 @@ describe("Runner Class - execute()", () => {
 
         let w = testingWorkflows.Worflow_S2Enabled;
 
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
@@ -167,7 +173,7 @@ describe("Runner Class - execute()", () => {
 
         let w = testingWorkflows.Worflow_S2EnabledThrow;
 
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Aborted);
@@ -203,7 +209,7 @@ describe("Runner Class - execute()", () => {
     test(`Double step Workflow, first step ok!, second step with single disabled target`, (done) => {
 
         let w = testingWorkflows.Worflow_S2EnabledTargetDisabled;
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
@@ -248,7 +254,7 @@ describe("Runner Class - execute()", () => {
             runner.cancelExecution();
         }, 1000);
 
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.CancelledByUser);
@@ -290,7 +296,7 @@ describe("Runner Class - execute()", () => {
             runner.cancelExecution(true);
         }, 2000);
 
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.CancelledByUser);
@@ -338,7 +344,7 @@ describe("Runner Class - execute()", () => {
             return target;
         })
 
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
@@ -373,7 +379,7 @@ describe("Runner Class - execute()", () => {
             return target;
         })
         
-        runner.execute(w)
+        runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);

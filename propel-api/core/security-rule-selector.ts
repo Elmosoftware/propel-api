@@ -1,10 +1,11 @@
 import { FORBIDDEN, UNAUTHORIZED } from "http-status-codes";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityToken } from "../../propel-shared/core/security-token";
-import { SecurityRule } from "./security-rule";
+import { AuthStatus, RulePreventLogic, SecurityRule } from "./security-rule";
 import { REQUEST_TOKEN_KEY } from "./middleware";
 import { Route } from "./route";
 import { Utils } from "../../propel-shared/utils/utils";
+import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
 
 /**
  * This call evaluates a SecurityRule facilitating to resolve if the request invocation must 
@@ -27,46 +28,17 @@ export class SecurityRuleSelector {
         this._allRoutes.forEach((route: Route) => {
             if (!ret && request.url.startsWith(route.path)) {
                 //Need then to look for a specific security rule:
-                if (route.security) {               
+                if (route.security) {
                     route.security.forEach((rule: SecurityRule) => {
-                        
-                        if (ret) return; //If we already find  rule that prevents the actions, there is 
-                        //no point to continue.
+                        //If we already find a rule that prevents the actions, there is 
+                        //no point to continue:
+                        if (ret) return;
 
                         //If the rule is a default one or it match the request url and also 
-                        //the HTTPMethod is matching:
+                        //the HTTPMethod:
                         if (this.isMatchingFragment(request.url, route.path, rule.matchFragment)
                             && this.matchMethod(rule, request.method)) {
-
-                            if(this.preventsAnonymousAccess(rule, request[REQUEST_TOKEN_KEY])) {
-                                ret = Object.assign({}, rule);
-                                ret.HTTPStatus = (ret.HTTPStatus) ? ret.HTTPStatus : UNAUTHORIZED;
-                                ret.text = `Rule description: ${ret.text}
-Rule evaluation outcomes: This rule prevents anonymous access. No token was provided, so probably there was no "authorization" header sent in the request.`
-                            }
-                            else if (this.preventsDataAction(rule, request.body)) {
-                                ret = Object.assign({}, rule);
-                                ret.HTTPStatus = (ret.HTTPStatus) ? ret.HTTPStatus : FORBIDDEN;
-                                ret.text = `Rule description: ${ret.text}
-Rule evaluation outcomes: This rule prevents a specific data action. The data action "${request.body?.action}" provided in the request is forbidden by this rule.`
-                            } 
-                            else if(this.preventsUserRole(rule, request[REQUEST_TOKEN_KEY]?.role)) {
-                                ret = Object.assign({}, rule);
-                                ret.HTTPStatus = (ret.HTTPStatus) ? ret.HTTPStatus : UNAUTHORIZED;
-                                ret.text = `Rule description: ${ret.text}
-Rule evaluation outcomes: This rule prevent specific user roles.
-The role of the user ${request[REQUEST_TOKEN_KEY]?.userName} is ${request[REQUEST_TOKEN_KEY]?.role.toString()} and the access is forbidden by this rule.`
-                            }
-
-                            if (ret) {
-                                ret.text += `Security rule details:` +
-                                    `fragment: "${ret.matchFragment}", ` +
-                                    `matchMethods: [${ret.matchMethods.join(",")}], ` +
-                                    `preventDataActions: [${ret.preventDataActions.join(",")}], ` +
-                                    `preventRoles: [${ret.preventRoles.join(",")}], ` +
-                                    `preventAnon: ${String(ret.preventAnon)}, ` + 
-                                    `HTTPStatus: ${(ret.HTTPStatus) ? String(ret.HTTPStatus) : "None"}`
-                            }
+                            ret = this.isStopRule(rule, request.body, request[REQUEST_TOKEN_KEY]);
                         }
                     })
                 }
@@ -82,7 +54,7 @@ The role of the user ${request[REQUEST_TOKEN_KEY]?.userName} is ${request[REQUES
      * @param method HTTP method.
      * @returns A boolean value indicating if the request invocation must be prevented.
      */
-     matchMethod(rule: SecurityRule, method: string): boolean {
+    matchMethod(rule: SecurityRule, method: string): boolean {
 
         if (!method) throw new PropelError(`We expect a HTTP method in the parameter ""method"".`);
 
@@ -133,17 +105,7 @@ The role of the user ${request[REQUEST_TOKEN_KEY]?.userName} is ${request[REQUES
     /**
      * Based on the DataRequestAction in the request body, this method will return a 
      * boolean value indicating if the request execution will be prevented.
-     * @param requestBody Request body
-     * @returns A boolean value indicating if the request invocation must be prevented.
-     */
-    preventsAnonymousAccess(rule: SecurityRule, secToken?: SecurityToken): boolean {
-        //If no security token provided, and the rulenot allows anonymous access:
-        return (!secToken && rule.preventAnon);
-    }
-
-    /**
-     * Based on the DataRequestAction in the request body, this method will return a 
-     * boolean value indicating if the request execution will be prevented.
+     * @param rule: Rule to evaluate
      * @param requestBody Request body
      * @returns A boolean value indicating if the request invocation must be prevented.
      */
@@ -162,25 +124,82 @@ The role of the user ${request[REQUEST_TOKEN_KEY]?.userName} is ${request[REQUES
     }
 
     /**
-     * Based on the user role supplied, this method will return a 
-     * boolean value indicating if the request execution will be prevented.
-     * @param userRole User role.
+     * Based on the user role supplied or his status, this method will return a 
+     * boolean value indicating if the request execution must be prevented.
+     * @param rule: Rule to evaluate
+     * @param secToken Security token provided in the request.
      * @returns A boolean value indicating if the request invocation must be prevented.
      */
-    preventsUserRole(rule: SecurityRule, userRole?: string): boolean {
-        userRole = (!userRole) ? "" : userRole //Ensure the role is an empty string if not defined.
+    preventsUserRole(rule: SecurityRule, secToken?: SecurityToken): boolean {
 
         if (!rule.preventRoles || !Array.isArray(rule.preventRoles) ||
-            rule.preventRoles.length == 0) return false
+            rule.preventRoles.length == 0) return false;
 
-        return Boolean(rule.preventRoles.find((ruleUserRole) => {
-            return String(ruleUserRole).toLowerCase() == String(userRole).toLowerCase();
+        return Boolean(rule.preventRoles.find((role: (UserAccountRoles | AuthStatus)) => {
+            return (role == AuthStatus.Anonymous && !secToken) ||
+                (role == AuthStatus.Authenticated && secToken) ||
+                (secToken && String(secToken.role).toLowerCase() == String(role).toLowerCase());
         }));
+    }
+
+    /**
+     * Analize the rule with the providing data and return an undefined value if the rule is not
+     * preventingthe action.
+     * If the rule is preventing the action, the same rule will be returned, but with added 
+     * information in the *"text"* property explaining why this is a stop rule.
+     * @param rule Rule to evaluate
+     * @param body Request body, (used for DataRequestAction evaluation, sofar used by the Data API only).
+     * @param token SecurityToken if any.
+     * @returns The same rule with added description of why the action must be stopped.
+     */
+    isStopRule(rule: SecurityRule, body: any, token?: SecurityToken): SecurityRule | undefined {
+
+        let preventCount: number = 0;
+        let retRule: SecurityRule | undefined;
+
+        if (this.preventsDataAction(rule, body)) {
+            preventCount++;
+            retRule = Object.assign({}, rule);
+            retRule.HTTPStatus = (retRule.HTTPStatus) ? retRule.HTTPStatus : FORBIDDEN;
+            retRule.text = ` Rule description: ${retRule.text}
+Rule evaluation outcome: This rule prevents a specific data action. The data action "${body?.action}" provided in the request is forbidden by this rule.`
+        }
+
+        if (this.preventsUserRole(rule, token)) {
+            preventCount++;
+
+            if (!retRule) {
+                retRule = Object.assign({}, rule);
+                retRule.text = ` Rule description: ${retRule.text}`
+            }
+
+            retRule.HTTPStatus = (retRule.HTTPStatus) ? retRule.HTTPStatus : UNAUTHORIZED;
+            retRule.text += `\r\nRule evaluation outcome: This rule prevent specific user roles.
+The access for user "${(token?.userName) ? token?.userName : "unknown user" }""${(token?.role) ? " with role \"" + token?.role.toString() + "\"" : " "}is forbidden because of this rule.`
+        }
+
+        //Not enough to prevent the action:
+        if (preventCount == 1 && rule.preventLogic == RulePreventLogic.And) {
+            retRule = undefined;
+        }
+
+        if (retRule) {
+            retRule.text += `\r\nThe rule logic requires ${(rule.preventLogic == RulePreventLogic.And) ? "both" : "at least one"} of the cases to be positive to prevent the action.
+Security rule details:` +
+                `fragment: "${retRule.matchFragment}", ` +
+                `matchMethods: [${retRule.matchMethods.join(",")}], ` +
+                `preventDataActions: [${retRule.preventDataActions.join(",")}], ` +
+                `preventRoles: [${retRule.preventRoles.join(",")}], ` +
+                `preventLogic: ${(rule.preventLogic == RulePreventLogic.And) ? "AND" : "OR"}, ` +
+                `HTTPStatus: ${(retRule.HTTPStatus) ? String(retRule.HTTPStatus) : "None"}`
+        }
+
+        return retRule;
     }
 
     constructor(routes: Route[]) {
         if (!routes) throw new PropelError(`We expect a collection of Routes with all his security rules to evaluate in the constructor. Parameter ""rule"".`);
-    
+
         this._allRoutes = routes;
     }
 }

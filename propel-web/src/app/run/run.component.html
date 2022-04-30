@@ -11,7 +11,7 @@
             </div>
         </div>
     </div>
-    <div class="row mt-2">
+    <div *ngIf="currentContext.workflowName" class="row mt-2">
         <div class="col-11">
             <div class="row">
                 <div class="col-12">
@@ -29,7 +29,7 @@
                 <li *ngFor="let step of currentContext.steps" class="list-group-item simpleList">
                     <app-status-icon size="small" [status]="step.status" 
                     tooltipText="Step status" tooltipPosition="right" class="mr-1"></app-status-icon>
-                    {{ step.stepName }}
+                    {{ (step) ? step.stepName : "" }}
                 </li>
             </ul>
         </div>

@@ -18,7 +18,7 @@ export class SecurityGuard implements CanActivate {
         ret = this.core.security.isAccessGranted(page);
 
         if (!ret) {
-            if (this.core.security.IsUserLoggedIn) {
+            if (this.core.session.IsUserLoggedIn) {
                 this.core.navigation.toUnauthorized();
             }
             else {

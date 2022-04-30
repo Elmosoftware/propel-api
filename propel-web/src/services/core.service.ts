@@ -19,6 +19,7 @@ import { PSParametersInferrerService } from './ps-parameters-inferrer.service';
 import { APIStatusService } from './api-status.service';
 import { ConnectivityService, ConnectivityStatus } from './connectivity.service';
 import { SecurityService } from './security.service';
+import { SessionService } from "./session.service";
 
 /**
  * This core class help inject common services to the app. 
@@ -43,7 +44,8 @@ export class CoreService {
     private injInfer: PSParametersInferrerService,
     private injAPIStatus: APIStatusService,
     private injConn: ConnectivityService,
-    private injSec: SecurityService) {
+    private injSec: SecurityService,
+    private injSession: SessionService) {
     logger.logInfo("CoreService instance created")
 
     this._init()
@@ -87,6 +89,10 @@ export class CoreService {
 
   get security(): SecurityService {
     return this.injSec;
+  }
+
+  get session(): SessionService {
+    return this.injSession;
   }
 
   getPageTitle(): string {

@@ -7,7 +7,7 @@ import { InferenceService } from "../services/inference-service";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { logger } from "../services/logger-service";
-import { SecurityRule } from "../core/security-rule";
+import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rule";
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
 
 /**
@@ -26,8 +26,8 @@ export class InferRoute implements Route {
             matchFragment: "/*", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [UserAccountRoles.User],
-            preventAnon: true,
+            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
+            preventLogic: RulePreventLogic.Or,
             text: `This rule prevents non auth or regular users to infer script parameters, (regular users can't create or modify scripts).`
         }
     ];

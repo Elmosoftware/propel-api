@@ -3,6 +3,8 @@ import { WebsocketService } from './websocket.service';
 import { Observable } from 'rxjs';
 import { InvocationMessage, InvocationStatus } from '../../../propel-shared/core/invocation-message';
 import { environment } from 'src/environments/environment';
+import { SessionService } from './session.service';
+import { ACCESS_TOKEN_QUERYSTRING_KEY, BEARER_PREFIX } from '../../../propel-shared/core/security-token';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +13,7 @@ export class RunnerService {
 
   private _socket: WebsocketService<InvocationMessage>
 
-  constructor() {
+  constructor(private session: SessionService) {
 
   }
 
@@ -21,6 +23,7 @@ export class RunnerService {
    */
   execute(workflowId: string): Observable<InvocationMessage> {
     this._socket = new WebsocketService<any>(this.buildURL(workflowId));
+
     return this._socket.connect();
   }
 
@@ -40,6 +43,12 @@ export class RunnerService {
   }
 
   private buildURL(workflowId: string) {
-    return `ws://${environment.api.url}${environment.api.endpoint.run}${workflowId}`
+    let url: string = `ws://${environment.api.url}${environment.api.endpoint.run}${workflowId}`
+
+    if (this.session.IsUserLoggedIn) {
+      url += `?${ACCESS_TOKEN_QUERYSTRING_KEY}=${BEARER_PREFIX}${this.session.sessionData.accessToken}`;
+    }
+
+    return url
   }
 }

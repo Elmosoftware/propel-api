@@ -3,9 +3,10 @@ import { SecurityRuleSelector } from "../../core/security-rule-selector";
 import { UserAccountRoles } from "../../../propel-shared/models/user-account-roles";
 import { DataRequestAction } from "../../../propel-shared/core/data-request";
 import { Route } from "../../core/route";
-import { SecurityRule } from "../../core/security-rule";
+import { AuthStatus, RulePreventLogic, SecurityRule } from "../../core/security-rule";
 import express, { Router } from "express";
 import { LogLevel } from "../../core/config";
+import { SecurityToken } from "../../../propel-shared/core/security-token";
 
 class WithoutSecurityRoute implements Route {
     name: string = "NoSecurity";
@@ -41,7 +42,7 @@ describe("SecurityRuleSelector Class - matchMethod()", () => {
                 matchMethods: [HTTPMethods.Post],
                 preventDataActions: [],
                 preventRoles: [],
-                preventAnon: true
+                preventLogic: RulePreventLogic.Or
             });
             
             let sre = new SecurityRuleSelector([testRoute]);
@@ -55,7 +56,7 @@ describe("SecurityRuleSelector Class - matchMethod()", () => {
             matchMethods: [],
             preventDataActions: [],
             preventRoles: [],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });
         
         let sre = new SecurityRuleSelector([testRoute]);
@@ -68,7 +69,7 @@ describe("SecurityRuleSelector Class - matchMethod()", () => {
             matchMethods: [HTTPMethods.Post, HTTPMethods.Connect, HTTPMethods.Get],
             preventDataActions: [],
             preventRoles: [],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });
         
         let sre = new SecurityRuleSelector([testRoute]);
@@ -81,7 +82,7 @@ describe("SecurityRuleSelector Class - matchMethod()", () => {
             matchMethods: [HTTPMethods.Post, HTTPMethods.Connect, HTTPMethods.Get],
             preventDataActions: [],
             preventRoles: [],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });       
 
         let sre = new SecurityRuleSelector([testRoute]);
@@ -108,7 +109,7 @@ describe("SecurityRuleSelector Class - rulePreventsUserRole()", () => {
             matchMethods: [],
             preventDataActions: [],
             preventRoles: [],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });       
          
         let sre = new SecurityRuleSelector([testRoute]);
@@ -120,11 +121,13 @@ describe("SecurityRuleSelector Class - rulePreventsUserRole()", () => {
             matchMethods: [],
             preventDataActions: [],
             preventRoles: [],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });       
          
         let sre = new SecurityRuleSelector([testRoute]);
-        expect(sre.preventsUserRole(testRoute.security[0], UserAccountRoles.Administrator)).toBe(false);
+        let st = new SecurityToken();
+        st.role = UserAccountRoles.Administrator;
+        expect(sre.preventsUserRole(testRoute.security[0], st)).toBe(false);
     });
     test(`Returns "false" if the user role is not in the prevent roles list.`, () => {
         testRoute.security.push({
@@ -132,11 +135,13 @@ describe("SecurityRuleSelector Class - rulePreventsUserRole()", () => {
             matchMethods: [],
             preventDataActions: [],
             preventRoles: [UserAccountRoles.User],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });       
          
         let sre = new SecurityRuleSelector([testRoute]);
-        expect(sre.preventsUserRole(testRoute.security[0], UserAccountRoles.Administrator)).toBe(false);
+        let st = new SecurityToken();
+        st.role = UserAccountRoles.Administrator;
+        expect(sre.preventsUserRole(testRoute.security[0], st)).toBe(false);
     });
     test(`Returns "true" if the user role is in the prevent roles list.`, () => {
         testRoute.security.push({
@@ -144,11 +149,65 @@ describe("SecurityRuleSelector Class - rulePreventsUserRole()", () => {
             matchMethods: [],
             preventDataActions: [],
             preventRoles: [UserAccountRoles.Administrator],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });       
          
         let sre = new SecurityRuleSelector([testRoute]);
-        expect(sre.preventsUserRole(testRoute.security[0], UserAccountRoles.Administrator)).toBe(true);
+        let st = new SecurityToken();
+        st.role = UserAccountRoles.Administrator;
+        expect(sre.preventsUserRole(testRoute.security[0], st)).toBe(true);
+    });
+    test(`Returns "true" if no security token was provided and Anonymous users must be prevented.`, () => {
+        testRoute.security.push({
+            matchFragment: "/*",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [AuthStatus.Anonymous],
+            preventLogic: RulePreventLogic.Or
+        });       
+         
+        let sre = new SecurityRuleSelector([testRoute]);
+        expect(sre.preventsUserRole(testRoute.security[0], undefined)).toBe(true);
+    });
+    test(`Returns "true" if a security token was provided and we get a user with any role.`, () => {
+        testRoute.security.push({
+            matchFragment: "/*",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [AuthStatus.Authenticated],
+            preventLogic: RulePreventLogic.Or
+        });       
+         
+        let sre = new SecurityRuleSelector([testRoute]);
+        let st = new SecurityToken();
+        st.role = UserAccountRoles.Administrator;
+        expect(sre.preventsUserRole(testRoute.security[0], st)).toBe(true);
+    });
+    test(`Returns "true" if a security token was provided and we are preventing access to anyone.`, () => {
+        testRoute.security.push({
+            matchFragment: "/*",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [AuthStatus.Authenticated, AuthStatus.Anonymous],
+            preventLogic: RulePreventLogic.Or
+        });       
+         
+        let sre = new SecurityRuleSelector([testRoute]);
+        let st = new SecurityToken();
+        st.role = UserAccountRoles.Administrator;
+        expect(sre.preventsUserRole(testRoute.security[0], st)).toBe(true);
+    });
+    test(`Returns "true" if a security token was not provided and we are preventing access to anyone.`, () => {
+        testRoute.security.push({
+            matchFragment: "/*",
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [AuthStatus.Authenticated, AuthStatus.Anonymous],
+            preventLogic: RulePreventLogic.Or
+        });       
+         
+        let sre = new SecurityRuleSelector([testRoute]);
+        expect(sre.preventsUserRole(testRoute.security[0], undefined)).toBe(true);
     });
 })
 
@@ -169,7 +228,7 @@ describe("SecurityRuleSelector Class - preventsDataAction()", () => {
             matchMethods: [],
             preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
             preventRoles: [],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });       
          
         let sre = new SecurityRuleSelector([testRoute]);
@@ -181,7 +240,7 @@ describe("SecurityRuleSelector Class - preventsDataAction()", () => {
             matchMethods: [],
             preventDataActions: [],
             preventRoles: [],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });       
          
         let sre = new SecurityRuleSelector([testRoute]);
@@ -195,7 +254,7 @@ describe("SecurityRuleSelector Class - preventsDataAction()", () => {
             matchMethods: [],
             preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
             preventRoles: [UserAccountRoles.Administrator],
-            preventAnon: true
+            preventLogic: RulePreventLogic.Or
         });       
          
         let sre = new SecurityRuleSelector([testRoute]);

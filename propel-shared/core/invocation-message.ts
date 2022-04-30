@@ -1,4 +1,3 @@
-import { ExecutionLog } from "../models/execution-log";
 import { ExecutionStep } from "../models/execution-step";
 
 /**

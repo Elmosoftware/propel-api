@@ -2,7 +2,7 @@
 import express from "express";
 
 import { Route } from "../core/route";
-import { SecurityRule } from "../core/security-rule";
+import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rule";
 import { db } from "../core/database";
 import { DataRequest, DataRequestAction } from "../../propel-shared/core/data-request";
 import { DataService } from "../services/data-service";
@@ -29,67 +29,74 @@ export class DataRoute implements Route {
             matchFragment: "/script", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [UserAccountRoles.User],
-            preventAnon: true,
-            text: `This rule prevents regular user to query Scripts in the Data API.`
+            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
+            preventLogic: RulePreventLogic.Or,
+            text: `This rule prevents anonymous or regular user to query Scripts in the Data API.`
         },
         {
             matchFragment: "/target", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [UserAccountRoles.User],
-            preventAnon: true,
-            text: `This rule prevents regular user to query Targets in the Data API.`
+            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
+            preventLogic: RulePreventLogic.Or,
+            text: `This rule prevents anonymous or regular user to query Targets in the Data API.`
         },
         {
             matchFragment: "/credential", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [UserAccountRoles.User],
-            preventAnon: true,
-            text: `This rule prevents regular user to query Credentials in the Data API.`
+            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
+            preventLogic: RulePreventLogic.Or,
+            text: `This rule prevents anonymous or regular users to query Credentials in the Data API.`
         },
         {
             matchFragment: "/workflow", 
             matchMethods: [],
             preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
             preventRoles: [UserAccountRoles.User],
-            preventAnon: true,
+            preventLogic: RulePreventLogic.And,
             text: `This rule prevents regular users to Save or Delete Workflows in the Data API.`
+        },
+        {
+            matchFragment: "/workflow", 
+            matchMethods: [],
+            preventDataActions: [],
+            preventRoles: [AuthStatus.Anonymous],
+            preventLogic: RulePreventLogic.Or,
+            text: `This rule prevents Anonymus users to access Workflows in the Data API.`
         },
         {
             matchFragment: "/executionlog", 
             matchMethods: [],
-            preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
-            preventRoles: [],
-            preventAnon: false,
-            text: `This rule prevents authenticated or anonymous users to Save or Delete Execution logs in the Data API.`
+            preventDataActions: [DataRequestAction.Delete],
+            preventRoles: [AuthStatus.Anonymous, AuthStatus.Authenticated],
+            preventLogic: RulePreventLogic.And,
+            text: `This rule prevents any authenticated or anonymous users to Delete Execution logs using the Data API.`
+        },
+        {
+            matchFragment: "/executionlog", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Save],
+            preventRoles: [AuthStatus.Anonymous],
+            preventLogic: RulePreventLogic.And,
+            text: `This rule prevents anonymous users to Create or update entries in the Execution log through Data API.`
         },
         {
             matchFragment: "/useraccount", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: UserAccountRolesUtil.getAllRoles(),
-            preventAnon: true,
+            preventRoles: [AuthStatus.Anonymous, AuthStatus.Authenticated],
+            preventLogic: RulePreventLogic.Or,
             text: `This rule prevents anyone to access user accounts throught Data API. User accounts must be accessed through Security API.`
         },
         {
             matchFragment: "/secret", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: UserAccountRolesUtil.getAllRoles(),
-            preventAnon: true,
+            preventRoles: [AuthStatus.Anonymous, AuthStatus.Authenticated],
+            preventLogic: RulePreventLogic.Or,
             text: `This rule prevents anyone to access Propel Secrets throught Data API. Secrets are meant to be accessed internally only.`
         }
-        // ,
-        // {
-        //     matchFragment: "/*", //Rules are evaluated in order so any default rule must be at the end of the list.
-        //     matchMethods: [],
-        //     preventDataActions: [],
-        //     preventRoles: [],
-        //     preventAnon: true,
-        //     text: `This rule prevents anonymous access to Data API.`
-        // }
     ]
 
     constructor() {

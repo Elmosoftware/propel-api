@@ -80,6 +80,7 @@ export class RunComponent implements OnInit {
 
   startExecution(workflowId: string) {
     this.workflowStatus = InvocationStatus.Running;
+
     this.core.runner.execute(workflowId)
       .subscribe((msg: InvocationMessage) => {
         this.model.push(msg);
