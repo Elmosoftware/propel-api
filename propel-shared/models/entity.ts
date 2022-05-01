@@ -10,6 +10,11 @@ export class Entity {
      */
     public _id: string = "";
 
+    /*
+        NOTE: Recall internal only entity attributes must notbe placed here.
+        That's why "deletedOn" an "deletedBy" are not included here.
+    */
+
     constructor() {
     }
 }

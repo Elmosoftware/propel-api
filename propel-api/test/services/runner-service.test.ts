@@ -72,7 +72,7 @@ describe("Runner Class - execute()", () => {
         runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
-                    expect(runner.executionLog?.user._id).toEqual(st.userId);
+                    expect(runner.executionLog?.user).toEqual(st.userId);
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);

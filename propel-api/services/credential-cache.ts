@@ -7,6 +7,7 @@ import { SecretValue } from "../../propel-shared/models/secret-value";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { POWERSHELL_NULL_LITERAL } from "../../propel-shared/utils/utils";
+import { SecurityToken } from "../../propel-shared/core/security-token";
 
 /**
  * Temporal cache of credentials, including also the secrets.
@@ -43,7 +44,7 @@ export class CredentialCache {
      * Workflow.
      * @param workflow Workflow.
      */
-    async build(workflow: Workflow): Promise<void> {
+    async build(workflow: Workflow, token: SecurityToken): Promise<void> {
         let credentialIds: Set<string> = new Set<string>();
         let secretIds: Set<string> = new Set<string>();
         let credentials: Credential[] = [];
@@ -93,7 +94,7 @@ export class CredentialCache {
         //===========================================================================================
         if (credentialIds.size > 0) {
 
-            let fetchedCreds = await this.getCredentialsById(Array.from(credentialIds))
+            let fetchedCreds = await this.getCredentialsById(Array.from(credentialIds), token)
             credentials.push(...fetchedCreds);
 
             //Verifying the count, throwing if not match:
@@ -114,7 +115,7 @@ export class CredentialCache {
 
         if (secretIds.size > 0) {
 
-            secrets = await this.getSecretsById(Array.from(secretIds));
+            secrets = await this.getSecretsById(Array.from(secretIds), token);
 
             //Verifying the count, throwing if not match:
             if (secretIds.size != secrets.length) {
@@ -157,9 +158,9 @@ export class CredentialCache {
         this._secretStrings = [];
     }
 
-    private async getSecretsById(secretIds: string[]): Promise<Secret<SecretValue>[]> {
+    private async getSecretsById(secretIds: string[], token: SecurityToken): Promise<Secret<SecretValue>[]> {
 
-        let svc: DataService = db.getService("Secret");
+        let svc: DataService = db.getService("Secret", token);
         let qm = new QueryModifier();
 
         qm.filterBy = {
@@ -172,9 +173,9 @@ export class CredentialCache {
             .map((model) => model.toObject());
     }
 
-    private async getCredentialsById(credentialIds: string[]): Promise<Credential[]> {
+    private async getCredentialsById(credentialIds: string[], token: SecurityToken): Promise<Credential[]> {
 
-        let svc: DataService = db.getService("Credential");
+        let svc: DataService = db.getService("Credential", token);
         let qm = new QueryModifier();
 
         qm.filterBy = {

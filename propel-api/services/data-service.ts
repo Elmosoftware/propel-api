@@ -5,6 +5,7 @@ import { PropelError } from "../../propel-shared/core/propel-error";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { AdapterModel } from "../schema/mongoose-schema-adapter";
 import { APIResponse } from "../../propel-shared/core/api-response";
+import { SecurityToken } from "../../propel-shared/core/security-token";
 
 /**
  * Data Service
@@ -12,10 +13,12 @@ import { APIResponse } from "../../propel-shared/core/api-response";
 export class DataService {
 
     private _model: AdapterModel;
+    private _token?: SecurityToken;
     private _cryptoErrorRegExp: RegExp = new RegExp("^ERR_OSSL", "gi");;
 
-    constructor(model: AdapterModel) {
+    constructor(model: AdapterModel, token?: SecurityToken) {
         this._model = model;
+        this._token = token;
     }
 
     /**
@@ -69,7 +72,7 @@ export class DataService {
         return new Promise((resolve, reject) => {
 
             let obj = null;
-            this._setAuditData(true, document, null);
+            this._setAuditData(true, document);
 
             if (!this.isValidObjectId(document._id)) {
                 document._id = this.getNewobjectId();
@@ -114,7 +117,7 @@ export class DataService {
                 reject(new APIResponse<any>(e, null));
             }
             else {
-                this._setAuditData(false, document, null);
+                this._setAuditData(false, document);
                 this._model.model.updateOne({ _id: document._id }, document, null, (err: any, data: any) => {
                     if (err) {
                         if (this.isDupKeyError(err)) {
@@ -177,10 +180,10 @@ Those fields are for internal use only and must not take part on user queries.`)
 
                 //If it's a text search, we add a projection to calculate the text scores:
                 if (qm.isTextSearch) {
-                    projection = { 
-                        score: { 
-                            $meta: "textScore" 
-                        } 
+                    projection = {
+                        score: {
+                            $meta: "textScore"
+                        }
                     }
                 }
 
@@ -201,7 +204,7 @@ Those fields are for internal use only and must not take part on user queries.`)
                 }
                 //If the query is not sorted and is a text search, we will sort by default by the 
                 //text score, (so more meaningful results are showing first):
-                else if(qm.isTextSearch) {
+                else if (qm.isTextSearch) {
                     query.sort(projection);
                 }
 
@@ -254,7 +257,12 @@ Those fields are for internal use only and must not take part on user queries.`)
                 reject(new APIResponse<any>(e, null));
             }
             else {
-                this._model.model.updateOne({ _id: id }, { $set: { deletedOn: new Date() } }, null, 
+                this._model.model.updateOne({ _id: id }, {
+                    $set: {
+                        deletedOn: new Date(),
+                        deletedBy: (this._token) ? this._token.userName : ""
+                    }
+                }, null,
                     (err: any, data: any) => {
                         if (err) {
                             reject(new APIResponse<any>(err, null));
@@ -281,7 +289,7 @@ Those fields are for internal use only and must not take part on user queries.`)
      * to fullfill the audit data.
      * @param {any} session Active session details.
      */
-    _setAuditData(isNewDoc: boolean, doc: any, session: any) {
+    _setAuditData(isNewDoc: boolean, doc: any) {
 
         doc.deletedOn = null;
 
@@ -289,13 +297,17 @@ Those fields are for internal use only and must not take part on user queries.`)
         if (this._model.auditFieldsList.length > 0) {
             if (isNewDoc) {
                 doc.createdOn = new Date();
-                doc.createdBy = (session && session.userId) ? session.userId : null;
+                doc.createdBy = (this._token?.userName) ? this._token.userName : doc.createdBy;
                 doc.lastUpdateOn = null;
                 doc.lastUpdateBy = null;
             }
             else {
+                //To avoid invalid data stamping, we are going to remove the "create" fields when 
+                //is an update to an existent document.
+                delete doc.createdOn;
+                delete doc.createdBy;
                 doc.lastUpdateOn = new Date();
-                doc.lastUpdateBy = (session && session.userId) ? session.userId : null;
+                doc.lastUpdateBy = (this._token?.userName) ? this._token.userName : doc.createdBy;
             }
         }
     }
@@ -346,7 +358,7 @@ Those fields are for internal use only and must not take part on user queries.`)
      * @returns A boolean value indicating if the error is related to a failed encryption/decription 
      * operation in the database.
      */
-    private isEncryptionError(err:any): boolean {
+    private isEncryptionError(err: any): boolean {
         return err && err.code && (String(err.code).match(this._cryptoErrorRegExp) != null);
     }
 

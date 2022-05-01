@@ -87,7 +87,7 @@ export class Runner {
         this._stats = new ExecutionStats();
 
         try {
-            await this._credentialCache.build(workflow)
+            await this._credentialCache.build(workflow, token)
          } catch (error) {
             let e = ((error as any)?.errors && (error as any).errors.length > 0) ? (error as any).errors[0] : error
             let message: string = (e.errorCode?.userMessage) ? e.errorCode?.userMessage : e.message;
@@ -192,7 +192,7 @@ export class Runner {
         try {
             resultsMessage = new InvocationMessage(InvocationStatus.Finished, "", "", this._stats);
             resultsMessage.logStatus = this._execLog.status;
-            resultsMessage.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog))).data[0];
+            resultsMessage.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog), token)).data[0];
             this._execLog._id = resultsMessage.logId;
         } catch (error) {
             if ((error as any).errors && (error as any).errors.length > 0) {
@@ -214,8 +214,8 @@ export class Runner {
      * @param log Log to persist.
      * @returns A promis with the result of the operation.
      */
-    async saveExecutionLog(log: ExecutionLog): Promise<APIResponse<string>> {
-        let svc: DataService = db.getService("ExecutionLog");
+    async saveExecutionLog(log: ExecutionLog, token: SecurityToken): Promise<APIResponse<string>> {
+        let svc: DataService = db.getService("ExecutionLog", token);
         return svc.add(log);
     }
 

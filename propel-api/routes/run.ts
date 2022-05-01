@@ -66,7 +66,7 @@ export class RunRoute implements Route {
 
         try {
             logger.logDebug(`Retrieving now Workflow details...`);
-            workflow = await this.getWorkflow(req.params.workFlowId);
+            workflow = await this.getWorkflow(req.params.workFlowId, token);
 
             //If the Workflow is missing/deleted, we are not able to proceed.
             if (!workflow) throw new PropelError("The workflow does not exists. Please verify if it was deleted before retrying.");
@@ -113,8 +113,8 @@ export class RunRoute implements Route {
         }
     }
 
-    private async getWorkflow(id: string): Promise<Workflow | undefined> {
-        let svc: DataService = db.getService("workflow");
+    private async getWorkflow(id: string, token: SecurityToken): Promise<Workflow | undefined> {
+        let svc: DataService = db.getService("workflow", token);
         let result: APIResponse<Workflow>;
         let qm = new QueryModifier();
 

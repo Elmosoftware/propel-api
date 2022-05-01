@@ -7,6 +7,7 @@ import { WindowsSecret } from "../../../propel-shared/models/windows-secret";
 import { AWSSecret } from "../../../propel-shared/models/aws-secret";
 import { ParameterValue } from "../../../propel-shared/models/parameter-value";
 import { Workflow } from "../../../propel-shared/models/workflow";
+import { SecurityToken } from "../../../propel-shared/core/security-token";
 
 
 let w = new WindowsSecret()
@@ -155,7 +156,7 @@ describe("CredentialCache Class - Build", () => {
             let cc = getTestCredentialCache();
             let w = getTestWorkflow([], 0, 0);
 
-            await cc.build(w)
+            await cc.build(w, new SecurityToken())
 
             expect(cc.count).toEqual(0);
         });
@@ -165,7 +166,7 @@ describe("CredentialCache Class - Build", () => {
             let cc = getTestCredentialCache();
             let w = getTestWorkflow([], 1, 0);
 
-            await cc.build(w)
+            await cc.build(w, new SecurityToken())
 
             expect(cc.count).toEqual(0);
         });
@@ -175,7 +176,7 @@ describe("CredentialCache Class - Build", () => {
             let cc = getTestCredentialCache();
             let w = getTestWorkflow([testingWorkflows.CredentialAWS02], 0, 0)
 
-            await cc.build(w)
+            await cc.build(w, new SecurityToken())
 
             expect(cc.count).toEqual(1);
             let ci01 = cc.getById(testingWorkflows.CredentialAWS02._id);
@@ -190,7 +191,7 @@ describe("CredentialCache Class - Build", () => {
             let cc = getTestCredentialCache();
             let w = getTestWorkflow([testingWorkflows.CredentialAWS02])
 
-            await cc.build(w)
+            await cc.build(w, new SecurityToken())
 
             let ci01 = cc.getById(testingWorkflows.CredentialWindows01._id);
             let ci02 = cc.getById(testingWorkflows.CredentialAWS02._id);
@@ -217,7 +218,7 @@ describe("CredentialCache Class - Build", () => {
             let cc = getTestCredentialCache();
             let w = getTestWorkflow([testingWorkflows.CredentialAWS02, testingWorkflows.CredentialWindows03])
 
-            await cc.build(w)
+            await cc.build(w, new SecurityToken())
 
             let ci01 = cc.getById(testingWorkflows.CredentialWindows01._id);
             let ci02 = cc.getById(testingWorkflows.CredentialAWS02._id);
@@ -254,13 +255,13 @@ describe("CredentialCache Class - Build", () => {
             let e = null;
 
             try {
-                await cc.build(w);
+                await cc.build(w, new SecurityToken());
             } catch (error) {
                 e = error;
             }
             
             expect(e).not.toBe(null)
-            expect(String(e.message)
+            expect(String((e as Error).message)
                     .toLowerCase()
                     .includes(`There was a total of 2 credentials specified in one or more Propel parameters in all the scripts of this workflow. But we found only 1`.toLowerCase()))
                 .toBeTruthy();
@@ -273,13 +274,13 @@ describe("CredentialCache Class - Build", () => {
             let e = null;
 
             try {
-                await cc.build(w);
+                await cc.build(w, new SecurityToken());
             } catch (error) {
                 e = error;
             }
             
             expect(e).not.toBe(null)
-            expect(String(e.message)
+            expect(String((e as Error).message)
                     .toLowerCase()
                     .includes(`There is a total of 2 credentials specified for this Workflow, but we found the secret part for only 1 of them`.toLowerCase()))
                 .toBeTruthy();

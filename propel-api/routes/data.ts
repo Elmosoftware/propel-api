@@ -12,7 +12,9 @@ import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { Entity } from "../../propel-shared/models/entity";
 import { logger } from "../services/logger-service";
-import { UserAccountRoles, UserAccountRolesUtil } from "../../propel-shared/models/user-account-roles";
+import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
+import { REQUEST_TOKEN_KEY } from "../core/middleware";
+import { SecurityToken } from "../../propel-shared/core/security-token";
 
 /**
  * Data endpoint. Allows to manage all data operations for the API.
@@ -114,9 +116,10 @@ export class DataRoute implements Route {
             let body: DataRequest;
             let e: PropelError | null = null;
             let result$: Promise<APIResponse<any>> | null = null;
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
 
             try {
-                svc = db.getService(entityName);
+                svc = db.getService(entityName, token);
                 body = req.body;
 
                 if (body && body.action) {

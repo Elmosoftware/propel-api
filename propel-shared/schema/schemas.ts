@@ -51,6 +51,12 @@ class Schemas {
                         type: Date,
                         isAudit: true,
                         isInternal: true
+                    }),
+                new SchemaField("deletedBy", `User name of the user that deletes the document.`,
+                    {
+                        type: String,
+                        isAudit: true,
+                        isInternal: true
                     })
             ])
             .setDescription("Basic entity definition")
@@ -69,7 +75,7 @@ class Schemas {
                 new SchemaField("createdBy", `Creator User Id.`,
                     {
                         type: String,
-                        //isRequired: true,  <== This need to change to "true" when we add users.
+                        isRequired: true,
                         isAudit: true
                     }),
                 new SchemaField("createdOn", `Creation timestamp (UTC).`,

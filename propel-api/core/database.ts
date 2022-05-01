@@ -9,6 +9,7 @@ import { MongooseSchemaAdapter, AdapterModel } from "../schema/mongoose-schema-a
 import { DataService } from "../services/data-service";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SchemaDefinition } from "../../propel-shared/schema/schema-definition";
+import { SecurityToken } from "../../propel-shared/core/security-token";
 
 const mongooseOptions: any = {
     useNewUrlParser: true, //(node:61064) DeprecationWarning: current URL string parser is deprecated.
@@ -82,8 +83,8 @@ class Database {
      * model by adding, modifying, removing and searching documents.
      * @param {string} modelName Model name to serve
      */
-    getService(modelName: string) {
-        return new DataService(this._getModelByName(modelName));
+    getService(modelName: string, token?: SecurityToken) {
+        return new DataService(this._getModelByName(modelName), token);
     }
 
     _getModelByName(modelName: string): AdapterModel {

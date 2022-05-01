@@ -30,8 +30,11 @@ export class SecurityService {
 
     ruler: SecurityRuleSelector;
 
-    constructor() {
+    private _token?: SecurityToken;
+
+    constructor(token?: SecurityToken) {
         this.ruler = new SecurityRuleSelector(allRoutes);
+        this._token = token
     }
 
     /**
@@ -84,7 +87,7 @@ export class SecurityService {
      * @returns The requested user or "undefined" if the user doesn't exists.
      */
     async getUserByName(name: string): Promise<UserAccount | undefined> {
-        let svc: DataService = db.getService("useraccount");
+        let svc: DataService = db.getService("useraccount", this._token);
         let result: APIResponse<UserAccount>;
         let qm = new QueryModifier();
 
@@ -426,7 +429,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     }
 
     private async getUserSecret(secretId: string): Promise<Secret<UserAccountSecret> | undefined> {
-        let svc: DataService = db.getService("secret");
+        let svc: DataService = db.getService("secret", this._token);
         let result: APIResponse<Secret<UserAccountSecret>>;
         let qm = new QueryModifier();
 
@@ -448,7 +451,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     }
 
     private async saveUserSecret(secret: Secret<UserAccountSecret>): Promise<string> {
-        let svc: DataService = db.getService("secret");
+        let svc: DataService = db.getService("secret", this._token);
         let result: APIResponse<string>;
 
         //If is a new secret:
@@ -464,7 +467,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     }
 
     private async saveUser(user: UserAccount): Promise<string> {
-        let svc: DataService = db.getService("useraccount");
+        let svc: DataService = db.getService("useraccount", this._token);
         let result: APIResponse<string>;
 
         //If is a new user:

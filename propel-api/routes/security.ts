@@ -12,6 +12,8 @@ import { UserRegistrationResponse } from "../../propel-shared/core/user-registra
 import { SecuritySharedConfiguration } from "../../propel-shared/core/security-shared-config";
 import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rule";
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
+import { SecurityToken } from "../../propel-shared/core/security-token";
+import { REQUEST_TOKEN_KEY } from "../core/middleware";
 
 /**
  * Security route implements security related features like, user login and user managment.
@@ -67,7 +69,8 @@ export class SecurityRoute implements Route {
 
         //Returning the shared configuration of the security endpoint:
         handler.get("", (req, res) => {
-            let ss: SecurityService = new SecurityService();
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
 
             try {
                 res.json(new APIResponse<SecuritySharedConfiguration>(null, ss.getSharedConfig()));
@@ -78,8 +81,8 @@ export class SecurityRoute implements Route {
 
         //Get user by id or name:
         handler.get("/user/:id", async (req, res) => {
-
-            let ss: SecurityService = new SecurityService();
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
             let id: string = req.params.id;
 
             try {
@@ -92,8 +95,8 @@ export class SecurityRoute implements Route {
 
         //User registration:
         handler.post("/save", async (req, res) => {
-
-            let ss: SecurityService = new SecurityService();
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
             let user: UserAccount = req.body;
 
             try {
@@ -106,8 +109,8 @@ export class SecurityRoute implements Route {
 
         //User pasword reset:
         handler.post("/reset/:id", async (req, res) => {
-
-            let ss: SecurityService = new SecurityService();
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
             let id: string = req.params.id;
 
             try {
@@ -120,8 +123,8 @@ export class SecurityRoute implements Route {
 
         //User lock:
         handler.post("/lock/:id", async (req, res) => {
-
-            let ss: SecurityService = new SecurityService();
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
             let id: string = req.params.id;
 
             try {
@@ -134,8 +137,8 @@ export class SecurityRoute implements Route {
 
         //User unlock:
         handler.post("/unlock/:id", async (req, res) => {
-
-            let ss: SecurityService = new SecurityService();
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
             let id: string = req.params.id;
 
             try {
@@ -148,8 +151,8 @@ export class SecurityRoute implements Route {
 
         //User login:
         handler.post("/login", async (req, res) => {
-
-            let ss: SecurityService = new SecurityService();
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
             let request: SecurityRequest = req.body;
 
             try {
