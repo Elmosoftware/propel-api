@@ -7,27 +7,27 @@ export class APIResponse<T>{
     /**
      * Collection of errors or an empty array if no errors occurred resolving request.
      */
-    public readonly errors: any[];
+    public error: any;
 
     /**
      * Collection of Data items returned by the API or an epty array if no results.
      */
-    public readonly data: T[];
+    public data: T[];
 
     /**
      * Amount of items returned in the "data" collection.
      */
-    public readonly count: number;
+    public count: number;
 
     /**
      * Total amount of items available in the datasource that applies to the 
      * filter criteria specified in the request. 
      */
-    public readonly totalCount: number;
+    public totalCount: number;
 
-    constructor(errors: any[] | any, data: T[] | T | undefined | null, totalCount: number = 0){
+    constructor(error: any, data: T[] | T | undefined | null, totalCount: number = 0){
         // this.errors = this._toArray(errors, (error: any) => errorFormatter.format(new PropelError(error)));
-        this.errors = this._toArray(errors, (error: any) => error);
+        this.error = error;
         this.data = this._toArray(data, (item: T) => item);
         this.count = this.data.length;
         this.totalCount = totalCount;

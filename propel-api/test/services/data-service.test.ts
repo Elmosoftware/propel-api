@@ -37,8 +37,7 @@ describe("DataService Class - update()", () => {
                 done();
             })
             .catch((e: APIResponse<any>) => {
-                expect(e.errors.length).toBeGreaterThan(0);
-                expect(e.errors[0].message).toContain(`The method "update" expect a not null reference for the "document" param`);
+                expect(e.error.message).toContain(`The method "update" expect a not null reference for the "document" param`);
                 done()
             })
     }),
@@ -57,8 +56,7 @@ describe("DataService Class - update()", () => {
                 done();
             })
             .catch((e: APIResponse<any>) => {
-                expect(e.errors.length).toBeGreaterThan(0);
-                expect(e.errors[0].message).toContain(`The method "update" expect a document with an "_id" attribute`);
+                expect(e.error.message).toContain(`The method "update" expect a document with an "_id" attribute`);
                 done()
             })
     }),
@@ -76,15 +74,8 @@ describe("DataService Class - update()", () => {
                 done();
             })
             .catch((e: APIResponse<any>) => {
-                expect(e.errors.length).toBeGreaterThan(0);
-                expect(e.errors[0].message).toContain(`The method "update" expect a valid ObjectId in the parameter "id"`);
+                expect(e.error.message).toContain(`The method "update" expect a valid ObjectId in the parameter "id"`);
                 done()
             })
-
-        // expect(() => {
-        //     ds.update({
-        //         _id: "invalid id"
-        //     });
-        // }).toThrow(`The method "update" expect a valid ObjectId in the parameter "id"`);
     })
 });

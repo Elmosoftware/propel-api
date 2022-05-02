@@ -463,7 +463,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         }
 
         if (result.count == 1) return result.data[0].toString();
-        else throw new PropelError(`There was an error creating or updating the user secret. Following details: ${JSON.stringify(result.errors[0])}`)
+        else throw new PropelError(`There was an error creating or updating the user secret. Following details: ${JSON.stringify(result.error)}`)
     }
 
     private async saveUser(user: UserAccount): Promise<string> {
@@ -479,7 +479,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         }
 
         if (result.count == 1) return result.data[0].toString();
-        else throw new PropelError(`There was an error creating or updating the user. Following details: ${JSON.stringify(result.errors[0])}`,
+        else throw new PropelError(`There was an error creating or updating the user. Following details: ${JSON.stringify(result.error)}`,
             undefined, INTERNAL_SERVER_ERROR.toString())
     }
 

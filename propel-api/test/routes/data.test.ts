@@ -42,7 +42,7 @@ describe("DataRouter class - processFind()", () => {
                 done();
             })
             .catch((err: APIResponse<any>) => {
-                expect(err.errors[0].message).toContain("Find action was aborted because the body entity attribute is not a string")
+                expect(err.error.message).toContain("Find action was aborted because the body entity attribute is not a string")
                 done()
             })
     })
@@ -55,7 +55,7 @@ describe("DataRouter class - processFind()", () => {
                 done();
             })
             .catch((err: APIResponse<any>) => {
-                expect(err.errors[0].message).toContain("The id specified is not a valid identifier")
+                expect(err.error.message).toContain("The id specified is not a valid identifier")
                 done()
             })
     })
@@ -113,7 +113,7 @@ describe("DataRouter class - processSave()", () => {
                 done();
             })
             .catch((err: APIResponse<any>) => {
-                expect(err.errors[0].message).toContain("Save action was aborted because the body doesn't contain an entity object")
+                expect(err.error.message).toContain("Save action was aborted because the body doesn't contain an entity object")
                 done();
             })
     })
@@ -167,7 +167,7 @@ describe("DataRouter class - processDelete()", () => {
                 done();
             })
             .catch((err: APIResponse<any>) => {
-                expect(err.errors[0].message).toContain("Delete action was aborted because the body doesn't contain an entity object")
+                expect(err.error.message).toContain("Delete action was aborted because the body doesn't contain an entity object")
                 done();
             })
     })
