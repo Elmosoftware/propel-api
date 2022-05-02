@@ -173,6 +173,12 @@ export class SecurityRoute implements Route {
             code = Number(error.httpStatus);
         }
 
-        res.status(code).json(new APIResponse<any>(error, null));
+        //If "error" is not an APIResponse, we need to create one:
+        if (!(error instanceof APIResponse || error?.name == "APIResponse" || 
+            (error?.constructor && error.constructor?.name == "APIResponse"))) {
+            error = new APIResponse<any>(error, null);
+        }        
+
+        res.status(code).json(error);
     }
 }

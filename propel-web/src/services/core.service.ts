@@ -3,7 +3,6 @@ import { Title } from '@angular/platform-browser'
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-import { PropelAppError } from "../core/propel-app-error";
 import { logger } from "../../../propel-shared/services/logger-service";
 import { ErrorHandlerService } from "./error-handler.service";
 import { NavigationService } from "./navigation.service";
@@ -20,6 +19,7 @@ import { APIStatusService } from './api-status.service';
 import { ConnectivityService, ConnectivityStatus } from './connectivity.service';
 import { SecurityService } from './security.service';
 import { SessionService } from "./session.service";
+import { PropelError } from '../../../propel-shared/core/propel-error';
 
 /**
  * This core class help inject common services to the app. 
@@ -153,7 +153,7 @@ export class CoreService {
 
   private _init() {
     this.injErr.getErrorHandlerSubscription()
-      .subscribe((error: PropelAppError) => {
+      .subscribe((error: PropelError) => {
         this.injConn.updateStatus(error);
       });
 

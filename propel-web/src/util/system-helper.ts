@@ -1,6 +1,7 @@
-import { PropelAppError } from "../core/propel-app-error";
 import { generate } from "shortid";
 import * as moment from 'moment';
+
+import { PropelError } from "../../../propel-shared/core/propel-error";
 
 const DEFAULT_DATE_FORMAT: string = "dddd, MMMM Do YYYY, h:mm:ss a [(]ZZ[)]";
 const DEFAULT_DURATION_FORMAT: string = "HH:mm:ss";
@@ -20,7 +21,7 @@ export class SystemHelper {
     static encodeBase64(ASCIIString: string): string{
         
         if (typeof ASCIIString !== "string") {
-            throw new PropelAppError(`We expect a "string" for the parameter "ASCIIString". Supplied value type: "${typeof ASCIIString}".`)
+            throw new PropelError(`We expect a "string" for the parameter "ASCIIString". Supplied value type: "${typeof ASCIIString}".`)
         }
   
         return window.btoa(ASCIIString);
@@ -33,7 +34,7 @@ export class SystemHelper {
     static decodeBase64(base64String: string): string{
         
         if (typeof base64String !== "string") {
-            throw new PropelAppError(`We expect a "string" for the parameter "base64String". Supplied value type: "${typeof base64String}".`)
+            throw new PropelError(`We expect a "string" for the parameter "base64String". Supplied value type: "${typeof base64String}".`)
         }
   
         return window.atob(base64String);

@@ -1,5 +1,5 @@
 import { ErrorHandler, Injectable, EventEmitter } from '@angular/core';
-import { PropelAppError } from "../core/propel-app-error";
+import { PropelError } from '../../../propel-shared/core/propel-error';
 import { logger } from "../../../propel-shared/services/logger-service";
 
 @Injectable({
@@ -7,13 +7,13 @@ import { logger } from "../../../propel-shared/services/logger-service";
 })
 export class ErrorHandlerService implements ErrorHandler {
 
-  private errorHandlerEmitter$: EventEmitter<PropelAppError> = new EventEmitter<PropelAppError>();
+  private errorHandlerEmitter$: EventEmitter<PropelError> = new EventEmitter<PropelError>();
 
   constructor() {
     logger.logInfo("CustomErrorHandler instance created");
   }
 
-  getErrorHandlerSubscription(): EventEmitter<PropelAppError> {
+  getErrorHandlerSubscription(): EventEmitter<PropelError> {
     return this.errorHandlerEmitter$;
   }
 
@@ -22,7 +22,7 @@ export class ErrorHandlerService implements ErrorHandler {
    * @param error Error.
    */
   handleError(error) {
-    let e = new PropelAppError(error);
+    let e = new PropelError(error);
 
     console.error(`%c [${e.name}]: ${e.message}\r\nat ${e.timestamp.toISOString()}, (local time:${e.timestamp.toLocaleString()})`, "color: #ff3b3b; font-size: 14px; font-weight: Bold");
     console.dir(e);

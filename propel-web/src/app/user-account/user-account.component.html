@@ -4,7 +4,9 @@
             <label for="name" class="data-required">User Name</label>
             <input type="text" class="form-control" id="name" aria-describedby="name"
                 placeholder="This is the user name that must be unique, (e.g.: john.doe)." 
-                formControlName="name" required>
+                formControlName="name" 
+                [disabled]="fh.form.controls._id"
+                required>
             <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
         </div>
         <div class="form-group">

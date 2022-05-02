@@ -1,10 +1,10 @@
 import { Component, EventEmitter, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { PropelAppError } from 'src/core/propel-app-error';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
+import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { SecurityRequest } from '../../../../propel-shared/core/security-request';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 
@@ -220,8 +220,8 @@ export class LoginComponent implements OnInit {
         if (response.count == 0) {
 
           if (response.errors.length !== 0) {
-            //Embedding the error in a PropelAppError to get access to the error code, (if any):
-            let appError = new PropelAppError(response.errors[0]);
+            //Embedding the error in a PropelError to get access to the error code, (if any):
+            let appError = new PropelError(response.errors[0]);
 
             if (appError.userMessage) {
               this.formFlow.message = appError.userMessage;
@@ -247,7 +247,7 @@ export class LoginComponent implements OnInit {
       },
         err => {
 
-          let appError = new PropelAppError(err);
+          let appError = new PropelError(err);
 
           if (appError.userMessage) {
             this.formFlow.message = appError.userMessage;

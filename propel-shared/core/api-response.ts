@@ -1,7 +1,4 @@
 //@ts-check
-import { PropelError } from "./propel-error";
-import { errorFormatter } from "../../propel-api/schema/error-formatter";
-
 /**
  * This class encapsulates the unified response body sent always by this API.
  */
@@ -29,7 +26,8 @@ export class APIResponse<T>{
     public readonly totalCount: number;
 
     constructor(errors: any[] | any, data: T[] | T | undefined | null, totalCount: number = 0){
-        this.errors = this._toArray(errors, (error: any) => errorFormatter.format(new PropelError(error)));
+        // this.errors = this._toArray(errors, (error: any) => errorFormatter.format(new PropelError(error)));
+        this.errors = this._toArray(errors, (error: any) => error);
         this.data = this._toArray(data, (item: T) => item);
         this.count = this.data.length;
         this.totalCount = totalCount;

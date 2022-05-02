@@ -2,7 +2,7 @@ import { Injectable, OnDestroy, EventEmitter } from '@angular/core';
 import { of, fromEvent } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
-import { PropelAppError } from "../core/propel-app-error";
+import { PropelError } from "../../../propel-shared/core/propel-error";
 import { APIStatusService } from './api-status.service';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { APIResponse } from '../../../propel-shared/core/api-response';
@@ -66,7 +66,7 @@ export class ConnectivityService implements OnDestroy {
      * If an error is passed as parameter, the SubscriptionService ConnectivityStatusChange event will be fired.
      * If no error is passes as parameter, the event will be fired ONLY if there is a status change.
      */
-    updateStatus(lastError?: PropelAppError): void {
+    updateStatus(lastError?: PropelError): void {
 
         this.statusAPISubscription$ =
             this.svc.getStatus()
@@ -96,7 +96,7 @@ export class ConnectivityService implements OnDestroy {
                 });
     }
 
-    private mapResponse(data: APIResponse<APIStatus>, endpointType: string, lastError?: PropelAppError) {
+    private mapResponse(data: APIResponse<APIStatus>, endpointType: string, lastError?: PropelError) {
 
         let ret = {
             error: null,
@@ -152,7 +152,7 @@ export class ConnectivityStatus {
      * @param lastError ErrorLog objectthat contains the information for the last error sent to this service.
      */
     constructor(networkOn: boolean = window.navigator.onLine, apiOn: boolean = false,
-        lastError: PropelAppError = null) {
+        lastError: PropelError = null) {
         this.networkOn = networkOn;
         this.apiOn = apiOn;
         this.lastError = lastError;
@@ -171,5 +171,5 @@ export class ConnectivityStatus {
     /**
      * Last error sent to this service.
      */
-    lastError: PropelAppError;
+    lastError: PropelError;
 }

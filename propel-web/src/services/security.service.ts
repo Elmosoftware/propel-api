@@ -12,11 +12,11 @@ import { SecuritySharedConfiguration } from '../../../propel-shared/core/securit
 import { Observable, of } from 'rxjs';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { environment } from 'src/environments/environment';
-import { PropelAppError } from 'src/core/propel-app-error';
 import { RDPUser } from '../../../propel-shared/core/rdp-user';
 import { ErrorCodes } from '../../../propel-shared/core/error-codes';
 import { PageMetadata } from './app-pages.service';
 import { SessionService } from './session.service';
+import { PropelError } from '../../../propel-shared/core/propel-error';
 
 const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
 
@@ -200,7 +200,7 @@ export class SecurityService {
 Propel is running with the user "${sr.userName}" credentials.
 List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u.userName).join(", ")}`)
 
-                return of(new APIResponse<string>(new PropelAppError("Impersonation is not allowed in Propel", ErrorCodes.UserImpersonation), ""));
+                return of(new APIResponse<string>(new PropelError("Impersonation is not allowed in Propel", ErrorCodes.UserImpersonation), ""));
             }
         }
 

@@ -9,7 +9,7 @@ import { APIResponse } from "../../../propel-shared/core/api-response";
 import { DataRequest, DataRequestAction } from "../../../propel-shared/core/data-request";
 import { logger } from '../../../propel-shared/services/logger-service';
 import { Utils } from '../../../propel-shared/utils/utils';
-import { PropelAppError } from "../core/propel-app-error";
+import { PropelError } from '../../../propel-shared/core/propel-error';
 
 export enum DataEntity {
   ExecutionLog = "ExecutionLog",
@@ -118,7 +118,7 @@ export class DataService {
       let property: string = "name";
       
       if(!(entityType == DataEntity.Target || entityType == DataEntity.Workflow)) {
-        throw new PropelAppError(`We can duplicate only Workflows and Targets. There is not logic yet to duplicate "${entityType.toString()}".`)
+        throw new PropelError(`We can duplicate only Workflows and Targets. There is not logic yet to duplicate "${entityType.toString()}".`)
       }
 
       if(entityType == DataEntity.Target){

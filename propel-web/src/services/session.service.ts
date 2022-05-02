@@ -3,9 +3,9 @@ import { RuntimeInfo } from '../../../propel-shared/core/runtime-info';
 import { SecurityToken } from '../../../propel-shared/core/security-token';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { environment } from 'src/environments/environment';
-import { PropelAppError } from 'src/core/propel-app-error';
 import { SystemHelper } from 'src/util/system-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
+import { PropelError } from '../../../propel-shared/core/propel-error';
 
 const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
 
@@ -82,13 +82,13 @@ export class SessionService {
         let tokenSections: string[] = token.split(".")
         let tokenPayload: any;
 
-        if (tokenSections.length !== 3) throw new PropelAppError(`Invalid token. 
+        if (tokenSections.length !== 3) throw new PropelError(`Invalid token. 
 The provided JWT token is not properly formatted. We expect Header, Payload and Signature sections and we get ${tokenSections.length} sections.`);
 
         tokenPayload = SystemHelper.decodeBase64(tokenSections[1]);
 
         if (!Utils.isValidJSON(tokenPayload)) {
-            throw new PropelAppError(`Invalid token payload. 
+            throw new PropelError(`Invalid token payload. 
 The payload in the provided JWT token can't be parsed as JSON. Payload content is: ${tokenPayload} sections.`);
         }
         

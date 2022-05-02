@@ -1,8 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
-import { PropelAppError } from "../core/propel-app-error";
-import { logger } from "../../../propel-shared/services/logger-service";
 import { PropelError } from '../../../propel-shared/core/propel-error';
+import { logger } from "../../../propel-shared/services/logger-service";
 
 const STDERRMSG = "Something wrong happened. Please retry the operation later.";
 const DEFAULT_TOAST_ERROR_DURATION:number = 6000;
@@ -30,17 +29,17 @@ export class ToasterService {
      * @param messageOrError Message to show in the toaster or an Error object containing all the Error details.
      * @param title Optional toaster title.
      */
-    showError(messageOrError: string | PropelAppError | Error = STDERRMSG,
+    showError(messageOrError: string | PropelError | Error = STDERRMSG,
         title: string = "There was an error ...") {
 
         this.zone.run(() => {
             try {
-                let e: PropelAppError;
+                let e: PropelError;
                 let isWarning: boolean = false;
 
                 if (typeof messageOrError == "object") {
 
-                    e = Object.assign({}, (messageOrError as PropelAppError));
+                    e = Object.assign({}, (messageOrError as PropelError));
 
                     if (e.userMessage) {
                         messageOrError = e.userMessage;
@@ -48,8 +47,6 @@ export class ToasterService {
                         isWarning = (e.errorCode && e.errorCode.isWarning);
                     }
                     else if (e.isHTTPError) {
-                        // let err: PropelAppError = (messageOrError as PropelAppError);
-
                         if (Number(e.httpStatus) == 400) {
                             messageOrError = "Seems like the last operation failed because of the provided data. Please verify the submitted data and do the required changes before to retry.";
                             title = "Data issues ..."
