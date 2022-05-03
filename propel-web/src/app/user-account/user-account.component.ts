@@ -7,6 +7,7 @@ import { FormHandler } from 'src/core/form-handler';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
 import { DataEntity } from 'src/services/data.service';
+import { SystemHelper } from 'src/util/system-helper';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { UserRegistrationResponse } from '../../../../propel-shared/core/user-registration-response';
 import { compareEntities } from '../../../../propel-shared/models/entity';
@@ -28,6 +29,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
   allRoles: any[] = [];
   loaded: boolean = false;
   authCode: string = "";
+  lastUserLogin: Date = null;
 
   //Form validation constant parameters:
   validationParams: any = {
@@ -37,6 +39,10 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
     get initialsMaxLength() { return 2 },
     get initialsPattern() { return "^[a-zA-Z]+$" },
     get emailPattern() { return "[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$" }
+  }
+
+  get canEditName(): boolean {
+    return !Boolean(this.lastUserLogin);
   }
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
@@ -143,6 +149,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
           }
           else {
             let user: UserAccount = data.data[0];
+            this.lastUserLogin = user.lastLogin;
             this.setFormValue(user);
           }
 
@@ -166,6 +173,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
 
   newItem() {
     let user: UserAccount = new UserAccount();
+    this.lastUserLogin = null;
     this.setFormValue(user);
   }
 
@@ -179,7 +187,21 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
     });
 
     if (item) {
-      this.roleDropdown.select(item); //Selecting the value in the dropdown.      
+      this.roleDropdown.select(item); //Selecting the value.en in the dropdown.      
+    }
+
+    //We need to ensure the name can't be updated when the user already log in: 
+    if (this.canEditName) {
+      setTimeout(() => {
+        this.fh.form.controls.name.enable({ emitEvent: false });
+        this.fh.form.updateValueAndValidity();
+      });
+    }
+    else {
+      setTimeout(() => {
+        this.fh.form.controls.name.disable({ emitEvent: true, onlySelf: true });
+        this.fh.form.updateValueAndValidity();
+      });      
     }
     
     this.fh.form.updateValueAndValidity();
@@ -212,5 +234,21 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
       this.fh.resetForm();
       this.setFormValue(this.fh.value)
     }
+  }
+
+  getNameTooltip() {
+    if (!this.lastUserLogin) return "";
+    return `The user already login. 
+There is security records kept about, so you can't change the user name from now on.`
+  }
+
+  getLastLogin(){
+    if (!this.lastUserLogin) return "";
+    return `User last login was ${SystemHelper.getFriendlyTimeFromNow(this.lastUserLogin)}`;
+  } 
+  
+  getLastLoginTooltip(){
+    if (!this.lastUserLogin) return "";
+    return SystemHelper.formatDate(this.lastUserLogin);
   }
 }

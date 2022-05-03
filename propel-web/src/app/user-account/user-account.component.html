@@ -2,41 +2,39 @@
     <form [formGroup]="fh.form">
         <div class="form-group">
             <label for="name" class="data-required">User Name</label>
-            <input type="text" class="form-control" id="name" aria-describedby="name"
-                placeholder="This is the user name that must be unique, (e.g.: john.doe)." 
-                formControlName="name" 
-                [disabled]="fh.form.controls._id"
-                required>
+            <div [matTooltip]="getNameTooltip()" matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                <input type="text" class="form-control" id="name" aria-describedby="name"
+                    placeholder="This is the user name that must be unique, (e.g.: john.doe)." formControlName="name"
+                    required>
+            </div>
+            <span class="text-subtle description" [innerHtml]="getLastLogin()" [matTooltip]="getLastLoginTooltip()"
+                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
             <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
         </div>
         <div class="form-group">
             <label for="fullName" class="data-required">Display name</label>
             <input type="text" class="form-control" id="fullName" aria-describedby="fullName"
-                placeholder="This is the full name as will be displayed in the app, (e.g.: John Doe)." 
+                placeholder="This is the full name as will be displayed in the app, (e.g.: John Doe)."
                 formControlName="fullName" required>
             <app-validation-message [control]="fh.form.controls.fullName"></app-validation-message>
         </div>
         <div class="form-group">
             <label for="initials" class="data-required">Initials</label>
             <input type="text" class="form-control text-upper" id="initials" aria-describedby="initials"
-                placeholder="Two capital letters as user initials, (e.g.: JD)." 
-                formControlName="initials" required>
+                placeholder="Two capital letters as user initials, (e.g.: JD)." formControlName="initials" required>
             <app-validation-message [control]="fh.form.controls.initials"></app-validation-message>
         </div>
         <div class="form-group">
             <label for="email" class="data-required">e-mail</label>
             <input type="email" class="form-control" id="email" aria-describedby="email"
-                placeholder="User email, (e.g.: jonh.doe@mycompany.com)." 
-                formControlName="email" required>
+                placeholder="User email, (e.g.: jonh.doe@mycompany.com)." formControlName="email" required>
             <app-validation-message [control]="fh.form.controls.email"></app-validation-message>
         </div>
         <div class="form-group">
             <label class="mr-2" class="data-required" for="role">Role</label>
-            <ng-select #role [items]="allRoles" [multiple]="false" labelForId="role"
-                [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true" 
-                bindValue="value" bindLabel="key" clearAllText="Clear" [compareWith]="compareFn"
-                placeholder="Select the role assigned to the user."
-                formControlName="role">
+            <ng-select #role [items]="allRoles" [multiple]="false" labelForId="role" [closeOnSelect]="true"
+                [clearSearchOnAdd]="true" [searchable]="true" bindValue="value" bindLabel="key" clearAllText="Clear"
+                [compareWith]="compareFn" placeholder="Select the role assigned to the user." formControlName="role">
             </ng-select>
             <app-validation-message [control]="fh.form.controls.role"></app-validation-message>
         </div>
@@ -48,8 +46,8 @@
                 This is the authentication code generated for this user:
                 <app-authentication-code [code]="authCode" class="mt-3 mb-3 subtitle"></app-authentication-code>
                 <p>
-                    This code will be requested to the user on his first login, so please share 
-                    it with him in a secure way.<br>If you loose this code, please go to manage users and reset 
+                    This code will be requested to the user on his first login, so please share
+                    it with him in a secure way.<br>If you loose this code, please go to manage users and reset
                     this user password in order to get a new code.
                 </p>
             </div>
@@ -61,7 +59,8 @@
                     <button class="btn btn-primary ml-2" type="button" [disabled]="fh.form.pristine"
                         (click)="resetForm()">Cancel</button>
                 </div>
-                <button class="btn btn-primary ml-2" type="button" [disabled]="!fh.form.valid" (click)="save()">Save</button>
+                <button class="btn btn-primary ml-2" type="button" [disabled]="!fh.form.valid"
+                    (click)="save()">Save</button>
             </div>
         </div>
     </form>
