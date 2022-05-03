@@ -219,9 +219,9 @@ export class LoginComponent implements OnInit {
         //If there was some error:
         if (response.count == 0) {
 
-          if (response.errors.length !== 0) {
+          if (response.error) {
             //Embedding the error in a PropelError to get access to the error code, (if any):
-            let appError = new PropelError(response.errors[0]);
+            let appError = new PropelError(response.error);
 
             if (appError.userMessage) {
               this.formFlow.message = appError.userMessage;

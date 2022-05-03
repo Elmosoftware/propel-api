@@ -104,8 +104,8 @@ export class ConnectivityService implements OnDestroy {
             lastError: lastError
         }
 
-        if (data.errors.length > 0) {
-            ret.error = String(data.errors[0]);
+        if (data.error) {
+            ret.error = String(data.error);
         }
 
         return ret;
