@@ -2,6 +2,7 @@ import { Component, EventEmitter, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ValidatorsHelper } from 'src/core/validators-helper';
+import { environment } from 'src/environments/environment';
 import { CoreService } from 'src/services/core.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
@@ -91,6 +92,25 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    //////////////////////////////////////////////////////////////////////////
+    //DEBUG ONLY:
+    //  For debugging purposes only
+    //  If the autologin feature was set in the SessionService, we can here 
+    //  log automatically the user for testing purposes only:
+    if (environment.production == false) {
+      let ri: any = this.core.session.runtimeInfo
+      
+      if (ri && ri.password) {
+        let sr: SecurityRequest = new SecurityRequest();
+        sr.userName = ri.userName;
+        sr.password = ri.password;
+        this.execLogin(sr);
+        this.core.toaster.showWarning(`You just log in as ${sr.userName}`, "AUTO LOGIN is enabled!")
+      }
+    //////////////////////////////////////////////////////////////////////////
+    }
+
+
     this.referrerURL = this.route.snapshot.queryParamMap.get("referrerURL")
     this.formFlow = new FormFlow();
 
@@ -212,6 +232,11 @@ export class LoginComponent implements OnInit {
     if (this.formFlow.loginType !== LoginType.Regular) {
       sr.newPassword = this.fg.controls.newPassword.value;
     }
+
+    this.execLogin(sr);
+  }
+
+  execLogin(sr: SecurityRequest) {
 
     this.core.security.login(sr)
       .subscribe((response: APIResponse<string>) => {

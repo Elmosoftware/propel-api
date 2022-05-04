@@ -292,12 +292,13 @@ Those fields are for internal use only and must not take part on user queries.`)
     _setAuditData(isNewDoc: boolean, doc: any) {
 
         doc.deletedOn = null;
+        doc.deletedBy = null;
 
         //If the entity have audit data:
         if (this._model.auditFieldsList.length > 0) {
             if (isNewDoc) {
                 doc.createdOn = new Date();
-                doc.createdBy = (this._token?.userName) ? this._token.userName : doc.createdBy;
+                doc.createdBy = (this._token?.userName) ? this._token.userName : null;
                 doc.lastUpdateOn = null;
                 doc.lastUpdateBy = null;
             }
@@ -307,7 +308,7 @@ Those fields are for internal use only and must not take part on user queries.`)
                 delete doc.createdOn;
                 delete doc.createdBy;
                 doc.lastUpdateOn = new Date();
-                doc.lastUpdateBy = (this._token?.userName) ? this._token.userName : doc.createdBy;
+                doc.lastUpdateBy = (this._token?.userName) ? this._token.userName : null;
             }
         }
     }

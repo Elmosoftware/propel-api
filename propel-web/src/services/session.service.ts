@@ -6,6 +6,7 @@ import { environment } from 'src/environments/environment';
 import { SystemHelper } from 'src/util/system-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
 import { PropelError } from '../../../propel-shared/core/propel-error';
+import { RDPUser } from '../../../propel-shared/core/rdp-user';
 
 const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
 
@@ -34,22 +35,33 @@ export class SessionService {
         }
 
         if (environment.production == false) {
-            //////////////////////////////////////////////////////////////////////////
-            //DEBUG ONLY:
-            //  For debugging purposes only and to emulate a defined user in a dev env:
-            //  Comment below lines if you would like to login specifying a runtime info like the 
-            //  one created by Electron start scripts when the app starts in prod:
+            // //////////////////////////////////////////////////////////////////////////
+            // //DEBUG ONLY:
+            // //  For debugging purposes only and to emulate a defined user in a dev env:
+            // //  Comment below lines if you would like to login specifying a runtime info like the 
+            // //  one created by Electron start scripts when the app starts in prod:
 
             // let x = new RuntimeInfo();
-            // x.userName = "test.admin.1" //To test as an ADMIN user.
-            // x.userName = "test.regular.one" //To test as a Regular user.
+            // //Login as an admin user:
+            // //-------------------------------------------------------
+            // x.userName = "test.admin.1";
+            // //To auto login keep the below line commented out, (ensure the password is right).
+            // (x as any).password = "testadminone" 
+            
+            // //Login as a regular user:
+            // //-------------------------------------------------------
+            // x.userName = "test.regular.1";
+            // //To auto login keep the below line commented out, (ensure the password is right).
+            // (x as any).password = "testregularone" 
+            
+            // //Comment below line to test user impersonation error:
+            // x.RDPUsers.push(new RDPUser(x.userName, "Active")) 
 
-            // x.RDPUsers.push(new RDPUser(x.userName, "Active")) //Comment this line to test user impersonation error.
             // x.RDPUsers.push(new RDPUser("user.1", "Active"))
             // x.RDPUsers.push(new RDPUser("user.2", "Disconected"))
             // this._runtimeInfo = x;
-            // logger.logInfo(`DEBUG - Connected as "${this._runtimeInfo.userName}".`);
-            //////////////////////////////////////////////////////////////////////////
+            // logger.logInfo(`DEBUG - Connected as "${this._runtimeInfo.userName}"${((x as any).password) ? " with AUTO-LOGIN" : ""}.`);
+            // //////////////////////////////////////////////////////////////////////////
         }   
 
         this._securityToken = null;
