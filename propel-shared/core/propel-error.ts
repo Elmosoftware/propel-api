@@ -80,18 +80,12 @@ export class PropelError {
     public name: string = "";
 
     /**
-     * Error stack
-     */
-    // public stack: string = "";
-
-    private _paramError: any;
-
-    /**
      * Constructor
      * @param {Error | string} error Can be an error message or a native Error instance.
      * @param {Code} errorCode Is a Code error instance.
      */
     constructor(error: PropelError | Error | string, errorCode?: Code, httpStatus?: string) {
+        let paramError: any;
 
         if (!error) {
             throw new Error(`The PropelError class constructor cannot receive null value in the "error" parameter. 
@@ -117,12 +111,14 @@ export class PropelError {
             Value provided was of type "${typeof httpStatus}", with numeric value "${parseInt(httpStatus).toString()}" `)
             }
         }
+      
+        if (!(typeof error == "string")) {
+            paramError = Object.assign({}, error);
 
-        this._paramError = Object.assign({}, error);
-
-        //Special case for the "HTTPResponseError" in Angular that embeds the Propel error within:
-        if ((error as any).error?.errors?.length > 0) {
-            error = (error as any).error.errors[0];
+            //Special case for the "HTTPResponseError" in Angular that embeds the Propel error within:
+            if ((error as any).error?.error && String((error as any).error?.error?.name).startsWith(PROPEL_ERROR_NAME)) {
+                error = Object.assign({}, (error as any).error?.error)
+            }
         }
 
         this.parseError(error);
@@ -131,9 +127,9 @@ export class PropelError {
         this.parseMessage(error);
         this.parseStack(error);
         this.parseErrorCode(error, errorCode);
-        this.parseHTTPStatus(error, httpStatus);
+        this.parseHTTPStatus(error, httpStatus, paramError);
         this.parseLocation();
-        this.parseUrl(error);
+        this.parseUrl(error, paramError);
         this.parseIsWSError(error);
     }
 
@@ -232,7 +228,7 @@ export class PropelError {
      * Parse the HTTP status.
      * @param {string | undefined} httpStatus Error message or original Error instance.
      */
-    parseHTTPStatus(err: PropelError | Error | string, httpStatus?: string | undefined): void {
+    parseHTTPStatus(err: PropelError | Error | string, httpStatus?: string | undefined, paramError?: any): void {
         if (this.httpStatus) return;
 
         this.httpStatus = (httpStatus === null || httpStatus === undefined || httpStatus == "") ? "" : parseInt(httpStatus).toString();
@@ -241,9 +237,9 @@ export class PropelError {
             this.httpStatus = String((err as any).srcElement.readyState);
         }  
         
-        if (!this.httpStatus && this._paramError.status) {
-            this.httpStatus = this._paramError.status
-            this.httpStatusText = this._paramError.statusText
+        if (!this.httpStatus && paramError?.status) {
+            this.httpStatus = paramError?.status
+            this.httpStatusText = paramError?.statusText
             this.isHTTPError = true;
         }
 
@@ -288,13 +284,13 @@ export class PropelError {
      * If there is an URL in the error, we must capture it here.
      * @param {Error | string} err Error message or original Error instance.
      */
-    parseUrl(err: PropelError | Error | string): void {
+    parseUrl(err: PropelError | Error | string, paramError?: any): void {
         if (this.url) return;
 
         this.url = ((err as any).srcElement?.url) ? String((err as any).srcElement.url) : "";
 
-        if (!this.url && this._paramError.url) {
-            this.url = this._paramError.url;
+        if (!this.url && paramError?.url) {
+            this.url = paramError.url;
         }
     }
 
