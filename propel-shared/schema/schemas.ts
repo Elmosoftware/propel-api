@@ -75,7 +75,6 @@ class Schemas {
                 new SchemaField("createdBy", `Creator User Id.`,
                     {
                         type: String,
-                        isRequired: true,
                         isAudit: true
                     }),
                 new SchemaField("createdOn", `Creation timestamp (UTC).`,
