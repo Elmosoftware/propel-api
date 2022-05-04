@@ -12,6 +12,8 @@ import { UserAccount } from '../../../../propel-shared/models/user-account';
 //User form Messages:
 const MSG_USER_REGULAR_LOGIN: string = `Please enter your user account below. If your security credentials have 
 not been provided yet, please contact a Propel System administrator about.`;
+const MSG_USER_PRELOAD_NOT_FOUND: string = `You are running Propel with the below account. 
+The account doesn't exists, please contact a Propel System administrator in order to be granted.`
 const MSG_USER_NOT_FOUND: string = `The Propel user account doesn't exist. Please review and try again. 
 If you consider you must have access please contact a Propel System administrator about.`
 
@@ -31,7 +33,7 @@ Please retry later.`;
 const MSG_LOGIN_SUCCESS: string = `Your credentials were validated successfully. Redirecting to our landing page ...`;
 
 enum FormsSection {
-  None = "none",
+  PreloadRuntimeInfo = "preload",
   User = "user",
   Password = "password"
 }
@@ -118,6 +120,7 @@ export class LoginComponent implements OnInit {
     //in the form and switch directly to the "passwords" section of the login form:
     if (this.core.session.runtimeInfo) {
       this.fg.controls.name.patchValue(this.core.session.runtimeInfo.userName);
+      this.formFlow.activeFormSection =  FormsSection.PreloadRuntimeInfo;
       this.formFlow.isUserSectionEnabled = false;
       this.continue(); //Moving to the "password" section.
     }
@@ -149,8 +152,15 @@ export class LoginComponent implements OnInit {
 
         //If the user account doesn't exists:
         if (data.count == 0) {
-          this.formFlow.message = MSG_USER_NOT_FOUND;
+          if (this.formFlow.activeFormSection == FormsSection.PreloadRuntimeInfo) {
+            this.formFlow.message = MSG_USER_PRELOAD_NOT_FOUND;
+          }
+          else {
+            this.formFlow.message = MSG_USER_NOT_FOUND;
+          }
           this.formFlow.messageIsError = true
+          this.formFlow.isUserSectionEnabled = true;
+          this.formFlow.activeFormSection = FormsSection.User
         }
         else {
           this.formFlow.user = data.data[0];
@@ -302,7 +312,7 @@ export class LoginComponent implements OnInit {
  * Internal use only. To keep track of the form state.
  */
 class FormFlow {
-  activeFormSection: FormsSection = FormsSection.None;
+  activeFormSection: FormsSection = FormsSection.PreloadRuntimeInfo;
   authCodeOrPasswordPlaceholder: string = "";
   messageIsError: boolean = false;
   message: string = "";

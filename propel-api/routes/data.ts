@@ -31,24 +31,48 @@ export class DataRoute implements Route {
             matchFragment: "/script", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
+            preventRoles: [AuthStatus.Anonymous],
             preventLogic: RulePreventLogic.Or,
+            text: `This rule prevents anonymous users.`
+        },
+        {
+            matchFragment: "/script", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
+            preventRoles: [UserAccountRoles.User],
+            preventLogic: RulePreventLogic.And,
             text: `This rule prevents anonymous or regular user to query Scripts in the Data API.`
         },
         {
             matchFragment: "/target", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
+            preventRoles: [AuthStatus.Anonymous],
             preventLogic: RulePreventLogic.Or,
+            text: `This rule prevents anonymous users.`
+        },
+        {
+            matchFragment: "/target", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
+            preventRoles: [UserAccountRoles.User],
+            preventLogic: RulePreventLogic.And,
             text: `This rule prevents anonymous or regular user to query Targets in the Data API.`
         },
         {
             matchFragment: "/credential", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
+            preventRoles: [AuthStatus.Anonymous],
             preventLogic: RulePreventLogic.Or,
+            text: `This rule prevents anonymous users.`
+        },
+        {
+            matchFragment: "/credential", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
+            preventRoles: [UserAccountRoles.User],
+            preventLogic: RulePreventLogic.And,
             text: `This rule prevents anonymous or regular users to query Credentials in the Data API.`
         },
         {
