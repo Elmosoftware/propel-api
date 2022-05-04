@@ -86,18 +86,26 @@ export class DataRoute implements Route {
         {
             matchFragment: "/useraccount", 
             matchMethods: [],
-            preventDataActions: [],
+            preventDataActions: [DataRequestAction.Delete],
             preventRoles: [AuthStatus.Anonymous, AuthStatus.Authenticated],
-            preventLogic: RulePreventLogic.Or,
-            text: `This rule prevents anyone to access user accounts throught Data API. User accounts must be accessed through Security API.`
+            preventLogic: RulePreventLogic.And,
+            text: `This rule prevents anyone to delete User accounts throught Data API.`
+        },
+        {
+            matchFragment: "/useraccount", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Save, DataRequestAction.Find],
+            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
+            preventLogic: RulePreventLogic.And,
+            text: `This rule prevents Anonymous or Regular users to View, Create or Modify User Accounts.`
         },
         {
             matchFragment: "/secret", 
             matchMethods: [],
             preventDataActions: [],
-            preventRoles: [AuthStatus.Anonymous, AuthStatus.Authenticated],
+            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
             preventLogic: RulePreventLogic.Or,
-            text: `This rule prevents anyone to access Propel Secrets throught Data API. Secrets are meant to be accessed internally only.`
+            text: `This rule prevents anonymous users to access Propel Secrets.`
         }
     ]
 
