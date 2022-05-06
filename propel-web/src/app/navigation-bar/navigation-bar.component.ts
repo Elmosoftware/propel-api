@@ -19,8 +19,20 @@ export class NavigationBarComponent implements OnInit {
   loading: boolean;
   searchTerm: string = "";
 
-  get isBrowsePage(): boolean {
-    return this.core.navigation.currentPage.name.startsWith(this.core.navigation.browsePagePrefix);
+  // get isBrowsePage(): boolean {
+  //   return this.core.navigation.currentPage.name.startsWith(this.core.navigation.browsePagePrefix);
+  // }
+
+  get isBrowseWorkflowsPage(): boolean {
+    return this.core.navigation.currentPageIs(this.core.navigation.pages.BrowseWorkflows);
+  }
+
+  get isBrowseTargetsPage(): boolean {
+    return this.core.navigation.currentPageIs(this.core.navigation.pages.BrowseTargets);
+  }
+
+  get isBrowseScriptsPage(): boolean {
+    return this.core.navigation.currentPageIs(this.core.navigation.pages.BrowseScripts);
   }
 
   get isQuickTask(): boolean {

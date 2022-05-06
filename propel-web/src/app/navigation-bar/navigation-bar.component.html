@@ -14,13 +14,27 @@
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToQuickTask()">Quick Task</a>
       </li>
-      <li *ngIf="canAccessWorkflow" class="nav-item nav-menu" [ngClass]="{
-        'nav-menu-selected':  isWorkflow
+      <li *ngIf="canAccessBrowseWorkflows" class="nav-item nav-menu" [ngClass]="{
+        'nav-menu-selected':  isBrowseWorkflowsPage
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
-          data-target=".navbar-collapse.show" (click)="goToWorkflow()">Workflow</a>
+          data-target=".navbar-collapse.show" (click)="goToBrowseWorkflows()">Workflows</a>
       </li>
-      <li *ngIf="canAccessScript" class="nav-item nav-menu" [ngClass]="{
+      <li *ngIf="canAccessBrowseScripts" class="nav-item nav-menu" [ngClass]="{
+        'nav-menu-selected':  isBrowseScriptsPage
+      }">
+        <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
+          data-target=".navbar-collapse.show" (click)="goToBrowseScripts()">Scripts</a>
+      </li>
+      <li *ngIf="canAccessBrowseTargets" class="nav-item nav-menu" [ngClass]="{
+        'nav-menu-selected':  isBrowseTargetsPage
+      }">
+        <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
+          data-target=".navbar-collapse.show" (click)="goToBrowseTargets()">Targets</a>
+      </li>
+
+
+      <!-- <li *ngIf="canAccessScript" class="nav-item nav-menu" [ngClass]="{
         'nav-menu-selected': isScript
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
@@ -31,14 +45,14 @@
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToTarget()">Target</a>
-      </li>
+      </li> -->
       <li *ngIf="canAccessHistory" class="nav-item nav-menu" [ngClass]="{
         'nav-menu-selected': isHistory
       }">
         <a class="nav-link no-wrap-links menu-item" href="javascript:void(0)" data-toggle="collapse"
           data-target=".navbar-collapse.show" (click)="goToHistory()">History</a>
       </li>
-      <li *ngIf="canAccessBrowseMenu" class="nav-item dropdown nav-menu" [ngClass]="{
+      <!-- <li *ngIf="canAccessBrowseMenu" class="nav-item dropdown nav-menu" [ngClass]="{
         'nav-menu-selected': isBrowsePage
       }">
         <a class="nav-link dropdown-toggle no-wrap-links menu-item" href="#" id="navbarDropdown" role="button"
@@ -59,7 +73,7 @@
             <span>Targets</span>
           </a>
         </div>
-      </li>
+      </li> -->
     </ul>
     <div *ngIf="showSearchBox && canAccessBrowseWorkflows"
       class="input-group input-group-md justify-content-sm-start justify-content-md-end mb-2 mb-sm-2 mb-md-0 menu-item">
