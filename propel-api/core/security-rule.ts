@@ -38,7 +38,7 @@ export enum RulePreventLogic {
  * - **preventLogic**: Indicates the way **preventDataActions** and **preventRoles** should be 
  * evaluated. 
  */
- export class SecurityRule {
+export class SecurityRule {
 
     /**
      * This is the route fragment that we need to match.
@@ -69,7 +69,21 @@ export enum RulePreventLogic {
      * If no roles/status are specified, means no user role, (even anonymous users that for 
      * definition has no roles), will be prevented.
      */
-    preventRoles: (UserAccountRoles | AuthStatus) [] = []
+    preventRoles: (UserAccountRoles | AuthStatus)[] = []
+
+    /**
+     * A custom logic that will be evaluated. This is a function that will have as argument a 
+     * SecurityRuleInput object and will return a boolean value indicating in the action 
+     * must be prevented.
+     * @example
+     * myrule = new SecurityRule()
+     * myRule.preventCustom = (input: SecurityRuleInput): boolean => { 
+     *  return (input.body?.myField == "Forbidden value");
+     * }
+     * //For that rule if the body of the request is JSON and have a field named "myField" with the value
+     * //"Forbidden value" the rule will prevent the action.
+     */
+    preventCustom?: Function;
 
     /**
      * The logictouse to prevent the actions. Default Logic is "Or", this means that if 
@@ -89,6 +103,6 @@ export enum RulePreventLogic {
     text?: string = "";
 
     constructor() {
-        
+
     }
 }

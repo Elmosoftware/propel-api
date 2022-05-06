@@ -15,6 +15,7 @@ import { logger } from "../services/logger-service";
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
 import { REQUEST_TOKEN_KEY } from "../core/middleware";
 import { SecurityToken } from "../../propel-shared/core/security-token";
+import { SecurityRuleInput } from "../core/security-rule-selector";
 
 /**
  * Data endpoint. Allows to manage all data operations for the API.
@@ -41,7 +42,7 @@ export class DataRoute implements Route {
             preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
             preventRoles: [UserAccountRoles.User],
             preventLogic: RulePreventLogic.And,
-            text: `This rule prevents anonymous or regular user to query Scripts in the Data API.`
+            text: `This rule prevents a regular user to Save or Delete Scripts in the Data API.`
         },
         {
             matchFragment: "/target", 
@@ -78,10 +79,22 @@ export class DataRoute implements Route {
         {
             matchFragment: "/workflow", 
             matchMethods: [],
-            preventDataActions: [DataRequestAction.Save, DataRequestAction.Delete],
+            preventDataActions: [DataRequestAction.Save],
+            preventRoles: [UserAccountRoles.User],
+            preventCustom: (input: SecurityRuleInput) => {
+                //Users can only create QuickTasks:
+                return (input.body?.entity?.isQuickTask === false)
+            },
+            preventLogic: RulePreventLogic.And,
+            text: `This rule prevents regular users to Save Workflows that are not Quick tasks in the Data API.`
+        },
+        {
+            matchFragment: "/workflow", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Delete],
             preventRoles: [UserAccountRoles.User],
             preventLogic: RulePreventLogic.And,
-            text: `This rule prevents regular users to Save or Delete Workflows in the Data API.`
+            text: `This rule prevents regular users to Delete Workflows in the Data API.`
         },
         {
             matchFragment: "/workflow", 

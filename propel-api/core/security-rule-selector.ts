@@ -7,6 +7,8 @@ import { Route } from "./route";
 import { Utils } from "../../propel-shared/utils/utils";
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
 
+export type SecurityRuleInput = { url: string, method: string, body: any, [REQUEST_TOKEN_KEY]?: SecurityToken }
+
 /**
  * This call evaluates a SecurityRule facilitating to resolve if the request invocation must 
  * be prevented or not.
@@ -18,15 +20,15 @@ export class SecurityRuleSelector {
     /**
      * For the provided request, this method will return the first found rule that prevents the actions from 
      * the set of security rules defined for the specific rute that match the provided request url.
-     * @param request Request to evaluate.
+     * @param input Request to evaluate.
      * @returns The first rule that prevents the request invocation.
      */
-    select(request: { url: string, method: string, body: any, [REQUEST_TOKEN_KEY]?: SecurityToken }): SecurityRule | undefined {
+    select(input: SecurityRuleInput): SecurityRule | undefined {
 
         let ret: SecurityRule | undefined = undefined;
 
         this._allRoutes.forEach((route: Route) => {
-            if (!ret && request.url.startsWith(route.path)) {
+            if (!ret && input.url.startsWith(route.path)) {
                 //Need then to look for a specific security rule:
                 if (route.security) {
                     route.security.forEach((rule: SecurityRule) => {
@@ -36,9 +38,9 @@ export class SecurityRuleSelector {
 
                         //If the rule is a default one or it match the request url and also 
                         //the HTTPMethod:
-                        if (this.isMatchingFragment(request.url, route.path, rule.matchFragment)
-                            && this.matchMethod(rule, request.method)) {
-                            ret = this.isStopRule(rule, request.body, request[REQUEST_TOKEN_KEY]);
+                        if (this.isMatchingFragment(input.url, route.path, rule.matchFragment)
+                            && this.matchMethod(rule, input.method)) {
+                            ret = this.isStopRule(rule, input);
                         }
                     })
                 }
@@ -102,6 +104,12 @@ export class SecurityRuleSelector {
         return requestURL.slice(0, ruleURL.length) == ruleURL;
     }
 
+    emptyDataActions(rule: SecurityRule): boolean {
+        if (!rule.preventDataActions || !Array.isArray(rule.preventDataActions) ||
+        rule.preventDataActions.length == 0) return true;
+        return false;
+    }
+
     /**
      * Based on the DataRequestAction in the request body, this method will return a 
      * boolean value indicating if the request execution will be prevented.
@@ -110,17 +118,23 @@ export class SecurityRuleSelector {
      * @returns A boolean value indicating if the request invocation must be prevented.
      */
     preventsDataAction(rule: SecurityRule, requestBody: any): boolean {
+        
+        //If no data actions in the rule, nothing to be prevented: 
+        if (this.emptyDataActions(rule)) return false
+
         //If no body provided, no data action to be prevented:
         if (!requestBody?.action) return false;
-
-        //If no data actions in the rule, nothing to be prevented: 
-        if (!rule.preventDataActions || !Array.isArray(rule.preventDataActions) ||
-            rule.preventDataActions.length == 0) return false
 
         //If the data action is on the list of data actions in the rule, we must prevent the invocation:
         return Boolean(rule.preventDataActions.find((preventedDataAction) => {
             return String(preventedDataAction).toLowerCase() == String(requestBody?.action).toLowerCase();
         }));
+    }
+
+    emptyUserRoles(rule: SecurityRule): boolean {
+        if (!rule.preventRoles || !Array.isArray(rule.preventRoles) ||
+        rule.preventRoles.length == 0) return true;
+        return false;
     }
 
     /**
@@ -132,8 +146,7 @@ export class SecurityRuleSelector {
      */
     preventsUserRole(rule: SecurityRule, secToken?: SecurityToken): boolean {
 
-        if (!rule.preventRoles || !Array.isArray(rule.preventRoles) ||
-            rule.preventRoles.length == 0) return false;
+        if (this.emptyUserRoles(rule)) return false;
 
         return Boolean(rule.preventRoles.find((role: (UserAccountRoles | AuthStatus)) => {
             return (role == AuthStatus.Anonymous && !secToken) ||
@@ -142,31 +155,61 @@ export class SecurityRuleSelector {
         }));
     }
 
+    emptyCustom(rule: SecurityRule): boolean {
+        if (!rule.preventCustom || typeof rule.preventCustom !== "function") return true;
+        return false;
+    }
+
+    /**
+     * Evaluate the "preventsCustom" function included in the rule and returns a boolean value 
+     * that indicates if the action must be stopped.
+     * If the rule doesn't include any custom function thismethod always returns false.
+     * If the rule has a custom function and 
+     * @param rule Rule to evaluate.
+     * @param input Security rule input containing the url, body and security token.
+     * @returns A boolean value indicating if the rule is a stop rule.
+     */
+    preventsCustom(rule: SecurityRule, input: SecurityRuleInput): boolean {
+
+        if (this.emptyCustom(rule)) return false;
+
+        try {
+            return Boolean((rule.preventCustom as Function)(input));
+        } catch (error) {
+            rule.text += `There was an error during custom function evaluation: ${String(error)}.`
+            return true
+        }        
+    }
+
     /**
      * Analize the rule with the providing data and return an undefined value if the rule is not
-     * preventingthe action.
+     * preventing the action.
      * If the rule is preventing the action, the same rule will be returned, but with added 
      * information in the *"text"* property explaining why this is a stop rule.
      * @param rule Rule to evaluate
-     * @param body Request body, (used for DataRequestAction evaluation, sofar used by the Data API only).
-     * @param token SecurityToken if any.
+     * @param input Security rule input includint the request body, the security token, etc.
      * @returns The same rule with added description of why the action must be stopped.
      */
-    isStopRule(rule: SecurityRule, body: any, token?: SecurityToken): SecurityRule | undefined {
+    isStopRule(rule: SecurityRule, input: SecurityRuleInput): SecurityRule | undefined {
 
-        let preventCount: number = 0;
+        let totalActions: number = 0
+        let preventedActions: number = 0
         let retRule: SecurityRule | undefined;
 
-        if (this.preventsDataAction(rule, body)) {
-            preventCount++;
+        if (!this.emptyDataActions(rule)) totalActions++; 
+        if (!this.emptyUserRoles(rule)) totalActions++; 
+        if (!this.emptyCustom(rule)) totalActions++; 
+
+        if (this.preventsDataAction(rule, input.body)) {
+            preventedActions++;
             retRule = Object.assign({}, rule);
             retRule.HTTPStatus = (retRule.HTTPStatus) ? retRule.HTTPStatus : FORBIDDEN;
             retRule.text = ` Rule description: ${retRule.text}
-Rule evaluation outcome: This rule prevents a specific data action. The data action "${body?.action}" provided in the request is forbidden by this rule.`
+Rule evaluation outcome: This rule prevents a specific data action. The data action "${input.body?.action}" provided in the request is forbidden by this rule.`
         }
 
-        if (this.preventsUserRole(rule, token)) {
-            preventCount++;
+        if (this.preventsUserRole(rule, input[REQUEST_TOKEN_KEY])) {
+            preventedActions++
 
             if (!retRule) {
                 retRule = Object.assign({}, rule);
@@ -175,21 +218,35 @@ Rule evaluation outcome: This rule prevents a specific data action. The data act
 
             retRule.HTTPStatus = (retRule.HTTPStatus) ? retRule.HTTPStatus : UNAUTHORIZED;
             retRule.text += `\r\nRule evaluation outcome: This rule prevent specific user roles.
-The access for user "${(token?.userName) ? token?.userName : "unknown user" }""${(token?.role) ? " with role \"" + token?.role.toString() + "\"" : " "}is forbidden because of this rule.`
+The access for user "${(input[REQUEST_TOKEN_KEY]?.userName) ? input[REQUEST_TOKEN_KEY]?.userName : "unknown user" }""${(input[REQUEST_TOKEN_KEY]?.role) ? " with role \"" + input[REQUEST_TOKEN_KEY]?.role.toString() + "\"" : " "}is forbidden because of this rule.`
         }
 
-        //Not enough to prevent the action:
-        if (preventCount == 1 && rule.preventLogic == RulePreventLogic.And) {
-            retRule = undefined;
+        if (this.preventsCustom(rule, input)) {
+            preventedActions++;
+
+            if (!retRule) {
+                retRule = Object.assign({}, rule);
+                retRule.text = ` Rule description: ${retRule.text}`
+            }
+
+            retRule.HTTPStatus = (retRule.HTTPStatus) ? retRule.HTTPStatus : UNAUTHORIZED;
+            retRule.text += `\r\nRule evaluation outcome: This rule was prevented by a custom logic.`
+        }
+
+        if (rule.preventLogic == RulePreventLogic.And) {
+            if (preventedActions !== totalActions) {
+                retRule = undefined; //Action must not be prevented.
+            }
         }
 
         if (retRule) {
-            retRule.text += `\r\nThe rule logic requires ${(rule.preventLogic == RulePreventLogic.And) ? "both" : "at least one"} of the cases to be positive to prevent the action.
+            retRule.text += `\r\nThe rule logic required ${(rule.preventLogic == RulePreventLogic.And) ? "all" : "just one of"} the cases to be positive to prevent the action.
 Security rule details:` +
                 `fragment: "${retRule.matchFragment}", ` +
                 `matchMethods: [${retRule.matchMethods.join(",")}], ` +
                 `preventDataActions: [${retRule.preventDataActions.join(",")}], ` +
                 `preventRoles: [${retRule.preventRoles.join(",")}], ` +
+                `preventCustom: ${(retRule.preventCustom) ? "Custom logic defined" : "None"}, ` +
                 `preventLogic: ${(rule.preventLogic == RulePreventLogic.And) ? "AND" : "OR"}, ` +
                 `HTTPStatus: ${(retRule.HTTPStatus) ? String(retRule.HTTPStatus) : "None"}`
         }
