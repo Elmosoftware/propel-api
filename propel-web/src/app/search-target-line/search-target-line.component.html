@@ -2,7 +2,7 @@
     <li class="list-group-item mx-3" *ngFor="let item of model">
         <div class="d-flex justify-content-between">
             <div class="d-flex">
-                <div class="d-flex flex-column mr-2">
+                <div *ngIf="isAdmin" class="d-flex flex-column mr-2">
                     <button class="btn btn-secondary button-icon-medium mb-1" type="button"
                         (click)="duplicate(item._id)"
                         matTooltip="Clone this target! A duplicate will be created so you can tweak it easily."

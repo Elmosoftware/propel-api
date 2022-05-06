@@ -17,7 +17,7 @@ export class UnauthorizedComponent implements OnInit {
     this.core.setPageTitle(this.route.snapshot.data);
   }
 
-  toHome() {
-    this.core.navigation.toHome();
+  back() {
+    this.core.navigation.back();
   }
 }

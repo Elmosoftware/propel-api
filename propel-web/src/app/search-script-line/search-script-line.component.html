@@ -2,7 +2,7 @@
     <li class="list-group-item mx-3" *ngFor="let item of model">
         <div class="d-flex justify-content-between">
             <div class="d-flex">
-                <div class="d-flex flex-column mr-2">
+                <div *ngIf="isAdmin" class="d-flex flex-column mr-2">
                     <button class="btn btn-danger button-icon-medium" type="button" (click)="remove(item)"
                         matTooltip="Delete this script. Watch out!, this operation can't be undone."
                         matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">

@@ -47,7 +47,7 @@
                 </div>
             </div>
         </mat-tab>
-        <mat-tab label="Credentials">
+        <mat-tab *ngIf="isAdmin" label="Credentials">
             <div *ngIf="searchType == searchTypeEnum.Credentials">
                 <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
                     infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
@@ -57,7 +57,7 @@
                 </div>
             </div>
         </mat-tab>
-        <mat-tab label="Users">
+        <mat-tab *ngIf="isAdmin" label="Users">
             <div *ngIf="searchType == searchTypeEnum.UserAccounts">
                 <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
                     infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">

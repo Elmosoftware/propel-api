@@ -76,6 +76,10 @@ export class SearchComponent implements OnInit {
     return this.searchTerm == "" && this.browseMode;
   }
 
+  get isAdmin(): boolean {
+    return this.core.session.IsUserLoggedIn && this.core.session.sessionData.roleIsAdmin;
+  }
+
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
   }
