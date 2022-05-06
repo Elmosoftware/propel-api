@@ -18,7 +18,6 @@ import { SearchType, SearchTypeDefinition, DEFAULT_SEARCH_TYPE } from "./search-
  * Size of each data page.
  */
 const PAGE_SIZE: number = 50;
-
 const SEARCH_TEXT_MIN: number = 3;
 const SEARCH_TEXT_MAX: number = 50;
 
@@ -32,7 +31,6 @@ export class SearchComponent implements OnInit {
   private requestCount$: EventEmitter<number>;
 
   searchTypeEnum = SearchType;
-  activeTab: number;
   fg: FormGroup;
   svcInfScroll: InfiniteScrollingService<Entity>;
   onDataFeed: EventEmitter<PagingHelper>;
@@ -108,17 +106,7 @@ export class SearchComponent implements OnInit {
 
   search() {
     this.resetSearch();
-    this.activateTab(this.fg.controls.searchType.value)
     this.fetchData(this.svcInfScroll.pageSize, 0);
-  }
-
-  activateTab(type: SearchType): void {
-    this.activeTab = Utils.getEnumIndex(SearchType, type, false);
-  }
-
-  activeTabChanged($event: number) {
-    this.fg.controls.searchType.patchValue(Utils.getEnum(SearchType)[$event].value)
-    this.search()
   }
 
   fetchData(top: number, skip: number): void {

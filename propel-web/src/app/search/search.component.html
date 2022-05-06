@@ -18,55 +18,41 @@
         </div>
     </form>
     <!-- Tabs start -->
-    <mat-tab-group class="mt-2" [selectedIndex]="activeTab" (selectedIndexChange)="activeTabChanged($event)"
-        backgroundColor="primary" color="primary">
-        <mat-tab label="Workflows">
-            <div *ngIf="searchType == searchTypeEnum.Workflows">
-                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
-                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-                    <app-search-workflow-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
-                    </app-search-workflow-line>
-                </div>
-            </div>
-        </mat-tab>
-        <mat-tab label="Scripts">
-            <div *ngIf="searchType == searchTypeEnum.Scripts">
-                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
-                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-                    <app-search-script-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
-                            </app-search-script-line>
-                </div>
-            </div>
-        </mat-tab>
-        <mat-tab label="Targets">
-            <div *ngIf="searchType == searchTypeEnum.Targets">
-                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
-                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-                    <app-search-target-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
-                    </app-search-target-line>
-                </div>
-            </div>
-        </mat-tab>
-        <mat-tab *ngIf="isAdmin" label="Credentials">
-            <div *ngIf="searchType == searchTypeEnum.Credentials">
-                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
-                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-                    <!-- Nothing here for now! but we get {{ svcInfScroll.model.length }} credentials! -->
-                    <app-search-credential-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
-                    </app-search-credential-line>
-                </div>
-            </div>
-        </mat-tab>
-        <mat-tab *ngIf="isAdmin" label="Users">
-            <div *ngIf="searchType == searchTypeEnum.UserAccounts">
-                <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
-                    infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-                    <app-search-user-account-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
-                    </app-search-user-account-line>
-                </div>
-            </div>
-        </mat-tab>
-    </mat-tab-group>
+    <div *ngIf="searchType == searchTypeEnum.Workflows">
+        <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+            infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+            <app-search-workflow-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            </app-search-workflow-line>
+        </div>
+    </div>
+    <div *ngIf="searchType == searchTypeEnum.Scripts">
+        <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+            infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+            <app-search-script-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            </app-search-script-line>
+        </div>
+    </div>
+    <div *ngIf="searchType == searchTypeEnum.Targets">
+        <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+            infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+            <app-search-target-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            </app-search-target-line>
+        </div>
+    </div>
+    <div *ngIf="searchType == searchTypeEnum.Credentials">
+        <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+            infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+            <app-search-credential-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            </app-search-credential-line>
+        </div>
+    </div>
+    <div *ngIf="searchType == searchTypeEnum.UserAccounts">
+        <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+            infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
+            <app-search-user-account-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            </app-search-user-account-line>
+        </div>
+    </div>
     <!-- Tabs end -->
     <div class="mt-4" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0">
         <button *ngIf="svcInfScroll.lastPageRendered > 1" type="button" pageScroll href="#topSearch"

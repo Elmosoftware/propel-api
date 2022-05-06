@@ -98,7 +98,7 @@ export class AppPages {
         showSearchBox: false,
         security : {
           restricted: true, 
-          adminOnly:  true, 
+          adminOnly:  false, 
         }
     }
     BrowseTargets: PageMetadata = {
@@ -107,7 +107,7 @@ export class AppPages {
         showSearchBox: false,
         security : {
           restricted: true, 
-          adminOnly:  true, 
+          adminOnly:  false, 
         }
     }
     BrowseCredentials: PageMetadata = {
