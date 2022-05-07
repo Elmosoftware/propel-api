@@ -10,6 +10,7 @@ import { Utils } from "../../propel-shared/utils/utils";
 import { cfg } from "../core/config";
 import { Workflow } from "../../propel-shared/models/workflow";
 import { logger } from "./logger-service";
+import { SecurityToken } from "../../propel-shared/core/security-token";
 
 const TOP_USED_WORKFLOWS: number = 5;
 const TOP_LATEST_EXECUTIONS: number = 5;
@@ -127,7 +128,9 @@ export class UsageStatsService {
                 if (stats.latestExecutions.length < TOP_LATEST_EXECUTIONS) {
                     stats.latestExecutions.push(new GraphSeriesData(log.workflow.name, 1,
                         log._id, log.startedAt, { 
-                            status: log.status.toString()
+                            status: log.status.toString(),
+                            userName: (log?.user) ? log.user.name : "" ,
+                            userFullName: (log?.user) ? log.user.fullName : ""
                         }));
                 }
 
@@ -173,7 +176,36 @@ export class UsageStatsService {
         }
     }
 
-    private async getAllExecutionLogs(): Promise<ExecutionLog[]> {
+    async getUserStats(token: SecurityToken): Promise<UsageStats> {
+
+        let allExecLogs: ExecutionLog[];
+        let stats = new UsageStats();
+
+        try {
+            allExecLogs = await this.getAllExecutionLogs(token);
+
+            allExecLogs.forEach((log: ExecutionLog) => {
+
+                //Most used Workflows:
+                //====================
+                if (!log.workflow.isQuickTask) {
+                    this.addMostUsedWorkflowsSeriesData(stats, log.workflow)
+                    stats.totalExecutions++;
+                }
+            })
+
+            stats.mostUsedWorkflows = stats.mostUsedWorkflows
+                .sort((sd1, sd2) => sd2.value - sd1.value) //Sorting in descending order
+                .splice(0, TOP_USED_WORKFLOWS) //Keeping only the top of them.
+
+        } catch (error) {
+            throw error;
+        }
+
+        return stats;
+    }
+
+    private async getAllExecutionLogs(token?: SecurityToken): Promise<ExecutionLog[]> {
 
         let svc: DataService = db.getService("ExecutionLog")
         let qm = new QueryModifier();
@@ -181,6 +213,17 @@ export class UsageStatsService {
         qm.populate = true;
         qm.sortBy = "-startedAt";
 
+        // if (token) {
+        //     qm.filterBy = {
+        //         "user._id": { $eq: token.userId }
+        //     }        
+        // }
+        if (token) {
+            qm.filterBy = {
+                user: { $eq: token.userId }
+            }        
+        }
+        
         return (await svc.find(qm)).data
             .map((model) => model.toObject());
     }

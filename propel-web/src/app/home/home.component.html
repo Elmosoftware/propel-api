@@ -3,47 +3,43 @@
     <!-- Totals -->
     <div *ngIf="stats" class="row justify-content-center mt-3 font-weight-bold subtitle not-break text-center">
         <div class="capsule py-2 my-2 rounded pointer" matTooltip="Total amount of workflows created.
-Click here to browse them." 
-            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+Click here to browse them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
             (click)="goToBrowseWorkflows()">
             <i class="fas fa-list-ol mr-2"></i>{{stats.totalWorkflows}}
             <button type="button" class="btn btn-primary button-circular-small button-circular-small-correction"
-                matTooltip="Create a new Workflow" matTooltipClass="tooltipsWithBreakLines" 
-                matTooltipPosition="above" (click)="goToWorkflow()">
+                matTooltip="Create a new Workflow" matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+                (click)="goToWorkflow()">
                 <i class="fas fa-plus"></i>
             </button>
         </div>
         <div class="capsule py-2 my-2 rounded pointer" matTooltip="Total amount of executions in the last month.
-Click here to check the execution history." 
-            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above" 
+Click here to check the execution history." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
             (click)="goToHistory()">
             <i class="fas fa-stopwatch mr-2"></i>{{stats.totalExecutions}}
         </div>
         <div class="capsule py-2 my-2 rounded pointer" matTooltip="Total of scripts already uploaded.
-Click here to take a look at them." 
-            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above" 
+Click here to take a look at them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
             (click)="goToBrowseScripts()">
             <i class="fas fa-scroll mr-2"></i>{{stats.totalScripts}}
             <button type="button" class="btn btn-primary button-circular-small button-circular-small-correction"
-                matTooltip="Add a new Script" matTooltipClass="tooltipsWithBreakLines" 
-                matTooltipPosition="above" (click)="goToScript()">
+                matTooltip="Add a new Script" matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+                (click)="goToScript()">
                 <i class="fas fa-plus"></i>
             </button>
         </div>
         <div class="capsule py-2 my-2 rounded pointer" matTooltip="Total number of targets registered.
-Click here to browse them." 
-            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above" 
+Click here to browse them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
             (click)="goToBrowseTargets()">
             <i class="fas fa-server mr-2"></i>{{stats.totalTargets}}
             <button type="button" class="btn btn-primary button-circular-small button-circular-small-correction"
-                matTooltip="Register a new Target" matTooltipClass="tooltipsWithBreakLines" 
-                matTooltipPosition="above" (click)="goToTarget()">
+                matTooltip="Register a new Target" matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+                (click)="goToTarget()">
                 <i class="fas fa-plus"></i>
             </button>
         </div>
         <div class="capsule py-2 my-2 rounded pointer" matTooltip="Total number of credentials kept safe by Propel.
-Click here to browse them." (click)="goToBrowseCredentials()" 
-            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+Click here to browse them." (click)="goToBrowseCredentials()" matTooltipClass="tooltipsWithBreakLines"
+            matTooltipPosition="above">
             <i class="fas fa-key mr-2"></i>{{stats.totalCredentials}}
         </div>
     </div>
@@ -112,6 +108,39 @@ Click here to browse them." (click)="goToBrowseCredentials()"
             </div>
         </div>
 
+        <!-- User stats -->
+        <div *ngIf="hasUserStats" class="card card-custom mx-2 mt-3 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">My favorite Workflows</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mt-2 d-flex" *ngFor="let item of userStats.mostUsedWorkflows">
+                        <div>
+                            <button class="btn btn-primary ml-2" type="button" (click)="run(item._id)">Run</button>
+                        </div>
+                        <div class="ml-2">
+                            <div class="row">
+                                <div class="col-auto text-left text-mini">
+                                    <a href="javascript:void(0)" (click)="goToEditWorkflow(item._id)">{{item.name}}</a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <div class="text-left text-mini">Executed {{item.value}} times.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="text-muted text-mini mt-1">
+                    <a href="javascript:void(0)" (click)="goToHistory()">{{userStats.totalExecutions}}</a>&nbsp; total
+                    execution(s) in the last month.
+                </div>
+            </div>
+        </div>
+
+
         <!-- Latest Activities -->
         <div *ngIf="stats" class="card card-custom mx-2 mt-3 box-shadow">
             <div class="card-header">
@@ -131,7 +160,7 @@ Click here to browse them." (click)="goToBrowseCredentials()"
                             <div class="row">
                                 <div class="col-auto text-mini">
                                     <a href="javascript:void(0)"
-                                        (click)="goToResults(item._id)">{{getFriendlyStartTime(item.lastTimeUpdated)}}</a>
+                                        (click)="goToResults(item._id)">{{getLatestActivityText(item)}}</a>
                                 </div>
                             </div>
                         </div>
@@ -181,27 +210,40 @@ Click here to browse them." (click)="goToBrowseCredentials()"
             </div>
             <div class="card-body">
                 <ul class="list-unstyled">
-                    <li class="mt-2 d-flex" *ngFor="let item of stats.lastExecutionErrors">
-                        <div>
-                            <app-status-icon size="small" status="FAULTY">
-                            </app-status-icon>
-                        </div>
-                        <div class="align-self-center ml-2">
-                            <div class="row">
-                                <div class="col-auto text-left text-mini icon-binoculars-after-mini"
-                                    [innerHtml]="getShortErrorText(item.name)" matTooltip="{{ item.name }}"
-                                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                    <div *ngIf="stats.lastExecutionErrors.length > 0; else NoDataErrors">
+                        <li class="mt-2 d-flex" *ngFor="let item of stats.lastExecutionErrors">
+                            <div>
+                                <app-status-icon size="small" status="FAULTY">
+                                </app-status-icon>
+                            </div>
+                            <div class="align-self-center ml-2">
+                                <div class="row">
+                                    <div class="col-auto text-left text-mini icon-binoculars-after-mini"
+                                        [innerHtml]="getShortErrorText(item.name)" matTooltip="{{ item.name }}"
+                                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
 
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto text-mini">
+                                        <a href="javascript:void(0)"
+                                            (click)="goToResults(item._id)">{{getFriendlyStartTime(item.lastTimeUpdated)}}</a>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-auto text-mini">
-                                    <a href="javascript:void(0)"
-                                        (click)="goToResults(item._id)">{{getFriendlyStartTime(item.lastTimeUpdated)}}</a>
+                        </li>
+                    </div>
+                    <ng-template #NoDataErrors>
+                        <li class="mt-2 d-flex">
+                            <div class="align-self-center ml-2">
+                                <div class="row">
+                                    <div class="col-auto text-center text-mini">
+                                        Hurray!, no errors yet!. Your scripts are working really fine!
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </li>
+                        </li>
+                    </ng-template>
                 </ul>
             </div>
         </div>

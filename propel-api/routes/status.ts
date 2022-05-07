@@ -9,6 +9,8 @@ import { UsageStats } from "../../propel-shared/models/usage-stats";
 import { APIStatus } from "../../propel-shared/models/api-status";
 import { logger } from "../services/logger-service";
 import { SecurityRule } from "../core/security-rule";
+import { REQUEST_TOKEN_KEY } from "../core/middleware";
+import { SecurityToken } from "../../propel-shared/core/security-token";
 
 /**
  * Status route. Returns the api stats, metrics, etc.
@@ -43,9 +45,13 @@ export class StatusRoute implements Route {
             res.json(new APIResponse<APIStatus>(null, [ret]));
         });
 
-        handler.get("/stats", (req, res) => {
-
+        handler.get("/stats", async (req, res) => {
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
             let ret = [usageStatsService.currentStats];
+
+            if (token) {
+                ret.push(await usageStatsService.getUserStats(token))
+            }
 
             if (ret[0] == null) {
                 ret = []

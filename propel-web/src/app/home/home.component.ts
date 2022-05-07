@@ -8,6 +8,7 @@ import { UsageStats } from '../../../../propel-shared/models/usage-stats';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 import { UIHelper } from 'src/util/ui-helper';
 import { environment } from 'src/environments/environment';
+import { GraphSeriesData } from '../../../../propel-shared/models/graph-series-data';
 
 const TOP_RESULTS: number = 5;
 
@@ -20,8 +21,13 @@ export class HomeComponent implements OnInit {
 
   loadingResults: boolean = false;
   stats: UsageStats;
+  userStats: UsageStats;
   graphColors: any = environment.graphs.colorScheme;
   graphExecutionsView: any[] = [650, 200];
+
+  get hasUserStats(): boolean {
+    return this.core.session.IsUserLoggedIn && Boolean(this.userStats);
+  }
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
@@ -99,6 +105,11 @@ export class HomeComponent implements OnInit {
       .subscribe((results: APIResponse<UsageStats>) => {
             if (results.count > 0) {
               this.stats = results.data[0];
+
+              if(results.count == 2) {
+                this.userStats = results.data[1];
+              }
+
               this.loadingResults = false;
             }            
           },
@@ -106,6 +117,10 @@ export class HomeComponent implements OnInit {
               this.loadingResults = false;
               throw err
             });
+  }
+
+  getLatestActivityText(item: GraphSeriesData) {
+    return `${this.getFriendlyStartTime(item.lastTimeUpdated)}${(item?.extra?.userFullName) ? " by " + String(item.extra.userFullName) : ""}`
   }
 
   getFriendlyStartTime(startTime: Date): string {
