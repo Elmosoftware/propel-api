@@ -115,7 +115,7 @@ export class Runner {
         this._execLog = new ExecutionLog();
         this._execLog.startedAt = new Date();
         this._execLog.workflow = workflow;
-        this._execLog.user = ((token?.userId as unknown) as UserAccount) //To avoid grabbing 
+        this._execLog.user = DataService.asObjectIdOf<UserAccount>(token?.userId);//To avoid grabbing 
         //the full UserAccount object.
 
         logger.logDebug(`Pool stats before to start workflow execution:\n${pool.stats.toString()}`)

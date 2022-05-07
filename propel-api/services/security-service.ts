@@ -91,7 +91,7 @@ export class SecurityService {
         let result: APIResponse<UserAccount>;
         let qm = new QueryModifier();
 
-        if (svc.isValidObjectId(name)) {
+        if (DataService.isValidObjectId(name)) {
             qm.filterBy = { _id: name }
         }
         else {

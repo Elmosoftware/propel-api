@@ -31,15 +31,27 @@ export class DataService {
     /**
      * Return a new Entity Object ID
      */
-    getNewobjectId() {
-        return mongoose.Types.ObjectId();
+    static getNewobjectId(id?: string) {
+        if(id) return mongoose.Types.ObjectId(id);
+        else return mongoose.Types.ObjectId();
+    }
+
+    /**
+     * Returns a Mongoose Object ID, but as a defined type.
+     * This is just to avoid typescript conversion issues.
+     * @param id Object ID string representation
+     * @returns an Object ID Mongoose type
+     */
+    static asObjectIdOf<T>(id: string): T {
+        if (!this.isValidObjectId(id)) throw new PropelError(`Invalid Object id was provided to the "asObjectId" method. Value provided: "${id}"`);
+        return ((this.getNewobjectId(id) as unknown) as T);
     }
 
     /**
      * Returns a boolean value indicating if the supplied string is a valid Object ID.
      * @param {any} id Object ID
      */
-    isValidObjectId(id: any) {
+    static isValidObjectId(id: any) {
         /*
             Created by Felipe Lorenzo VI 
             https://github.com/cnkdynamics/valid-objectid
@@ -74,8 +86,8 @@ export class DataService {
             let obj = null;
             this._setAuditData(true, document);
 
-            if (!this.isValidObjectId(document._id)) {
-                document._id = this.getNewobjectId();
+            if (!DataService.isValidObjectId(document._id)) {
+                document._id = DataService.getNewobjectId();
             }
 
             obj = this._model.model.hydrate(document);
@@ -109,7 +121,7 @@ export class DataService {
             else if (!document._id) {
                 e = new PropelError(`The method "update" expect a document with an "_id" attribute for the "document" param, (we can't update new documents!).Provided value was: "${JSON.stringify(document)}".`)
             }
-            else if (!this.isValidObjectId(document._id)) {
+            else if (!DataService.isValidObjectId(document._id)) {
                 e = new PropelError(`The method "update" expect a valid ObjectId in the parameter "id". Provided value: "${String(document._id)}".`)
             }
 
@@ -249,7 +261,7 @@ Those fields are for internal use only and must not take part on user queries.`)
             if (!id) {
                 e = new PropelError(`The method "delete" expect a document id for the "id" param.Provided value was: "${JSON.stringify(id)}".`)
             }
-            else if (!this.isValidObjectId(id)) {
+            else if (!DataService.isValidObjectId(id)) {
                 e = new PropelError(`The method "update" expect a valid ObjectId value for the parameter "id". Provided value: "${String(id)}".`)
             }
 

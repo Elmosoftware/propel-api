@@ -214,7 +214,7 @@ export class DataRoute implements Route {
             //An string entity is an entity ID. So, if valid, we will create 
             //the Query Modifier accordingly:
             if (typeof body.entity == "string") {
-                if (svc.isValidObjectId(body.entity)) {
+                if (DataService.isValidObjectId(body.entity)) {
                     if (!body.qm) {
                         body.qm = new QueryModifier();
                     }                    
