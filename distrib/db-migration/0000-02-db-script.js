@@ -142,14 +142,6 @@ try {
         background: true
     })
 
-    coll.createIndex({
-        name: 1
-    }, {
-        name: "IU_Name",
-        unique: true,
-        background: true
-    })
-
     coll.createIndex(
         {
             name: "text",
@@ -221,14 +213,6 @@ try {
          deletedOn: 1
      }, {
          name: "IU_EntityConstraint",
-         unique: true,
-         background: true
-     })
- 
-     coll.createIndex({
-         name: 1
-     }, {
-         name: "IU_Name",
          unique: true,
          background: true
      })
