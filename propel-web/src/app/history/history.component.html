@@ -30,29 +30,29 @@
         </div>
     </form>
 
-    <!-- Selected value:{{fg.controls.interval.value}} -->
-
     <div class="mt-4" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
         infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
         <ul class="list-group">
             <li class="list-group-item mx-3" *ngFor="let item of svcInfScroll.model">
                 <div class="row">
-                    <div class="col-auto">
-                        <app-status-icon size="small" [status]="item.log.status" class="mr-2"></app-status-icon>
-                        <a href="javascript:void(0)" (click)="goToResults(item.log._id)" 
-                            [matTooltip]="item.startDate" matTooltipClass="tooltipsWithBreakLines"
-                            matTooltipPosition="above">{{item.startDateFriendly}}</a>
-                    </div>
-                    <div *ngIf="!item.log.workflow.isQuickTask; else quickTask" class="col-auto">
+                    <app-status-icon size="small" [status]="item.log.status" class="mr-2"></app-status-icon>
+                    <div *ngIf="!item.log.workflow.isQuickTask; else quickTask">
                         <a href="javascript:void(0)" (click)="goToEditWorkflow(item.log.workflow._id)"
-                            [matTooltip]="item.workflowNameTooltip" matTooltipClass="tooltipsWithBreakLines"
+                            [matTooltip]="getWorkflowNameTooltip(item)" matTooltipClass="tooltipsWithBreakLines"
                             matTooltipPosition="above">{{item.workflowName}}</a>
                     </div>
-                    <ng-template class="col-auto" #quickTask>
+                    <ng-template #quickTask>
                         <span [matTooltip]="item.workflowNameTooltip" matTooltipClass="tooltipsWithBreakLines"
-                        matTooltipPosition="above">{{item.workflowName}}</span>
+                            matTooltipPosition="above">{{item.workflowName}}</span>
                     </ng-template>
-                    <div class="col-auto ml-auto">
+                </div>
+                <div class="row">
+                    <div class="col-auto text-subtle">
+                        <a href="javascript:void(0)" (click)="goToResults(item.log._id)"
+                            [matTooltip]="getTimeStampTooltip(item)" matTooltipClass="tooltipsWithBreakLines"
+                            matTooltipPosition="above" [innerHtml]="getTimeStamp(item)"></a>
+                    </div>
+                    <div class="col-auto ml-auto text-subtle">
                         <div class="mx-2 d-inline" [matTooltip]="item.durationTooltip"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
                             <i class="fas fa-stopwatch"></i>

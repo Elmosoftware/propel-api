@@ -111,6 +111,17 @@ export class HistoryComponent implements OnInit {
       });
   }
 
+  getWorkflowNameTooltip(item: ExecutionLogExtended){ 
+    return item.workflowNameTooltip + "\r\nClick here to edit this Workflow."
+  }
+  getTimeStamp(item: ExecutionLogExtended): string {
+    return item.startDateFriendly + ((item.executedBy) ? " by " + item.executedBy : "");
+  }
+
+  getTimeStampTooltip(item: ExecutionLogExtended) {
+    return item.startDate + "\r\nClick here to see the execution details."
+  }
+
   onScrollEndHandler(e: SCROLL_POSITION): void {
     this.svcInfScroll.onScrollEndHandler(e);
   }
@@ -154,7 +165,8 @@ export class ExecutionLogExtended {
   stepsAmount: string;
   stepsAmountTooltip: string;
   targetsAmount: string;
-  targetsAmountTooltip: string;  
+  targetsAmountTooltip: string; 
+  executedBy: string;
 
   constructor(log: ExecutionLog) {
 
@@ -171,7 +183,7 @@ export class ExecutionLogExtended {
 Parameters:\r\n${UIHelper.getParameterValuesList(log.workflow.steps[0].values)}`
     }
     else {
-      this.workflowNameTooltip = `${log.workflow.name}:\r\n${log.workflow.description}`;
+      this.workflowNameTooltip = `${log.workflow.name}:\r\n${(log.workflow.description) ? log.workflow.description : "No description available."}`;
     }
     
     this.duration = SystemHelper.getDuration(log.startedAt, log.endedAt);
@@ -190,6 +202,9 @@ Total duration: ${SystemHelper.getDuration(log.startedAt, log.endedAt)}.`
     this.targetsAmount = targets.size.toString();
     this.targetsAmountTooltip = `This workflow is hitting ${targets.size} target${(targets.size > 1) ? "s" : ""}:
 ${Array.from(targets).join("\r\n")}`;
-  
+
+    if (log.user?.fullName) {
+      this.executedBy = log.user.fullName; 
+    }    
   }
 }
