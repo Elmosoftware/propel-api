@@ -34,6 +34,7 @@ export class SearchComponent implements OnInit {
   fg: FormGroup;
   svcInfScroll: InfiniteScrollingService<Entity>;
   onDataFeed: EventEmitter<PagingHelper>;
+  currentSearchTerm: string = "";
 
   get termIsQuoted(): boolean {
     return Utils.isQuotedString(this.fg.value.searchText);
@@ -50,11 +51,16 @@ export class SearchComponent implements OnInit {
   }
 
   get searchTerm(): string {
-    let ret: string = this.fg.value.searchText;
+    let ret: string = "" //this.fg.value.searchText;
 
-    if (this.fg.controls.searchText.valid && !this.termIsQuoted) {
-      ret = UIHelper.tokenizeAndStem(ret)
+    if (this.fg.controls.searchText.valid) { // && !this.termIsQuoted) {
+      if (this.termIsQuoted) {
+        ret = this.fg.value.searchText;
+      }
+      else {
+        ret = UIHelper.tokenizeAndStem(this.fg.value.searchText) //ret)
         .join(" ");
+      }      
     }
 
     return ret;
@@ -71,7 +77,8 @@ export class SearchComponent implements OnInit {
   }
 
   get showAll(): boolean {
-    return this.searchTerm == "" && this.browseMode;
+    // return this.searchTerm == "" && this.browseMode;
+    return this.currentSearchTerm == "" && this.browseMode;
   }
 
   get isAdmin(): boolean {
@@ -99,7 +106,8 @@ export class SearchComponent implements OnInit {
 
     //If there is a search term specified or we need to browse all the items, we start 
     //the search immediately:
-    if (this.showAll || this.searchTerm !== "") {
+    // if (this.showAll || this.searchTerm !== "") {
+    if (this.showAll || this.currentSearchTerm !== "") {
       this.search();
     }
   }
@@ -122,14 +130,16 @@ export class SearchComponent implements OnInit {
     qm.skip = skip;
     qm.populate = false;
 
+    this.currentSearchTerm = this.searchTerm
+
     //If we are not in Browsing mode, this is, there is a search term specified. We initialize 
     //the filter:
     if (!this.showAll) {
       if (strictSearch) {
-        termsToSearch.push(Utils.removeQuotes(this.searchTerm));
+        termsToSearch.push(Utils.removeQuotes(this.currentSearchTerm));
       }
       else {
-        termsToSearch = this.searchTerm.split(" ");
+        termsToSearch = this.currentSearchTerm.split(" ");
       }
 
       //If the term to search is quoted, we are going to perform an exact search:
@@ -178,10 +188,10 @@ export class SearchComponent implements OnInit {
         let d = results.data;
 
         //If we are showing all the results, there is no need to highlight any word matches:
-        if (!this.showAll) {
-          d = this._processMatches(d, termsToSearch, 
-            SearchTypeDefinition.getFullTextFields(this.fg.controls.searchType.value))
-        }
+        // if (!this.showAll) {
+        //   d = this._processMatches(d, termsToSearch, 
+        //     SearchTypeDefinition.getFullTextFields(this.fg.controls.searchType.value))
+        // }
 
         this.svcInfScroll.feed(results.totalCount, d);
 

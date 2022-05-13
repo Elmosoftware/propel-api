@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs';
 import { DialogResult } from 'src/core/dialog-result';
-import { SearchLineInterface } from 'src/core/search-line-interface';
+import { SearchLine } from 'src/core/search-line';
 import { CoreService } from 'src/services/core.service';
 import { SystemHelper } from 'src/util/system-helper';
 import { UIHelper } from 'src/util/ui-helper';
@@ -15,12 +15,17 @@ import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard
   templateUrl: './search-user-account-line.component.html',
   styleUrls: ['./search-user-account-line.component.css']
 })
-export class SearchUserAccountLineComponent implements SearchLineInterface, OnInit {
+export class SearchUserAccountLineComponent extends SearchLine implements OnInit {
 
   @Input() model: UserAccount[];
+
+  @Input() term: string;
+
   @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  constructor(private core: CoreService) { }
+  constructor(private core: CoreService) {
+    super()
+  }
 
   ngOnInit(): void {
   }
@@ -125,9 +130,9 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
     });
   }
 
-  getUserStats(item: UserAccount): string {
-    return UIHelper.getLastUpdateMessage(item, true);
-  }
+  // getUserStats(item: UserAccount): string {
+  //   return UIHelper.getLastUpdateMessage(item, true);
+  // }
 
   userIsAdmin(item: UserAccount): boolean {
     return this.core.security.userIsAdmin(item);

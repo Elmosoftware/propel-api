@@ -21,35 +21,40 @@
     <div *ngIf="searchType == searchTypeEnum.Workflows">
         <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
             infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-            <app-search-workflow-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            <app-search-workflow-line [model]="svcInfScroll.model" [term]="currentSearchTerm"
+            (dataChanged)="onDataChangedHandler($event)">
             </app-search-workflow-line>
         </div>
     </div>
     <div *ngIf="searchType == searchTypeEnum.Scripts">
         <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
             infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-            <app-search-script-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            <app-search-script-line [model]="svcInfScroll.model" [term]="currentSearchTerm"
+            (dataChanged)="onDataChangedHandler($event)">
             </app-search-script-line>
         </div>
     </div>
     <div *ngIf="searchType == searchTypeEnum.Targets">
         <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
             infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-            <app-search-target-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            <app-search-target-line [model]="svcInfScroll.model" [term]="currentSearchTerm"
+            (dataChanged)="onDataChangedHandler($event)">
             </app-search-target-line>
         </div>
     </div>
     <div *ngIf="searchType == searchTypeEnum.Credentials">
         <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
             infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-            <app-search-credential-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            <app-search-credential-line [model]="svcInfScroll.model" [term]="currentSearchTerm"
+                (dataChanged)="onDataChangedHandler($event)">
             </app-search-credential-line>
         </div>
     </div>
     <div *ngIf="searchType == searchTypeEnum.UserAccounts">
         <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
             infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-            <app-search-user-account-line [model]="svcInfScroll.model" (dataChanged)="onDataChangedHandler($event)">
+            <app-search-user-account-line [model]="svcInfScroll.model" [term]="currentSearchTerm"
+            (dataChanged)="onDataChangedHandler($event)">
             </app-search-user-account-line>
         </div>
     </div>

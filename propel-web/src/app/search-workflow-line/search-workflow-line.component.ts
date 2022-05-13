@@ -5,18 +5,19 @@ import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
 import { DataEntity } from 'src/services/data.service';
-import { SearchLineInterface } from 'src/core/search-line-interface';
 import { Entity } from '../../../../propel-shared/models/entity';
-import { UIHelper } from 'src/util/ui-helper';
+import { SearchLine } from 'src/core/search-line';
 
 @Component({
   selector: 'app-search-workflow-line',
   templateUrl: './search-workflow-line.component.html',
   styleUrls: ['./search-workflow-line.component.css']
 })
-export class SearchWorkflowLineComponent implements SearchLineInterface, OnInit {
+export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
 
   @Input() model: Workflow[];
+
+  @Input() term: string;
 
   @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -25,7 +26,7 @@ export class SearchWorkflowLineComponent implements SearchLineInterface, OnInit 
   }
 
   constructor(private core: CoreService) {
-
+    super()
   }
 
   ngOnInit(): void {
@@ -84,12 +85,4 @@ export class SearchWorkflowLineComponent implements SearchLineInterface, OnInit 
   run(id: string) {
     this.core.navigation.toRun(id);
   }  
-
-  getLastUpdate(item: Workflow): string {
-    return UIHelper.getLastUpdateMessage(item, true)
-  }
-
-  getLastUpdateTooltip(item: Workflow): string {
-    return UIHelper.getLastUpdateMessage(item, false)
-  }
 }

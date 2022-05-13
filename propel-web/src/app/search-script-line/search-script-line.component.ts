@@ -7,17 +7,18 @@ import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard
 import { DialogResult } from 'src/core/dialog-result';
 import { DataEntity } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
-import { SearchLineInterface } from 'src/core/search-line-interface';
-import { UIHelper } from 'src/util/ui-helper';
+import { SearchLine } from 'src/core/search-line';
 
 @Component({
   selector: 'app-search-script-line',
   templateUrl: './search-script-line.component.html',
   styleUrls: ['./search-script-line.component.css']
 })
-export class SearchScriptLineComponent implements SearchLineInterface, OnInit {
+export class SearchScriptLineComponent extends SearchLine implements OnInit {
 
   @Input() model: Script[];
+
+  @Input() term: string;
 
   @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -26,7 +27,7 @@ export class SearchScriptLineComponent implements SearchLineInterface, OnInit {
   }
 
   constructor(private core: CoreService) {
-
+    super();
   }
 
   ngOnInit(): void {
@@ -74,13 +75,5 @@ Is targetting: ${(item.isTargettingServers) ? "Servers, (like Web servers, Datab
     }, err => {
       throw err
     });
-  }
-  
-  getLastUpdate(item: Script): string {
-    return UIHelper.getLastUpdateMessage(item, true)
-  }
-
-  getLastUpdateTooltip(item: Script): string {
-    return UIHelper.getLastUpdateMessage(item, false)
   }
 }

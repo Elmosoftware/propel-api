@@ -5,20 +5,22 @@ import { Target } from '../../../../propel-shared/models/target';
 import { CoreService } from 'src/services/core.service';
 import { DataEntity } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
-import { SearchLineInterface } from 'src/core/search-line-interface';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
 import { Entity } from '../../../../propel-shared/models/entity';
 import { UIHelper } from 'src/util/ui-helper';
+import { SearchLine } from 'src/core/search-line';
 
 @Component({
   selector: 'app-search-target-line',
   templateUrl: './search-target-line.component.html',
   styleUrls: ['./search-target-line.component.css']
 })
-export class SearchTargetLineComponent implements SearchLineInterface, OnInit {
+export class SearchTargetLineComponent extends SearchLine implements OnInit {
 
   @Input() model: Target[];
+
+  @Input() term: string;
 
   @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -27,6 +29,7 @@ export class SearchTargetLineComponent implements SearchLineInterface, OnInit {
   }
 
   constructor(private core: CoreService) {
+    super();
   }
 
   ngOnInit(): void {
@@ -97,13 +100,5 @@ If there is a Workflow that already have it, the execution on this target will b
     }, err => {
       throw err
     });
-  }
-
-  getLastUpdate(item: Target): string {
-    return UIHelper.getLastUpdateMessage(item, true)
-  }
-
-  getLastUpdateTooltip(item: Target): string {
-    return UIHelper.getLastUpdateMessage(item, false)
   }
 }

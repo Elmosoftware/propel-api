@@ -18,11 +18,11 @@
                 <div class="d-flex flex-column ml-1">
                     <div>
                         <a href="javascript:void(0)" (click)="goToEdit(item._id)">
-                            <span [innerHtml]="item.fullName" matTooltip="{{ getTooltipMessage(item) }}"
+                            <span [innerHtml]="getText(item.fullName, false)" matTooltip="{{ getTooltipMessage(item) }}"
                                 matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
                         </a>
                         <span class="flex-nowrap ml-1 text-muted text-mini text-mini-padding"
-                            [innerHtml]="'(' + item.name + ')'"></span>
+                            [innerHtml]="'(' + getText(item.name, false) + ')'"></span>
                     </div>
                     <div *ngIf="getAuthCode(item)" class="d-flex flex-column mt-2 alert fade show alert-warning">
                         <span>Share the following code with <strong>{{item.fullName}}</strong>. It will be requested on
@@ -42,8 +42,13 @@
                     matTooltipPosition="above">{{getToggleLockUserButtonName(item)}}</button>
             </div>
         </div>
-        <div class="d-flex justify-content-start">
+        <!-- <div class="d-flex justify-content-start">
             <span class="text-subtle description">{{getUserStats(item)}}</span>
+        </div> -->
+        <div class="d-flex justify-content-end">
+            <span class="text-subtle description" [innerHtml]="getLastUpdate(item)"
+            [matTooltip]="getLastUpdateTooltip(item)"
+            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
         </div>
     </li>
 </ul>

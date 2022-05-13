@@ -1,9 +1,8 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { DialogResult } from 'src/core/dialog-result';
-import { SearchLineInterface } from 'src/core/search-line-interface';
+import { SearchLine } from 'src/core/search-line';
 import { CoreService } from 'src/services/core.service';
 import { DataEntity } from 'src/services/data.service';
-import { SystemHelper } from 'src/util/system-helper';
 import { UIHelper } from 'src/util/ui-helper';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Credential } from "../../../../propel-shared/models/credential";
@@ -24,16 +23,20 @@ export enum TestStatus {
   templateUrl: './search-credential-line.component.html',
   styleUrls: ['./search-credential-line.component.css']
 })
-export class SearchCredentialLineComponent implements SearchLineInterface, OnInit {
+export class SearchCredentialLineComponent extends SearchLine implements OnInit {
 
   @Input() model: Credential[];
+
+  @Input() term: string;
 
   @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   testStatusEnum = TestStatus;
   credentialTypes = CredentialTypes;
 
-  constructor(private core: CoreService) { }
+  constructor(private core: CoreService) {
+    super()
+   }
 
   ngOnInit(): void {
   }
@@ -142,13 +145,5 @@ Also: This can cause to fail any script that is currently using the credential.`
           this.core.toaster.showError("There was an error testing the credential. Please edit the credential to see more details.",
             "Credential test error.");
         });
-  }
-  
-  getLastUpdate(item: Credential): string {
-    return UIHelper.getLastUpdateMessage(item, true)
-  }
-
-  getLastUpdateTooltip(item: Credential): string {
-    return UIHelper.getLastUpdateMessage(item, false)
   }
 }
