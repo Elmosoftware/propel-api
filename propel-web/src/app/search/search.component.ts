@@ -1,9 +1,6 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { of, Observable } from 'rxjs';
-import { delay } from 'rxjs/operators';
-
 import { CoreService } from 'src/services/core.service';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
@@ -13,6 +10,10 @@ import { UIHelper } from 'src/util/ui-helper';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { InfiniteScrollingService, PagingHelper, SCROLL_POSITION } from 'src/core/infinite-scrolling-module';
 import { SearchType, SearchTypeDefinition, DEFAULT_SEARCH_TYPE } from "./search-type";
+//Below line is only in use by the "_fakeWorkflowCreation" method and is used for 
+//testing purposes only:
+//import { Workflow } from '../../../../propel-shared/models/workflow';
+
 
 /**
  * Size of each data page.
@@ -51,14 +52,14 @@ export class SearchComponent implements OnInit {
   }
 
   get searchTerm(): string {
-    let ret: string = "" //this.fg.value.searchText;
+    let ret: string = "";
 
-    if (this.fg.controls.searchText.valid) { // && !this.termIsQuoted) {
+    if (this.fg.controls.searchText.valid) {
       if (this.termIsQuoted) {
         ret = this.fg.value.searchText;
       }
       else {
-        ret = UIHelper.tokenizeAndStem(this.fg.value.searchText) //ret)
+        ret = UIHelper.tokenizeAndStem(this.fg.value.searchText)
         .join(" ");
       }      
     }
@@ -77,7 +78,6 @@ export class SearchComponent implements OnInit {
   }
 
   get showAll(): boolean {
-    // return this.searchTerm == "" && this.browseMode;
     return this.currentSearchTerm == "" && this.browseMode;
   }
 
@@ -106,7 +106,6 @@ export class SearchComponent implements OnInit {
 
     //If there is a search term specified or we need to browse all the items, we start 
     //the search immediately:
-    // if (this.showAll || this.searchTerm !== "") {
     if (this.showAll || this.currentSearchTerm !== "") {
       this.search();
     }
@@ -117,8 +116,8 @@ export class SearchComponent implements OnInit {
     this.fetchData(this.svcInfScroll.pageSize, 0);
   }
 
-  fetchData(top: number, skip: number): void {
-    let strictSearch: boolean = this.termIsQuoted;
+  async fetchData(top: number, skip: number, forceStrictSearch: boolean = false): Promise<void> {
+    let strictSearch: boolean = this.termIsQuoted || forceStrictSearch;
     let termsToSearch: string[] = [];
     let qm = new QueryModifier();
 
@@ -182,40 +181,40 @@ export class SearchComponent implements OnInit {
       qm.filterBy[condition] = additionalFilter[condition];
     });
 
-    this.getData(this.fg.controls.searchType.value, qm)
-      .subscribe((results: APIResponse<Entity>) => {
+    try {
+      let results = (await this.getData(this.fg.controls.searchType.value, qm));
 
-        let d = results.data;
+      //If is a text search that retrieves no results, we must try now 
+      //with a strict search to see if we can get anything:
+      if (!strictSearch && results.count == 0) {
+        await this.fetchData(top, skip, true);
+        return Promise.resolve();
+      }
 
-        //If we are showing all the results, there is no need to highlight any word matches:
-        // if (!this.showAll) {
-        //   d = this._processMatches(d, termsToSearch, 
-        //     SearchTypeDefinition.getFullTextFields(this.fg.controls.searchType.value))
-        // }
+      this.svcInfScroll.feed(results.totalCount, results.data);
 
-        this.svcInfScroll.feed(results.totalCount, d);
-
-        if (this.svcInfScroll.count > 0) {
-          this.core.toaster.showInformation(`Showing now ${this.svcInfScroll.count} results of a total of ${this.svcInfScroll.totalCount} coincidences found. 
+      if (this.svcInfScroll.count > 0) {
+        this.core.toaster.showInformation(`Showing now ${this.svcInfScroll.count} results of a total of ${this.svcInfScroll.totalCount} coincidences found. 
             ${(this.svcInfScroll.totalCount > this.svcInfScroll.count) ? "Keep scrolling to see more." : ""}   `, "New results have been added.")
-        }
-      },
-        err => {
-          throw err
-        });
+      }
+    } catch (error) {
+      throw error
+    }
+
+    return Promise.resolve();
   }
 
-  getData(type: SearchType, qm: QueryModifier): Observable<APIResponse<any>> {
+  getData(type: SearchType, qm: QueryModifier): Promise<APIResponse<Entity>> { // Observable<APIResponse<any>> {
 
-    /////////////////////////////////////////////////////////////////////////////////
-    //DEBUG:       For testing purposes only of the infinite scrrolling feature:
+    // ///////////////////////////////////////////////////////////////////////////////
+    // //DEBUG:       For testing purposes only of the infinite scrrolling feature:
     // if (type == SearchType.Workflows) {
-    //   return this._fakeWorkflowCreation(1000, 100, qm);      
+    //   return this._fakeWorkflowCreation(3000, 100, qm);      
     // }
-    // throw new Error("FAKE ERROR!!!");
-    /////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////
 
-    return this.core.data.find(SearchTypeDefinition.getDataEntity(type), qm);
+    return this.core.data.find(SearchTypeDefinition.getDataEntity(type), qm)
+      .toPromise();
   }
 
   resetSearch() {
@@ -301,54 +300,51 @@ export class SearchComponent implements OnInit {
     });
   }
 
-  /*================================================================================================
-        Used for testing purposes only:
-    ================================================================================================
+//   //================================================================================================
+//   //    Used for testing purposes only:
+//   //================================================================================================
    
-  private _fakeWorkflowCreation(totalWorkflows: number, msTimeout: number, qm: QueryModifier): Observable<APIResponse<Workflow>> {
+//   private _fakeWorkflowCreation(totalWorkflows: number, msTimeout: number, qm: QueryModifier): Promise<APIResponse<Workflow>> {
 
-    let data: Workflow[] = [];
-    let top: number = Number(qm.top);
-    let skip: number = Number(qm.skip);
-    let words: string[] = [];
+//     let data: Workflow[] = [];
+//     let top: number = Number(qm.top);
+//     let skip: number = Number(qm.skip);
+//     let words: string[] = [];
 
-    if (qm.filterBy.$text) {
-      words = qm.filterBy.$text.$search.split(" ");
-    }
-    else if(qm.filterBy.$or){
-      words.push(String(qm.filterBy.$or[0].name.$regex));
-    }
+//     if (qm.filterBy.$text) {
+//       words = qm.filterBy.$text.$search.split(" ");
+//     }
+//     else if(qm.filterBy.$or){
+//       words.push(String(qm.filterBy.$or[0].name.$regex));
+//     }
 
-    //To emulate no data retrieved, sent the search term "nodata":
-    if (words.length > 0 && words[0] == "nodata") {
-      return of(new APIResponse<Workflow>(null, data, 0))
-        .pipe(delay(msTimeout));
-    }
+//     //To emulate no data retrieved, sent the search term "nodata":
+//     if (words.length > 0 && words[0] == "nodata") {
+//       return Promise.resolve(new APIResponse<Workflow>(null, data, 0))
+//     }
 
-    for (let i = (skip + 1); i < (skip + top + 1); i++) {
-      let w = new Workflow()
+//     for (let i = (skip + 1); i < (skip + top + 1); i++) {
+//       let w = new Workflow()
 
-      let w0 = words[0];
-      let w1 = (words.length > 1) ? words[1] : "";
-      let w2 = (words.length > 2) ? words[2] : "";
-      let w3 = (words.length > 3) ? words[3] : "";
-      let w4 = (words.length > 4) ? words[4] : "";
+//       let w0 = words[0];
+//       let w1 = (words.length > 1) ? words[1] : "";
+//       let w2 = (words.length > 2) ? words[2] : "";
+//       let w3 = (words.length > 3) ? words[3] : "";
+//       let w4 = (words.length > 4) ? words[4] : "";
 
-      w.name = `TEST #${i} for searched words: "${w0}"`; // ${word.toUpperCase()}`;
-      w.description = `Et ligula ullamcorper malesuada ${w0} proin libero ${w1} nunc consequat interdum.
-Fermentum et sollicitudin ac orci phasellus egestas ${w2} ${w3} tellus rutrum tellus. Diam phasellus vestibulum 
-lorem sed risus ultricies. Erat imperdiet sed euismod nisi ${w4} porta lorem mollis. Feugiat in ante metus 
-dictum at tempor commodo ullamcorper a.`; // Searched word is ${word}.`;
+//       w.name = `TEST #${i} for searched words: "${w0}"`; // ${word.toUpperCase()}`;
+//       w.description = `Et ligula ullamcorper malesuada ${w0} proin libero ${w1} nunc consequat interdum.
+// Fermentum et sollicitudin ac orci phasellus egestas ${w2} ${w3} tellus rutrum tellus. Diam phasellus vestibulum 
+// lorem sed risus ultricies. Erat imperdiet sed euismod nisi ${w4} porta lorem mollis. Feugiat in ante metus 
+// dictum at tempor commodo ullamcorper a.`; // Searched word is ${word}.`;
 
-      data.push(w);
+//       data.push(w);
 
-      if (i == totalWorkflows) {
-        break;
-      }
-    }
+//       if (i == totalWorkflows) {
+//         break;
+//       }
+//     }
 
-    return of(new APIResponse<Workflow>(null, data, totalWorkflows))
-      .pipe(delay(msTimeout));
-  }
-  */
+//     return Promise.resolve(new APIResponse<Workflow>(null, data, totalWorkflows))
+//   }
 }
