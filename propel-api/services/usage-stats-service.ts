@@ -213,11 +213,6 @@ export class UsageStatsService {
         qm.populate = true;
         qm.sortBy = "-startedAt";
 
-        // if (token) {
-        //     qm.filterBy = {
-        //         "user._id": { $eq: token.userId }
-        //     }        
-        // }
         if (token) {
             qm.filterBy = {
                 user: { $eq: token.userId }
@@ -225,7 +220,6 @@ export class UsageStatsService {
         }
         
         return (await svc.find(qm)).data
-            .map((model) => model.toObject());
     }
 
     private async getAllWorkflowsCount(): Promise<number> {

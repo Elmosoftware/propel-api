@@ -126,16 +126,6 @@ function getTestWorkflow(propelCredentials: Credential[], totalTargets: number =
         }
     }
 
-    //At last: CredentialCache is calling the "toObject()" method in the Credential model. We need 
-    //to add it in order to avoid the build method to fail:
-    ret.steps[0].targets.map((target) => {
-        if (target.invokeAs && !(target.invokeAs as any).toObject) {
-            //@ts-ignore
-            target.invokeAs.toObject = () => target.invokeAs
-        }
-        return target;
-    }) 
-
     return ret
 }
 

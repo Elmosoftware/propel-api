@@ -10,6 +10,7 @@ import { SecretValue } from "../../../propel-shared/models/secret-value";
 import { Credential } from "../../../propel-shared/models/credential";
 import { LogLevel } from "../../core/config";
 import { SecurityToken } from "../../../propel-shared/core/security-token";
+import { DataService } from "../../services/data-service";
 
 let runner: Runner;
 
@@ -25,7 +26,7 @@ describe("Runner Class - execute()", () => {
     beforeEach(() => {
         let tw = testingWorkflows;
         st = new SecurityToken()
-        st.userId = "userid"
+        st.userId = DataService.getNewobjectId().toString();
 
         process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
         //to void having a flood of logging messages during the test.
@@ -72,7 +73,7 @@ describe("Runner Class - execute()", () => {
         runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
-                    expect(runner.executionLog?.user).toEqual(st.userId);
+                    expect(String(runner.executionLog?.user)).toEqual(st.userId);
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);
@@ -334,16 +335,6 @@ describe("Runner Class - execute()", () => {
 
         let w = testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast //With Credentials!
 
-        //At last: CredentialCache is calling the "toObject()" method in the Credential model. We need 
-        //to add it in order to avoid the build method to fail:
-        w.steps[0].targets.map((target) => {
-            if (target.invokeAs && !(target.invokeAs as any).toObject) {
-                //@ts-ignore
-                target.invokeAs.toObject = () => target.invokeAs
-            }
-            return target;
-        })
-
         runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {
@@ -369,16 +360,6 @@ describe("Runner Class - execute()", () => {
         //Adding an extra credential in the $PropelCredentials parameter value:
         w.steps[0].values[0].value += `, ${testingWorkflows.CredentialWindows03._id}`
 
-        //At last: CredentialCache is calling the "toObject()" method in the Credential model. We need 
-        //to add it in order to avoid the build method to fail:
-        w.steps[0].targets.map((target) => {
-            if (target.invokeAs && !(target.invokeAs as any).toObject) {
-                //@ts-ignore
-                target.invokeAs.toObject = () => target.invokeAs
-            }
-            return target;
-        })
-        
         runner.execute(w, st)
             .then((msg: InvocationMessage) => {
                 if (msg.logId) {

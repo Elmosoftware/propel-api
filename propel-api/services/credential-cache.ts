@@ -85,7 +85,7 @@ export class CredentialCache {
                         credentialIds.delete(t.invokeAs._id)
                     }
 
-                    credentials.push((t.invokeAs as any).toObject());
+                    credentials.push(t.invokeAs);
                 }
             })
         })
@@ -169,8 +169,7 @@ export class CredentialCache {
             }
         };
 
-        return (await svc.find(qm)).data
-            .map((model) => model.toObject());
+        return (await svc.find(qm)).data;
     }
 
     private async getCredentialsById(credentialIds: string[], token: SecurityToken): Promise<Credential[]> {
@@ -184,8 +183,7 @@ export class CredentialCache {
             }
         };
 
-        return (await svc.find(qm)).data
-            .map((model) => model.toObject());
+        return (await svc.find(qm)).data;
     }
 }
 

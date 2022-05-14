@@ -100,7 +100,7 @@ export class SecurityService {
 
         result = await svc.find(qm);
 
-        if (result.count == 1) return (result.data[0] as any).toObject();
+        if (result.count == 1) return result.data[0];
         else return undefined;
     }
 
@@ -437,7 +437,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
         result = await svc.find(qm);
 
-        if (result.count == 1) return (result.data[0] as any).toObject();
+        if (result.count == 1) return result.data[0];
         else return undefined;
     }
 

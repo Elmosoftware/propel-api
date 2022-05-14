@@ -199,7 +199,6 @@ Those fields are for internal use only and must not take part on user queries.`)
                     }
                 }
 
-                // let query = this._model.model.find(qm.filterBy);
                 let query = this._model.model.find(qm.filterBy, projection);
                 let countQuery = this._model.model.countDocuments(qm.filterBy);
 
@@ -303,8 +302,14 @@ Those fields are for internal use only and must not take part on user queries.`)
      */
     _setAuditData(isNewDoc: boolean, doc: any) {
 
-        doc.deletedOn = null;
-        doc.deletedBy = null;
+        //Internal fields can't be present in the submitted document:
+        if (this._model.internalFieldsList.length > 0) {
+            this._model.internalFieldsList.forEach((field) => {
+                if (doc[field] !== undefined) {
+                    delete doc[field]
+                }
+            })
+        }
 
         //If the entity have audit data:
         if (this._model.auditFieldsList.length > 0) {
@@ -342,9 +347,44 @@ Those fields are for internal use only and must not take part on user queries.`)
                 cbReject(new APIResponse<any>(err, null));
             }
             else {
-                cbResolve(new APIResponse<any>(null, data, totalCount));
+                cbResolve(new APIResponse<any>(null, this._postProcessData(data), totalCount));
             }
         });
+    }
+
+    /**
+     * Any post processing of the data to deliver in this api, need to take place here.
+     * @param data Data to process
+     * @returns Processed data ready to be delivered by the Data API.
+     */
+    private _postProcessData(data: any): any[] {
+
+        if (!data) return data;
+
+        //If is not an array, we will turn into one:
+        if (!Array.isArray(data)) data = [data];
+
+        //Any post process of the data before to be sent to the client need to take part here:
+        for (let i = 0; i < data.length; i++) {
+
+            //Starting at this point, data is not anymore a model, but a plain Entity Object:
+            data[i] = data[i].toObject();
+
+            //Removing internal fields:
+            /*
+                NOTE: Internal fields need to be handled only on API side, can't be delivered to 
+                the client.
+             */
+            if (this._model.internalFieldsList.length > 0) {
+                this._model.internalFieldsList.forEach((field) => {
+                    if (data[i][field] !== undefined) {
+                        delete data[i][field];
+                    }
+                })
+            }
+        }       
+
+        return data;
     }
 
     /**
