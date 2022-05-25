@@ -5,6 +5,7 @@ import { CredentialTypes } from "./credential-types";
 import { SecretValue } from "./secret-value";
 import { WindowsSecret } from "./windows-secret";
 import { AWSSecret } from "./aws-secret";
+import { GenericAPIKeySecret } from "./generic-apikey-secret";
 
 /**
  * Propel Secret.
@@ -48,6 +49,9 @@ export class SecretFactory {
         switch (credential.credentialType) {
             case CredentialTypes.AWS:
                 ret = new Secret<AWSSecret>(AWSSecret);
+                break;
+            case CredentialTypes.APIKey:
+                ret = new Secret<GenericAPIKeySecret>(GenericAPIKeySecret);
                 break;
             default:
                 ret = new Secret<WindowsSecret>(WindowsSecret);
