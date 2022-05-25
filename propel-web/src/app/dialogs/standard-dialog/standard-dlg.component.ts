@@ -28,7 +28,7 @@ export class StandardDialogComponent implements OnInit {
 export class StandardDialogConfiguration {
 
   constructor(title: string, content: string, firstButtonText?: string, secondButtonText?: string) {
-    this.title = (title) ? title : "Confiration required";
+    this.title = (title) ? title : "Confirmation required";
     this.content = (content) ? content : "Are you sure to continue?";
     this.firstButtonText = (firstButtonText) ? firstButtonText : "Ok";
     this.secondButtonText = (secondButtonText) ? secondButtonText : "Cancel";
