@@ -389,6 +389,13 @@ textarea::placeholder {
     z-index: 1000;
 }
 
+.floating-top-left {
+    top: 4rem;
+    position: fixed;
+    left: 1rem;
+    z-index: 1000;
+}
+
 .drag-drop-cursor {
     cursor: grab;
 }

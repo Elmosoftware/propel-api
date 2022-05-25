@@ -348,7 +348,6 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
     this.core.data.save(DataEntity.Secret, this.secret)
       .subscribe((results: APIResponse<string>) => {
 
-        // this.secret._id = results.data[0];
         //Updating the secret id in the credential:
         this.fh.form.controls.secretId.patchValue(results.data[0]);
         //Signaling the inner component to indicate the data was saved:
@@ -367,6 +366,11 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
             //Signaling the inner component to indicate the data was saved:
             this.secret._id = this.fh.value.secretId;
             this.saved.next();
+
+            //Replacing in the navigation history the URL so when the user navigate back 
+            //and if we are creating an item it will edit the created item instead of showing 
+            //a new item form:
+            this.core.navigation.replaceHistory(this.fh.getId());
     
           },
             (err) => {

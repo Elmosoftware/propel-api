@@ -347,6 +347,11 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
         //will allow the "Cancel" button to come back to this version.
         this.showAddNewButton = true;
 
+        //Replacing in the navigation history the URL so when the user navigate back 
+        //and if we are creating an item it will edit the created item instead of showing 
+        //a new item form:
+        this.core.navigation.replaceHistory(this.fh.getId());
+
         if (run) {
           //Redirecting to run page to execute the workflow:
           this.core.navigation.toRun(this.fh.getId());

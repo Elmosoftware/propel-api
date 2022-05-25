@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { DialogResult } from 'src/core/dialog-result';
 
 import { CoreService } from 'src/services/core.service';
+import { NavigationHistoryEntry } from 'src/services/navigation.service';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
@@ -18,10 +19,6 @@ export class NavigationBarComponent implements OnInit {
 
   loading: boolean;
   searchTerm: string = "";
-
-  // get isBrowsePage(): boolean {
-  //   return this.core.navigation.currentPage.name.startsWith(this.core.navigation.browsePagePrefix);
-  // }
 
   get isBrowseWorkflowsPage(): boolean {
     return this.core.navigation.currentPageIs(this.core.navigation.pages.BrowseWorkflows);
@@ -119,6 +116,10 @@ export class NavigationBarComponent implements OnInit {
     return this.core.security.isAccessGranted(this.core.navigation.pages.BrowseUserAccounts)
   }
 
+  get previousPage(): NavigationHistoryEntry | undefined {
+    return this.core.navigation.previousPage;
+  }
+
   get userName(): string {
     let ret:string = "";
 
@@ -166,6 +167,10 @@ export class NavigationBarComponent implements OnInit {
       .subscribe((counter: number) => {
         this.loading = counter > 0;
       })
+  }
+
+  goBack() {
+    this.core.navigation.back();
   }
 
   goToHome() {
@@ -219,15 +224,15 @@ export class NavigationBarComponent implements OnInit {
   }
 
   goToCredentialWin() {
-    this.core.navigation.toNewCredential(CredentialTypes.Windows);
+    this.core.navigation.toWindowsCredential();
   }
 
   goToCredentialAWS() {
-    this.core.navigation.toNewCredential(CredentialTypes.AWS);
+    this.core.navigation.toAWSCredential();
   }
 
   goToCredentialGenericAPIKey() {
-    this.core.navigation.toNewCredential(CredentialTypes.APIKey);
+    this.core.navigation.toGenericAPIKeyCredential();
   }
 
   goToUserAccount() {
@@ -254,5 +259,14 @@ export class NavigationBarComponent implements OnInit {
 
   doNotPropagate($event) {
     $event.stopPropagation();
+  }
+
+  getPreviousPageTooltipMessage(): string {
+    if (!this.previousPage) return "";
+    else return `Back to ${this.previousPage.title}`;
+  }
+
+  goBackInHistory(): void {
+    this.core.navigation.back();
   }
 }

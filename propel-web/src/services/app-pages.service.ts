@@ -12,202 +12,235 @@ export const PREFIX_SEPARATOR: string = "-";
 export class AppPages {
 
     Home: PageMetadata = {
+        title: "Home",
         name: "home",
         showNavBar: true,
         showSearchBox: true,
         security : {
-          restricted: false, //Indicates if non-authenticated users can access the page.
-          adminOnly:  false, //Indicates if only Administrators can access.
-        }
+          restricted: false,
+          adminOnly:  false,
+        },
+        excludeFromHistory: false
     }
     Run: PageMetadata = {
+        title: "Run",
         name: "run",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: false
     }
     Sandbox: PageMetadata = {
+        title: "Sandbox",
         name: "sandbox",
         showNavBar: false,
         showSearchBox: true,
         security : {
           restricted: false, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: false
     }
     Target: PageMetadata = {
+        title: "Target",
         name: "target",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     Script: PageMetadata = {
+        title: "Script",
         name: "script",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     QuickTask: PageMetadata = {
+        title: "Quick Task",
         name: "quick-task",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: false
     }
     Workflow: PageMetadata = {
+        title: "Workflow",
         name: "workflow",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     Results: PageMetadata = {
+        title: "Execution Results",
         name: "results",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: false, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: false
     }
     BrowseWorkflows: PageMetadata = {
+        title: "Workflows",
         name: "browse-workflows",
         showNavBar: true,
         showSearchBox: false,
         security : {
           restricted: true, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: false
     }
     BrowseScripts: PageMetadata = {
+        title: "Scripts",
         name: "browse-scripts",
         showNavBar: true,
         showSearchBox: false,
         security : {
           restricted: true, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: false
     }
     BrowseTargets: PageMetadata = {
+        title: "Targets",
         name: "browse-targets",
         showNavBar: true,
         showSearchBox: false,
         security : {
           restricted: true, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: false
     }
     BrowseCredentials: PageMetadata = {
+        title: "Credentials",
         name: "browse-credentials",
         showNavBar: true,
         showSearchBox: false,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     BrowseUserAccounts: PageMetadata = {
+        title: "Manage Users",
         name: "browse-useraccounts",
         showNavBar: true,
         showSearchBox: false,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     History: PageMetadata = {
+        title: "Execution History",
         name: "history",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: false, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: false
     }
     Offline: PageMetadata = {
+        title: "Offline",
         name: "offline",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: false, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: true
     }
     Unauthorized: PageMetadata = {
+        title: "Unauthorized",
         name: "unauthorized",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: false, 
           adminOnly:  false, 
-        }
-    }
-    Credential: PageMetadata = {
-        name: "credential",
-        showNavBar: true,
-        showSearchBox: true,
-        security : {
-          restricted: true, 
-          adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: true
     }
     CredentialWindows: PageMetadata = {
+        title: "Windows Credential",
         name: "credential-windows",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     CredentialAWS: PageMetadata = {
+        title: "AWS Credential",
         name: "credential-aws",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     CredentialAPIKey: PageMetadata = {
+        title: "Generic API Key Credential",
         name: "credential-apikey",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     UserAccount: PageMetadata = {
+        title: "User Account",
         name: "useraccount",
         showNavBar: true,
         showSearchBox: true,
         security : {
           restricted: true, 
           adminOnly:  true, 
-        }
+        },
+        excludeFromHistory: false
     }
     Login: PageMetadata = {
+        title: "Login",
         name: "login",
         showNavBar: false,
         showSearchBox: true,
         security : {
           restricted: false, 
           adminOnly:  false, 
-        }
+        },
+        excludeFromHistory: true
     }
 
     constructor() {    
@@ -236,27 +269,6 @@ export class AppPages {
 
         return ret;
     }
-
-    /**
-     * Some of the pages are related to each other and therefore they share a common prefix. 
-     * This method allows to extract and retrieve that prefix.
-     * @example
-     * getPrefix({
-     *  name: "account-details"
-     * }) --> "account-"
-     * @param page Page which prefixwe would like to obtain.
-     * @returns The page prefix.
-     */
-    getPrefix(page: PageMetadata): string {
-        let pos = page.name.indexOf(PREFIX_SEPARATOR);
-        let ret: string = ""
-
-        if (pos != -1) {
-            ret = page.name.slice(0, pos + 1);
-        }
-
-        return ret;
-    }
 }
 
 /**
@@ -270,6 +282,11 @@ export class AppPages {
      * Page name or URIis the name you use tonavigate to the page like "home" in http://propel/home
      */
     name: string = "";
+
+    /**
+     * Page title.
+     */
+    title: string = "";
 
     /**
      * A boolean value indicating if the Navigation bar is goingto be visible when a redirection 
@@ -287,6 +304,11 @@ export class AppPages {
      * Page security details, indicating theroles that are granting access, etc..
      */
     security: PageSecurity;
+
+    /**
+     * Indicates if the page need to be excluded from navigation history.
+     */
+    excludeFromHistory: boolean = false;
 
     constructor() {
         

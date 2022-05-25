@@ -201,6 +201,13 @@ export class SearchComponent implements OnInit {
       throw error
     }
 
+    //On every new search, we must replace the navigation history, to 
+    //allow the user to go back to the last search:
+    if (skip == 0) {
+      this.core.navigation.replaceHistory("", 
+      { term: String(this.currentSearchTerm), browse: (this.browseMode) ? "true" : "false" });
+    }
+
     return Promise.resolve();
   }
 

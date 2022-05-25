@@ -87,15 +87,15 @@ export class HomeComponent implements OnInit {
   }
 
   goToCredentialWin() {
-    this.core.navigation.toNewCredential(CredentialTypes.Windows);
+    this.core.navigation.toWindowsCredential();
   }
 
   goToCredentialAWS() {
-    this.core.navigation.toNewCredential(CredentialTypes.AWS);
+    this.core.navigation.toAWSCredential();
   }
 
   goToCredentialGenericAPIKey() {
-    this.core.navigation.toNewCredential(CredentialTypes.APIKey);
+    this.core.navigation.toGenericAPIKeyCredential();
   }
 
   refreshData(): void {

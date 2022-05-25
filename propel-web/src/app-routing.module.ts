@@ -31,7 +31,7 @@ const routes: Routes = [
     path: pages.Home.name,
     component: HomeComponent,
     data: {
-      title: "Home"
+      title: pages.Home.title
     },
     canActivate: [SecurityGuard]
   },
@@ -39,7 +39,7 @@ const routes: Routes = [
     path: pages.Login.name,
     component: LoginComponent,
     data: {
-      title: "User login"
+      title: pages.Login.title
     },
     canActivate: [SecurityGuard]
   },
@@ -47,7 +47,7 @@ const routes: Routes = [
     path: `${pages.Run.name}/:id`,
     component: RunComponent,
     data: {
-      title: "Run"
+      title: pages.Run.title
     },
     canActivate: [SecurityGuard]
   },
@@ -55,7 +55,7 @@ const routes: Routes = [
     path: pages.Target.name,
     component: TargetComponent,
     data: {
-      title: "New Target"
+      title: `New ${pages.Target.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -64,7 +64,7 @@ const routes: Routes = [
     path: `${pages.Target.name}/:id`,
     component: TargetComponent,
     data: {
-      title: "Editing Target"
+      title: `Editing ${pages.Target.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -73,7 +73,7 @@ const routes: Routes = [
     path: pages.Script.name,
     component: ScriptComponent,
     data: {
-      title: "New Script"
+      title: `New ${pages.Script.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -82,7 +82,7 @@ const routes: Routes = [
     path: `${pages.Script.name}/:id`,
     component: ScriptComponent,
     data: {
-      title: "Editing Script"
+      title: `Editing ${pages.Script.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -91,7 +91,7 @@ const routes: Routes = [
     path: pages.QuickTask.name,
     component: QuickTaskComponent,
     data: {
-      title: "New Quick task"
+      title: pages.QuickTask.title
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -100,7 +100,7 @@ const routes: Routes = [
     path: pages.Workflow.name,
     component: WorkflowComponent,
     data: {
-      title: "New Workflow"
+      title: `New ${pages.Workflow.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -109,7 +109,7 @@ const routes: Routes = [
     path: `${pages.Workflow.name}/:id`,
     component: WorkflowComponent,
     data: {
-      title: "Editing Workflow"
+      title: `Editing ${pages.Workflow.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -118,7 +118,7 @@ const routes: Routes = [
     path: `${pages.Results.name}/:id`,
     component: ResultsComponent,
     data: {
-      title: "Displaying execution results"
+      title: `Displaying ${pages.Results.title}`
     },
     canActivate: [SecurityGuard]
   },
@@ -126,7 +126,7 @@ const routes: Routes = [
     path: pages.BrowseWorkflows.name,
     component: SearchComponent,
     data: {
-      title: "Browsing Workflows"
+      title: pages.BrowseWorkflows.title
     },
     canActivate: [SecurityGuard]
   },
@@ -134,7 +134,7 @@ const routes: Routes = [
     path: pages.BrowseScripts.name,
     component: SearchComponent,
     data: {
-      title: "Browsing Scripts"
+      title: pages.BrowseScripts.title
     },
     canActivate: [SecurityGuard]
   },
@@ -142,7 +142,7 @@ const routes: Routes = [
     path: pages.BrowseTargets.name,
     component: SearchComponent,
     data: {
-      title: "Browsing Targets"
+      title: pages.BrowseTargets.title
     },
     canActivate: [SecurityGuard]
   },
@@ -150,7 +150,7 @@ const routes: Routes = [
     path: pages.BrowseCredentials.name,
     component: SearchComponent,
     data: {
-      title: "Browsing Credentials"
+      title: pages.BrowseCredentials.title
     },
     canActivate: [SecurityGuard]
   },
@@ -158,7 +158,7 @@ const routes: Routes = [
     path: pages.BrowseUserAccounts.name,
     component: SearchComponent,
     data: {
-      title: "Browsing User Accounts"
+      title: pages.BrowseUserAccounts.title
     },
     canActivate: [SecurityGuard]
   },
@@ -166,7 +166,7 @@ const routes: Routes = [
     path: pages.History.name,
     component: HistoryComponent,
     data: {
-      title: "Seeing Execution History"
+      title: `Seeing ${pages.History.title}`
     },
     canActivate: [SecurityGuard]
   },
@@ -187,19 +187,19 @@ const routes: Routes = [
     canActivate: [SecurityGuard]
   },
   {
-    path: `${pages.Credential.name}/:id`,
+    path: pages.CredentialWindows.name,
     component: CredentialComponent,
     data: {
-      title: "Editing Credential"
+      title: `New ${pages.CredentialWindows.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
   },
   {
-    path: pages.CredentialWindows.name,
+    path: `${pages.CredentialWindows.name}/:id`,
     component: CredentialComponent,
     data: {
-      title: "New Windows Credential"
+      title: `Editing ${pages.CredentialWindows.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -208,7 +208,16 @@ const routes: Routes = [
     path: pages.CredentialAWS.name,
     component: CredentialComponent,
     data: {
-      title: "New AWS Credential"
+      title: `New ${pages.CredentialAWS.title}`
+    },
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
+  },
+  {
+    path: `${pages.CredentialAWS.name}/:id`,
+    component: CredentialComponent,
+    data: {
+      title: `Editing ${pages.CredentialAWS.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -217,7 +226,16 @@ const routes: Routes = [
     path: pages.CredentialAPIKey.name,
     component: CredentialComponent,
     data: {
-      title: "New Generic API Key Credential"
+      title: `New ${pages.CredentialAPIKey.title}`
+    },
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
+  },
+  {
+    path: `${pages.CredentialAPIKey.name}/:id`,
+    component: CredentialComponent,
+    data: {
+      title: `Editing ${pages.CredentialAPIKey.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -226,7 +244,7 @@ const routes: Routes = [
     path: pages.UserAccount.name,
     component: UserAccountComponent,
     data: {
-      title: "New User account"
+      title: `New ${pages.UserAccount.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]
@@ -235,7 +253,7 @@ const routes: Routes = [
     path: `${pages.UserAccount.name}/:id`,
     component: UserAccountComponent,
     data: {
-      title: "Editing User account"
+      title: `Editing ${pages.UserAccount.title}`
     },
     canDeactivate: [DataLossPreventionGuard],
     canActivate: [SecurityGuard]

@@ -222,6 +222,11 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
         this.fh.form.markAsPristine();
         this.fh.form.markAsUntouched();
         this.authCode = response.authCode //If is a new user an auth code will be generated.
+
+        //Replacing in the navigation history the URL so when the user navigate back 
+        //and if we are creating an item it will edit the created item instead of showing 
+        //a new item form:
+        this.core.navigation.replaceHistory(this.fh.getId());
       },
         (err) => {
           throw err

@@ -5,6 +5,7 @@ import { CoreService } from 'src/services/core.service';
 import { DataEntity } from 'src/services/data.service';
 import { UIHelper } from 'src/util/ui-helper';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
+import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { Credential } from "../../../../propel-shared/models/credential";
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 import { Secret } from '../../../../propel-shared/models/secret';
@@ -41,8 +42,20 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
   ngOnInit(): void {
   }
 
-  goToEdit(id: string) {
-    this.core.navigation.toEditCredential(id);
+  goToEdit(item: Credential) {
+    switch (item.credentialType) {
+      case this.credentialTypes.Windows:
+        this.core.navigation.toWindowsCredential(item._id)
+        break;    
+      case this.credentialTypes.AWS:
+        this.core.navigation.toAWSCredential(item._id)
+        break;    
+      case this.credentialTypes.APIKey:
+        this.core.navigation.toGenericAPIKeyCredential(item._id)
+        break;    
+      default:
+        throw new PropelError(`No navigation defined to edit Credentials of type "${item.credentialType}".` )
+    }
   }
 
   getTooltipMessage(item: Credential): string {

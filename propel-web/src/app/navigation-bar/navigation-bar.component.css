@@ -15,7 +15,12 @@
 }
 
 .search-input {
+    max-height: 2rem;
+}
+
+.search-input-text {
     max-width: 200px;
+    max-height: 2rem;
 }
 
 .search-btn {
@@ -36,10 +41,23 @@
 }
 
 .nav-menu-selected {
-    border-bottom-color: var(--colors-white);
+    border-bottom: var(--colors-white) 2px solid;
+}
+
+.nav-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
 }
 
 .dropdown-user {
     right: 0;
     left: auto;
+}
+
+.back-button {
+    margin-top: 0.3rem;
+}
+
+.user-initials {
+    font-size: 1.2em;
 }

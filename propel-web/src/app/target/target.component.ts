@@ -185,6 +185,12 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
         this.fh.setId(results.data[0]);
         this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
         //will allow the "Cancel" button to come back to this version.
+
+        //Replacing in the navigation history the URL so when the user navigate back 
+        //and if we are creating an item it will edit the created item instead of showing 
+        //a new item form:
+        this.core.navigation.replaceHistory(this.fh.getId());
+        
         this.showAddNewButton = true;
       },
         (err) => {

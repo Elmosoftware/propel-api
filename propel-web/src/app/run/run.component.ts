@@ -1,9 +1,11 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { DialogResult } from 'src/core/dialog-result';
 import { CoreService } from 'src/services/core.service';
 import { InvocationMessage, InvocationStatus, ExecutionStats } from "../../../../propel-shared/core/invocation-message";
 import { ExecutionStatus } from '../../../../propel-shared/models/execution-status';
 import { Utils } from '../../../../propel-shared/utils/utils';
+import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
 @Component({
   selector: 'app-run',
@@ -16,6 +18,7 @@ export class RunComponent implements OnInit {
   workflowStatus: string = InvocationStatus.NotStarted;
   killOption: boolean = false;
   cancelling: boolean = false;
+  confirmationRequired: boolean = false;
 
   @ViewChild("container", { static: false }) container: ElementRef;
 
@@ -73,13 +76,40 @@ export class RunComponent implements OnInit {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.model = [];
-    this.core.toaster.showInformation("Starting execution ...");
-    this.pushMessageToUI(InvocationStatus.NotStarted, "Starting... please wait.")
-    this.startExecution(this.route.snapshot.paramMap.get("id"));
+
+    if (this.route.snapshot.queryParamMap.get("conf")) {
+      this.confirmationRequired = (this.route.snapshot.queryParamMap.get("conf").toLowerCase() == "true") ? true : false;
+    }
+
+    if (this.confirmationRequired) {
+      this.pushMessageToUI(InvocationStatus.NotStarted, "Waiting for user confirmation...")
+      this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
+        "", `Please confirm workflow execution.`)
+      ).subscribe((result: DialogResult<any>) => {
+        if (result.isCancel) {
+          this.pushMessageToUI(InvocationStatus.UserActionCancel, "The execution was cancelled by the user.")
+        }
+        else {
+          this.startExecution();
+        }
+      }, err => {
+        throw err
+      });
+    }
+    else {
+      this.startExecution();
+    }
   }
 
-  startExecution(workflowId: string) {
+  startExecution() {
+    this.core.toaster.showInformation("Starting execution ...");
+    this.pushMessageToUI(InvocationStatus.NotStarted, "Starting... please wait.")
     this.workflowStatus = InvocationStatus.Running;
+    let workflowId: string = this.route.snapshot.paramMap.get("id");
+
+    //Replacing the history entry to ensure to request confirmation to the user when 
+    //navigates back:
+    this.core.navigation.replaceHistory(workflowId, { conf: "true" })
 
     this.core.runner.execute(workflowId)
       .subscribe((msg: InvocationMessage) => {

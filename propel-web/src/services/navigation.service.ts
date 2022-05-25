@@ -1,10 +1,13 @@
 import { Injectable, EventEmitter } from "@angular/core";
-import { NavigationEnd, Router } from '@angular/router';
-import { Location } from '@angular/common'
+import { NavigationEnd, Params, Router } from '@angular/router';
 
 import { logger } from "../../../propel-shared/services/logger-service";
-import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from "../../../propel-shared/models/credential-types";
 import { PageMetadata, AppPages } from "src/services/app-pages.service";
+import { PropelError } from "../../../propel-shared/core/propel-error";
+
+const MAX_HISTORY_LENGTH: number = 15
+
+export type NavigationHistoryEntry = { url: string, title: string }
 
 /**
  * This class acts as a helper to navigate the different pages in the app.
@@ -16,7 +19,7 @@ export class NavigationService {
 
     private _currPageRXP: RegExp;
     private _requestCounter: number = 0;
-    private _navigationHistory: string[] = [];
+    private _history: NavigationHistoryEntry[] = [];
     private httpRequestCountEmitter$: EventEmitter<number> = new EventEmitter<number>();
 
     get pages(): AppPages {
@@ -30,14 +33,6 @@ export class NavigationService {
         return this._requestCounter;
     }
 
-    get credentialsPagePrefix(): string {
-        return "credential"
-    }
-
-    get browsePagePrefix(): string {
-        return "browse"
-    }
-
     /**
     * Retrieves the name of the current active page.
     */
@@ -45,13 +40,18 @@ export class NavigationService {
         return this.getPageFromURL(this.router.url);
     }
 
-    constructor(private router: Router, private appPages: AppPages, private location: Location) {
+    get previousPage(): NavigationHistoryEntry | undefined {
+        //Recal that last item in the History is the current page, not the previous one:
+        return this._history[this._history.length - 2];
+    }
+
+    constructor(private router: Router, private appPages: AppPages) {
         this._currPageRXP = new RegExp("^/[A-Za-z-]*", "gi");
         logger.logInfo("Navigationservice instance created");
 
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
-                this._navigationHistory.push(event.urlAfterRedirects)
+                this.addToHistory(event.urlAfterRedirects)
             }
         })
     }
@@ -127,46 +127,84 @@ export class NavigationService {
         return ret;
     }
 
+    /**
+     * Navigates to the previous page.
+     */
     back(): void {
-        this._navigationHistory.pop();
-
-        if (this._navigationHistory.length > 0) {
-            this.location.back()
-        } else {
-            this.router.navigateByUrl("/") //To whoever is our landing page.
+        
+        if (this._history.length > 1) {
+            this._history.pop();
         }
+       
+        this.to(this._history[this._history.length - 1]?.url)
+    }
+
+    replaceHistory(segments: string[] | string = "", queryParams: Params | null = null): void {
+        let url: string = ""
+        let entry: NavigationHistoryEntry;
+        
+        if(this._history.length == 0) return;
+
+        entry = this._history[this._history.length - 1]
+        entry.url = this.buildURL(this.currentPage, segments, queryParams);
+    }
+
+    buildURL(page: PageMetadata, segments: string[] | string = "", queryParams: Params | null = null): string {
+
+        if (!page) throw new PropelError(`Expect the page metadata in the "buildURL" method but a falsy value was passed.`)
+    
+        if (!segments) {
+            segments = [];
+        }
+        else if(!Array.isArray(segments)) {
+            segments = [String(segments)]
+        }
+
+        //Inserting the page as the first segment:
+        segments = [page.name, ...segments]
+
+        if(queryParams) {
+            queryParams = { queryParams }
+        }
+        else {
+            queryParams = {}
+        }
+
+        return this.router.createUrlTree(segments, queryParams).toString();
     }
 
     /**
      * Navigate to the requested url.
      */
     to(url: string): void {
-        this.router.navigate([url]);
+        if (!url) return;
+        this.router.navigateByUrl(url);
     }
 
     /**
      * Navigate to Home page.
      */
     toHome(): void {
-        this.router.navigate([this.getRelativePath(this.pages.Home.name)]);
+        let url: string = this.buildURL(this.pages.Home);
+        this.to(url)
     }
 
     /**
      * Navigate to Login page.
      */
     toLogin(referrerURL: string = ""): void {
-        this.router.navigate([this.getRelativePath(this.pages.Login.name)],
-            {
-                queryParams: { referrerURL: String(referrerURL) }
-            });
+        let url: string = this.buildURL(this.pages.Login, "", 
+            { referrerURL: String(referrerURL) });
+        this.to(url)        
     }
 
     /**
      * Navigate to Run page.
      * @param workflowId Workflow to run
      */
-    toRun(workflowId: string): void {
-        this.router.navigate([this.getRelativePath(this.pages.Run.name), workflowId]);
+    toRun(workflowId: string, confirmationRequired: boolean = false): void {
+        let url: string = this.buildURL(this.pages.Run, workflowId, { conf: String(confirmationRequired) });
+        this.to(url)
     }
 
     /**
@@ -174,7 +212,8 @@ export class NavigationService {
      * @param executionLogId Log id.
      */
     toResults(executionLogId: string): void {
-        this.router.navigate([this.getRelativePath(this.pages.Results.name), executionLogId]);
+        let url: string = this.buildURL(this.pages.Results, executionLogId);
+        this.to(url)
     }
 
     /**
@@ -182,12 +221,8 @@ export class NavigationService {
      * @param targetId Target to edit.
      */
     toTarget(targetId?: string): void {
-        if (targetId) {
-            this.router.navigate([this.getRelativePath(this.pages.Target.name), targetId]);
-        }
-        else {
-            this.router.navigate([this.getRelativePath(this.pages.Target.name)]);
-        }
+        let url: string = this.buildURL(this.pages.Target, targetId);
+        this.to(url)
     }
 
     /**
@@ -195,19 +230,16 @@ export class NavigationService {
      * @param scriptId Script to edit.
      */
     toScript(scriptId?: string): void {
-        if (scriptId) {
-            this.router.navigate([this.getRelativePath(this.pages.Script.name), scriptId]);
-        }
-        else {
-            this.router.navigate([this.getRelativePath(this.pages.Script.name)]);
-        }
+        let url: string = this.buildURL(this.pages.Script, scriptId);
+        this.to(url)
     }
 
     /**
      * Navigate to Quick Task page.
      */
     toQuickTask(): void {
-        this.router.navigate([this.getRelativePath(this.pages.QuickTask.name)]);
+        let url: string = this.buildURL(this.pages.QuickTask);
+        this.to(url)
     }
 
     /**
@@ -215,12 +247,8 @@ export class NavigationService {
      * @param workflowId Script to edit.
      */
     toWorkflow(workflowId?: string): void {
-        if (workflowId) {
-            this.router.navigate([this.getRelativePath(this.pages.Workflow.name), workflowId]);
-        }
-        else {
-            this.router.navigate([this.getRelativePath(this.pages.Workflow.name)]);
-        }
+        let url: string = this.buildURL(this.pages.Workflow, workflowId);
+        this.to(url)
     }
 
     /**
@@ -229,91 +257,93 @@ export class NavigationService {
      * @param browse Indicates if even no term is specified, we must show all items.
      */
     toBrowseWorkflows(term: string = "", browse: boolean = true): void {
-        this.router.navigate([this.getRelativePath(this.pages.BrowseWorkflows.name)], {
-            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
-        });
+        let url: string = this.buildURL(this.pages.BrowseWorkflows, "", 
+            { term: String(term), browse: (browse) ? "true" : "false" });
+        this.to(url)
     }
 
     /**
      * Navigate to search page but setting up to browse scripts.
      */
     toBrowseScripts(term: string = "", browse: boolean = true): void {
-        this.router.navigate([this.getRelativePath(this.pages.BrowseScripts.name)], {
-            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
-        });
+        let url: string = this.buildURL(this.pages.BrowseScripts, "", 
+            { term: String(term), browse: (browse) ? "true" : "false" });
+        this.to(url)
     }
 
     /**
      * Navigate to search page but setting up to browse targets.
      */
     toBrowseTargets(term: string = "", browse: boolean = true): void {
-        this.router.navigate([this.getRelativePath(this.pages.BrowseTargets.name)], {
-            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
-        });
+        let url: string = this.buildURL(this.pages.BrowseTargets, "", 
+            { term: String(term), browse: (browse) ? "true" : "false" });
+        this.to(url)
     }
 
     /**
      * Navigate to search page but setting up to browse credentials.
      */
     toBrowseCredentials(term: string = "", browse: boolean = true): void {
-        this.router.navigate([this.getRelativePath(this.pages.BrowseCredentials.name)], {
-            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
-        });
+        let url: string = this.buildURL(this.pages.BrowseCredentials, "", 
+            { term: String(term), browse: (browse) ? "true" : "false" });
+        this.to(url)
     }
 
     /**
      * Navigate to search page but setting up to browse user accounts.
      */
     toBrowseUserAccounts(term: string = "", browse: boolean = true): void {
-        this.router.navigate([this.getRelativePath(this.pages.BrowseUserAccounts.name)], {
-            queryParams: { term: String(term), browse: (browse) ? "true" : "false" }
-        });
+        let url: string = this.buildURL(this.pages.BrowseUserAccounts, "", 
+            { term: String(term), browse: (browse) ? "true" : "false" });
+        this.to(url)
     }
 
     /**
      * Navigates to History page.
      */
     toHistory(): void {
-        this.router.navigate([this.getRelativePath(this.pages.History.name)]);
+        let url: string = this.buildURL(this.pages.History);
+        this.to(url)
     }
 
     /**
-     * Navigate to one of the alias of Credential page to prepare a form for the creation
-     * of a new credential of the specified type.
-     * If no type is specified, a new credential of type DEFAULT_CREDENTIAL_TYPE 
-     * will be created.
-     * @param type The credential type.
+     * Navigate to Credential page and set the form to create a new Windows Credential.
      */
-    toNewCredential(type?: CredentialTypes) {
-        let prefix = this.appPages.getPrefix(this.appPages.CredentialWindows); //Getting the prefix 
-        //from any credential page.
-        let page: string = prefix + ((type) ? type : DEFAULT_CREDENTIAL_TYPE).toString()
-            .toLowerCase();
-
-        this.router.navigate([page]);
+    toWindowsCredential(credentialId?: string) {
+        let url: string = this.buildURL(this.pages.CredentialWindows, credentialId);
+        this.to(url)
+    }
+    
+    /**
+     * Navigate to Credential page and set the form to create a new AWS Credential.
+     */
+    toAWSCredential(credentialId?: string) {
+        let url: string = this.buildURL(this.pages.CredentialAWS, credentialId);
+        this.to(url)
     }
 
     /**
-     * Navigates to credential page passing a credential ID. This method will provide everything 
-     * required to the Credential component to edit the credential.
-     * @param credentialId The credential to edit
+     * Navigate to Credential page and set the form to create a new Generic API Key Credential.
      */
-    toEditCredential(credentialId: string) {
-        this.router.navigate([this.getRelativePath(this.pages.Credential.name), credentialId]);
-    }
+    toGenericAPIKeyCredential(credentialId?: string) {
+        let url: string = this.buildURL(this.pages.CredentialAPIKey, credentialId);
+        this.to(url)
+    }    
 
     /**
      * Used by the system to navigate to the offline page if a network issue is detected.
      */
     toOffline(): void {
-        this.router.navigate([this.getRelativePath(this.pages.Offline.name)]);
+        let url: string = this.buildURL(this.pages.Offline);
+        this.to(url)
     }
 
     /**
      * Used by the system to indicate the user the access is forbidden.
      */
     toUnauthorized(): void {
-        this.router.navigate([this.getRelativePath(this.pages.Unauthorized.name)]);
+        let url: string = this.buildURL(this.pages.Unauthorized);
+        this.to(url)
     }
 
     /**
@@ -321,12 +351,8 @@ export class NavigationService {
     * @param targetId Target to edit.
     */
     toUserAccount(userAccountId?: string): void {
-        if (userAccountId) {
-            this.router.navigate([this.getRelativePath(this.pages.UserAccount.name), userAccountId]);
-        }
-        else {
-            this.router.navigate([this.getRelativePath(this.pages.UserAccount.name)]);
-        }
+        let url: string = this.buildURL(this.pages.UserAccount, userAccountId);
+        this.to(url)
     }
 
     /**
@@ -334,10 +360,31 @@ export class NavigationService {
      * This will not be available in production.
      */
     toSandbox(): void {
-        this.router.navigate([this.getRelativePath(this.pages.Sandbox.name)]);
+        let url: string = this.buildURL(this.pages.Sandbox);
+        this.to(url)
     }
 
-    private getRelativePath(page: string): string {
-        return `/${page}`;
+    private addToHistory(url: string): void {
+        let m: PageMetadata;
+
+        if (!url) return;
+        url = decodeURIComponent(url);
+        m = this.getPageFromURL(url);
+
+        if (m.name && !m.excludeFromHistory && !this.alreadyInHistory(url)) {
+            if(this._history.length == MAX_HISTORY_LENGTH) {
+                this._history.shift();
+            }
+            this._history.push({
+                url: url,
+                title: m.title
+            })            
+        }
+    }
+
+    private alreadyInHistory(url: string): boolean {
+        if(this._history.length == 0) return false;
+        if (this._history[this._history.length - 1]?.url == url) return true
+        return false
     }
 }
