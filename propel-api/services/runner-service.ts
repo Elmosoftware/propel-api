@@ -114,7 +114,7 @@ export class Runner {
         //Creating execution log:
         this._execLog = new ExecutionLog();
         this._execLog.startedAt = new Date();
-        this._execLog.workflow = workflow;
+        this._execLog.workflow = DataService.asObjectIdOf<Workflow>(workflow._id);
         this._execLog.user = DataService.asObjectIdOf<UserAccount>(token?.userId);//To avoid grabbing 
         //the full UserAccount object.
 
@@ -195,9 +195,7 @@ export class Runner {
             resultsMessage.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog), token)).data[0];
             this._execLog._id = resultsMessage.logId;
         } catch (error) {
-            if ((error as any).errors && (error as any).errors.length > 0) {
-                error = (error as any).errors[0]
-            }
+            error = ((error as APIResponse<any>).error) ? (error as APIResponse<any>).error : error;
             let e = new PropelError((error as Error), ErrorCodes.saveLogFailed);
             logger.logError(e);
             resultsMessage = new InvocationMessage(InvocationStatus.Failed,
