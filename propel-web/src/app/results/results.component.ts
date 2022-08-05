@@ -150,14 +150,20 @@ export class ResultsComponent implements OnInit {
 
   getDurationDetails(friendly: boolean = true) {
     let ret: string = ""
+    let user: string = "an Unknown user"
+
+    if (this.log.user?.fullName) {
+      user = this.log.user.fullName; 
+    } 
 
     if (this.log) {
       if (friendly) {
-        ret = `Ran ${SystemHelper.getFriendlyTimeFromNow(this.log.startedAt)} and took ${SystemHelper.getFriendlyDuration(this.log.startedAt, this.log.endedAt)} to finish.`
+        ret = `Started by ${user} ${SystemHelper.getFriendlyTimeFromNow(this.log.startedAt)}, took ${SystemHelper.getFriendlyDuration(this.log.startedAt, this.log.endedAt)} to finish.`
       }
       else {
         ret = `Start at: ${SystemHelper.formatDate(this.log.startedAt)}
 End at: ${SystemHelper.formatDate(this.log.endedAt)}
+Started by: ${user}
 Total duration: ${SystemHelper.getDuration(this.log.startedAt, this.log.endedAt)}.`
       }
     }
