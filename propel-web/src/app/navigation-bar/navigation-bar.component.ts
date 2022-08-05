@@ -123,7 +123,7 @@ export class NavigationBarComponent implements OnInit {
   get userName(): string {
     let ret:string = "";
 
-    if (this.core.session.IsUserLoggedIn) {
+    if (this.core.session.IsUserLoggedIn && !this.isLegacySecurity) {
       ret = `${this.core.session.sessionData.userFullName}, (${this.core.session.sessionData.userName})`
     }
 
@@ -138,6 +138,10 @@ export class NavigationBarComponent implements OnInit {
     }
 
     return ret;
+  }
+
+  get isLegacySecurity(): boolean {
+    return this.core.session.isLegacy;
   }
 
   get showNavBar(): boolean {

@@ -67,7 +67,11 @@
           {{userInitials}}
         </div>
         <ng-template #noUser>
-          <span class="icon-user-mini icon-white menu-icon"></span>
+          <span class="icon-user-mini menu-icon"
+          [ngClass]="{
+            'icon-white': !isLegacySecurity, 
+            'icon-legacy-security': isLegacySecurity
+        }" ></span>
         </ng-template> 
       </div>
       <div class="dropdown-menu dropdown-user" aria-labelledby="dropdown02">
@@ -110,14 +114,14 @@
           <span class="icon-users-mini menu-icon"></span>
           <span>Manage Users</span>
         </a>
-        <div *ngIf="canAccessUserAccount || canBrowseUserAccounts" (click)="doNotPropagate($event)">
+        <div *ngIf="!userName && !isLegacySecurity" (click)="doNotPropagate($event)">
           <div class="dropdown-divider menu-divider-line"></div>
-        </div>        
-        <a *ngIf="!userName" class="dropdown-item" href="javascript:void(0)" (click)="goToLogin()">
-          <span class="icon-login-mini menu-icon"></span>
-          <span>Login</span>
-        </a>
-        <a *ngIf="userName" class="dropdown-item" href="javascript:void(0)" (click)="goToLogoff()">
+          <a class="dropdown-item" href="javascript:void(0)" (click)="goToLogin()">
+            <span class="icon-login-mini menu-icon"></span>
+            <span>Login</span>
+          </a>
+        </div>
+        <a *ngIf="userName && !isLegacySecurity" class="dropdown-item" href="javascript:void(0)" (click)="goToLogoff()">
           <span class="icon-logoff-mini menu-icon"></span>
           <span>Log off</span>
         </a>
