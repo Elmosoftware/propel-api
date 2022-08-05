@@ -1,0 +1,25 @@
+{
+    "colorTabs.config": [
+        {
+            "regex": "propel-api\\.*",
+            "color": "#dba458",
+            "label": "Propel API"
+        },
+        {
+            "regex": "propel-web\\.*",
+            "color": "#a8c5f7",
+            "label": "Propel Web"
+        },
+        {
+            "regex": "propel-shared\\.*",
+            "color": "#cce6b8",
+            "label": "Propel Shared"
+        }
+    ],
+    "colorTabs.statusBarBackground": true,
+    "colorTabs.tabBorder": true,  
+    "colorTabs.titleBackground": true,  
+    "colorTabs.activityBarBackground": false,
+    "colorTabs.titleLabel": true,
+    "colorTabs.ignoreCase": true,
+}
