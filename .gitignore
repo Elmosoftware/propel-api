@@ -21,7 +21,8 @@ tmp/**
 
 # IDE - VSCode
 .vscode/*
-!.vscode/settings.json
+#!.vscode/settings.json  Colors tab plugin,(https://marketplace.visualstudio.com/items?itemName=orepor.color-tabs-vscode-ext)
+#is re-writing this file all the time, so we must exclude it.
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
