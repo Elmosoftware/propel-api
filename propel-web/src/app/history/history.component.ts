@@ -205,6 +205,9 @@ ${Array.from(targets).join("\r\n")}`;
 
     if (log.user?.fullName) {
       this.executedBy = log.user.fullName; 
-    }    
+    } 
+    else {
+      this.executedBy = "an Unknown user";
+    }   
   }
 }
