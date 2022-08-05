@@ -68,12 +68,12 @@ export class SecurityRoute implements Route {
         const handler = express.Router();
 
         //Returning the shared configuration of the security endpoint:
-        handler.get("", (req, res) => {
+        handler.get("", async (req, res) => {
             let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
             let ss: SecurityService = new SecurityService(token);
 
             try {
-                res.json(new APIResponse<SecuritySharedConfiguration>(null, ss.getSharedConfig()));
+                res.json(new APIResponse<SecuritySharedConfiguration>(null, await ss.getSharedConfig()));
             } catch (error) {
                 this.handleError(res, error);
             }

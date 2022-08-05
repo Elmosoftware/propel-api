@@ -94,22 +94,22 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    //////////////////////////////////////////////////////////////////////////
-    //DEBUG ONLY:
-    //  For debugging purposes only
-    //  If the autologin feature was set in the SessionService, we can here 
-    //  log automatically the user for testing purposes only:
     if (environment.production == false) {
-      let ri: any = this.core.session.runtimeInfo
+    // //////////////////////////////////////////////////////////////////////////
+    // //DEBUG ONLY:
+    // //  For debugging purposes only
+    // //  If the autologin feature was set in the SessionService, we can here 
+    // //  log automatically the user for testing purposes only:
+    //   let ri: any = this.core.session.runtimeInfo
       
-      if (ri && ri.password) {
-        let sr: SecurityRequest = new SecurityRequest();
-        sr.userName = ri.userName;
-        sr.password = ri.password;
-        this.execLogin(sr);
-        this.core.toaster.showWarning(`You just log in as ${sr.userName}`, "AUTO LOGIN is enabled!")
-      }
-    //////////////////////////////////////////////////////////////////////////
+    //   if (ri && ri.password) {
+    //     let sr: SecurityRequest = new SecurityRequest();
+    //     sr.userName = ri.userName;
+    //     sr.password = ri.password;
+    //     this.execLogin(sr);
+    //     this.core.toaster.showWarning(`You just log in as ${sr.userName}`, "AUTO LOGIN is enabled!")
+    //   }
+    // //////////////////////////////////////////////////////////////////////////
     }
 
 

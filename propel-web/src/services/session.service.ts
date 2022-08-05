@@ -75,6 +75,13 @@ export class SessionService {
     }
 
     /**
+     * Returns a boolean value that indicates if Legacy security, (Propel 2.0 and before),is on.
+     */
+    get isLegacy(): boolean {
+        return (this._securityToken && this._securityToken.legacySecurity);
+    }
+
+    /**
      * Returns all the session details including information about the user, token expiration, etc.
      */
     get sessionData(): SecurityToken {

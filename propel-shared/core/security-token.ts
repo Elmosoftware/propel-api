@@ -57,8 +57,15 @@ export class SecurityToken {
      */
     public accessToken: string = "";
 
+    /**
+     * Indicate if legacy security is enabled in Propel. This is for backward compatibility only.
+     * User security will be automatically turned off as soon at least one user account 
+     * with Administrator role is added and logged in successfully.
+     */
+    public legacySecurity: boolean = false;
+
     constructor() {
-        
+
     }
 
     /**
@@ -88,9 +95,10 @@ export class SecurityToken {
         this.userEmail = tokenPayload.data.userEmail
         this.role = tokenPayload.data.role;
         this.roleIsAdmin = UserAccountRolesUtil.IsAdmin(this.role);
+        this.legacySecurity = tokenPayload.data.legacySecurity;
 
         this.issuedAt = new Date(tokenPayload.iat * 1000);
         this.expiresAt = new Date(tokenPayload.exp * 1000);
-        this.accessToken = (tokenPayload.data.accessToken) ? tokenPayload.data.accessToken : accessToken; 
+        this.accessToken = (tokenPayload.data.accessToken) ? tokenPayload.data.accessToken : accessToken;
     }
 }

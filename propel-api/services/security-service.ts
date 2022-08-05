@@ -20,6 +20,10 @@ import { Utils } from '../../propel-shared/utils/utils';
 import { ErrorCodes } from '../../propel-shared/core/error-codes';
 import { SecurityRuleSelector } from '../core/security-rule-selector';
 import { allRoutes } from '../routes/all-routes';
+import { UserAccountRoles } from '../../propel-shared/models/user-account-roles';
+
+export const LEGACY_USER_ID:string = "000000010000000000100001"
+export const LEGACY_USER_NAME:string = "Unknown user"
 
 export class SecurityService {
 
@@ -41,14 +45,41 @@ export class SecurityService {
      * Returns the shared security configuration.
      * @returns The shared configuration of the Security API.
      */
-    getSharedConfig(): SecuritySharedConfiguration {
+    async getSharedConfig(): Promise<SecuritySharedConfiguration> {
+        let svc: DataService = db.getService("useraccount", this._token);
+        let qm = new QueryModifier();
+        let result: APIResponse<UserAccount>;
         let ret: SecuritySharedConfiguration = new SecuritySharedConfiguration();
 
+        qm.top = 1
+        qm.filterBy = {
+            $and:[
+                {
+                    role: UserAccountRoles.Administrator
+                }, 
+                {
+                    lastLogin: {
+                        $ne: null
+                    }
+                }
+            ]
+        }
+        result = await svc.find(qm)
+
+        ret.legacySecurity = result.count == 0 && !result.error
         ret.authCodeLength = cfg.authorizationCodeLength;
         ret.passwordMinLength = cfg.passwordMinLength;
         ret.passwordMaxLength = cfg.passwordMaxLength;
 
-        return ret;
+        if (!cfg.isProduction) {
+        // //////////////////////////////////////////////////
+        // //DEBUG ONLY:
+        // //Force legacy security for testing purposes:
+        //     ret.legacySecurity = true;
+        // //////////////////////////////////////////////////
+        }
+        
+        return Promise.resolve(ret);
     }
 
     /**
@@ -104,6 +135,16 @@ export class SecurityService {
         else return undefined;
     }
 
+    getLegacyUser(): UserAccount {
+        let ret: UserAccount = new UserAccount();
+
+        ret._id = LEGACY_USER_ID
+        ret.name = LEGACY_USER_NAME
+        ret.role = UserAccountRoles.Administrator
+
+        return ret;
+    }
+
     /**
      * Handle the user login for all the possible scenarios.
      * Scenarios at the moment handled by this method are:
@@ -139,6 +180,10 @@ export class SecurityService {
              * Retrieve the user secret,(if any is already set).
              */
             this.getAndVerifyUserSecret,
+            /**
+             * Handle the case of Propel Legacy security request.
+             */
+             this.handleLegacySecurityRequest,
             /**
              * Handle the special case of a first login, where the user has no secret yet and he/she never 
              * login the app yet.
@@ -217,9 +262,14 @@ export class SecurityService {
         }
     }
 
-    private validateSecurityRequestFormat(context: SecurityService): Promise<LoginData> {
+    private async validateSecurityRequestFormat(context: SecurityService): Promise<LoginData> {
 
         let sr: SecurityRequest = context.loginData.request;
+        let config: SecuritySharedConfiguration = await context.getSharedConfig()
+
+        context.loginData.legacySecurity = config.legacySecurity;
+
+        if (context.loginData.legacySecurity) return Promise.resolve(context.loginData);
 
         if (!sr?.userName || !sr?.password) {
             throw new PropelError(`Bad format in the request body, we expect the user name and the user password. 
@@ -251,7 +301,12 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
         let loginData = context.loginData;
 
-        loginData.user = await context.getUserByName(loginData.request.userName);
+        if (loginData.legacySecurity) {
+            loginData.user = context.getLegacyUser();
+        }
+        else {
+            loginData.user = await context.getUserByName(loginData.request.userName);
+        }
 
         context.throwIfNoUser(loginData.user, loginData.request.userName);
 
@@ -267,6 +322,8 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     private async getAndVerifyUserSecret(context: SecurityService): Promise<LoginData> {
 
         let loginData = context.loginData;
+
+        if (loginData.legacySecurity) return Promise.resolve(loginData);
 
         //Corrupted data:
         if (!loginData.user?.secretId) {
@@ -293,6 +350,21 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         return Promise.resolve(loginData);
     }
 
+    private async handleLegacySecurityRequest(context: SecurityService): Promise<LoginData> {
+
+        let loginData = context.loginData;
+
+        //If the token was already created, we have nothing else to do here:
+        if (loginData.token) return Promise.resolve(loginData);
+        //If Legacy security is not enabled, we have nothing else to do here:
+        if (!loginData.legacySecurity) return Promise.resolve(loginData);
+
+        loginData.user!.lastLogin = new Date();
+        loginData.token = context.createToken(loginData)
+
+        return Promise.resolve(loginData);
+    }
+
     private async handleRegularLogin(context: SecurityService): Promise<LoginData> {
 
         let loginData = context.loginData;
@@ -310,7 +382,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
                 loginData.user!.lastLogin = new Date();
                 await context.saveUser(loginData.user!);
-                loginData.token = context.createToken(loginData.user!)
+                loginData.token = context.createToken(loginData)
             }
             else {
                 throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
@@ -346,7 +418,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 loginData.user!.secretId = await context.saveUserSecret(loginData.secret);
                 loginData.user!.lastLogin = new Date(); //Setting the first login date for the user... Hurray!!.
                 await context.saveUser(loginData.user!);
-                loginData.token = context.createToken(loginData.user!) //All ready to generate and return the token.
+                loginData.token = context.createToken(loginData) //All ready to generate and return the token.
             }
             else {
                 throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
@@ -383,7 +455,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 await context.saveUser(loginData.user!); //Saving the changes.
 
                 //Now we can create and return the new token:
-                loginData.token = context.createToken(loginData.user!)
+                loginData.token = context.createToken(loginData)
             }
             else {
                 throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
@@ -404,9 +476,12 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         return bcrypt.compare(password, hash);
     }
 
-    private createToken(user: UserAccount): string {
+    private createToken(loginData: LoginData): string {
         let dataPayload = new SecurityToken();
-        dataPayload.hydrateFromUser(user);
+        
+        dataPayload.hydrateFromUser(loginData.user!);
+        dataPayload.legacySecurity = loginData.legacySecurity;
+
         let options = {
             expiresIn: cfg.tokenExpiration
         }
@@ -516,4 +591,11 @@ class LoginData {
      * Token generated after authentication.
      */
     public token: string = ""
+
+    /**
+     * Indicate if legacy security is enabled in Propel. This is for backward compatibility only.
+     * User security will be automatically turned off as soon at least one user account 
+     * with Administrator role is added and logged in successfully.
+     */
+    public legacySecurity: boolean = false
 }

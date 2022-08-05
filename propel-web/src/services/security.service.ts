@@ -37,7 +37,7 @@ const enum SecurityEndpointActions {
     providedIn: 'root'
 })
 export class SecurityService {
-    
+
     private _config: SecuritySharedConfiguration;
     private _securityToken: SecurityToken;
 
@@ -48,10 +48,17 @@ export class SecurityService {
         this.refreshConfig()
             .subscribe((results: APIResponse<SecuritySharedConfiguration>) => {
                 logger.logInfo("SecurityService configuration cached successfully");
+
+                if (this._config.legacySecurity) {
+                    this.startLegacySecuritySession()
+                }
+                else {
+                    logger.logInfo("Legacy security is disabled");
+                }
             })
-        
+
         this._securityToken = null;
-   }
+    }
 
     /**
      * Returns the security configuration.
@@ -69,7 +76,7 @@ export class SecurityService {
         let ret: boolean = false;
 
         if (!page) return false; //No page provided, no access can be granted.        
-        if(!page.security.restricted) return true; //Page has no restrictions to access.
+        if (!page.security.restricted) return true; //Page has no restrictions to access.
 
         //If authentication is required:
         if (page.security.restricted && !this.session.IsUserLoggedIn) {
@@ -87,7 +94,7 @@ export class SecurityService {
 
         return ret;
     }
-    
+
     /**
      * Fetch the current security configuration between backend and frontend.
      */
@@ -186,38 +193,59 @@ export class SecurityService {
     login(sr: SecurityRequest): Observable<APIResponse<string>> {
         let url: string = this.buildURL(SecurityEndpointActions.Login);
         let ri: RuntimeInfo = this.session.runtimeInfo;
-        if (ri && ri.userName && ri.RDPUsers.length !== 0) {
-            let user = ri.RDPUsers.find((u: RDPUser) => {
-                if (u.userName == sr.userName) {
-                    return u;
-                }
-            })
 
-            //If the login user is not one in the list of the connected RDP users:
-            if (!user) {
-                //More details in the console:
-                logger.logError(`${ErrorCodes.UserImpersonation.key} error was raised. Details are:
+        if (!this._config.legacySecurity) {
+            if (ri && ri.userName && ri.RDPUsers.length !== 0) {
+                let user = ri.RDPUsers.find((u: RDPUser) => {
+                    if (u.userName == sr.userName) {
+                        return u;
+                    }
+                })
+
+                //If the login user is not one in the list of the connected RDP users:
+                if (!user) {
+                    //More details in the console:
+                    logger.logError(`${ErrorCodes.UserImpersonation.key} error was raised. Details are:
 Propel is running with the user "${sr.userName}" credentials.
 List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u.userName).join(", ")}`)
 
-                return of(new APIResponse<string>(new PropelError("Impersonation is not allowed in Propel", ErrorCodes.UserImpersonation), ""));
+                    return of(new APIResponse<string>(new PropelError("Impersonation is not allowed in Propel", ErrorCodes.UserImpersonation), ""));
+                }
             }
         }
 
         return this.http.post<APIResponse<string>>(url, sr, { headers: this.buildHeaders() })
-        .pipe(
-            map((results: APIResponse<string>) => {
-                this.session.setSessionData(results.data[0]);
-                return results;
-            })
-        )
+            .pipe(
+                map((results: APIResponse<string>) => {
+                    this.session.setSessionData(results.data[0]);
+                    return results;
+                })
+            )
     }
 
     /**
-     * 
+     * User Sign out
      */
     logOff() {
         this.session.removeSessionData();
+    }
+
+    /**
+     * This method starts a session for the "unknown" user in legacy mode. This is for compatibility
+     * with Propel 2.0 and before and in the meantime no users are created in the app.
+     */
+    private startLegacySecuritySession() {
+        if (!this._config.legacySecurity) return;
+
+        logger.logInfo(`Attempting to establish legacy security...`)
+
+        this.login(new SecurityRequest())
+            .subscribe((response: APIResponse<string>) => {
+                logger.logInfo(`Legacy security established.`);
+            },
+                err => {
+                    throw err;
+                });
     }
 
     private buildURL(action: SecurityEndpointActions, param: string = "") {
