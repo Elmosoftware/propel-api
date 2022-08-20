@@ -2,6 +2,7 @@ import { SecurityRequest } from "../../../propel-shared/core/security-request";
 import { UserAccountRoles } from "../../../propel-shared/models/user-account-roles";
 import { SecurityService } from "../../services/security-service";
 import { cfg, LogLevel } from "../../core/config";
+import { SecuritySharedConfiguration } from "../../../propel-shared/core/security-shared-config";
 
 let ss: SecurityService;
 
@@ -9,6 +10,19 @@ function mockSecurityService(ss: SecurityService, options: any) {
 
     //@ts-ignore
     ss.testOptions = options;
+
+    //@ts-ignore
+    ss.getSharedConfig = () => {
+
+        let ret = new SecuritySharedConfiguration()
+
+        ret.authCodeLength = parseInt(process.env.AUTH_CODE_LENGTH!)
+        ret.passwordMinLength = parseInt(process.env.PASSWORD_MIN_LENGTH!)
+        ret.passwordMaxLength = parseInt(process.env.PASSWORD_MAX_LENGTH!)
+        ret.legacySecurity = options.legacySecurity
+
+        return Promise.resolve(ret);
+    }
 
     //@ts-ignore
     ss.getUserByName = (userNameOrId) => {
@@ -94,7 +108,8 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
                     passwordHash: "12345678" //Recall this will be actually the 
                     //user password for this test.
                 }
-            }
+            },
+            legacySecurity: false
         })        
     })
    
@@ -132,6 +147,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
             })
             .catch((err) => {
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 1000);
@@ -238,7 +254,8 @@ describe("SecurityService Class - handleUserLogin() - First Login", () => {
                     passwordHash: "123456" //Recall this will be actually the 
                     //authentication code for this test.
                 }
-            }
+            },
+            legacySecurity: false
         })        
     })
 
@@ -294,7 +311,8 @@ describe("SecurityService Class - handleUserLogin() - Password reset Login", () 
                     passwordHash: "123456" //Recall this will be actually the 
                     //authentication code for this test.
                 }
-            }
+            },
+            legacySecurity: false
         })        
     })
 
