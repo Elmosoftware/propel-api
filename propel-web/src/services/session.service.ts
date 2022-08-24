@@ -30,35 +30,35 @@ export class SessionService {
             logger.logInfo("Runtime user info not found.");
         }
 
-        if (environment.production == false) {
-            // //////////////////////////////////////////////////////////////////////////
-            // //DEBUG ONLY:
-            // //  For debugging purposes only and to emulate a defined user in a dev env:
-            // //  Comment below lines if you would like to login specifying a runtime info like the 
-            // //  one created by Electron start scripts when the app starts in prod:
+        // //////////////////////////////////////////////////////////////////////////
+        // if (environment.production == false) {
+        //     //DEBUG ONLY:
+        //     //  For debugging purposes only and to emulate a defined user in a dev env:
+        //     //  Comment below lines if you would like to login specifying a runtime info like the 
+        //     //  one created by Electron start scripts when the app starts in prod:
 
-            // let x = new RuntimeInfo();
-            // //Login as an admin user:
-            // //-------------------------------------------------------
-            // x.userName = "test.admin.1";
-            // //To auto login keep the below line commented out, (ensure the password is right).
-            // (x as any).password = "testadminone" 
+        //     let x = new RuntimeInfo();
+        //     //If you want to login as an Administrator, comment out below lines:
+        //     //----------------------------------------------------------------------
+        //     x.userName = "test.admin.1";
+        //     //To auto login keep the below line commented out, (ensure the password is right).
+        //     // (x as any).password = "testadminone" 
             
-            // // //Login as a regular user:
-            // // //-------------------------------------------------------
-            // // x.userName = "test.regular.1";
-            // // //To auto login keep the below line commented out, (ensure the password is right).
-            // // (x as any).password = "testregularone" 
+        //     //If you would like to login as a regular user, comment out below lines:
+        //     //----------------------------------------------------------------------
+        //     // x.userName = "test.regular.1";
+        //     // //To auto login keep the below line commented out, (ensure the password is right).
+        //     // (x as any).password = "testregularone" 
             
-            // //Comment below line to test user impersonation error:
-            // x.RDPUsers.push(new RDPUser(x.userName, "Active")) 
+        //     //If you would like to test the "User impersonation forbiddeb error, comment below line:
+        //     x.RDPUsers.push(new RDPUser(x.userName, "Active")) 
 
-            // x.RDPUsers.push(new RDPUser("user.1", "Active"))
-            // x.RDPUsers.push(new RDPUser("user.2", "Disconected"))
-            // this._runtimeInfo = x;
-            // logger.logInfo(`DEBUG - Connected as "${this._runtimeInfo.userName}"${((x as any).password) ? " with AUTO-LOGIN" : ""}.`);
-            // //////////////////////////////////////////////////////////////////////////
-        }   
+        //     x.RDPUsers.push(new RDPUser("user.1", "Active"))
+        //     x.RDPUsers.push(new RDPUser("user.2", "Disconected"))
+        //     this._runtimeInfo = x;
+        //     logger.logInfo(`DEBUG - Connected as "${this._runtimeInfo.userName}"${((x as any).password) ? " with AUTO-LOGIN" : ""}.`);
+        // }   
+        // //////////////////////////////////////////////////////////////////////////
 
         this._securityToken = null;
    }

@@ -95,24 +95,23 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (environment.production == false) {
-      // //////////////////////////////////////////////////////////////////////////
-      // //DEBUG ONLY:
-      // //  For debugging purposes only
-      // //  If the autologin feature was set in the SessionService, we can here 
-      // //  log automatically the user for testing purposes only:
-      //   let ri: any = this.core.security.runtimeInfo
+    // ////////////////////////////////////////////////////////////////////////////
+    // if (environment.production == false) {
+    //   //DEBUG ONLY:
+    //   //  For debugging purposes only
+    //   //  If the autologin feature was set in the SessionService, we can here 
+    //   //  log automatically the user for testing purposes only:
+    //     let ri: any = this.core.security.runtimeInfo
 
-      //   if (ri && ri.password) {
-      //     let sr: SecurityRequest = new SecurityRequest();
-      //     sr.userName = ri.userName;
-      //     sr.password = ri.password;
-      //     this.execLogin(sr);
-      //     this.core.toaster.showWarning(`You just log in as ${sr.userName}`, "AUTO LOGIN is enabled!")
-      //   }
-      // //////////////////////////////////////////////////////////////////////////
-    }
-
+    //     if (ri && ri.password) {
+    //       let sr: SecurityRequest = new SecurityRequest();
+    //       sr.userName = ri.userName;
+    //       sr.password = ri.password;
+    //       this.execLogin(sr);
+    //       this.core.toaster.showWarning(`You just log in as ${sr.userName}`, "AUTO LOGIN is enabled!")
+    //     }
+    // }
+    // ////////////////////////////////////////////////////////////////////////////
 
     this.referrerURL = this.route.snapshot.queryParamMap.get("referrerURL")
     this.formFlow = new FormFlow();
@@ -344,17 +343,27 @@ export class LoginComponent implements OnInit {
 
   goBack() {
     if (this.formFlow.activeFormSection == FormsSection.User) {
-      this.core.navigation.back();
+      this.navigateBack()
     }
     else if (this.formFlow.activeFormSection == FormsSection.Password) {
       if (this.formFlow.isUserSectionEnabled) {
         this.formFlow.activeFormSection = FormsSection.User; //Back to the user section
       }
       else {
-        this.core.navigation.back()
+        this.navigateBack()
       }
     }
   }
+
+  private navigateBack() {
+    if (this.core.navigation.previousPage) {
+      this.core.navigation.back();
+    }
+    else {
+      this.core.navigation.toHome();
+    }
+  }
+
 }
 
 /**
