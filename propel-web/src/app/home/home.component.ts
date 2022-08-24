@@ -26,7 +26,7 @@ export class HomeComponent implements OnInit {
   graphExecutionsView: any[] = [650, 200];
 
   get hasUserStats(): boolean {
-    return this.core.session.IsUserLoggedIn && Boolean(this.userStats);
+    return this.core.security.isUserLoggedIn && Boolean(this.userStats);
   }
 
   constructor(private core: CoreService, private route: ActivatedRoute) {

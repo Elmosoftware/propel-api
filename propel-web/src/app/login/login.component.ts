@@ -7,6 +7,7 @@ import { CoreService } from 'src/services/core.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { SecurityRequest } from '../../../../propel-shared/core/security-request';
+import { SecuritySharedConfiguration } from '../../../../propel-shared/core/security-shared-config';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 
 //User form Messages:
@@ -95,21 +96,21 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     if (environment.production == false) {
-    // //////////////////////////////////////////////////////////////////////////
-    // //DEBUG ONLY:
-    // //  For debugging purposes only
-    // //  If the autologin feature was set in the SessionService, we can here 
-    // //  log automatically the user for testing purposes only:
-    //   let ri: any = this.core.session.runtimeInfo
-      
-    //   if (ri && ri.password) {
-    //     let sr: SecurityRequest = new SecurityRequest();
-    //     sr.userName = ri.userName;
-    //     sr.password = ri.password;
-    //     this.execLogin(sr);
-    //     this.core.toaster.showWarning(`You just log in as ${sr.userName}`, "AUTO LOGIN is enabled!")
-    //   }
-    // //////////////////////////////////////////////////////////////////////////
+      // //////////////////////////////////////////////////////////////////////////
+      // //DEBUG ONLY:
+      // //  For debugging purposes only
+      // //  If the autologin feature was set in the SessionService, we can here 
+      // //  log automatically the user for testing purposes only:
+      //   let ri: any = this.core.security.runtimeInfo
+
+      //   if (ri && ri.password) {
+      //     let sr: SecurityRequest = new SecurityRequest();
+      //     sr.userName = ri.userName;
+      //     sr.password = ri.password;
+      //     this.execLogin(sr);
+      //     this.core.toaster.showWarning(`You just log in as ${sr.userName}`, "AUTO LOGIN is enabled!")
+      //   }
+      // //////////////////////////////////////////////////////////////////////////
     }
 
 
@@ -118,9 +119,9 @@ export class LoginComponent implements OnInit {
 
     //If we have the user that is running Propel specified in the runtime info, then we must set it 
     //in the form and switch directly to the "passwords" section of the login form:
-    if (this.core.session.runtimeInfo) {
-      this.fg.controls.name.patchValue(this.core.session.runtimeInfo.userName);
-      this.formFlow.activeFormSection =  FormsSection.PreloadRuntimeInfo;
+    if (this.core.security.runtimeInfo) {
+      this.fg.controls.name.patchValue(this.core.security.runtimeInfo.userName);
+      this.formFlow.activeFormSection = FormsSection.PreloadRuntimeInfo;
       this.formFlow.isUserSectionEnabled = false;
       this.continue(); //Moving to the "password" section.
     }
@@ -147,84 +148,90 @@ export class LoginComponent implements OnInit {
 
     if (!this.fg.controls.name.valid) return;
 
-    this.core.security.getUser(this.fg.controls.name.value)
-      .subscribe((data: APIResponse<UserAccount>) => {
+    this.core.security.getConfig()
+      .then((config: SecuritySharedConfiguration) => {
 
-        //If the user account doesn't exists:
-        if (data.count == 0) {
-          if (this.formFlow.activeFormSection == FormsSection.PreloadRuntimeInfo) {
-            this.formFlow.message = MSG_USER_PRELOAD_NOT_FOUND;
-          }
-          else {
-            this.formFlow.message = MSG_USER_NOT_FOUND;
-          }
-          this.formFlow.messageIsError = true
-          this.formFlow.isUserSectionEnabled = true;
-          this.formFlow.activeFormSection = FormsSection.User
-        }
-        else {
-          this.formFlow.user = data.data[0];
-          this.formFlow.messageIsError = false;
-          this.formFlow.activeFormSection = FormsSection.Password
-          this.formFlow.authCodeOrPasswordPlaceholder = "Enter here the provided authorization code."
+        this.core.security.getUser(this.fg.controls.name.value)
+          .subscribe((data: APIResponse<UserAccount>) => {
 
-          //If is the first login of the user:
-          if (!this.formFlow.user.lastLogin) {
-            this.formFlow.message = MSG_PASSWORD_FIRST_LOGIN.replace("{USER_FULLNAME}",
-              this.formFlow.user.fullName);
-            this.formFlow.loginType = LoginType.First;
-          }
-          //If the user must reset his password:
-          else if (this.formFlow.user.mustReset) {
-            this.formFlow.message = MSG_PASSWORD_RESET;
-            this.formFlow.loginType = LoginType.Reset;
-          }
-          else {
-            this.formFlow.message = MSG_PASSWORD_REGULAR_LOGIN;
-            this.formFlow.authCodeOrPasswordPlaceholder = "Enter your password here."
-            this.formFlow.loginType = LoginType.Regular;
-          }
+            //If the user account doesn't exists:
+            if (data.count == 0) {
+              if (this.formFlow.activeFormSection == FormsSection.PreloadRuntimeInfo) {
+                this.formFlow.message = MSG_USER_PRELOAD_NOT_FOUND;
+              }
+              else {
+                this.formFlow.message = MSG_USER_NOT_FOUND;
+              }
+              this.formFlow.messageIsError = true
+              this.formFlow.isUserSectionEnabled = true;
+              this.formFlow.activeFormSection = FormsSection.User
+            }
+            else {
+              this.formFlow.user = data.data[0];
+              this.formFlow.messageIsError = false;
+              this.formFlow.activeFormSection = FormsSection.Password
+              this.formFlow.authCodeOrPasswordPlaceholder = "Enter here the provided authorization code."
 
-          //Preparing the form controls:
-          this.fg.controls.authCodeOrPassword.patchValue("");
-          this.fg.controls.authCodeOrPassword.clearValidators();
-          this.fg.controls.newPassword.patchValue("");
-          this.fg.controls.newPassword.clearValidators();
-          this.fg.controls.passwordConfirmation.patchValue("");
-          this.fg.controls.passwordConfirmation.clearValidators();
+              //If is the first login of the user:
+              if (!this.formFlow.user.lastLogin) {
+                this.formFlow.message = MSG_PASSWORD_FIRST_LOGIN.replace("{USER_FULLNAME}",
+                  this.formFlow.user.fullName);
+                this.formFlow.loginType = LoginType.First;
+              }
+              //If the user must reset his password:
+              else if (this.formFlow.user.mustReset) {
+                this.formFlow.message = MSG_PASSWORD_RESET;
+                this.formFlow.loginType = LoginType.Reset;
+              }
+              else {
+                this.formFlow.message = MSG_PASSWORD_REGULAR_LOGIN;
+                this.formFlow.authCodeOrPasswordPlaceholder = "Enter your password here."
+                this.formFlow.loginType = LoginType.Regular;
+              }
 
-          //If is a regular login we just need the password field:
-          if (this.formFlow.loginType == LoginType.Regular) {
-            this.fg.controls.authCodeOrPassword.addValidators([
-              Validators.required,
-              Validators.maxLength(this.core.security.config.passwordMaxLength),
-              Validators.minLength(this.core.security.config.passwordMinLength)
-            ])
-          }
-          //For any other case we need the new password and the password confirmation fields:
-          else {
-            this.fg.controls.authCodeOrPassword.addValidators([
-              Validators.required,
-              ValidatorsHelper.exactLength(this.core.security.config.authCodeLength)
-            ])
-            this.fg.controls.newPassword.addValidators([
-              Validators.required,
-              Validators.minLength(this.core.security.config.passwordMinLength),
-              Validators.maxLength(this.core.security.config.passwordMaxLength)
-            ])
-            this.fg.controls.passwordConfirmation.addValidators([
-              Validators.required,
-              ValidatorsHelper.fieldsEquality("newPassword", "passwordConfirmation",
-                `The new passwords do not match. Please verify the values entered.`)
-            ])
-          }
+              //Preparing the form controls:
+              this.fg.controls.authCodeOrPassword.patchValue("");
+              this.fg.controls.authCodeOrPassword.clearValidators();
+              this.fg.controls.newPassword.patchValue("");
+              this.fg.controls.newPassword.clearValidators();
+              this.fg.controls.passwordConfirmation.patchValue("");
+              this.fg.controls.passwordConfirmation.clearValidators();
 
-          this.fg.updateValueAndValidity();
-        }
-      },
-        err => {
-          throw err
-        });
+              //If is a regular login we just need the password field:
+              if (this.formFlow.loginType == LoginType.Regular) {
+                this.fg.controls.authCodeOrPassword.addValidators([
+                  Validators.required,
+                  Validators.maxLength(config.passwordMaxLength),
+                  Validators.minLength(config.passwordMinLength)
+                ])
+              }
+              //For any other case we need the new password and the password confirmation fields:
+              else {
+                this.fg.controls.authCodeOrPassword.addValidators([
+                  Validators.required,
+                  ValidatorsHelper.exactLength(config.authCodeLength)
+                ])
+                this.fg.controls.newPassword.addValidators([
+                  Validators.required,
+                  Validators.minLength(config.passwordMinLength),
+                  Validators.maxLength(config.passwordMaxLength)
+                ])
+                this.fg.controls.passwordConfirmation.addValidators([
+                  Validators.required,
+                  ValidatorsHelper.fieldsEquality("newPassword", "passwordConfirmation",
+                    `The new passwords do not match. Please verify the values entered.`)
+                ])
+              }
+
+              this.fg.updateValueAndValidity();
+            }
+          },
+            err => {
+              throw err
+            });
+      })
+
+
   }
 
   login() {
@@ -249,7 +256,7 @@ export class LoginComponent implements OnInit {
   execLogin(sr: SecurityRequest) {
 
     this.core.security.login(sr)
-      .subscribe((response: APIResponse<string>) => {
+     .then((response: APIResponse<string>) => {
 
         //If there was some error:
         if (response.count == 0) {
@@ -291,6 +298,48 @@ export class LoginComponent implements OnInit {
 
           throw err;
         });
+      // .subscribe((response: APIResponse<string>) => {
+
+      //   //If there was some error:
+      //   if (response.count == 0) {
+
+      //     if (response.error) {
+      //       //Embedding the error in a PropelError to get access to the error code, (if any):
+      //       let appError = new PropelError(response.error);
+
+      //       if (appError.userMessage) {
+      //         this.formFlow.message = appError.userMessage;
+      //       }
+      //     }
+      //     else {
+      //       this.formFlow.message = MSG_LOGIN_ERROR;
+      //     }
+
+      //     this.formFlow.messageIsError = true
+      //   }
+      //   else {
+      //     this.formFlow.message = MSG_LOGIN_SUCCESS;
+      //     this.formFlow.messageIsError = false
+
+      //     if (this.referrerURL) {
+      //       this.core.navigation.to(this.referrerURL)
+      //     }
+      //     else {
+      //       this.core.navigation.toHome();
+      //     }
+      //   }
+      // },
+      //   err => {
+
+      //     let appError = new PropelError(err);
+
+      //     if (appError.userMessage) {
+      //       this.formFlow.message = appError.userMessage;
+      //       this.formFlow.messageIsError = true
+      //     }
+
+      //     throw err;
+      //   });
   }
 
   goBack() {

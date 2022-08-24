@@ -146,11 +146,10 @@ class Config {
     }
 
     /**
-     * Token expiration in minutes in zeit/ms format.
-     * For more information: https://github.com/vercel/ms
+     * Token expiration in minutes.
      */
-    get tokenExpiration(): string {
-        return `${process.env.TOKEN_EXPIRATION_MINUTES}Min`; 
+    get tokenExpirationMinutes(): number {
+        return parseInt(String(process.env.TOKEN_EXPIRATION_MINUTES))
     }
 
     /**

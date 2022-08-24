@@ -66,18 +66,20 @@ export class SecurityService {
         }
         result = await svc.find(qm)
 
-        ret.legacySecurity = result.count == 0 && !result.error
+        if (result.error) return Promise.reject(result.error);
+
+        ret.legacySecurity = result.count == 0
         ret.authCodeLength = cfg.authorizationCodeLength;
         ret.passwordMinLength = cfg.passwordMinLength;
         ret.passwordMaxLength = cfg.passwordMaxLength;
 
-        if (!cfg.isProduction) {
         // //////////////////////////////////////////////////
         // //DEBUG ONLY:
-        // //Force legacy security for testing purposes:
+        // if (!cfg.isProduction) {
+        //     //Force legacy security for testing purposes:
         //     ret.legacySecurity = true;
+        // }
         // //////////////////////////////////////////////////
-        }
         
         return Promise.resolve(ret);
     }
@@ -477,15 +479,22 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     }
 
     private createToken(loginData: LoginData): string {
-        let dataPayload = new SecurityToken();
-        
-        dataPayload.hydrateFromUser(loginData.user!);
-        dataPayload.legacySecurity = loginData.legacySecurity;
+        let dataPayload: SecurityToken;
+        let options: any = {};
 
-        let options = {
-            expiresIn: cfg.tokenExpiration
+        //When in Legacy security, there is no point to have a token with expiration: 
+        if (loginData.legacySecurity) {
+            dataPayload = new SecurityToken();
+        }
+        else {
+            dataPayload = new SecurityToken(cfg.tokenExpirationMinutes)
+            options.expiresIn = `${cfg.tokenExpirationMinutes}Min`;  //Token expiration in 
+            //minutes in zeit/ms format. (More info: https://github.com/vercel/ms)
         }
 
+        dataPayload.hydrateFromUser(loginData.user!);
+        dataPayload.legacySecurity = loginData.legacySecurity;
+      
         return jwt.sign({
             data: dataPayload
         }, cfg.encryptionKey, options);
@@ -497,6 +506,12 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         try {
             ret.hydrateFromTokenPayload((jwt.verify(token, cfg.encryptionKey) as TokenPayload));
         } catch (err) {
+
+            //If the token has expired: https://github.com/auth0/node-jsonwebtoken/blob/master/README.md#tokenexpirederror
+            if ((err as Error).name == "TokenExpiredError") {
+                throw new PropelError((err as Error), ErrorCodes.TokenIsExpired, UNAUTHORIZED.toString());
+            }
+
             throw new PropelError((err as Error), undefined, UNAUTHORIZED.toString());
         }
 

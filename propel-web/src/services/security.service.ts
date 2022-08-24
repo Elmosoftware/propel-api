@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { APIResponse } from '../../../propel-shared/core/api-response';
@@ -18,7 +18,10 @@ import { PageMetadata } from './app-pages.service';
 import { SessionService } from './session.service';
 import { PropelError } from '../../../propel-shared/core/propel-error';
 
-const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
+/**
+ * This header indicates that no Authorization data is needed to be sent for the request.
+ */
+ export const X_HEADER_NOAUTH = "x-propel-noauth"
 
 const enum SecurityEndpointActions {
     GetConfiguration = "",
@@ -38,33 +41,51 @@ const enum SecurityEndpointActions {
 })
 export class SecurityService {
 
-    private _config: SecuritySharedConfiguration;
-    private _securityToken: SecurityToken;
+    private _session: SessionService;
 
-    constructor(private http: HttpClient, private session: SessionService) {
+    constructor(private http: HttpClient) {
         logger.logInfo("SecurityService instance created");
+        this._session = new SessionService();
+    }
 
-        //Caching the security service configuration:
-        this.refreshConfig()
-            .subscribe((results: APIResponse<SecuritySharedConfiguration>) => {
-                logger.logInfo("SecurityService configuration cached successfully");
+    async getConfig(): Promise<SecuritySharedConfiguration> {
+        let url: string = this.buildURL(SecurityEndpointActions.GetConfiguration);
 
-                if (this._config.legacySecurity) {
-                    this.startLegacySecuritySession()
-                }
-                else {
-                    logger.logInfo("Legacy security is disabled");
-                }
-            })
-
-        this._securityToken = null;
+        return this.http.get<APIResponse<SecuritySharedConfiguration>>(url, { headers: this.buildHeaders() })
+            .pipe(
+                map((results: APIResponse<SecuritySharedConfiguration>) => {
+                    return results.data[0];
+                })
+            )
+            .toPromise();
     }
 
     /**
-     * Returns the security configuration.
+     * Returns a boolean value indicating if there is a user already sign in.
      */
-    get config(): SecuritySharedConfiguration {
-        return Object.assign({}, this._config);
+     get isUserLoggedIn(): boolean {
+        return this._session.isUserLoggedIn;
+    }
+
+    /**
+     * Returns a boolean value that indicates if Legacy security, (Propel 2.0 and before),is on.
+     */
+    get isLegacy(): boolean {
+        return this._session.isLegacy;
+    }
+
+    /**
+     * Returns all the session details including information about the user, token expiration, etc.
+     */
+    get sessionData(): SecurityToken {
+        return this._session.sessionData;
+    }
+
+    /**
+     * User that starts the propel app. (Only when running from Electron).
+     */
+    get runtimeInfo(): RuntimeInfo {
+        return this._session.runtimeInfo;
     }
 
     /**
@@ -79,12 +100,12 @@ export class SecurityService {
         if (!page.security.restricted) return true; //Page has no restrictions to access.
 
         //If authentication is required:
-        if (page.security.restricted && !this.session.IsUserLoggedIn) {
+        if (page.security.restricted && !this._session.isUserLoggedIn) {
             ret = false;
         }
 
-        if (page.security.restricted && this.session.IsUserLoggedIn) {
-            if (page.security.adminOnly && !this.session.sessionData.roleIsAdmin) {
+        if (page.security.restricted && this._session.isUserLoggedIn) {
+            if (page.security.adminOnly && !this._session.sessionData.roleIsAdmin) {
                 ret = false;
             }
             else {
@@ -93,21 +114,6 @@ export class SecurityService {
         }
 
         return ret;
-    }
-
-    /**
-     * Fetch the current security configuration between backend and frontend.
-     */
-    refreshConfig(): Observable<APIResponse<SecuritySharedConfiguration>> {
-        let url: string = this.buildURL(SecurityEndpointActions.GetConfiguration);
-
-        return this.http.get<APIResponse<SecuritySharedConfiguration>>(url, { headers: this.buildHeaders() })
-            .pipe(
-                map((results: APIResponse<SecuritySharedConfiguration>) => {
-                    this._config = results.data[0];
-                    return results;
-                })
-            )
     }
 
     /**
@@ -186,15 +192,32 @@ export class SecurityService {
     }
 
     /**
+     * This method starts a session for the "unknown" user in legacy mode. This is for compatibility
+     * with Propel 2.0 and before and in the meantime no users are created in the app.
+     */
+     async tryLegacyLogin(): Promise<APIResponse<string>> {
+        // if (!this._config.legacySecurity) return;
+        let config = await this.getConfig()
+
+        if (!config.legacySecurity) return Promise.resolve(new APIResponse<string>(null, ""))
+
+        logger.logInfo(`Attempting to establish legacy security...`)
+
+        return this.login(new SecurityRequest())
+    }
+
+    /**
      * User login process.
      * @param sr SecurityRequest including all the infoneded for the user login process.
      * @returns A JWT token.
      */
-    login(sr: SecurityRequest): Observable<APIResponse<string>> {
+    async login(sr: SecurityRequest): Promise<APIResponse<string>> {
         let url: string = this.buildURL(SecurityEndpointActions.Login);
-        let ri: RuntimeInfo = this.session.runtimeInfo;
+        let ri: RuntimeInfo = this._session.runtimeInfo;
 
-        if (!this._config.legacySecurity) {
+        let config = await this.getConfig()
+
+        if (!config.legacySecurity) {
             if (ri && ri.userName && ri.RDPUsers.length !== 0) {
                 let user = ri.RDPUsers.find((u: RDPUser) => {
                     if (u.userName == sr.userName) {
@@ -209,7 +232,8 @@ export class SecurityService {
 Propel is running with the user "${sr.userName}" credentials.
 List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u.userName).join(", ")}`)
 
-                    return of(new APIResponse<string>(new PropelError("Impersonation is not allowed in Propel", ErrorCodes.UserImpersonation), ""));
+                    // return of(new APIResponse<string>(new PropelError("Impersonation is not allowed in Propel", ErrorCodes.UserImpersonation), ""));
+                    return Promise.resolve(new APIResponse<string>(new PropelError("Impersonation is not allowed in Propel", ErrorCodes.UserImpersonation), ""));
                 }
             }
         }
@@ -217,35 +241,18 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
         return this.http.post<APIResponse<string>>(url, sr, { headers: this.buildHeaders() })
             .pipe(
                 map((results: APIResponse<string>) => {
-                    this.session.setSessionData(results.data[0]);
+                    this._session.setSessionData(results.data[0]);
                     return results;
                 })
             )
+        .toPromise();
     }
 
     /**
      * User Sign out
      */
     logOff() {
-        this.session.removeSessionData();
-    }
-
-    /**
-     * This method starts a session for the "unknown" user in legacy mode. This is for compatibility
-     * with Propel 2.0 and before and in the meantime no users are created in the app.
-     */
-    private startLegacySecuritySession() {
-        if (!this._config.legacySecurity) return;
-
-        logger.logInfo(`Attempting to establish legacy security...`)
-
-        this.login(new SecurityRequest())
-            .subscribe((response: APIResponse<string>) => {
-                logger.logInfo(`Legacy security established.`);
-            },
-                err => {
-                    throw err;
-                });
+        this._session.removeSessionData();
     }
 
     private buildURL(action: SecurityEndpointActions, param: string = "") {

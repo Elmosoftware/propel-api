@@ -50,7 +50,7 @@ export class SecurityToken {
     /**
      * exp
      */
-    public expiresAt: Date = new Date();
+    public expiresAt?: Date;
 
     /**
      * The provided access token.
@@ -64,8 +64,11 @@ export class SecurityToken {
      */
     public legacySecurity: boolean = false;
 
-    constructor() {
-
+    constructor(expirationMinutes?: number) {
+        if (expirationMinutes && !isNaN(parseInt(String(expirationMinutes)))) {
+            expirationMinutes = parseInt(String(expirationMinutes))
+            this.expiresAt = new Date(this.issuedAt.getTime() + (1000 * 60 * expirationMinutes))
+        }
     }
 
     /**
@@ -98,7 +101,14 @@ export class SecurityToken {
         this.legacySecurity = tokenPayload.data.legacySecurity;
 
         this.issuedAt = new Date(tokenPayload.iat * 1000);
-        this.expiresAt = new Date(tokenPayload.exp * 1000);
+
+        if (tokenPayload.exp) {
+            this.expiresAt = new Date(tokenPayload.exp * 1000);
+        }
+        else {
+            this.expiresAt = tokenPayload.data.expiresAt;
+        }
+
         this.accessToken = (tokenPayload.data.accessToken) ? tokenPayload.data.accessToken : accessToken;
     }
 }

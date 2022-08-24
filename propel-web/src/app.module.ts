@@ -83,7 +83,6 @@ import { SecurityService } from './services/security.service';
 import { AuthenticationCodeComponent } from './app/authentication-code/authentication-code.component';
 import { LoginComponent } from './app/login/login.component';
 import { SecurityGuard } from './services/security-guard';
-import { SessionService } from './services/session.service';
 
 @NgModule({
     declarations: [
@@ -164,13 +163,13 @@ import { SessionService } from './services/session.service';
         RunnerService,
         DialogService,
         CoreService,
+        AuthInterceptor,
         { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
         DataLossPreventionGuard,
         PSParametersInferrerService,
         APIStatusService,
         SecurityService,
-        SessionService,
         SecurityGuard
     ],
     bootstrap: [RootComponent]

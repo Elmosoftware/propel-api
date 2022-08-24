@@ -7,6 +7,7 @@ import { APIStatus } from "../../../propel-shared/models/api-status";
 import { UsageStats } from "../../../propel-shared/models/usage-stats";
 import { APIResponse } from "../../../propel-shared/core/api-response";
 import { logger } from '../../../propel-shared/services/logger-service';
+import { X_HEADER_NOAUTH } from "../core/auth-interceptor";
 
 /**
  * Data service
@@ -50,8 +51,8 @@ export class APIStatusService {
     let ret: HttpHeaders = new HttpHeaders()
       .set("Content-Type", "application/json");
 
-    // To add other headers: 
-    //ret = ret.append("New header", "value");
+    //This call is for a public endpoint, no authorization header needed:
+    ret = ret.append(X_HEADER_NOAUTH, "");
 
     return ret;
   }

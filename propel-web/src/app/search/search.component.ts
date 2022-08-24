@@ -82,7 +82,7 @@ export class SearchComponent implements OnInit {
   }
 
   get isAdmin(): boolean {
-    return this.core.session.IsUserLoggedIn && this.core.session.sessionData.roleIsAdmin;
+    return this.core.security.isUserLoggedIn && this.core.security.sessionData.roleIsAdmin;
   }
 
   constructor(private core: CoreService, private route: ActivatedRoute) {

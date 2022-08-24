@@ -151,6 +151,16 @@ Most likely cause, is you trying to fetch information encrypted with a different
             `You are not running Propel with the same credentials that you use to log to this machine. Please start Propel using your own credentials.`,
             false);
     }
+
+    /**
+     * Indicates the supplied access token is expired.
+     */
+     static get TokenIsExpired(): Code {
+        return new Code("TOKEN_EXPIRED",
+            `The supplied access token is expired.`,
+            `Your session has expired. In order to protect your account you will need to login again.`,
+            true);
+    }
 }
 
 /**

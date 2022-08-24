@@ -1,4 +1,3 @@
-import { Injectable } from '@angular/core';
 import { RuntimeInfo } from '../../../propel-shared/core/runtime-info';
 import { SecurityToken } from '../../../propel-shared/core/security-token';
 import { logger } from '../../../propel-shared/services/logger-service';
@@ -13,9 +12,6 @@ const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
 /**
  * This class help manage every aspect of user security, user authentication and authorization.
  */
-@Injectable({
-    providedIn: 'root'
-})
 export class SessionService {
     
     private _securityToken: SecurityToken;
@@ -70,7 +66,7 @@ export class SessionService {
     /**
      * Returns a boolean value indicating if there is a user already sign in.
      */
-    get IsUserLoggedIn(): boolean {
+    get isUserLoggedIn(): boolean {
         return Boolean(this._securityToken);
     }
 
@@ -117,7 +113,7 @@ The payload in the provided JWT token can't be parsed as JSON. Payload content i
     }
     
     /**
-     * Remove any active session data stored.
+     * Remove any active session data.
      */
     removeSessionData() {
         this._securityToken = null;       

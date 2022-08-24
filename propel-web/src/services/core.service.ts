@@ -18,7 +18,6 @@ import { PSParametersInferrerService } from './ps-parameters-inferrer.service';
 import { APIStatusService } from './api-status.service';
 import { ConnectivityService, ConnectivityStatus } from './connectivity.service';
 import { SecurityService } from './security.service';
-import { SessionService } from "./session.service";
 import { PropelError } from '../../../propel-shared/core/propel-error';
 
 /**
@@ -44,8 +43,7 @@ export class CoreService {
     private injInfer: PSParametersInferrerService,
     private injAPIStatus: APIStatusService,
     private injConn: ConnectivityService,
-    private injSec: SecurityService,
-    private injSession: SessionService) {
+    private injSec: SecurityService) {
     logger.logInfo("CoreService instance created")
 
     this._init()
@@ -89,10 +87,6 @@ export class CoreService {
 
   get security(): SecurityService {
     return this.injSec;
-  }
-
-  get session(): SessionService {
-    return this.injSession;
   }
 
   getPageTitle(): string {
@@ -170,6 +164,18 @@ export class CoreService {
             //We show a toaster for the user indicating the error details:
             this.injToast.showError(status.lastError);
           }
+
+          //If connectivity is restablished or the app is starting for the first time, we must try to 
+          //establish a user session with Legacy security.
+          //If legacy security is enabled for Propel, a new session will be created for an "unknown" user.
+          //This is strictly for backward compatibility.
+          this.injSec.tryLegacyLogin()
+            .then(() => {
+              logger.logInfo(`Legacy security established.`);
+            },
+              err => {
+                logger.logError(`There was an error establishing Legacy security, following details: ${JSON.stringify(err)}.`);
+              })
         }
         else {
           //Navigate to the offline page to show the connectivity issue details:
