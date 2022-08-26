@@ -196,12 +196,10 @@ export class SecurityService {
      * with Propel 2.0 and before and in the meantime no users are created in the app.
      */
      async tryLegacyLogin(): Promise<APIResponse<string>> {
-        // if (!this._config.legacySecurity) return;
         let config = await this.getConfig()
 
-        if (!config.legacySecurity) return Promise.resolve(new APIResponse<string>(null, ""))
-
-        logger.logInfo(`Attempting to establish legacy security...`)
+        if (!config.legacySecurity) return Promise.resolve(
+            new APIResponse<string>("Legacy security is disabled.", ""))
 
         return this.login(new SecurityRequest())
     }

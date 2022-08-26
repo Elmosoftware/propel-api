@@ -19,6 +19,7 @@ import { APIStatusService } from './api-status.service';
 import { ConnectivityService, ConnectivityStatus } from './connectivity.service';
 import { SecurityService } from './security.service';
 import { PropelError } from '../../../propel-shared/core/propel-error';
+import { APIResponse } from '../../../propel-shared/core/api-response';
 
 /**
  * This core class help inject common services to the app. 
@@ -169,12 +170,14 @@ export class CoreService {
           //establish a user session with Legacy security.
           //If legacy security is enabled for Propel, a new session will be created for an "unknown" user.
           //This is strictly for backward compatibility.
+          logger.logInfo(`Attempting to establish Legacy security...`)
           this.injSec.tryLegacyLogin()
-            .then(() => {
-              logger.logInfo(`Legacy security established.`);
+            .then((result: APIResponse<string>) => {
+              if (result.error) logger.logInfo(String(result.error?.error ? result.error.error : result.error))
+              else logger.logInfo(`Legacy security was established successfully.`);
             },
               err => {
-                logger.logError(`There was an error establishing Legacy security, following details: ${JSON.stringify(err)}.`);
+                logger.logError(`There was an error establishing Legacy security, following details: ${JSON.stringify(err?.error ? err.error : err)}.`);
               })
         }
         else {
