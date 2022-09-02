@@ -75,10 +75,6 @@
         </ng-template> 
       </div>
       <div class="dropdown-menu dropdown-user" aria-labelledby="dropdown02">
-        <a *ngIf="userName" class="dropdown-item" href="javascript:void(0)">
-          <span class="icon-user-mini menu-icon"></span>
-          <span>My preferences</span>
-        </a>
         <!-- New Script credential submenu -->
         <div *ngIf="canAccessCredentials" class="menu-divider" (click)="doNotPropagate($event)">
           <span >Script Credential Management</span>
@@ -124,6 +120,14 @@
         <a *ngIf="userName && !isLegacySecurity" class="dropdown-item" href="javascript:void(0)" (click)="goToLogoff()">
           <span class="icon-logoff-mini menu-icon"></span>
           <span>Log off</span>
+        </a>
+        <!-- Developers only Submenu -->
+        <div *ngIf="isDevMode" class="menu-divider" (click)="doNotPropagate($event)">
+          <span >Developers only</span>
+        </div>
+        <a *ngIf="isDevMode" class="dropdown-item" href="javascript:void(0)" (click)="goToSandbox()">
+          <span class="menu-icon"><i class="fas fa-flask"></i></span>
+          <span>Sandbox</span>
         </a>
       </div>
     </div>

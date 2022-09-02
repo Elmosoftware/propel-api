@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DialogResult } from 'src/core/dialog-result';
+import { environment } from 'src/environments/environment';
 
 import { CoreService } from 'src/services/core.service';
 import { NavigationHistoryEntry } from 'src/services/navigation.service';
@@ -144,6 +145,10 @@ export class NavigationBarComponent implements OnInit {
     return this.core.security.isLegacy;
   }
 
+  get isDevMode(): boolean {
+    return !environment.production
+  }
+
   get showNavBar(): boolean {
     let page = this.core.navigation.currentPage;
     let ret: boolean = true; //By default the navbar must be visible.
@@ -259,6 +264,11 @@ export class NavigationBarComponent implements OnInit {
     }, err => {
       throw err
     });
+  }
+
+  goToSandbox() {
+    if(!this.isDevMode) return;
+    this.core.navigation.toSandbox();
   }
 
   doNotPropagate($event) {
