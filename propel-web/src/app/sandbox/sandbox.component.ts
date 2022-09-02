@@ -16,6 +16,7 @@ import { NgSelectComponent } from '@ng-select/ng-select';
 import { Credential } from '../../../../propel-shared/models/credential';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { Secret } from '../../../../propel-shared/models/secret';
+import { APIResponse } from '../../../../propel-shared/core/api-response';
 
 @Component({
   selector: 'app-root',
@@ -198,7 +199,7 @@ export class SandboxComponent implements OnInit {
   }
   //#end region
 
-  constructor(private core: CoreService, private data: DataService) {
+  constructor(private core: CoreService) {
 
   }
 
@@ -332,6 +333,28 @@ export class SandboxComponent implements OnInit {
     //     err => {
     //       throw err
     //     });
+  }
+
+  testTwoCallsforRefreshToken() {
+
+    console.info(`%c SANDBOX -> Starting Call 1 for token refreshing.`, "color: gray; background-color: lightblue");
+    this.core.data.find(DataEntity.Target, new QueryModifier())
+      .subscribe((result: APIResponse<any>) => {
+        console.info(`%c SANDBOX -> Receiving Call 1 response! Count is ${result.count}.`, "color: gray; background-color: lightblue");
+      }, (err) => {
+        console.info(`%c SANDBOX -> Receiving Call 1 error. Message: ${(err.message) ? err.message : JSON.stringify(err)}`, "color: gray; background-color: crimson")
+        throw err
+      })
+
+    console.info(`%c SANDBOX -> Starting Call 2 for token refreshing.`, "color: gray; background-color: lightblue");
+    this.core.data.find(DataEntity.Credential, new QueryModifier())
+      .subscribe((result: APIResponse<any>) => {
+        console.info(`%c SANDBOX -> Receiving Call 2 response! Count is ${result.count}.`, "color: gray; background-color: lightblue");
+      }, (err) => {
+        console.info(`%c SANDBOX -> Receiving Call 2 error. Message: ${(err.message) ? err.message : JSON.stringify(err)}`, "color: gray; background-color: crimson")
+        throw err
+      })
+
   }
 
   showLongConfirmationDialog() {
