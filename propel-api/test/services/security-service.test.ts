@@ -3,6 +3,7 @@ import { UserAccountRoles } from "../../../propel-shared/models/user-account-rol
 import { SecurityService } from "../../services/security-service";
 import { cfg, LogLevel } from "../../core/config";
 import { SecuritySharedConfiguration } from "../../../propel-shared/core/security-shared-config";
+import { UserLoginResponse } from "../../../propel-shared/core/user-login-response";
 
 let ss: SecurityService;
 
@@ -25,51 +26,56 @@ function mockSecurityService(ss: SecurityService, options: any) {
     }
 
     //@ts-ignore
-    ss.getUserByName = (userNameOrId) => {
+    ss.getUserByNameOrID = (userNameOrId) => {
         //@ts-ignore
-       if (userNameOrId == ss.testOptions.user.name) {
+        if (userNameOrId == ss.testOptions.user.name) {
             //@ts-ignore
-           return Promise.resolve(ss.testOptions.user);
-       }
+            return Promise.resolve(ss.testOptions.user);
+        }
 
-       return Promise.resolve(undefined);
-   }
+        return Promise.resolve(undefined);
+    }
 
-   //@ts-ignore
-   ss.saveUser = (user) => {
-       //@ts-ignore
-       ss.testOptions.user = user
-       //@ts-ignore
-       return Promise.resolve(ss.testOptions.user._id);
-   }
+    //@ts-ignore
+    ss.saveUser = (user) => {
+        //@ts-ignore
+        ss.testOptions.user = user
+        //@ts-ignore
+        return Promise.resolve(ss.testOptions.user._id);
+    }
 
-   //@ts-ignore
-   ss.getUserSecret = (secretId) => {
-       //@ts-ignore
-       return Promise.resolve(ss.testOptions.userSecret);
-   }
+    //@ts-ignore
+    ss.getUserSecret = (secretId) => {
+        //@ts-ignore
+        return Promise.resolve(ss.testOptions.userSecret);
+    }
 
-   //@ts-ignore
-   ss.saveUserSecret = (secret) => {
-       //@ts-ignore
-       ss.testOptions.userSecret.value.passwordHash = secret.value.passwordHash;
-       //@ts-ignore
-       return Promise.resolve(ss.testOptions.userSecret._id);
-   }
+    //@ts-ignore
+    ss.saveUserSecret = (secret) => {
+        //@ts-ignore
+        ss.testOptions.userSecret.value.passwordHash = secret.value.passwordHash;
+        //@ts-ignore
+        return Promise.resolve(ss.testOptions.userSecret._id);
+    }
 
-   //@ts-ignore
-   ss.createHash = (password: string) => {
-       //For simplicity we will return the password itself, we are not 
-       //trying here to test neither JWT or bcrypt:
-       return Promise.resolve(password);
-   }
+    //@ts-ignore
+    ss.createHash = (password: string) => {
+        //For simplicity we will return the password itself, we are not 
+        //trying here to test neither JWT or bcrypt:
+        return Promise.resolve(password);
+    }
 
-   //@ts-ignore
-   ss.verifyHash = (password: string, hash:string) => {
-       //to simplify things we are just going to compare the hash with 
-       //the password, in not the intention here to test bcrypt!!!
-       return Promise.resolve(password == hash);      
-   }
+    //@ts-ignore
+    ss.verifyHash = (password: string, hash: string) => {
+        //to simplify things we are just going to compare the hash with 
+        //the password, in not the intention here to test bcrypt!!!
+        return Promise.resolve(password == hash);
+    }
+
+    //@ts-ignore
+    ss.createRefreshToken = (loginData: any): Promise<string> => {
+        return Promise.resolve("000000010000000000100001");
+    }
 
 }
 
@@ -92,7 +98,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
 
         mockSecurityService(ss, {
             user: {
-                _id: "1",
+                _id: "000000010000000000100001",
                 secretId: "2",
                 name: "john.doe",
                 fullName: "John Doe",
@@ -103,16 +109,16 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
                 lastLogin: new Date()
             },
             userSecret: {
-                _id: "2",
+                _id: "000000010000000000100001",
                 value: {
                     passwordHash: "12345678" //Recall this will be actually the 
                     //user password for this test.
                 }
             },
             legacySecurity: false
-        })        
+        })
     })
-   
+
     test(`Locked user`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
@@ -141,8 +147,9 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
         sr.password = "12345678" //right password
 
         ss.handleUserLogin(sr)
-            .then((result) => {
-                expect(result).not.toEqual("");
+            .then((result: UserLoginResponse) => {
+                expect(result.accessToken).not.toEqual("");
+                expect(result.refreshToken).not.toEqual("");
                 done();
             })
             .catch((err) => {
@@ -155,7 +162,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Non-existent user.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userName="wrong.user" //WRONG user
+        sr.userName = "wrong.user" //WRONG user
         sr.password = "12345678" //right password
 
         ss.handleUserLogin(sr)
@@ -173,7 +180,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Wrong password.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userName="john.doe" //right user
+        sr.userName = "john.doe" //right user
         sr.password = "xxxxxxxx" //wrong password
 
         ss.handleUserLogin(sr)
@@ -191,7 +198,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Bad format password - Short password.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userName="john.doe" //right user
+        sr.userName = "john.doe" //right user
         sr.password = "x" //short password
 
         ss.handleUserLogin(sr)
@@ -209,7 +216,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
     test(`Bad format password - Long password.`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userName="john.doe" //right user
+        sr.userName = "john.doe" //right user
         sr.password = "x".repeat(cfg.passwordMaxLength + 1) //very long password
 
         ss.handleUserLogin(sr)
@@ -223,7 +230,7 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
             })
 
     }, 1000);
-    
+
 })
 
 describe("SecurityService Class - handleUserLogin() - First Login", () => {
@@ -256,19 +263,20 @@ describe("SecurityService Class - handleUserLogin() - First Login", () => {
                 }
             },
             legacySecurity: false
-        })        
+        })
     })
 
     test(`Successful case`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userName="john.doe" //right user
+        sr.userName = "john.doe" //right user
         sr.password = "123456" //right auth code
         sr.newPassword = "12345678" //right auth code
 
         ss.handleUserLogin(sr)
-            .then((result) => {
-                expect(result).not.toBe(null);
+            .then((result: UserLoginResponse) => {
+                expect(result.accessToken).not.toBe(null);
+                expect(result.refreshToken).not.toBe(null);
                 //@ts-ignore
                 expect(ss.testOptions.userSecret.value.passwordHash).toEqual(sr.newPassword)
                 done();
@@ -279,7 +287,7 @@ describe("SecurityService Class - handleUserLogin() - First Login", () => {
             })
 
     }, 1000);
-    
+
 })
 
 describe("SecurityService Class - handleUserLogin() - Password reset Login", () => {
@@ -313,19 +321,20 @@ describe("SecurityService Class - handleUserLogin() - Password reset Login", () 
                 }
             },
             legacySecurity: false
-        })        
+        })
     })
 
     test(`Successful case`, (done) => {
 
         let sr: SecurityRequest = new SecurityRequest();
-        sr.userName="john.doe" //right user
+        sr.userName = "john.doe" //right user
         sr.password = "123456" //right password
         sr.newPassword = "12345678"; //new password
 
         ss.handleUserLogin(sr)
-            .then((result) => {
-                expect(result).not.toEqual("");
+            .then((result: UserLoginResponse) => {
+                expect(result.accessToken).not.toBe(null);
+                expect(result.refreshToken).not.toBe(null);
                 //@ts-ignore
                 expect(ss.testOptions.userSecret.value.passwordHash).toEqual(sr.newPassword)
                 done();

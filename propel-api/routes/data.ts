@@ -143,6 +143,14 @@ export class DataRoute implements Route {
             preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
             preventLogic: RulePreventLogic.Or,
             text: `This rule prevents anonymous users to access Propel Secrets.`
+        },
+        {
+            matchFragment: "/session", 
+            matchMethods: [],
+            preventDataActions: [DataRequestAction.Delete],
+            preventRoles: [AuthStatus.Anonymous, AuthStatus.Authenticated],
+            preventLogic: RulePreventLogic.And,
+            text: `This rule prevents anyone to delete User sessions throught Data API.`
         }
     ]
 

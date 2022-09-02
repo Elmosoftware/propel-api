@@ -8,6 +8,7 @@ import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { SecurityRequest } from '../../../../propel-shared/core/security-request';
 import { SecuritySharedConfiguration } from '../../../../propel-shared/core/security-shared-config';
+import { UserLoginResponse } from '../../../../propel-shared/core/user-login-response';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 
 //User form Messages:
@@ -255,7 +256,7 @@ export class LoginComponent implements OnInit {
   execLogin(sr: SecurityRequest) {
 
     this.core.security.login(sr)
-     .then((response: APIResponse<string>) => {
+     .then((response: APIResponse<UserLoginResponse>) => {
 
         //If there was some error:
         if (response.count == 0) {
@@ -297,48 +298,6 @@ export class LoginComponent implements OnInit {
 
           throw err;
         });
-      // .subscribe((response: APIResponse<string>) => {
-
-      //   //If there was some error:
-      //   if (response.count == 0) {
-
-      //     if (response.error) {
-      //       //Embedding the error in a PropelError to get access to the error code, (if any):
-      //       let appError = new PropelError(response.error);
-
-      //       if (appError.userMessage) {
-      //         this.formFlow.message = appError.userMessage;
-      //       }
-      //     }
-      //     else {
-      //       this.formFlow.message = MSG_LOGIN_ERROR;
-      //     }
-
-      //     this.formFlow.messageIsError = true
-      //   }
-      //   else {
-      //     this.formFlow.message = MSG_LOGIN_SUCCESS;
-      //     this.formFlow.messageIsError = false
-
-      //     if (this.referrerURL) {
-      //       this.core.navigation.to(this.referrerURL)
-      //     }
-      //     else {
-      //       this.core.navigation.toHome();
-      //     }
-      //   }
-      // },
-      //   err => {
-
-      //     let appError = new PropelError(err);
-
-      //     if (appError.userMessage) {
-      //       this.formFlow.message = appError.userMessage;
-      //       this.formFlow.messageIsError = true
-      //     }
-
-      //     throw err;
-      //   });
   }
 
   goBack() {

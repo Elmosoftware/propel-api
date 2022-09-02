@@ -625,3 +625,36 @@ data: {
 		adminOnly:  {true | false}, //Indicates ifonly Administrators can access.
 	}
 },
+
+============================================================================
+REFRESH TOKEN
+
+When login happens:
+	- We create a RT (refresh token) and stored it in the DB
+	- Return the RT and an AT (access token) to the client.
+	- The client stores it in local storage.
+
+During any request:
+	- The client send the AT
+	- If the AT is expired: The client sends a RT to /api/security/refresh. If the 
+	client has no RT, the user must login again.
+	- The server receives the RT. If doesn't exist or is already expired in API DB another 401 with 
+	Token expired error will be sent to client and the user must login again.
+	If the RT exists and is not expired, a new AT will be sent to the client.
+	- With the new AT the client must retry the original request.
+
+When the user log off:
+	-Remove the AT y RT
+	-Call the API to remove the RT from the DB.
+
+DB changes
+-----------
+
+New "Sessions" collection must expire at 30 days age.
+
+Session: {
+	_Id: ObjectId/String --> This will be the refresh token
+	user: ObjectId/String --> User Id
+	sessionStartsAt: Date --> Session starts timestamp (used for the expiration)
+}
+	

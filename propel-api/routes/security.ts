@@ -1,6 +1,6 @@
 // @ts-check
 import express from "express";
-import { INTERNAL_SERVER_ERROR } from "http-status-codes";
+import { INTERNAL_SERVER_ERROR, NO_CONTENT } from "http-status-codes";
 
 import { Route } from "../core/route";
 import { APIResponse } from "../../propel-shared/core/api-response";
@@ -14,6 +14,8 @@ import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rul
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
 import { SecurityToken } from "../../propel-shared/core/security-token";
 import { REQUEST_TOKEN_KEY } from "../core/middleware";
+import { UserLoginResponse } from "../../propel-shared/core/user-login-response";
+import { TokenRefreshRequest } from "../../propel-shared/core/token-refresh-request";
 
 /**
  * Security route implements security related features like, user login and user managment.
@@ -75,7 +77,7 @@ export class SecurityRoute implements Route {
             try {
                 res.json(new APIResponse<SecuritySharedConfiguration>(null, await ss.getSharedConfig()));
             } catch (error) {
-                this.handleError(res, error);
+                this.handleError(res, error); 
             }
         });
 
@@ -86,7 +88,7 @@ export class SecurityRoute implements Route {
             let id: string = req.params.id;
 
             try {
-                let user = await ss.getUserByName(id);
+                let user = await ss.getUserByNameOrID(id);
                 res.json(new APIResponse<UserAccount>(null, user));
             } catch (error) {
                 this.handleError(res, error);
@@ -156,8 +158,36 @@ export class SecurityRoute implements Route {
             let request: SecurityRequest = req.body;
 
             try {
-                let token = await ss.handleUserLogin(request);
-                res.json(new APIResponse<string>(null, token));
+                let response = await ss.handleUserLogin(request);
+                res.json(new APIResponse<UserLoginResponse>(null, response));
+            } catch (error) {
+                this.handleError(res, error);
+            }
+        });
+
+        //Token refresh:
+        handler.post("/refresh", async (req, res) => {
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
+            let request: TokenRefreshRequest = req.body;
+
+            try {
+                let response = await ss.handleTokenRefresh(request);
+                res.json(new APIResponse<UserLoginResponse>(null, response));
+            } catch (error) {
+                this.handleError(res, error);
+            }
+        });
+
+        //User log off:
+        handler.post("/logoff", async (req, res) => {
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            let ss: SecurityService = new SecurityService(token);
+            let request: TokenRefreshRequest = req.body;
+
+            try {
+                await ss.handleUserLogoff(request);
+                res.status(NO_CONTENT).json(new APIResponse<void>(null, null));
             } catch (error) {
                 this.handleError(res, error);
             }

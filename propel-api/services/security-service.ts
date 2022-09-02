@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid'
 import { cfg } from "../core/config";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityRequest } from "../../propel-shared/core/security-request";
+import { TokenRefreshRequest } from "../../propel-shared/core/token-refresh-request";
 import { SecuritySharedConfiguration } from "../../propel-shared/core/security-shared-config";
 import { SecurityToken, TokenPayload } from "../../propel-shared/core/security-token";
 import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
@@ -19,8 +20,10 @@ import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { Utils } from '../../propel-shared/utils/utils';
 import { ErrorCodes } from '../../propel-shared/core/error-codes';
 import { SecurityRuleSelector } from '../core/security-rule-selector';
+import { UserLoginResponse } from '../../propel-shared/core/user-login-response';
 import { allRoutes } from '../routes/all-routes';
 import { UserAccountRoles } from '../../propel-shared/models/user-account-roles';
+import { UserSession } from '../../propel-shared/models/user-session';
 
 export const LEGACY_USER_ID:string = "000000010000000000100001"
 export const LEGACY_USER_NAME:string = "Unknown user"
@@ -30,7 +33,7 @@ export class SecurityService {
     /**
      * Holds all the data related to a login process.
      */
-    loginData!: LoginData;
+    loginData!: LoginData<any>;
 
     ruler: SecurityRuleSelector;
 
@@ -116,20 +119,33 @@ export class SecurityService {
 
     /**
      * Allows to obtain one particular user account by specifying the user name.
-     * @param name User Name.
+     * @param nameOrID User Name.
      * @returns The requested user or "undefined" if the user doesn't exists.
      */
-    async getUserByName(name: string): Promise<UserAccount | undefined> {
+    async getUserByNameOrID(nameOrID: string): Promise<UserAccount | undefined> {
         let svc: DataService = db.getService("useraccount", this._token);
         let result: APIResponse<UserAccount>;
         let qm = new QueryModifier();
 
-        if (DataService.isValidObjectId(name)) {
-            qm.filterBy = { _id: name }
+        if (DataService.isValidObjectId(nameOrID)) {
+            qm.filterBy = { _id: nameOrID }
         }
         else {
-            qm.filterBy = { name: { $eq: name } };
+            qm.filterBy = { name: { $eq: nameOrID } };
         }
+
+        result = await svc.find(qm);
+
+        if (result.count == 1) return result.data[0];
+        else return undefined;
+    }
+
+    async getUserSession(refreshToken: string): Promise<UserSession | undefined> {
+        let svc: DataService = db.getService("usersession", this._token);
+        let result: APIResponse<UserSession>;
+        let qm = new QueryModifier();
+      
+        qm.filterBy = { _id: refreshToken }
 
         result = await svc.find(qm);
 
@@ -162,7 +178,7 @@ export class SecurityService {
      *  - **User doesn't have a secret when is expected**, (unlikely to happen) (**HTTP Status 500** Internal server error).
      *  - **Wrong password** (**HTTP status 401** Unauthorized)
      */
-    async handleUserLogin(request: SecurityRequest): Promise<string> {
+    async handleUserLogin(request: SecurityRequest): Promise<UserLoginResponse> {
 
         this.loginData = new LoginData(request);
 
@@ -201,11 +217,54 @@ export class SecurityService {
             this.handlePasswordResetLogin
         ]
 
-        await Utils.asyncForEach(toEval, async (func: Function, i: number) => {
-            this.loginData = await toEval[i](this);
+        await Utils.asyncForEach(toEval, async (func: Function) => {
+            await func(this);
         })
 
-        return Promise.resolve(this.loginData.token);
+        let ret: UserLoginResponse = new UserLoginResponse();
+
+        ret.accessToken = this.loginData.accessToken;
+        ret.refreshToken = this.loginData.refreshToken;
+
+        return Promise.resolve(ret);
+    }
+
+    async handleUserLogoff(request: TokenRefreshRequest): Promise<void> {
+        let svc: DataService = db.getService("usersession", this._token);
+        
+        try {
+            await svc.delete(request.refreshToken)
+            return Promise.resolve();
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+
+    async handleTokenRefresh(request: TokenRefreshRequest): Promise<UserLoginResponse> {
+
+        this.loginData = new LoginData(request);
+
+        let toEval = [
+            /**
+             * Basic validation of the refresh token request.
+             */
+            this.validateTokenRefreshRequestFormat,
+            /**
+             * Retrieves the user session and verify if the user is not locked.
+             */
+            this.getAndVerifyUserSession            
+        ]
+
+        await Utils.asyncForEach(toEval, async (func: Function) => {
+            await func(this);
+        })
+
+        let ret: UserLoginResponse = new UserLoginResponse();
+
+        ret.accessToken = this.createToken(this.loginData.user!, false);
+        ret.refreshToken = this.loginData.refreshToken;
+
+        return Promise.resolve(ret);
     }
 
     /**
@@ -219,7 +278,7 @@ export class SecurityService {
      */
     async resetUserPassword(nameOrId: string): Promise<UserRegistrationResponse> {
 
-        let user: UserAccount | undefined = await this.getUserByName(nameOrId);
+        let user: UserAccount | undefined = await this.getUserByNameOrID(nameOrId);
         let ret: UserRegistrationResponse = new UserRegistrationResponse();
 
         this.throwIfNoUser(user, nameOrId, "The reset password process can't continue.");
@@ -244,7 +303,7 @@ export class SecurityService {
 
     private async internalLockOrUnlockUser(nameOrId: string, mustLock: boolean): Promise<string> {
 
-        let user: UserAccount | undefined = await this.getUserByName(nameOrId);
+        let user: UserAccount | undefined = await this.getUserByNameOrID(nameOrId);
 
         this.throwIfNoUser(user, nameOrId, `The ${(mustLock) ? "lock" : "unlock"} user operation will be aborted.`)
 
@@ -264,22 +323,38 @@ export class SecurityService {
         }
     }
 
-    private async validateSecurityRequestFormat(context: SecurityService): Promise<LoginData> {
+    private async validateSecurityRequestFormat(context: SecurityService): Promise<void> {
 
-        let sr: SecurityRequest = context.loginData.request;
+        let request: SecurityRequest = context.loginData.request;
         let config: SecuritySharedConfiguration = await context.getSharedConfig()
 
         context.loginData.legacySecurity = config.legacySecurity;
 
-        if (context.loginData.legacySecurity) return Promise.resolve(context.loginData);
+        if (context.loginData.legacySecurity) return Promise.resolve();
 
-        if (!sr?.userName || !sr?.password) {
+        if (!request?.userName || !request?.password) {
             throw new PropelError(`Bad format in the request body, we expect the user name and the user password. 
-            Property "userName": ${(sr?.userName) ? "is present" : "Is missing"}, Property "password": ${(sr?.password) ? "is present" : "Is missing"}.`,
+            Property "userName": ${(request?.userName) ? "is present" : "Is missing"}, Property "password": ${(request?.password) ? "is present" : "Is missing"}.`,
                 undefined, BAD_REQUEST.toString());
         }
 
-        return Promise.resolve(context.loginData);
+        return Promise.resolve();
+    }
+
+    private async validateTokenRefreshRequestFormat(context: SecurityService): Promise<void> {
+
+        let request: TokenRefreshRequest = context.loginData.request;
+
+        if (!request.refreshToken) {
+            throw new PropelError(`Bad format in the request body, we expect the "refreshToken" property.`,
+                undefined, BAD_REQUEST.toString());
+        }
+        else if(!DataService.isValidObjectId(request.refreshToken)) {
+            throw new PropelError(`Bad format in the request body, the provided refresh token is invalid.`,
+                undefined, BAD_REQUEST.toString());
+        }
+
+        return Promise.resolve();
     }
 
     private validateAuthenticationCode(authCode: string): void {
@@ -299,7 +374,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         }
     }
 
-    private async getAndVerifyUser(context: SecurityService): Promise<LoginData> {
+    private async getAndVerifyUser(context: SecurityService): Promise<void> {
 
         let loginData = context.loginData;
 
@@ -307,7 +382,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
             loginData.user = context.getLegacyUser();
         }
         else {
-            loginData.user = await context.getUserByName(loginData.request.userName);
+            loginData.user = await context.getUserByNameOrID(loginData.request.userName);
         }
 
         context.throwIfNoUser(loginData.user, loginData.request.userName);
@@ -318,14 +393,38 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 ErrorCodes.LoginLockedUser, FORBIDDEN.toString());
         }
 
-        return Promise.resolve(loginData);
+        return Promise.resolve();
     }
 
-    private async getAndVerifyUserSecret(context: SecurityService): Promise<LoginData> {
+    private async getAndVerifyUserSession(context: SecurityService): Promise<void> {
+
+        let request: TokenRefreshRequest = context.loginData.request;
+        let session = await context.getUserSession(request.refreshToken)
+        
+        if (session) {
+            context.loginData.userSession = session;
+            context.loginData.user = session.user;
+            context.loginData.refreshToken = request.refreshToken
+
+            //If the user is locked, we must prevent the user to login.
+            if (session.user.lockedSince) {
+                throw new PropelError(`The user "${session.user.name}" is locked.`,
+                    ErrorCodes.LoginLockedUser, FORBIDDEN.toString());
+            }
+
+            return Promise.resolve();
+        }
+        else {
+            throw new PropelError(`Refreshtoken "${request.refreshToken} is missing or expired."`, 
+                ErrorCodes.RefreshTokenIsExpired, UNAUTHORIZED.toString());
+        }
+    }
+
+    private async getAndVerifyUserSecret(context: SecurityService): Promise<void> {
 
         let loginData = context.loginData;
 
-        if (loginData.legacySecurity) return Promise.resolve(loginData);
+        if (loginData.legacySecurity) return Promise.resolve();
 
         //Corrupted data:
         if (!loginData.user?.secretId) {
@@ -349,30 +448,30 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 undefined, INTERNAL_SERVER_ERROR.toString());
         }
 
-        return Promise.resolve(loginData);
+        return Promise.resolve();
     }
 
-    private async handleLegacySecurityRequest(context: SecurityService): Promise<LoginData> {
+    private async handleLegacySecurityRequest(context: SecurityService): Promise<void> {
 
         let loginData = context.loginData;
 
         //If the token was already created, we have nothing else to do here:
-        if (loginData.token) return Promise.resolve(loginData);
+        if (loginData.accessToken) return Promise.resolve();
         //If Legacy security is not enabled, we have nothing else to do here:
-        if (!loginData.legacySecurity) return Promise.resolve(loginData);
+        if (!loginData.legacySecurity) return Promise.resolve();
 
         loginData.user!.lastLogin = new Date();
-        loginData.token = context.createToken(loginData)
+        loginData.accessToken = context.createToken(loginData.user!, loginData.legacySecurity)
 
-        return Promise.resolve(loginData);
+        return Promise.resolve();
     }
 
-    private async handleRegularLogin(context: SecurityService): Promise<LoginData> {
+    private async handleRegularLogin(context: SecurityService): Promise<void> {
 
         let loginData = context.loginData;
 
         //If the token was already created, we have nothing else to do here:
-        if (loginData.token) return Promise.resolve(loginData);
+        if (loginData.accessToken) return Promise.resolve();
 
         //Regular login: The user already login at least once, and his password wasn't flag for reset:
         if (loginData.user?.lastLogin && !loginData.user?.mustReset) {
@@ -384,7 +483,8 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
                 loginData.user!.lastLogin = new Date();
                 await context.saveUser(loginData.user!);
-                loginData.token = context.createToken(loginData)
+                loginData.accessToken = context.createToken(loginData.user, loginData.legacySecurity)
+                loginData.refreshToken = await context.createRefreshToken(loginData)
             }
             else {
                 throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
@@ -392,15 +492,15 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
             }
         }
 
-        return Promise.resolve(loginData);
+        return Promise.resolve();
     }
 
-    private async handleFirstLogin(context: SecurityService): Promise<LoginData> {
+    private async handleFirstLogin(context: SecurityService): Promise<void> {
 
         let loginData = context.loginData;
 
         //If the token was already created, we have nothing else to do here:
-        if (loginData.token) return Promise.resolve(loginData);
+        if (loginData.accessToken) return Promise.resolve();
 
         //First login ever:
         if (!loginData.user?.lastLogin) {
@@ -420,7 +520,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 loginData.user!.secretId = await context.saveUserSecret(loginData.secret);
                 loginData.user!.lastLogin = new Date(); //Setting the first login date for the user... Hurray!!.
                 await context.saveUser(loginData.user!);
-                loginData.token = context.createToken(loginData) //All ready to generate and return the token.
+                loginData.accessToken = context.createToken(loginData.user!, loginData.legacySecurity) //All ready to generate and return the token.
             }
             else {
                 throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
@@ -428,15 +528,15 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
             }
         }
 
-        return Promise.resolve(loginData);
+        return Promise.resolve();
     }
 
-    private async handlePasswordResetLogin(context: SecurityService): Promise<LoginData> {
+    private async handlePasswordResetLogin(context: SecurityService): Promise<void> {
 
         let loginData = context.loginData;
 
         //If the token was already created, we have nothing else to do here:
-        if (loginData.token) return Promise.resolve(loginData);
+        if (loginData.accessToken) return Promise.resolve();
 
         //System Password reset: An Administratoe reset the user password.
         if (loginData.user?.lastLogin && loginData.user?.mustReset) {
@@ -457,7 +557,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 await context.saveUser(loginData.user!); //Saving the changes.
 
                 //Now we can create and return the new token:
-                loginData.token = context.createToken(loginData)
+                loginData.accessToken = context.createToken(loginData.user, loginData.legacySecurity)
             }
             else {
                 throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
@@ -465,7 +565,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
             }
         }
 
-        return Promise.resolve(loginData);
+        return Promise.resolve();
     }
 
     private async createHash(password: string): Promise<string> {
@@ -478,12 +578,12 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         return bcrypt.compare(password, hash);
     }
 
-    private createToken(loginData: LoginData): string {
+    private createToken(user: UserAccount, isLegacySecurity: boolean): string {
         let dataPayload: SecurityToken;
         let options: any = {};
 
         //When in Legacy security, there is no point to have a token with expiration: 
-        if (loginData.legacySecurity) {
+        if (isLegacySecurity) {
             dataPayload = new SecurityToken();
         }
         else {
@@ -492,12 +592,30 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
             //minutes in zeit/ms format. (More info: https://github.com/vercel/ms)
         }
 
-        dataPayload.hydrateFromUser(loginData.user!);
-        dataPayload.legacySecurity = loginData.legacySecurity;
+        dataPayload.hydrateFromUser(user);
+        dataPayload.legacySecurity = isLegacySecurity;
       
         return jwt.sign({
             data: dataPayload
         }, cfg.encryptionKey, options);
+    }
+
+    private async createRefreshToken(loginData: LoginData<SecurityRequest>):Promise<string> {
+        let svc: DataService;
+        let session: UserSession;
+        let result: APIResponse<string>;
+
+        if (!loginData.user) return Promise.resolve("");
+
+        svc = db.getService("usersession", this._token);
+        session = new UserSession();
+        session.startedAt = new Date();
+        session.user = DataService.asObjectIdOf<UserAccount>(loginData.user._id);
+
+        result = await svc.add(session)
+
+        if (result.count == 1) return String(result.data[0]);
+        else return "";
     }
 
     verifyToken(token: string): SecurityToken {
@@ -581,16 +699,16 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 /**
  * Internal class used to hold all the data involved in the login process.
  */
-class LoginData {
+class LoginData<T> {
 
-    constructor(request: SecurityRequest) {
+    constructor(request: T) {
         this.request = request;
     }
 
     /**
      * Security request data with all the information for the login.
      */
-    public request: SecurityRequest = new SecurityRequest();
+    public request: T;
 
     /**
      * User that is requesting the login.
@@ -598,14 +716,24 @@ class LoginData {
     public user: UserAccount | undefined;
 
     /**
+     * The user session.
+     */
+    public userSession: UserSession | undefined;
+
+    /**
      * User secret
      */
     public secret: Secret<UserAccountSecret> | undefined
 
     /**
-     * Token generated after authentication.
+     * Access token generated after authentication.
      */
-    public token: string = ""
+    public accessToken: string = ""
+
+    /**
+     * Refresh token tied to user session.
+     */
+    public refreshToken: string = ""
 
     /**
      * Indicate if legacy security is enabled in Propel. This is for backward compatibility only.

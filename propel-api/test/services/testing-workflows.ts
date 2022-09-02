@@ -265,6 +265,7 @@ export class TestingWorkflows {
     get Worflow_S1EnabledNoParamNoTargetNoThrow(): Workflow{
         let ret: Workflow = new Workflow();
 
+        ret._id = "000000010000000000100001"
         ret.name = "Worflow_S1NoParamNoTargetNoThrow"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetUltraFastThreeResultsNoThrow."
 
@@ -284,6 +285,7 @@ export class TestingWorkflows {
     get Worflow_S1EnabledNoParamNoTargetNoThrowMediumDuration(): Workflow{
         let ret: Workflow = new Workflow();
 
+        ret._id = "000000010000000000100001"
         ret.name = "Worflow_S1EnabledNoParamNoTargetNoThrowMediumDuration"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetMediumThreeResultsNoThrow."
 
@@ -303,6 +305,7 @@ export class TestingWorkflows {
     get Worflow_S1EnabledNoParamNoTargetThrow(): Workflow{
         let ret: Workflow = new Workflow();
 
+        ret._id = "000000010000000000100001"
         ret.name = "Test Worflow with a single step NoParams No Target throwing error"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetUltraFastThreeResultsThrow."
 
@@ -322,6 +325,7 @@ export class TestingWorkflows {
     get Worflow_S2Enabled(): Workflow{
         let ret: Workflow = new Workflow();
 
+        ret._id = "000000010000000000100001"
         ret.name = "Worflow_S2Enabled"
         ret.description = "Workflow with Step 1:ScriptNoParamsTargetUltraFastTwoResultsNoThrow, Step2: ScriptNoParamsNoTargetUltraFastThreeResultsNoThrow."
 
@@ -351,6 +355,7 @@ export class TestingWorkflows {
     get Worflow_S2EnabledThrow(): Workflow{
         let ret: Workflow = new Workflow();
 
+        ret._id = "000000010000000000100001"
         ret.name = "Worflow_S2EnabledThrow"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetUltraFastThreeResultsThrow, Step 2: ScriptNoParamsNoTargetUltraFastThreeResultsNoThrow."
 
@@ -380,6 +385,7 @@ export class TestingWorkflows {
     get Worflow_S2EnabledTargetDisabled(): Workflow{
         let ret: Workflow = new Workflow();
 
+        ret._id = "000000010000000000100001"
         ret.name = "Worflow_S2EnabledTargetDisabled"
         ret.description = "Workflow with Step 1:ScriptNoParamsTargetUltraFastTwoResultsNoThrow, Step 2:ScriptNoParamsTargetUltraFastTwoResultsNoThrow."
 
@@ -409,6 +415,7 @@ export class TestingWorkflows {
     get Worflow_S2EnabledTargetDisabledFast(): Workflow{
         let ret: Workflow = new Workflow();
 
+        ret._id = "000000010000000000100001"
         ret.name = "Worflow_S2EnabledTargetEnabledFast"
         ret.description = "Workflow with Step 1:ScriptNoParamsTargetFastTwoResultsNoThrow, Step 2:ScriptNoParamsTargetUltraFastTwoResultsNoThrow."
 
@@ -438,6 +445,7 @@ export class TestingWorkflows {
     get Worflow_S2EnabledNoParamNoTargetNoThrowMediumDuration(): Workflow{
         let ret: Workflow = new Workflow();
 
+        ret._id = "000000010000000000100001"
         ret.name = "Test Worflow with 2 steps enaled NoParams NoTargets No Errors Medium Duration"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetMediumThreeResultsNoThrow and Step 2: ."
 
@@ -467,6 +475,7 @@ export class TestingWorkflows {
     get Worflow_S1Enabled2TargetsEnabledWithCredFast(): Workflow{
         let ret: Workflow = new Workflow();
         
+        ret._id = "000000010000000000100001"
         ret.name = "Worflow_S1EnabledTargetEnabledWithCredFast"
         ret.description = "Workflow with Step 1:ScriptNoParamsTargetFastTwoResultsNoThrow:ScriptNoParamsTargetUltraFastTwoResultsNoThrow."
 

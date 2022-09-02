@@ -60,6 +60,34 @@ try {
     showIndexes(coll);
 
     /**
+     * Session
+     */
+    collName = "UserSessions"
+    print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+    db.createCollection(collName);
+
+    print(`Creating indexes.`)
+    coll = db.getCollection(collName);
+
+    coll.createIndex({
+        _id: 1,
+        deletedOn: 1
+    }, {
+        name: "IU_EntityConstraint",
+        unique: true,
+        background: true
+    })
+
+    coll.createIndex({
+        sessionStartsAt: 1
+    }, {
+        name: "I_SessionStartsAt",
+        background: true,
+        expireAfterSeconds: 2592000  //1 month
+    })
+    showIndexes(coll);
+
+    /**
      * Scripts
      */
     collName = "Scripts"

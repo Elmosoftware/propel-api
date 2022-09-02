@@ -19,7 +19,6 @@ import { APIStatusService } from './api-status.service';
 import { ConnectivityService, ConnectivityStatus } from './connectivity.service';
 import { SecurityService } from './security.service';
 import { PropelError } from '../../../propel-shared/core/propel-error';
-import { APIResponse } from '../../../propel-shared/core/api-response';
 
 /**
  * This core class help inject common services to the app. 
@@ -166,19 +165,23 @@ export class CoreService {
             this.injToast.showError(status.lastError);
           }
 
-          //If connectivity is restablished or the app is starting for the first time, we must try to 
-          //establish a user session with Legacy security.
-          //If legacy security is enabled for Propel, a new session will be created for an "unknown" user.
-          //This is strictly for backward compatibility.
-          logger.logInfo(`Attempting to establish Legacy security...`)
-          this.injSec.tryLegacyLogin()
-            .then((result: APIResponse<string>) => {
-              if (result.error) logger.logInfo(String(result.error?.error ? result.error.error : result.error))
-              else logger.logInfo(`Legacy security was established successfully.`);
-            },
-              err => {
-                logger.logError(`There was an error establishing Legacy security, following details: ${JSON.stringify(err?.error ? err.error : err)}.`);
-              })
+          if (!this.injSec.isUserLoggedIn) {
+            //If connectivity is restablished or the app is starting for the first time, we must try to 
+            //establish a user session with a refresh token or Legacy security, whatever is available.
+            //If legacy security is enabled for Propel, a new session will be created for an "unknown" user.
+            //This is strictly for backward compatibility.
+            //If a Refresh token is found, we will try to reconnect the user session by refreshing the 
+            //access token with a new one:
+            logger.logInfo(`Attempting to reconnect user session...`)
+            this.injSec.tryReconnectSession()
+              .then((message: string) => {
+                logger.logInfo(message);
+                this.injNav.toHome();
+              },
+                err => {
+                  logger.logError(err);
+                })
+          }
         }
         else {
           //Navigate to the offline page to show the connectivity issue details:

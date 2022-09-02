@@ -6,8 +6,10 @@ import { SystemHelper } from 'src/util/system-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
 import { PropelError } from '../../../propel-shared/core/propel-error';
 import { RDPUser } from '../../../propel-shared/core/rdp-user';
+import { UserLoginResponse } from '../../../propel-shared/core/user-login-response';
 
 const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
+const REFRESH_TOKEN_KEY: string = "PropelRefreshToken"
 
 /**
  * This class help manage every aspect of user security, user authentication and authorization.
@@ -15,20 +17,15 @@ const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
 export class SessionService {
     
     private _securityToken: SecurityToken;
+    private _refreshToken: string = "";
     private _runtimeInfo: RuntimeInfo;
 
     constructor() {
         logger.logInfo("SessionService instance created");
         
-        //Caching the runtime info gather by Electron when the app starts:
-        if (sessionStorage.getItem(RUNTIME_INFO_KEY)) {
-            logger.logInfo("Storing Runtime user info");
-            this._runtimeInfo = JSON.parse(sessionStorage.getItem(RUNTIME_INFO_KEY));
-            logger.logInfo(`Connected as "${this._runtimeInfo.userName}".`);
-        }
-        else {
-            logger.logInfo("Runtime user info not found.");
-        }
+        this._securityToken = null;
+        this.fetchRuntimeInfo();
+        this.fetchRefreshToken();
 
         // //////////////////////////////////////////////////////////////////////////
         // if (environment.production == false) {
@@ -60,7 +57,12 @@ export class SessionService {
         // }   
         // //////////////////////////////////////////////////////////////////////////
 
-        this._securityToken = null;
+        if (this.runtimeInfo) {
+            logger.logInfo(`Connected as "${this._runtimeInfo.userName}".`);
+        }
+        else {
+            logger.logInfo("Runtime user info not found.");
+        }
    }
 
     /**
@@ -86,6 +88,13 @@ export class SessionService {
     }
 
     /**
+     * Returns the refresh token.
+     */
+    get refreshToken(): string {
+        return this._refreshToken;
+    }
+
+    /**
      * User that starts the propel app. (Only when running from Electron).
      */
     get runtimeInfo(): RuntimeInfo {
@@ -93,29 +102,74 @@ export class SessionService {
         return Object.assign({}, this._runtimeInfo);
     }
 
-    setSessionData(token: string): void {
-        let tokenSections: string[] = token.split(".")
-        let tokenPayload: any;
+    setSessionData(loginResponse: UserLoginResponse): void {
+        let accessTokenSections: string[] = loginResponse.accessToken.split(".")
+        let accessTokenPayload: any;
 
-        if (tokenSections.length !== 3) throw new PropelError(`Invalid token. 
-The provided JWT token is not properly formatted. We expect Header, Payload and Signature sections and we get ${tokenSections.length} sections.`);
+        if (accessTokenSections.length !== 3) throw new PropelError(`Invalid token. 
+The provided JWT token is not properly formatted. We expect Header, Payload and Signature sections and we get ${accessTokenSections.length} sections.`);
 
-        tokenPayload = SystemHelper.decodeBase64(tokenSections[1]);
+        accessTokenPayload = SystemHelper.decodeBase64(accessTokenSections[1]);
 
-        if (!Utils.isValidJSON(tokenPayload)) {
+        if (!Utils.isValidJSON(accessTokenPayload)) {
             throw new PropelError(`Invalid token payload. 
-The payload in the provided JWT token can't be parsed as JSON. Payload content is: ${tokenPayload} sections.`);
+The payload in the provided JWT token can't be parsed as JSON. Payload content is: ${accessTokenPayload} sections.`);
         }
         
         this._securityToken = new SecurityToken();
-        this._securityToken.hydrateFromTokenPayload(JSON.parse(tokenPayload));
-        this._securityToken.accessToken = token;        
+        this._securityToken.hydrateFromTokenPayload(JSON.parse(accessTokenPayload));
+        this._securityToken.accessToken = loginResponse.accessToken;  
+        
+        this.saveRefreshToken(loginResponse.refreshToken);
     }
     
     /**
      * Remove any active session data.
      */
     removeSessionData() {
-        this._securityToken = null;       
+        this._securityToken = null;
+        this.removeRefreshToken();   
+    }
+    
+    /**
+     * If the user already start session in this device, we are trying here to grab 
+     * the refresh token from the local storage.
+     */
+    private fetchRefreshToken(): void {
+        let refreshToken: string = localStorage.getItem(REFRESH_TOKEN_KEY);
+
+        if (refreshToken) {
+            this._refreshToken = refreshToken;
+        }
+    }
+
+    /**
+     * Caching the runtime info gathered by Electron when the app starts:
+     */
+    private fetchRuntimeInfo(): void {
+        let runtimeInfo: string = sessionStorage.getItem(RUNTIME_INFO_KEY);
+
+        if (runtimeInfo) {
+            try {
+                this._runtimeInfo = JSON.parse(runtimeInfo);
+            } catch (error) {
+                logger.logError(`There was an error retrieving runtime info from session storage: "${String(error)}".`)
+            }
+        }
+    }
+
+    private saveRefreshToken(refreshToken): void {
+        if(!refreshToken){
+            this.removeRefreshToken()
+        }
+        else {
+            this._refreshToken = refreshToken;
+            localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+        }
+    }
+
+    private removeRefreshToken(): void {
+        this._refreshToken = ""
+        localStorage.removeItem(REFRESH_TOKEN_KEY)
     }
 }
