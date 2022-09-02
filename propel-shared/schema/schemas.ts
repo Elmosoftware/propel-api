@@ -23,7 +23,8 @@ class Schemas {
             this.executionTarget,
             this.executionStep,
             this.secret,
-            this.credential
+            this.credential,
+            this.userSession
         ]
     }
 
@@ -332,6 +333,30 @@ class Schemas {
             ])
             .merge(this.entity)
             .setDescription("Full log of a Workflow execution.")
+            .freeze();
+    }
+
+    /**
+     * **Session** schema definition.
+     * @extends Entity schema definition
+     */
+    get userSession(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("UserSession", "UserSessions", true)
+            .setFields([
+                new SchemaField("user", `User account session.`,
+                    {
+                        type: this.userAccount,
+                        isRequired: true
+                    }),
+                new SchemaField("startedAt", `Session start timestamp (UTC).`,
+                    {
+                        type: Date,
+                        isRequired: true
+                    })
+            ])
+            .merge(this.entity)
+            .setDescription("User sessions.")
             .freeze();
     }
 
