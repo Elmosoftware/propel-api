@@ -161,6 +161,16 @@ Most likely cause, is you trying to fetch information encrypted with a different
             `Your session has expired. In order to protect your account you will need to login again.`,
             true);
     }
+
+    /**
+     * Indicates the supplied refresh token is missing or expired.
+     */
+     static get RefreshTokenIsExpired(): Code {
+        return new Code("REFRESH_TOKEN_EXPIRED",
+            `The refresh token is missing or expired.`,
+            `A long time without using Propel?, please login again to protect your account.`,
+            true);
+    }
 }
 
 /**
