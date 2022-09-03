@@ -10,10 +10,9 @@ import { UIHelper } from 'src/util/ui-helper';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { InfiniteScrollingService, PagingHelper, SCROLL_POSITION } from 'src/core/infinite-scrolling-module';
 import { SearchType, SearchTypeDefinition, DEFAULT_SEARCH_TYPE } from "./search-type";
-//Below line is only in use by the "_fakeWorkflowCreation" method and is used for 
-//testing purposes only:
-//import { Workflow } from '../../../../propel-shared/models/workflow';
-
+import { Workflow } from '../../../../propel-shared/models/workflow';
+import { environment } from 'src/environments/environment';
+import { PropelError } from '../../../../propel-shared/core/propel-error';
 
 /**
  * Size of each data page.
@@ -45,7 +44,7 @@ export class SearchComponent implements OnInit {
     let ret: SearchType = DEFAULT_SEARCH_TYPE;
 
     if (this.fg && this.fg.value.searchType) {
-        ret = this.fg.value.searchType;
+      ret = this.fg.value.searchType;
     }
 
     return ret;
@@ -60,8 +59,8 @@ export class SearchComponent implements OnInit {
       }
       else {
         ret = UIHelper.tokenizeAndStem(this.fg.value.searchText)
-        .join(" ");
-      }      
+          .join(" ");
+      }
     }
 
     return ret;
@@ -104,8 +103,6 @@ export class SearchComponent implements OnInit {
         }
       })
 
-    //If there is a search term specified or we need to browse all the items, we start 
-    //the search immediately:
     if (this.showAll || this.currentSearchTerm !== "") {
       this.search();
     }
@@ -113,7 +110,27 @@ export class SearchComponent implements OnInit {
 
   search() {
     this.resetSearch();
-    this.fetchData(this.svcInfScroll.pageSize, 0);
+    this.fetchData(this.svcInfScroll.pageSize, 0)
+      .then(() => {
+        console.log(`Search finished`)
+      }, (err) => {
+        this.core.toaster.showError(new PropelError(err))
+      })
+  }
+
+  onDataFeedHandler(ph: PagingHelper): void {
+    this.fetchData(ph.top, ph.skip)
+      .then(() => {
+        console.log(`Processing data page ${ph.page} of ${ph.pages}, (top:${ph.top}, skip:${ph.skip}).`)
+      },
+        (err) => {
+          this.core.toaster.showError(new PropelError(err))
+        })
+  }
+
+  onDataChangedHandler($events): void {
+    console.log(`Data changed, refreshing ...`)
+    this.search();
   }
 
   async fetchData(top: number, skip: number, forceStrictSearch: boolean = false): Promise<void> {
@@ -150,11 +167,11 @@ export class SearchComponent implements OnInit {
 
         SearchTypeDefinition.getFullTextFields(this.searchType).forEach((field) => {
           qm.filterBy.$or.push({
-                  [field]: {
-                    $regex: termsToSearch[0],
-                    $options: "gi"
-                  }
-                })
+            [field]: {
+              $regex: termsToSearch[0],
+              $options: "gi"
+            }
+          })
         });
 
         qm.sortBy = SearchTypeDefinition.getDefaultSort(this.searchType);
@@ -204,8 +221,8 @@ export class SearchComponent implements OnInit {
     //On every new search, we must replace the navigation history, to 
     //allow the user to go back to the last search:
     if (skip == 0) {
-      this.core.navigation.replaceHistory("", 
-      { term: String(this.currentSearchTerm), browse: (this.browseMode) ? "true" : "false" });
+      this.core.navigation.replaceHistory("",
+        { term: String(this.currentSearchTerm), browse: (this.browseMode) ? "true" : "false" });
     }
 
     return Promise.resolve();
@@ -213,12 +230,16 @@ export class SearchComponent implements OnInit {
 
   getData(type: SearchType, qm: QueryModifier): Promise<APIResponse<Entity>> { // Observable<APIResponse<any>> {
 
-    // ///////////////////////////////////////////////////////////////////////////////
-    // //DEBUG:       For testing purposes only of the infinite scrrolling feature:
-    // if (type == SearchType.Workflows) {
-    //   return this._fakeWorkflowCreation(3000, 100, qm);      
-    // }
-    // ///////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    //DEBUG ONLY: For testing purposes only of the infinite scrrolling feature:
+    if (environment.production == false) {
+      if (type == SearchType.Workflows) {
+        return this._fakeWorkflowCreation(3000, 100, qm);    
+        //test throwing an error:
+        // throw new PropelError("TEST ERROR", ErrorCodes.CryptoError)
+      }
+    }
+    ///////////////////////////////////////////////////////////////////////////////
 
     return this.core.data.find(SearchTypeDefinition.getDataEntity(type), qm)
       .toPromise();
@@ -236,14 +257,6 @@ export class SearchComponent implements OnInit {
 
   onScrollEndHandler(e: SCROLL_POSITION): void {
     this.svcInfScroll.onScrollEndHandler(e);
-  }
-
-  onDataFeedHandler(ph: PagingHelper): void {
-    this.fetchData(ph.top, ph.skip);
-  }
-
-  onDataChangedHandler($events): void {
-    this.search();
   }
 
   fullScrollUp() {
@@ -266,7 +279,7 @@ export class SearchComponent implements OnInit {
       fields.forEach((fieldName, i) => {
         let chunk: number | null = (i == 0) ? null : 30;
         entity[fieldName] = UIHelper.highlighText(entity[fieldName], words, chunk);
-      })      
+      })
     })
 
     return data;
@@ -276,11 +289,11 @@ export class SearchComponent implements OnInit {
     let term: string = "";
     let searchType: string = DEFAULT_SEARCH_TYPE.toString();
     let browse: string = "false";
-    let pageSuffix:string = this.core.navigation.getCurrentPageSuffix();
+    let pageSuffix: string = this.core.navigation.getCurrentPageSuffix();
 
     if (pageSuffix) {
       searchType = String(Utils.getEnumValue(SearchType, pageSuffix, false))
-      
+
       //If for some reason the page suffix is not right, we will prepare a search for the 
       //default search type:
       if (!searchType) {
@@ -307,51 +320,51 @@ export class SearchComponent implements OnInit {
     });
   }
 
-//   //================================================================================================
-//   //    Used for testing purposes only:
-//   //================================================================================================
-   
-//   private _fakeWorkflowCreation(totalWorkflows: number, msTimeout: number, qm: QueryModifier): Promise<APIResponse<Workflow>> {
+  private _fakeWorkflowCreation(totalWorkflows: number, msTimeout: number, qm: QueryModifier): Promise<APIResponse<Workflow>> {
+    //================================================================================================
+    //DEBUG ONLY:
+    //================================================================================================
+    if (environment.production) return;
 
-//     let data: Workflow[] = [];
-//     let top: number = Number(qm.top);
-//     let skip: number = Number(qm.skip);
-//     let words: string[] = [];
+    let data: Workflow[] = [];
+    let top: number = Number(qm.top);
+    let skip: number = Number(qm.skip);
+    let words: string[] = [];
 
-//     if (qm.filterBy.$text) {
-//       words = qm.filterBy.$text.$search.split(" ");
-//     }
-//     else if(qm.filterBy.$or){
-//       words.push(String(qm.filterBy.$or[0].name.$regex));
-//     }
+    if (qm.filterBy.$text) {
+      words = qm.filterBy.$text.$search.split(" ");
+    }
+    else if (qm.filterBy.$or) {
+      words.push(String(qm.filterBy.$or[0].name.$regex));
+    }
 
-//     //To emulate no data retrieved, sent the search term "nodata":
-//     if (words.length > 0 && words[0] == "nodata") {
-//       return Promise.resolve(new APIResponse<Workflow>(null, data, 0))
-//     }
+    //To emulate no data retrieved, sent the search term "nodata":
+    if (words.length > 0 && words[0] == "nodata") {
+      return Promise.resolve(new APIResponse<Workflow>(null, data, 0))
+    }
 
-//     for (let i = (skip + 1); i < (skip + top + 1); i++) {
-//       let w = new Workflow()
+    for (let i = (skip + 1); i < (skip + top + 1); i++) {
+      let w = new Workflow()
 
-//       let w0 = words[0];
-//       let w1 = (words.length > 1) ? words[1] : "";
-//       let w2 = (words.length > 2) ? words[2] : "";
-//       let w3 = (words.length > 3) ? words[3] : "";
-//       let w4 = (words.length > 4) ? words[4] : "";
+      let w0 = words[0];
+      let w1 = (words.length > 1) ? words[1] : "";
+      let w2 = (words.length > 2) ? words[2] : "";
+      let w3 = (words.length > 3) ? words[3] : "";
+      let w4 = (words.length > 4) ? words[4] : "";
 
-//       w.name = `TEST #${i} for searched words: "${w0}"`; // ${word.toUpperCase()}`;
-//       w.description = `Et ligula ullamcorper malesuada ${w0} proin libero ${w1} nunc consequat interdum.
-// Fermentum et sollicitudin ac orci phasellus egestas ${w2} ${w3} tellus rutrum tellus. Diam phasellus vestibulum 
-// lorem sed risus ultricies. Erat imperdiet sed euismod nisi ${w4} porta lorem mollis. Feugiat in ante metus 
-// dictum at tempor commodo ullamcorper a.`; // Searched word is ${word}.`;
+      w.name = `TEST #${i} for searched words: "${w0}"`; // ${word.toUpperCase()}`;
+      w.description = `Et ligula ullamcorper malesuada ${w0} proin libero ${w1} nunc consequat interdum.
+Fermentum et sollicitudin ac orci phasellus egestas ${w2} ${w3} tellus rutrum tellus. Diam phasellus vestibulum 
+lorem sed risus ultricies. Erat imperdiet sed euismod nisi ${w4} porta lorem mollis. Feugiat in ante metus 
+dictum at tempor commodo ullamcorper a.`; // Searched word is ${word}.`;
 
-//       data.push(w);
+      data.push(w);
 
-//       if (i == totalWorkflows) {
-//         break;
-//       }
-//     }
+      if (i == totalWorkflows) {
+        break;
+      }
+    }
 
-//     return Promise.resolve(new APIResponse<Workflow>(null, data, totalWorkflows))
-//   }
+    return Promise.resolve(new APIResponse<Workflow>(null, data, totalWorkflows))
+  }
 }
