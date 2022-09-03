@@ -308,7 +308,7 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
         let url: string = this.buildURL(SecurityEndpointActions.Logoff);
 
         this.http.post<APIResponse<void>>(url, new TokenRefreshRequest(this.refreshToken), 
-            { headers: this.buildHeaders() })
+            { headers: this.buildHeaders(true) })
         .subscribe(() => {
             logger.logInfo(`User log off completed.`)
             this._session.removeSessionData();
