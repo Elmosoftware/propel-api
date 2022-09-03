@@ -232,13 +232,13 @@ export class SearchComponent implements OnInit {
 
     ///////////////////////////////////////////////////////////////////////////////
     //DEBUG ONLY: For testing purposes only of the infinite scrrolling feature:
-    if (environment.production == false) {
-      if (type == SearchType.Workflows) {
-        return this._fakeWorkflowCreation(3000, 100, qm);    
-        //test throwing an error:
-        // throw new PropelError("TEST ERROR", ErrorCodes.CryptoError)
-      }
-    }
+    // if (environment.production == false) {
+    //   if (type == SearchType.Workflows) {
+    //     return this._fakeWorkflowCreation(3000, 100, qm);    
+    //     //test throwing an error:
+    //     // throw new PropelError("TEST ERROR", ErrorCodes.CryptoError)
+    //   }
+    // }
     ///////////////////////////////////////////////////////////////////////////////
 
     return this.core.data.find(SearchTypeDefinition.getDataEntity(type), qm)
