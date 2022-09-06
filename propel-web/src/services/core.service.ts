@@ -176,10 +176,19 @@ export class CoreService {
             this.injSec.tryReconnectSession()
               .then((message: string) => {
                 logger.logInfo(message);
-                this.injNav.toHome();
+                this.injNav.toHome(true);
               },
                 err => {
+                  let e: PropelError = new PropelError(err);
                   logger.logError(err);
+
+                  if (e.userMessage) {
+                    this.injToast.showError(e);
+                  }
+                  else {
+                    this.injToast.showError("There was an unexpected error trying to reconnect your session. Please try to sign in again.", 
+                      "Not able to reconnect your session!")
+                  }
                 })
           }
         }

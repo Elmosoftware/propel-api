@@ -4,6 +4,7 @@ import { NavigationEnd, Params, Router } from '@angular/router';
 import { logger } from "../../../propel-shared/services/logger-service";
 import { PageMetadata, AppPages } from "src/services/app-pages.service";
 import { PropelError } from "../../../propel-shared/core/propel-error";
+import { DataLossPreventionGuard } from "src/core/data-loss-prevention-guard";
 
 const MAX_HISTORY_LENGTH: number = 15
 
@@ -45,7 +46,7 @@ export class NavigationService {
         return this._history[this._history.length - 2];
     }
 
-    constructor(private router: Router, private appPages: AppPages) {
+    constructor(private router: Router, private appPages: AppPages, private guard: DataLossPreventionGuard) {
         this._currPageRXP = new RegExp("^/[A-Za-z-]*", "gi");
         logger.logInfo("Navigationservice instance created");
 
@@ -182,10 +183,13 @@ export class NavigationService {
     }
 
     /**
-     * Navigate to Home page.
+     * Navigate to Home page. If the parameter force is set with the boolean value true, any data 
+     * guard implemented will be temporarily disabled to allow the navigation safely.
+     * @param force Force navigation overriding any data guard that could prevent the navigation.
      */
-    toHome(): void {
+    toHome(force: boolean = false): void {
         let url: string = this.buildURL(this.pages.Home);
+        if (force) this.guard.deactivate = true;
         this.to(url)
     }
 

@@ -84,7 +84,7 @@ export class AuthInterceptor implements HttpInterceptor {
                         this._isRefreshing = false;
                         logger.logError(`Access token refresh finished with the following error: ${err.message}.`)
                         this.security.logOff();
-                        this.nav.toHome();
+                        this.nav.toHome(true);
 
                         return throwError(err)
                     }),

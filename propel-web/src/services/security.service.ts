@@ -72,13 +72,6 @@ export class SecurityService {
     }
 
     /**
-     * Returns a boolean value that indicates if Legacy security, (Propel 2.0 and before),is on.
-     */
-    get isLegacy(): boolean {
-        return this._session.isLegacy;
-    }
-
-    /**
      * Returns all the session details including information about the user, token expiration, etc.
      */
     get sessionData(): SecurityToken {
@@ -220,7 +213,7 @@ export class SecurityService {
                 return Promise.resolve(`Access token was refreshed, (expiring on "${(this.sessionData.expiresAt ? this.sessionData.expiresAt.toLocaleString() : "not defined")}"). User session reconnected.`);
             } catch (error) {
                 this.logOff()
-                return Promise.reject(`There was an error trying to reconnect user session: "${error.message}"`)
+                return Promise.reject(error)
             }
         }
         else if (config.legacySecurity) 
