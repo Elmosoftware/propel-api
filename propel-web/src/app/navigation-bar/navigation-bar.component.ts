@@ -5,7 +5,9 @@ import { environment } from 'src/environments/environment';
 
 import { CoreService } from 'src/services/core.service';
 import { NavigationHistoryEntry } from 'src/services/navigation.service';
+import { SecuritySharedConfiguration } from '../../../../propel-shared/core/security-shared-config';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
+import { logger } from '../../../../propel-shared/services/logger-service';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
 @Component({
@@ -20,6 +22,7 @@ export class NavigationBarComponent implements OnInit {
 
   loading: boolean;
   searchTerm: string = "";
+  _isLegacy: boolean = false;
 
   get isBrowseWorkflowsPage(): boolean {
     return this.core.navigation.currentPageIs(this.core.navigation.pages.BrowseWorkflows);
@@ -124,7 +127,7 @@ export class NavigationBarComponent implements OnInit {
   get userName(): string {
     let ret:string = "";
 
-    if (this.core.security.isUserLoggedIn && !this.isLegacySecurity) {
+    if (this.isUserLoggedIn && !this.isLegacySecurityEnabled) {
       ret = `${this.core.security.sessionData.userFullName}, (${this.core.security.sessionData.userName})`
     }
 
@@ -141,8 +144,12 @@ export class NavigationBarComponent implements OnInit {
     return ret;
   }
 
-  get isLegacySecurity(): boolean {
-    return this.core.security.isLegacy;
+  get isUserLoggedIn(): boolean {
+    return this.core.security.isUserLoggedIn;
+  }
+
+  get isLegacySecurityEnabled(): boolean {
+    return this._isLegacy;
   }
 
   get isDevMode(): boolean {
@@ -176,6 +183,14 @@ export class NavigationBarComponent implements OnInit {
       .subscribe((counter: number) => {
         this.loading = counter > 0;
       })
+    
+    this.core.security.getConfig()
+    .then((config: SecuritySharedConfiguration) => {
+      this._isLegacy = config.legacySecurity;
+    }, (err) => {
+      logger.logError(`Not able to get Security API configuration because of the following error: "${err.message}".`)
+    })
+
   }
 
   goBack() {
@@ -259,7 +274,7 @@ export class NavigationBarComponent implements OnInit {
     ).subscribe((result: DialogResult<any>) => {
       if (!result.isCancel) {
         this.core.security.logOff();
-        this.core.navigation.toHome();
+        this.core.navigation.toHome(true);
       }
     }, err => {
       throw err
