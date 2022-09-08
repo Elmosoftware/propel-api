@@ -1,7 +1,7 @@
 import { FormGroup, FormControl } from '@angular/forms';
 import { schemaRepo } from "../../../propel-shared/schema/schema-repository";
 import { SchemaDefinition } from '../../../propel-shared/schema/schema-definition';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 
 /**
  * Utility class helping with common operation with Reactive Forms.
@@ -46,7 +46,7 @@ export class FormHandler<T> {
      * @param entityType Type for the form data. Must inherit from *"Entity"*.
      * @param form Formgroup to handle.
      */
-    constructor(entityType: DataEntity | string, form: FormGroup) {
+    constructor(entityType: DataEndpointActions | string, form: FormGroup) {
         // this.schemaDef = schemaRepo.getEntitySchemaByName(entityType.name); 
         this.schemaDef = schemaRepo.getSchemaByName(entityType.toString()); 
         this._form = form;

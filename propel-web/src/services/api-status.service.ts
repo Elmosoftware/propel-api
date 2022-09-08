@@ -1,13 +1,19 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { environment } from 'src/environments/environment';
+import { environment as env } from 'src/environments/environment';
 import { APIStatus } from "../../../propel-shared/models/api-status";
 import { UsageStats } from "../../../propel-shared/models/usage-stats";
 import { APIResponse } from "../../../propel-shared/core/api-response";
 import { logger } from '../../../propel-shared/services/logger-service';
-import { X_HEADER_NOAUTH } from "../core/auth-interceptor";
+import { HttpHelper, Headers } from 'src/util/http-helper';
+
+export const StatusEndpoint: string = "status"
+
+export const enum StatusEndpointActions {
+  Stats = "stats"
+}
 
 /**
  * Data service
@@ -25,35 +31,22 @@ export class APIStatusService {
    * Retrieves the API status.
    */
   getStatus(): Observable<APIResponse<APIStatus>> {
-    let url: string = this.buildURLForStatus();
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, StatusEndpoint);
 
-    return this.http.get<APIResponse<APIStatus>>(url, { headers: this.buildHeaders() });
+    return this.http.get<APIResponse<APIStatus>>(url, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
+    });
   }
 
   /**
    * Retrieves the Application Usage Statistics.
    */
   getApplicationUsageStats(): Observable<APIResponse<UsageStats>> {
-    let url: string = this.buildURLForApplicationUsageStats();
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
+      [StatusEndpoint, StatusEndpointActions.Stats]);
 
-    return this.http.get<APIResponse<UsageStats>>(url, { headers: this.buildHeaders() });
-  }
-
-  private buildURLForStatus() {
-    return `http://${environment.api.url}${environment.api.endpoint.status}`;
-  }
-
-  private buildURLForApplicationUsageStats() {
-    return this.buildURLForStatus() + "stats";
-  }
-
-  private buildHeaders(): HttpHeaders {
-    let ret: HttpHeaders = new HttpHeaders()
-      .set("Content-Type", "application/json");
-
-    //This call is for a public endpoint, no authorization header needed:
-    ret = ret.append(X_HEADER_NOAUTH, "");
-
-    return ret;
+    return this.http.get<APIResponse<UsageStats>>(url, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
+    });
   }
 }

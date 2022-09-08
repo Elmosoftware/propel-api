@@ -3,7 +3,7 @@ import { concat } from 'rxjs';
 
 import { Target } from '../../../../propel-shared/models/target';
 import { CoreService } from 'src/services/core.service';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
@@ -54,7 +54,7 @@ If there is a Workflow that already have it, the execution on this target will b
 
   duplicate(id: string) {
     //We search for the target first:
-    this.core.data.getById(DataEntity.Target, id)
+    this.core.data.getById(DataEndpointActions.Target, id)
       .subscribe((results: APIResponse<Entity>) => {
 
         if (results.count == 0) {
@@ -62,7 +62,7 @@ If there is a Workflow that already have it, the execution on this target will b
         }
         else {
           //If exists, we duplicate it:
-          this.core.data.duplicate(DataEntity.Target, (results.data[0] as Target).FQDN)
+          this.core.data.duplicate(DataEndpointActions.Target, (results.data[0] as Target).FQDN)
             .subscribe((results: APIResponse<string>) => {
               this.core.navigation.toTarget(results.data[0]);
             },
@@ -87,8 +87,8 @@ If there is a Workflow that already have it, the execution on this target will b
         //have it attached will prevent the execution:
         item.enabled = false;
 
-        concat(this.core.data.save(DataEntity.Target, item),
-          this.core.data.delete(DataEntity.Target, item._id))
+        concat(this.core.data.save(DataEndpointActions.Target, item),
+          this.core.data.delete(DataEndpointActions.Target, item._id))
           .subscribe((results: APIResponse<string>) => {
           }, err => {
             throw err

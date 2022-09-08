@@ -6,7 +6,7 @@ import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard
 import { FormHandler } from 'src/core/form-handler';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { SystemHelper } from 'src/util/system-helper';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { UserRegistrationResponse } from '../../../../propel-shared/core/user-registration-response';
@@ -46,7 +46,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
   }
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
-    this.fh = new FormHandler(DataEntity.UserAccount, new FormGroup({
+    this.fh = new FormHandler(DataEndpointActions.UserAccount, new FormGroup({
       name: new FormControl("", [
         Validators.required,
         Validators.maxLength(this.validationParams.nameMaxLength),

@@ -5,7 +5,7 @@ import { Observable, Subject } from 'rxjs';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
 import { FormHandler } from 'src/core/form-handler';
 import { CoreService } from 'src/services/core.service';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from '../../../../propel-shared/models/credential-types';
@@ -52,7 +52,7 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
     //Creating the Form handler with the CredentialBase fields only:
-    this.fh = new FormHandler(DataEntity.Credential, new FormGroup({
+    this.fh = new FormHandler(DataEndpointActions.Credential, new FormGroup({
       name: new FormControl("", [
         Validators.required,
         Validators.maxLength(this.validationParams.nameMaxLength),
@@ -124,7 +124,7 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
 
     if (this.fh.form.controls._id.value) {
       //Fetching the credential:
-      this.core.data.getById(DataEntity.Credential, this.fh.form.controls._id.value, true)
+      this.core.data.getById(DataEndpointActions.Credential, this.fh.form.controls._id.value, true)
         .subscribe((data: APIResponse<Credential>) => {
           //If the credential doesn't exists:
           if (data.count == 0) {
@@ -139,7 +139,7 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
             this.fh.form.updateValueAndValidity();
 
             //Fetching the Secret:
-            this.core.data.getById(DataEntity.Secret, this.fh.form.controls.secretId.value, true)
+            this.core.data.getById(DataEndpointActions.Secret, this.fh.form.controls.secretId.value, true)
               .subscribe((data: APIResponse<Secret<SecretValue>>) => {
                 if (data.count == 0) {
                   //If the secret is missing for some reason, we must prepare the form to enter the secret 
@@ -200,7 +200,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
                         else { //If the user decide to enter the credential again.
 
                           //We must try to delete the old one first
-                          this.core.data.delete(DataEntity.Secret, this.fh.form.controls.secretId.value)
+                          this.core.data.delete(DataEndpointActions.Secret, this.fh.form.controls.secretId.value)
                             .subscribe((results: APIResponse<string>) => {
                               //Old Secret was deleted!                      
                             }, err => {
@@ -345,7 +345,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
   save(): void {
 
-    this.core.data.save(DataEntity.Secret, this.secret)
+    this.core.data.save(DataEndpointActions.Secret, this.secret)
       .subscribe((results: APIResponse<string>) => {
 
         //Updating the secret id in the credential:
@@ -354,7 +354,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
         // this.saved.next();
 
         //Now we save the credential:
-        this.core.data.save(DataEntity.Credential, this.fh.value)
+        this.core.data.save(DataEndpointActions.Credential, this.fh.value)
           .subscribe((results: APIResponse<string>) => {
             this.core.toaster.showSuccess("Changes have been saved succesfully.");
             this.fh.setId(results.data[0]);
@@ -379,7 +379,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
               //transaction:
               if (!this.fh.value._id) {
 
-                this.core.data.delete(DataEntity.Secret, this.fh.value.secretId)
+                this.core.data.delete(DataEndpointActions.Secret, this.fh.value.secretId)
                 .subscribe((results: APIResponse<string>) => {
                   //Our best attempt here.
                 },

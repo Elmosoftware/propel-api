@@ -16,7 +16,7 @@ import { WorkflowStepComponentStatus } from '../workflow-step/workflow-step.comp
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { Target } from '../../../../propel-shared/models/target';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -50,7 +50,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
-    this.fh = new FormHandler(DataEntity.Workflow, new FormGroup({
+    this.fh = new FormHandler(DataEndpointActions.Workflow, new FormGroup({
       name: new FormControl("", [
         Validators.required,
         Validators.minLength(NAME_MIN),
@@ -90,7 +90,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
     let id: string = this.route.snapshot.paramMap.get("id");
 
     if (id) {
-      this.core.data.getById(DataEntity.Workflow, id, true)
+      this.core.data.getById(DataEndpointActions.Workflow, id, true)
         .subscribe((data: APIResponse<Workflow>) => {
           if (data.count == 0) {
             this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
@@ -339,7 +339,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
       });    
     }
 
-    this.core.data.save(DataEntity.Workflow, data)
+    this.core.data.save(DataEndpointActions.Workflow, data)
       .subscribe((results: APIResponse<string>) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.fh.setId(results.data[0]);

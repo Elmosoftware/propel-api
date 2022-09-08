@@ -2,7 +2,7 @@ import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { DialogResult } from 'src/core/dialog-result';
 import { SearchLine } from 'src/core/search-line';
 import { CoreService } from 'src/services/core.service';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { UIHelper } from 'src/util/ui-helper';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
@@ -110,7 +110,7 @@ Also: This can cause to fail any script that is currently using the credential.`
       if (!result.isCancel) {
 
         //First we try t0 delete the Secret:
-        this.core.data.delete(DataEntity.Secret, item.secretId)
+        this.core.data.delete(DataEndpointActions.Secret, item.secretId)
           .subscribe((results: APIResponse<string>) => {
             //Old Secret was deleted!                      
           }, err => {
@@ -118,7 +118,7 @@ Also: This can cause to fail any script that is currently using the credential.`
           })
 
         //Now deleting the credential itself:
-        this.core.data.delete(DataEntity.Credential, item._id)
+        this.core.data.delete(DataEndpointActions.Credential, item._id)
           .subscribe((results: APIResponse<string>) => {
             this.core.toaster.showSuccess("The credential was deleted succesfully!");
             this.dataChanged.emit(true);
@@ -139,7 +139,7 @@ Also: This can cause to fail any script that is currently using the credential.`
     }
 
     //Fetching the Secret holding the Credential secrets:
-    this.core.data.getById(DataEntity.Secret, item.secretId, true)
+    this.core.data.getById(DataEndpointActions.Secret, item.secretId, true)
       .subscribe((data: APIResponse<Secret<SecretValue>>) => {
         if (data.count == 0) {
           //If the secret is missing:

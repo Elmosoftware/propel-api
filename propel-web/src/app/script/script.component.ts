@@ -15,7 +15,7 @@ import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { DialogResult } from 'src/core/dialog-result';
 import { ScriptParameter } from "../../../../propel-shared/models/script-parameter";
 import { SystemHelper } from "../../util/system-helper";
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 
 declare var Prism: any;
 
@@ -68,7 +68,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
-    this.fh = new FormHandler(DataEntity.Script, new FormGroup({
+    this.fh = new FormHandler(DataEndpointActions.Script, new FormGroup({
       name: new FormControl("", [
         Validators.required,
         Validators.minLength(NAME_MIN),
@@ -115,7 +115,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
     let id: string = this.route.snapshot.paramMap.get("id");
 
     if (id) {
-      this.core.data.getById(DataEntity.Script, id, false)
+      this.core.data.getById(DataEndpointActions.Script, id, false)
         .subscribe((data: APIResponse<Script>) => {
           if (data.count == 0) {
             this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
@@ -214,7 +214,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
     let script: Script = Object.assign({}, this.fh.form.value);
     script.code = SystemHelper.encodeBase64(script.code);
 
-    this.core.data.save(DataEntity.Script, script)
+    this.core.data.save(DataEndpointActions.Script, script)
       .subscribe((results: APIResponse<string>) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.completed = true

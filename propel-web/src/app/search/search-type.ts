@@ -1,4 +1,4 @@
-import { DataEntity } from "src/services/data.service";
+import { DataEndpointActions } from "src/services/data.service";
 import { PropelError } from "../../../../propel-shared/core/propel-error";
 
 /**
@@ -27,7 +27,7 @@ export class SearchTypeDefinition {
                 "name",
                 "description"
             ],
-            dataEntity: DataEntity.Workflow,
+            dataEntity: DataEndpointActions.Workflow,
             defaultSort: "name",
             additionalFilter: {
                 //We would like to exclude Quick tasks from the list:
@@ -40,7 +40,7 @@ export class SearchTypeDefinition {
                 "name",
                 "description"
             ],
-            dataEntity: DataEntity.Script,
+            dataEntity: DataEndpointActions.Script,
             defaultSort: "name",
             additionalFilter: {
             }
@@ -50,7 +50,7 @@ export class SearchTypeDefinition {
                 "friendlyName",
                 "description"
             ],
-            dataEntity: DataEntity.Target,
+            dataEntity: DataEndpointActions.Target,
             defaultSort: "friendlyName",
             additionalFilter: {
             }
@@ -60,7 +60,7 @@ export class SearchTypeDefinition {
                 "name",
                 "description"
             ],
-            dataEntity: DataEntity.Credential,
+            dataEntity: DataEndpointActions.Credential,
             defaultSort: "name",
             additionalFilter: {
             }
@@ -71,7 +71,7 @@ export class SearchTypeDefinition {
                 "name",
                 "email"
             ],
-            dataEntity: DataEntity.UserAccount,
+            dataEntity: DataEndpointActions.UserAccount,
             defaultSort: "name",
             additionalFilter: {
             }
@@ -82,7 +82,7 @@ export class SearchTypeDefinition {
         return this.getAttribute(type, "textFields");
     }
 
-    static getDataEntity(type: SearchType): DataEntity {
+    static getDataEntity(type: SearchType): DataEndpointActions {
         return this.getAttribute(type, "dataEntity");
     }
 

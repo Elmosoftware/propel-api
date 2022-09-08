@@ -12,7 +12,7 @@ import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard
 import { forkJoin, Observable } from 'rxjs';
 import { DialogResult } from 'src/core/dialog-result';
 import { FormHandler } from "../../core/form-handler";
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { Credential } from "../../../../propel-shared/models/credential";
 
 const FRIENDLY_NAME_MIN: number = 3;
@@ -40,7 +40,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
-    this.fh = new FormHandler(DataEntity.Target, new FormGroup({
+    this.fh = new FormHandler(DataEndpointActions.Target, new FormGroup({
       FQDN: new FormControl("", [
         Validators.required,
         ValidatorsHelper.FQDN()
@@ -109,7 +109,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     let id: string = this.route.snapshot.paramMap.get("id");
 
     if (id) {
-      this.core.data.getById(DataEntity.Target, id, true)
+      this.core.data.getById(DataEndpointActions.Target, id, true)
         .subscribe((data: APIResponse<Target>) => {
           if (data.count == 0) {
             this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
@@ -160,7 +160,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
       }
     }
 
-    return this.core.data.find(DataEntity.Credential, qm)
+    return this.core.data.find(DataEndpointActions.Credential, qm)
   }
 
   credentialChanged($event){
@@ -179,7 +179,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
   }
 
   save() {
-    this.core.data.save(DataEntity.Target, this.fh.value)
+    this.core.data.save(DataEndpointActions.Target, this.fh.value)
       .subscribe((results: APIResponse<string>) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.fh.setId(results.data[0]);

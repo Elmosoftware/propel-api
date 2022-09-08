@@ -1,17 +1,20 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 import { Entity } from "../../../propel-shared/models/entity";
 import { Observable } from 'rxjs';
 import { QueryModifier } from '../../../propel-shared/core/query-modifier';
-import { environment } from 'src/environments/environment';
+import { environment as env } from 'src/environments/environment';
 import { APIResponse } from "../../../propel-shared/core/api-response";
 import { DataRequest, DataRequestAction } from "../../../propel-shared/core/data-request";
 import { logger } from '../../../propel-shared/services/logger-service';
 import { Utils } from '../../../propel-shared/utils/utils';
 import { PropelError } from '../../../propel-shared/core/propel-error';
+import { HttpHelper, Headers } from 'src/util/http-helper';
 
-export enum DataEntity {
+export const DataEndpoint: string = "data";
+
+export enum DataEndpointActions {
   ExecutionLog = "ExecutionLog",
   Script = "Script",
   Target = "Target",
@@ -39,8 +42,8 @@ export class DataService {
    * @param id Unique identifier.
    * @param populate Boolean value that indicates if subdocuments will be populated. true by default.
    */
-  getById(entityType: DataEntity, id: string, populate: boolean = true): Observable<APIResponse<Entity>> {
-    let url: string = this.buildURL(entityType);
+  getById(entityType: DataEndpointActions, id: string, populate: boolean = true): Observable<APIResponse<Entity>> {
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, [ DataEndpoint, entityType ]);
     let req: DataRequest = new DataRequest();
     let qm: QueryModifier = null;
 
@@ -53,7 +56,9 @@ export class DataService {
     req.entity = id;
     req.qm = qm;
 
-    return this.http.post<APIResponse<Entity>>(url, req, { headers: this.buildHeaders() })
+    return this.http.post<APIResponse<Entity>>(url, req, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
+    })
   }
 
   /**
@@ -61,14 +66,16 @@ export class DataService {
    * @param entityType Entity type.
    * @param qm Query modifier, (allows to specify filter, sorting, pagination, etc).
    */
-  find(entityType: DataEntity, qm: QueryModifier): Observable<APIResponse<Entity>> {
-    let url: string = this.buildURL(entityType);
+  find(entityType: DataEndpointActions, qm: QueryModifier): Observable<APIResponse<Entity>> {
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, [ DataEndpoint, entityType ]);
     let req: DataRequest = new DataRequest();
 
     req.action = DataRequestAction.Find;
     req.qm = qm;
 
-    return this.http.post<APIResponse<Entity>>(url, req, { headers: this.buildHeaders() });
+    return this.http.post<APIResponse<Entity>>(url, req, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
+    });
   }
 
   /**
@@ -76,14 +83,16 @@ export class DataService {
    * @param entityType Entity type.
    * @param entity Instance to persist.
    */
-  save(entityType: DataEntity, doc: any): Observable<APIResponse<string>> {
-    let url: string = this.buildURL(entityType);
+  save(entityType: DataEndpointActions, doc: any): Observable<APIResponse<string>> {
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, [ DataEndpoint, entityType ]);
     let req: DataRequest = new DataRequest();
 
     req.action = DataRequestAction.Save;
     req.entity = doc;
 
-    return this.http.post<APIResponse<string>>(url, req, { headers: this.buildHeaders() });
+    return this.http.post<APIResponse<string>>(url, req, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
+    });
   }
 
   /**
@@ -91,14 +100,16 @@ export class DataService {
    * @param entityType Entity type.
    * @param id Entity id to delete.
    */
-  delete(entityType: DataEntity, id: string): Observable<APIResponse<string>> {
-    let url: string = this.buildURL(entityType);
+  delete(entityType: DataEndpointActions, id: string): Observable<APIResponse<string>> {
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, [ DataEndpoint, entityType ]);
     let req: DataRequest = new DataRequest();
 
     req.action = DataRequestAction.Delete;
     req.entity = id;
 
-    return this.http.post<APIResponse<string>>(url, req, { headers: this.buildHeaders() });
+    return this.http.post<APIResponse<string>>(url, req, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
+    });
   }
 
   /**
@@ -111,24 +122,23 @@ export class DataService {
    * @param entityType The type of items that is going to be duplicated.
    * @param identifier The unique text that identify uniquely the item. Usually his name.
    */
-  duplicate(entityType: DataEntity, identifier: string): Observable<APIResponse<string>> {
+  duplicate(entityType: DataEndpointActions, identifier: string): Observable<APIResponse<string>> {
     return new Observable<APIResponse<string>>((subscriber) => {
 
       let qm = new QueryModifier();
       let property: string = "name";
       
-      if(!(entityType == DataEntity.Target || entityType == DataEntity.Workflow)) {
+      if(!(entityType == DataEndpointActions.Target || entityType == DataEndpointActions.Workflow)) {
         throw new PropelError(`We can duplicate only Workflows and Targets. There is not logic yet to duplicate "${entityType.toString()}".`)
       }
 
-      if(entityType == DataEntity.Target){
+      if(entityType == DataEndpointActions.Target){
         property = "FQDN";
       }
 
       qm.populate = false;
       //Searching for all the Workflows that starts with the supplied name:      
       qm.filterBy = {
-        // [`${property}`]: {
         [property]: {
           $regex: new RegExp(`^${Utils.escapeRegEx(identifier)}`)
             .toString()
@@ -165,19 +175,5 @@ export class DataService {
    */
   create<T>(entityType: { new(): T }): T {
     return new entityType();
-  }
-
-  private buildURL(entityType: DataEntity) {
-    return `http://${environment.api.url}${environment.api.endpoint.data}${entityType.toString().toLowerCase()}`
-  }
-
-  private buildHeaders(): HttpHeaders {
-    let ret: HttpHeaders = new HttpHeaders()
-      .set("Content-Type", "application/json");
-
-    // To add other headers: 
-    //ret = ret.append("New header", "value");
-
-    return ret;
   }
 }

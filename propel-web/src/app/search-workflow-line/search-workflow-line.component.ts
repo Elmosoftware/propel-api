@@ -4,7 +4,7 @@ import { CoreService } from 'src/services/core.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { Entity } from '../../../../propel-shared/models/entity';
 import { SearchLine } from 'src/core/search-line';
 
@@ -40,7 +40,7 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
   duplicate(id: string) {
 
     //We search for the workflow first:
-    this.core.data.getById(DataEntity.Workflow, id)
+    this.core.data.getById(DataEndpointActions.Workflow, id)
       .subscribe((results: APIResponse<Entity>) => {
 
         if (results.count == 0) {
@@ -48,7 +48,7 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
         }
         else {
           //If exists, we duplicate it:
-          this.core.data.duplicate(DataEntity.Workflow, (results.data[0] as Workflow).name)
+          this.core.data.duplicate(DataEndpointActions.Workflow, (results.data[0] as Workflow).name)
             .subscribe((results: APIResponse<string>) => {
               this.core.navigation.toWorkflow(results.data[0]);
             },
@@ -68,7 +68,7 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
       `Are you sure you want to delete the workflow named "<b>${item.name}</b>"? Please be aware that this operation can't be undone.`)
     ).subscribe((result: DialogResult<any>) => {
       if (!result.isCancel) {
-        this.core.data.delete(DataEntity.Workflow, item._id)
+        this.core.data.delete(DataEndpointActions.Workflow, item._id)
           .subscribe((results: APIResponse<string>) => {
             this.core.toaster.showSuccess("Workflow deleted succesfully!");
             this.dataChanged.emit(true);

@@ -1,7 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { FormGroup, FormControl, AbstractControl, Validators, ValidatorFn } from "@angular/forms";
 import { CoreService } from "src/services/core.service";
-import { DataService, DataEntity } from 'src/services/data.service';
+import { DataService, DataEndpointActions } from 'src/services/data.service';
 import { ThemePalette } from '@angular/material/core';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { Entity, compareEntities } from '../../../../propel-shared/models/entity';
@@ -338,7 +338,7 @@ export class SandboxComponent implements OnInit {
   testTwoCallsforRefreshToken() {
 
     console.info(`%c SANDBOX -> Starting Call 1 for token refreshing.`, "color: gray; background-color: lightblue");
-    this.core.data.find(DataEntity.Target, new QueryModifier())
+    this.core.data.find(DataEndpointActions.Target, new QueryModifier())
       .subscribe((result: APIResponse<any>) => {
         console.info(`%c SANDBOX -> Receiving Call 1 response! Count is ${result.count}.`, "color: gray; background-color: lightblue");
       }, (err) => {
@@ -347,7 +347,7 @@ export class SandboxComponent implements OnInit {
       })
 
     console.info(`%c SANDBOX -> Starting Call 2 for token refreshing.`, "color: gray; background-color: lightblue");
-    this.core.data.find(DataEntity.Credential, new QueryModifier())
+    this.core.data.find(DataEndpointActions.Credential, new QueryModifier())
       .subscribe((result: APIResponse<any>) => {
         console.info(`%c SANDBOX -> Receiving Call 2 response! Count is ${result.count}.`, "color: gray; background-color: lightblue");
       }, (err) => {

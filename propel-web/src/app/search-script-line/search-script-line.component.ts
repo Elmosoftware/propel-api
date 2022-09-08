@@ -5,7 +5,7 @@ import { Script } from '../../../../propel-shared/models/script';
 import { CoreService } from 'src/services/core.service';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { SearchLine } from 'src/core/search-line';
 
@@ -62,8 +62,8 @@ Is targetting: ${(item.isTargettingServers) ? "Servers, (like Web servers, Datab
         //have it attached will prevent the execution:
         item.enabled = false;
 
-        concat(this.core.data.save(DataEntity.Script, item),
-          this.core.data.delete(DataEntity.Script, item._id))
+        concat(this.core.data.save(DataEndpointActions.Script, item),
+          this.core.data.delete(DataEndpointActions.Script, item._id))
           .subscribe((results: APIResponse<string>) => {
           }, err => {
             throw err

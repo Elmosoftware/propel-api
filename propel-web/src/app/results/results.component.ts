@@ -11,7 +11,7 @@ import { UIHelper } from 'src/util/ui-helper';
 import { ExecutionTarget } from '../../../../propel-shared/models/execution-target';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { ExecutionError } from '../../../../propel-shared/models/execution-error';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 
 @Component({
   selector: 'app-results',
@@ -41,7 +41,7 @@ export class ResultsComponent implements OnInit {
   refreshData() {
     let id: string = this.route.snapshot.paramMap.get("id");
 
-    this.core.data.getById(DataEntity.ExecutionLog, id, true)
+    this.core.data.getById(DataEndpointActions.ExecutionLog, id, true)
       .subscribe((data: APIResponse<ExecutionLog>) => {
         if (data.count == 0) {
           this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")

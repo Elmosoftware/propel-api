@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { DialogResult } from 'src/core/dialog-result';
 import { ValidatorsHelper } from 'src/core/validators-helper';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { ParameterValue } from '../../../../../propel-shared/models/parameter-value';
 
 const NAME_MAX: number = 20

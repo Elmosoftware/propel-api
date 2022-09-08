@@ -1,4 +1,4 @@
-import { DataEntity } from "src/services/data.service";
+import { DataEndpointActions } from "src/services/data.service";
 import { SearchType, SearchTypeDefinition, DEFAULT_SEARCH_TYPE } from "./search-type";
 
 describe("SearchTypeDefinition Class", () => {
@@ -21,19 +21,19 @@ describe("SearchTypeDefinition Class", () => {
     });
     describe("getDataEntity()", () => {
         it(`For searchType = SearchType.Workflows -> DataEntity.Workflow`, () => {
-            expect(SearchTypeDefinition.getDataEntity(SearchType.Workflows)).toEqual(DataEntity.Workflow);
+            expect(SearchTypeDefinition.getDataEntity(SearchType.Workflows)).toEqual(DataEndpointActions.Workflow);
         });        
         it(`For searchType = SearchType.Scripts -> DataEntity.Script`, () => {
-            expect(SearchTypeDefinition.getDataEntity(SearchType.Scripts)).toEqual(DataEntity.Script);
+            expect(SearchTypeDefinition.getDataEntity(SearchType.Scripts)).toEqual(DataEndpointActions.Script);
         });        
         it(`For searchType = SearchType.Targets -> DataEntity.Target`, () => {
-            expect(SearchTypeDefinition.getDataEntity(SearchType.Targets)).toEqual(DataEntity.Target);
+            expect(SearchTypeDefinition.getDataEntity(SearchType.Targets)).toEqual(DataEndpointActions.Target);
         });        
         it(`For searchType = SearchType.Credentials -> DataEntity.Credential`, () => {
-            expect(SearchTypeDefinition.getDataEntity(SearchType.Credentials)).toEqual(DataEntity.Credential);
+            expect(SearchTypeDefinition.getDataEntity(SearchType.Credentials)).toEqual(DataEndpointActions.Credential);
         });        
         it(`For searchType = SearchType.UserAccounts -> DataEntity.UserAccount`, () => {
-            expect(SearchTypeDefinition.getDataEntity(SearchType.UserAccounts)).toEqual(DataEntity.UserAccount);
+            expect(SearchTypeDefinition.getDataEntity(SearchType.UserAccounts)).toEqual(DataEndpointActions.UserAccount);
         });        
     });
     describe("getDefaultSort()", () => {

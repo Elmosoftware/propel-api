@@ -14,7 +14,7 @@ import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { ScriptParameter } from '../../../../propel-shared/models/script-parameter';
 import { SystemHelper } from 'src/util/system-helper';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
-import { DataEntity } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { Utils } from "../../../../propel-shared/utils/utils";
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
@@ -176,19 +176,19 @@ export class WorkflowStepComponent implements OnInit {
   refreshScripts() {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
-    return this.core.data.find(DataEntity.Script, qm);
+    return this.core.data.find(DataEndpointActions.Script, qm);
   }
 
   refreshTargets() {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "friendlyName";
-    return this.core.data.find(DataEntity.Target, qm);
+    return this.core.data.find(DataEndpointActions.Target, qm);
   }
 
   refreshCredentials() {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
-    return this.core.data.find(DataEntity.Credential, qm);
+    return this.core.data.find(DataEndpointActions.Credential, qm);
   }
 
   getScriptFromCache(id: string): Script | undefined {
