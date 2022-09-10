@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { InvocationMessage, InvocationStatus } from '../../../../propel-shared/core/invocation-message';
+import { ExecutionStats, WebsocketMessage, InvocationStatus } from '../../../../propel-shared/core/websocket-message';
 
 @Component({
   selector: 'app-console-line',
@@ -11,7 +11,7 @@ export class ConsoleLineComponent implements OnInit {
   private sepSexa: string = ":";
   private sepDec: string = ".";  
 
-  @Input() model: InvocationMessage;
+  @Input() model: WebsocketMessage<ExecutionStats>;
   isControlMsg: boolean = true;
   isErrorMsg: boolean = false;
   message: string = "";

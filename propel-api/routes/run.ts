@@ -7,7 +7,7 @@ import { db } from "../core/database";
 import { DataService } from "../services/data-service";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { Workflow } from "../../propel-shared/models/workflow";
-import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/invocation-message";
+import { ExecutionStats, WebsocketMessage, InvocationStatus } from "../../propel-shared/core/websocket-message";
 import { logger } from "../services/logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
@@ -75,8 +75,8 @@ export class RunRoute implements Route {
 
             runner = new Runner();
             runner.execute(workflow, token, subsCallback)
-                .then((msg: InvocationMessage) => {
-                    logger.logDebug(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished, Status is "${msg.logStatus}".`);
+                .then((msg: WebsocketMessage<ExecutionStats>) => {
+                    logger.logDebug(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished, Status is "${msg.context?.logStatus}".`);
                     ws.send(JSON.stringify(msg));
                 })
                 .catch((err) => {
@@ -91,7 +91,7 @@ export class RunRoute implements Route {
                 //Disregard any non-JSON messages:
                 if (!Utils.isValidJSON(message)) return;
 
-                let m: InvocationMessage = JSON.parse(message);
+                let m: WebsocketMessage<ExecutionStats> = JSON.parse(message);
                 logger.logInfo(`User sent action "${m.status}" during the execution of workflow with id "${req.params.workFlowId}".`);
 
                 if (m.status == InvocationStatus.UserActionCancel) {

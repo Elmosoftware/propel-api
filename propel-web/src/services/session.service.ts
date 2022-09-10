@@ -76,8 +76,7 @@ export class SessionService {
      * Returns all the session details including information about the user, token expiration, etc.
      */
     get sessionData(): SecurityToken {
-        if (!this._securityToken) return null;
-        return Object.assign({}, this._securityToken);
+        return this._securityToken;
     }
 
     /**
@@ -91,8 +90,7 @@ export class SessionService {
      * User that starts the propel app. (Only when running from Electron).
      */
     get runtimeInfo(): RuntimeInfo {
-        if (!this._runtimeInfo) return null;
-        return Object.assign({}, this._runtimeInfo);
+        return this._runtimeInfo;
     }
 
     setSessionData(loginResponse: UserLoginResponse): void {

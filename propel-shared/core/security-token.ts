@@ -64,6 +64,20 @@ export class SecurityToken {
      */
     public legacySecurity: boolean = false;
 
+    public get expiringInSeconds(): number {
+        if(!this.expiresAt) return Number.MAX_SAFE_INTEGER;
+        let ret: number = (Number(this.expiresAt) - Number(new Date()))/1000
+        //If elapsed time is negative, means the token already expired, there is no remaining time:
+        return (ret < 0) ? 0 : ret;
+    }
+
+    public get remainingLifetimePercentage(): number {
+        if(!this.expiresAt) return 100
+        let total: number = (Number(this.expiresAt) - Number(this.issuedAt))/1000
+        let elapsed: number = total - this.expiringInSeconds;
+        return 100 - ((elapsed * 100) / total);
+    }
+
     constructor(expirationMinutes?: number) {
         if (expirationMinutes && !isNaN(parseInt(String(expirationMinutes)))) {
             expirationMinutes = parseInt(String(expirationMinutes))

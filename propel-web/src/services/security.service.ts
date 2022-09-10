@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { APIResponse } from '../../../propel-shared/core/api-response';
 import { RuntimeInfo } from '../../../propel-shared/core/runtime-info';
 import { UserLoginResponse } from '../../../propel-shared/core/user-login-response';
@@ -11,7 +11,7 @@ import { SecurityRequest } from '../../../propel-shared/core/security-request';
 import { TokenRefreshRequest } from '../../../propel-shared/core/token-refresh-request';
 import { SecurityToken } from '../../../propel-shared/core/security-token';
 import { SecuritySharedConfiguration } from '../../../propel-shared/core/security-shared-config';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { environment as env } from 'src/environments/environment';
 import { RDPUser } from '../../../propel-shared/core/rdp-user';
@@ -228,7 +228,7 @@ export class SecurityService {
         if (this._session.refreshToken) {
             try {
                 await this.refreshAccessToken(new TokenRefreshRequest(this._session.refreshToken))
-                return Promise.resolve(`Access token was refreshed, (expiring on "${(this.sessionData.expiresAt ? this.sessionData.expiresAt.toLocaleString() : "not defined")}"). User session reconnected.`);
+                return Promise.resolve(`User session reconnected.`);
             } catch (error) {
                 this.logOff()
                 return Promise.reject(error)
@@ -310,10 +310,18 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
                 headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
             })
             .pipe(
+                catchError((err) => {
+                    logger.logError(`Access token refresh finished with the following error: ${err.message}.`)
+                    this.logOff();
+                    return throwError(err)
+                }),
                 map((results: APIResponse<UserLoginResponse>) => {
                     this._session.setSessionData(results.data[0]);
                     return results;
                 }),
+                tap(() => {
+                    logger.logInfo(`Access token refreshed successfully, expiring on "${(this.sessionData.expiresAt ? this.sessionData.expiresAt.toLocaleString() : "not defined")}".`)
+                })
             )
             .toPromise();
     }

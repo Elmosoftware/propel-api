@@ -2,7 +2,7 @@
 import * as NodePowershell from "elmosoftware-node-powershell";
 import { EventEmitter } from "events";
 
-import { InvocationMessage, InvocationStatus } from "../../propel-shared/core/invocation-message";
+import { WebsocketMessage, InvocationStatus } from "../../propel-shared/core/websocket-message";
 import { Disposable, Resettable } from "../core/object-pool";
 import { Utils } from "../../propel-shared/utils/utils";
 import { SystemHelper } from "../util/system-helper";
@@ -55,7 +55,7 @@ export class InvocationService implements Disposable, Resettable {
      * @param cb Callback function.
      */
     addSTDOUTEventListener(cb: Function) {
-        this._eventEmitter.addListener("data", (invocationMessage: InvocationMessage) => cb(invocationMessage));
+        this._eventEmitter.addListener("data", (invocationMessage: WebsocketMessage<any>) => cb(invocationMessage));
     }
 
     /**
@@ -81,7 +81,7 @@ export class InvocationService implements Disposable, Resettable {
 
             //We need to listen to the events here in order to reject if the execution is cancelled 
             //and forced to stop immediately by killing the PS process:
-            this.addSTDOUTEventListener((invMsg: InvocationMessage) => {
+            this.addSTDOUTEventListener((invMsg: WebsocketMessage<any>) => {
                 if (invMsg.status == InvocationStatus.Killed) {
                     reject(new PropelError(invMsg.message));
                 }
@@ -265,6 +265,6 @@ CHUNK DETAILS: Size:${chunk.length}, 2 End chars:${chunk.charCodeAt(chunk.length
             message = Utils.removeANSIEscapeCodes(message);
         }
 
-        this._eventEmitter.emit("data", new InvocationMessage(status, (message) ? message : ""));
+        this._eventEmitter.emit("data", new WebsocketMessage(status, (message) ? message : ""));
     }
 }

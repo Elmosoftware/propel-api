@@ -82,14 +82,8 @@ export class AuthInterceptor implements HttpInterceptor {
                         this._refreshTokenSubject.complete()
                         this._refreshTokenSubject = new BehaviorSubject<UserLoginResponse>(null);
                         this._isRefreshing = false;
-                        logger.logError(`Access token refresh finished with the following error: ${err.message}.`)
-                        this.security.logOff();
                         this.nav.toHome(true);
-
                         return throwError(err)
-                    }),
-                    tap(() => {
-                        logger.logInfo(`Access token refreshed successfully, expiring on "${(this.security.sessionData.expiresAt ? this.security.sessionData.expiresAt.toLocaleString() : "not defined")}".`)
                     }),
                     switchMap((response: APIResponse<UserLoginResponse>) => {
                         this._isRefreshing = false;

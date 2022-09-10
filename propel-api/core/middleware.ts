@@ -1,5 +1,6 @@
 import { BAD_REQUEST, UNAUTHORIZED } from "http-status-codes";
 import { APIResponse } from "../../propel-shared/core/api-response";
+import { WebsocketMessage } from "../../propel-shared/core/websocket-message";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { BEARER_PREFIX, ACCESS_TOKEN_QUERYSTRING_KEY } from "../../propel-shared/core/security-token";
 import { SecurityService } from "../services/security-service";
@@ -54,8 +55,20 @@ export class Middleware {
                 }
     
             } catch (error) {
-                let httpStatus: number = Number((error as PropelError).httpStatus) | UNAUTHORIZED;
-                return res.status(httpStatus).json(new APIResponse<any>(error, null));
+                let e: PropelError = (error as PropelError)
+
+                //If is a websockets connection:
+                if (req.ws) {
+                    let msg = new WebsocketMessage<PropelError>("Error", 
+                        (e.userMessage) ? e.userMessage : "Unexpected communication error. Please retry later.", e, "middleware")
+                    req.ws.send(JSON.stringify(msg))
+                    req.ws.close();
+                    return;
+                }
+                else {
+                    return res.status(Number(e.httpStatus)| UNAUTHORIZED)
+                        .json(new APIResponse<any>(e, null));
+                }
             }
     
             next();

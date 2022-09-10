@@ -4,7 +4,7 @@ import { WorkflowStep } from "../../propel-shared/models/workflow-step";
 import { ParameterValue } from "../../propel-shared/models/parameter-value";
 import { Target } from "../../propel-shared/models/target";
 import { InvocationService } from "./invocation-service";
-import { InvocationMessage, InvocationStatus, ExecutionStats } from "../../propel-shared/core/invocation-message";
+import { WebsocketMessage, InvocationStatus, ExecutionStats } from "../../propel-shared/core/websocket-message";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { cfg } from "../core/config";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
@@ -76,10 +76,10 @@ export class Runner {
      * @param workflow The workflow to execute.
      * @param subscriptionCallback A callback function to get any realtime message during the execution.
      */
-    async execute(workflow: Workflow, token: SecurityToken, subscriptionCallback?: Function): Promise<InvocationMessage> {
+    async execute(workflow: Workflow, token: SecurityToken, subscriptionCallback?: Function): Promise<WebsocketMessage<ExecutionStats>> {
 
         let abort: boolean = false;
-        let resultsMessage: InvocationMessage;
+        let resultsMessage: WebsocketMessage<ExecutionStats>;
         this._cb = subscriptionCallback;
         this._cancelExecution = false;
 
@@ -92,12 +92,14 @@ export class Runner {
             let e = ((error as any)?.errors && (error as any).errors.length > 0) ? (error as any).errors[0] : error
             let message: string = (e.errorCode?.userMessage) ? e.errorCode?.userMessage : e.message;
 
-            return new InvocationMessage(InvocationStatus.Failed,
+            this._stats.logId = "";
+            this._stats.logStatus =ExecutionStatus.Faulty;
+
+            return new WebsocketMessage(InvocationStatus.Failed,
                 `There was an error during the preparation.\r\n` + 
                 `If this error is related to the credentials assigned to one specific target or the ` + 
                 `credentials set to one or more Propel parameters in any of the scripts, please verify them ` +
-                `before to retry. Following the error details: ` + message, "", this._stats, 
-                "", ExecutionStatus.Faulty);
+                `before to retry. Following the error details: ` + message, this._stats);
         }
 
         this._stats.workflowName = workflow.name;
@@ -190,16 +192,17 @@ export class Runner {
         this._execLog.endedAt = new Date();
 
         try {
-            resultsMessage = new InvocationMessage(InvocationStatus.Finished, "", "", this._stats);
-            resultsMessage.logStatus = this._execLog.status;
-            resultsMessage.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog), token)).data[0];
-            this._execLog._id = resultsMessage.logId;
+            this._stats.logStatus = this._execLog.status;
+            this._stats.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog), token)).data[0];
+            this._execLog._id = this._stats.logId;
+            resultsMessage = new WebsocketMessage(InvocationStatus.Finished, "", this._stats);
         } catch (error) {
             error = ((error as APIResponse<any>).error) ? (error as APIResponse<any>).error : error;
             let e = new PropelError((error as Error), ErrorCodes.saveLogFailed);
             logger.logError(e);
-            resultsMessage = new InvocationMessage(InvocationStatus.Failed,
-                e.errorCode.userMessage, "", this._stats, "", ExecutionStatus.Faulty);
+            this._stats.logStatus = ExecutionStatus.Faulty
+            resultsMessage = new WebsocketMessage(InvocationStatus.Failed,
+                e.errorCode.userMessage, this._stats);
         }
 
         logger.logDebug(`Pool stats at the end of workflow execution:\n${pool.stats.toString()}`);
@@ -236,7 +239,7 @@ export class Runner {
      * Allows to send a message to the client.
      * @param msg Message to send.
      */
-    sendMessage(msg: InvocationMessage) {
+    sendMessage(msg: WebsocketMessage<ExecutionStats>) {
         if (this._cb) {
             msg.context = this._stats;
             this._cb(msg);
@@ -291,7 +294,7 @@ export class Runner {
                         this._currentInvocation = invsvc;
 
                         //Subscribe to the STDOUT event listener:
-                        invsvc.addSTDOUTEventListener((msg: InvocationMessage) => {
+                        invsvc.addSTDOUTEventListener((msg: WebsocketMessage<ExecutionStats>) => {
                             msg.source = target.friendlyName;
                             this.sendMessage(msg);
                         })

@@ -2,7 +2,7 @@ import { testingWorkflows } from "./testing-workflows";
 import { pool } from "../../services/invocation-service-pool";
 import { Runner } from "../../services/runner-service";
 import { ExecutionStatus } from "../../../propel-shared/models/execution-status";
-import { InvocationMessage } from "../../../propel-shared/core/invocation-message";
+import { ExecutionStats, WebsocketMessage } from "../../../propel-shared/core/websocket-message";
 import { ExecutionLog } from "../../../propel-shared/models/execution-log";
 import { APIResponse } from "../../../propel-shared/core/api-response";
 import { Secret } from "../../../propel-shared/models/secret";
@@ -71,8 +71,8 @@ describe("Runner Class - execute()", () => {
         let w = testingWorkflows.Worflow_S1EnabledNoParamNoTargetNoThrow;
 
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(String(runner.executionLog?.user)).toEqual(st.userId);
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
@@ -86,7 +86,7 @@ describe("Runner Class - execute()", () => {
                     expect(runner.executionLog?.executionSteps[0].targets[0].FQDN).toEqual(runner.localTarget.FQDN); //Localhost!
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();
@@ -102,8 +102,8 @@ describe("Runner Class - execute()", () => {
         let w = testingWorkflows.Worflow_S1EnabledNoParamNoTargetThrow;
 
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Faulty);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);
@@ -117,7 +117,7 @@ describe("Runner Class - execute()", () => {
                     expect(runner.executionLog?.executionSteps[0].targets[0].FQDN).toEqual(runner.localTarget.FQDN); //Localhost!
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();
@@ -133,8 +133,8 @@ describe("Runner Class - execute()", () => {
         let w = testingWorkflows.Worflow_S2Enabled;
 
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);
@@ -159,7 +159,7 @@ describe("Runner Class - execute()", () => {
                     expect(runner.executionLog?.executionSteps[1].targets[0].FQDN).toEqual(runner.localTarget.FQDN); //Localhost!
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();
@@ -175,8 +175,8 @@ describe("Runner Class - execute()", () => {
         let w = testingWorkflows.Worflow_S2EnabledThrow;
 
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Aborted);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);
@@ -196,7 +196,7 @@ describe("Runner Class - execute()", () => {
                     //targets have been added to the execution. 
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();
@@ -211,8 +211,8 @@ describe("Runner Class - execute()", () => {
 
         let w = testingWorkflows.Worflow_S2EnabledTargetDisabled;
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);
@@ -234,7 +234,7 @@ describe("Runner Class - execute()", () => {
 
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();
@@ -256,8 +256,8 @@ describe("Runner Class - execute()", () => {
         }, 1000);
 
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.CancelledByUser);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);
@@ -277,7 +277,7 @@ describe("Runner Class - execute()", () => {
 
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();
@@ -298,8 +298,8 @@ describe("Runner Class - execute()", () => {
         }, 2000);
 
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.CancelledByUser);
                     expect(runner.executionLog?.startedAt).not.toBe(null);
                     expect(runner.executionLog?.endedAt).not.toBe(null);
@@ -319,7 +319,7 @@ describe("Runner Class - execute()", () => {
 
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();
@@ -336,12 +336,12 @@ describe("Runner Class - execute()", () => {
         let w = testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast //With Credentials!
 
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();
@@ -361,12 +361,12 @@ describe("Runner Class - execute()", () => {
         w.steps[0].values[0].value += `, ${testingWorkflows.CredentialWindows03._id}`
 
         runner.execute(w, st)
-            .then((msg: InvocationMessage) => {
-                if (msg.logId) {
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
                 }
                 else {
-                    expect(msg.logId).not.toBe(null);
+                    expect(msg.context?.logId).not.toBe(null);
                 }
 
                 done();

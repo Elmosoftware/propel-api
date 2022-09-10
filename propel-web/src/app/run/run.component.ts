@@ -2,7 +2,8 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DialogResult } from 'src/core/dialog-result';
 import { CoreService } from 'src/services/core.service';
-import { InvocationMessage, InvocationStatus, ExecutionStats } from "../../../../propel-shared/core/invocation-message";
+import { WebsocketMessage, InvocationStatus, ExecutionStats } from "../../../../propel-shared/core/websocket-message";
+import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { ExecutionStatus } from '../../../../propel-shared/models/execution-status';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
@@ -14,7 +15,7 @@ import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard
 })
 export class RunComponent implements OnInit {
 
-  model: InvocationMessage[];
+  model: WebsocketMessage<ExecutionStats>[];
   workflowStatus: string = InvocationStatus.NotStarted;
   killOption: boolean = false;
   cancelling: boolean = false;
@@ -53,7 +54,7 @@ export class RunComponent implements OnInit {
     return ret;
   }
 
-  get lastMessage(): InvocationMessage | null {
+  get lastMessage(): WebsocketMessage<ExecutionStats> | null {
     if (this.hasMessages) return this.model[this.model.length - 1];
     else return null;
   }
@@ -112,7 +113,7 @@ export class RunComponent implements OnInit {
     this.core.navigation.replaceHistory(workflowId, { conf: "true" })
 
     this.core.runner.execute(workflowId)
-      .subscribe((msg: InvocationMessage) => {
+      .subscribe((msg: WebsocketMessage<ExecutionStats>) => {
         this.model.push(msg);
         this.scrollDown()
       },
@@ -120,16 +121,16 @@ export class RunComponent implements OnInit {
           this.processError(err);
         },
         () => {
-          this.workflowStatus = this.lastMessage.logStatus;
+          this.workflowStatus = this.lastMessage.context.logStatus;
           this.scrollDown();
 
-          if (this.lastMessage.logId) {
+          if (this.lastMessage.context.logId) {
             this.core.toaster.showInformation("Showing results soon...", "Execution is done.")
             setTimeout(() => {
-              this.core.navigation.toResults(this.lastMessage.logId);
+              this.core.navigation.toResults(this.lastMessage.context.logId);
             }, 500);
           }
-          else { //If there is no logId, means something preventthe execution to complete:
+          else { //If there is no logId, means something prevent the execution to complete:
             this.core.toaster.showError("There was an error preventing the execution to complete.")
           }
         });
@@ -149,7 +150,6 @@ export class RunComponent implements OnInit {
   }
 
   processError(err: any): void {
-    let invMsg: InvocationMessage;
     let msg: string = `There was an error trying to connect with the Propel API in order to start the workflow execution.
 Please verify the service status and retry this operation later.`
     let title: string = "Connectivity issue prevent to start."
@@ -176,10 +176,10 @@ Websockets Error code: ${(err && err.code) ? String(err.code) : "unknown"}.`
   }
 
   pushMessageToUI(status: InvocationStatus, title: string = "", message: string = "",): void {
-    let m: InvocationMessage = new InvocationMessage(status, message);
+    let m: WebsocketMessage<ExecutionStats> = new WebsocketMessage(status, message, 
+      new ExecutionStats());
 
     if (title) {
-      m.context = new ExecutionStats();
       m.context.workflowName = title //We will use this to display a custom message.
     }
     else {
