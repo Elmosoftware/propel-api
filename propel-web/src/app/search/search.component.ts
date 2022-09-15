@@ -114,7 +114,7 @@ export class SearchComponent implements OnInit {
       .then(() => {
         console.log(`Search finished`)
       }, (err) => {
-        this.core.toaster.showError(new PropelError(err))
+        this.core.handleError(err)
       })
   }
 
@@ -124,7 +124,7 @@ export class SearchComponent implements OnInit {
         console.log(`Processing data page ${ph.page} of ${ph.pages}, (top:${ph.top}, skip:${ph.skip}).`)
       },
         (err) => {
-          this.core.toaster.showError(new PropelError(err))
+          this.core.handleError(err)
         })
   }
 

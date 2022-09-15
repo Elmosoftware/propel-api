@@ -155,7 +155,7 @@ migration or data corruption.
 missing sensitive data in the form again.</p>`))
                     .subscribe((result: DialogResult<any>) => {
                     }, err => {
-                      throw err
+                      this.core.handleError(err)
                     });
                 }
                 else {
@@ -213,14 +213,14 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
                           this.loaded = true;
                         }
                       }, err => {
-                        throw err
+                        this.core.handleError(err)
                       });
                   }
                   else {
                     //If is another kind of error, we can't continue:
                     this.newItem(true);
                     this.loaded = true;
-                    throw err
+                    this.core.handleError(err)
                   }
                 });
           }
@@ -228,7 +228,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
           err => { //If there was an error loading the credential, we are going to prepare a new credential form:
             this.newItem();
             this.loaded = true;
-            throw err
+            this.core.handleError(err)
           });
     }
     else {
@@ -278,7 +278,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
         }
       },
         err => {
-          throw err
+          this.core.handleError(err)
         });
   }
 
@@ -315,7 +315,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
         }
       },
         err => {
-          throw err
+          this.core.handleError(err)
         });
   }
 
@@ -389,12 +389,12 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
                 this.fh.form.controls.secretId.patchValue("");
               }
 
-              throw err
+              this.core.handleError(err)
             }
           );
       },
         (err) => {
-          throw err
+          this.core.handleError(err)
         }
       );
   }

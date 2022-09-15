@@ -67,12 +67,12 @@ If there is a Workflow that already have it, the execution on this target will b
               this.core.navigation.toTarget(results.data[0]);
             },
               err => {
-                throw err
+                this.core.handleError(err)
               });
         }
       },
         err => {
-          throw err
+          this.core.handleError(err)
         });
   }
 
@@ -80,25 +80,29 @@ If there is a Workflow that already have it, the execution on this target will b
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
       "Delete Target Confirmation",
       `Are you sure you want to delete the target named "<b>${item.friendlyName}</b>"? Please be aware that this operation can't be undone.`)
-    ).subscribe((result: DialogResult<any>) => {
-      if (!result.isCancel) {
+    )
+      .subscribe((result: DialogResult<any>) => {
+        if (!result.isCancel) {
 
-        //Before to delete the Target, we need to disable it. In this way any existing workflow that 
-        //have it attached will prevent the execution:
-        item.enabled = false;
+          //Before to delete the Target, we need to disable it. In this way any existing workflow that 
+          //have it attached will prevent the execution:
+          item.enabled = false;
 
-        concat(this.core.data.save(DataEndpointActions.Target, item),
-          this.core.data.delete(DataEndpointActions.Target, item._id))
-          .subscribe((results: APIResponse<string>) => {
-          }, err => {
-            throw err
-          }, () => {
-            this.core.toaster.showSuccess("Target deleted succesfully!");
-            this.dataChanged.emit(true);
-          })
-      }
-    }, err => {
-      throw err
-    });
+          concat(this.core.data.save(DataEndpointActions.Target, item),
+            this.core.data.delete(DataEndpointActions.Target, item._id))
+            .subscribe((results: APIResponse<string>) => {
+            },
+              err => {
+                this.core.handleError(err)
+              },
+              () => {
+                this.core.toaster.showSuccess("Target deleted succesfully!");
+                this.dataChanged.emit(true);
+              })
+        }
+      },
+        err => {
+          this.core.handleError(err)
+        });
   }
 }

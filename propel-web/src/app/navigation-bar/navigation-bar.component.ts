@@ -277,7 +277,7 @@ export class NavigationBarComponent implements OnInit {
         this.core.navigation.toHome(true);
       }
     }, err => {
-      throw err
+      this.core.handleError(err)
     });
   }
 

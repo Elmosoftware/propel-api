@@ -129,7 +129,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
           }
         },
           err => {
-            throw err
+            this.core.handleError(err)
           });
     }
     else {
@@ -185,7 +185,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
               });              
             }
 
-            throw err
+            this.core.handleError(err)
           }
         );
     }
@@ -229,7 +229,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
       },
         (err) => {
           this.completed = false;
-          throw err
+          this.core.handleError(err)
         })
   }
 

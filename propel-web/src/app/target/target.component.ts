@@ -130,9 +130,9 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
                 So, we are managing this condition with a new "isDisabled" attribute only for this cases.
               */
               //@ts-ignore
-              c.disabled = false; 
+              c.disabled = false;
               //@ts-ignore
-              c.isDisabled = true; 
+              c.isDisabled = true;
 
               //Adding the deleted credential to the whole list:
               this.allWindowsCredentials = [...this.allWindowsCredentials, c];
@@ -143,7 +143,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
           }
         },
           err => {
-            throw err
+            this.core.handleError(err)
           });
     }
     else {
@@ -163,8 +163,8 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     return this.core.data.find(DataEndpointActions.Credential, qm)
   }
 
-  credentialChanged($event){
-    this.credentialIsDisabled = ($event && $event.isDisabled); 
+  credentialChanged($event) {
+    this.credentialIsDisabled = ($event && $event.isDisabled);
   }
 
   getCredentialFromCache(id: string): Credential | undefined {
@@ -190,11 +190,11 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
         //and if we are creating an item it will edit the created item instead of showing 
         //a new item form:
         this.core.navigation.replaceHistory(this.fh.getId());
-        
+
         this.showAddNewButton = true;
       },
         (err) => {
-          throw err
+          this.core.handleError(err)
         }
       );
   }
@@ -207,9 +207,9 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     if (credId) {
       let cred: Credential = this.getCredentialFromCache(String(credId))
       this.invokeAs.select({ name: cred.name, value: cred });
-      
+
       //@ts-ignore
       this.credentialIsDisabled = Boolean(cred?.isDisabled);
-    }   
+    }
   }
 }

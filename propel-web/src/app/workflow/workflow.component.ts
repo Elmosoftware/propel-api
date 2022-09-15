@@ -104,7 +104,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
           }
         },
           err => {
-            throw err
+            this.core.handleError(err)
           });
     }
     else {
@@ -168,7 +168,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
         }
       },
         err => {
-          throw err
+          this.core.handleError(err)
         });
   }
 
@@ -236,7 +236,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
         }
       },
         err => {
-          throw err
+          this.core.handleError(err)
         });
   }
 
@@ -358,7 +358,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
         }
       },
         (err) => {
-          throw err
+          this.core.handleError(err)
         }
       );
   }

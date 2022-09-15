@@ -75,17 +75,18 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
             // this.dataChanged.emit(true);
           },
             (err) => {
-              throw err
+              this.core.handleError(err)
             });
       }
-    }, err => {
-      throw err
-    });
+    },
+      err => {
+        this.core.handleError(err)
+      });
   }
 
   getAuthCode(item: UserAccount): string {
-    if((item as any).authCode) return (item as any).authCode;
-    else return "" 
+    if ((item as any).authCode) return (item as any).authCode;
+    else return ""
   }
 
   toggleLockUser(item: UserAccount): void {
@@ -106,28 +107,30 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
     msg += " <b>Are you ok to continue?</b>"
 
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(title, msg)
-    ).subscribe(async (result: DialogResult<any>) => {
-      if (!result.isCancel) {
-        let $obs: Observable<APIResponse<string>>;
+    )
+      .subscribe(async (result: DialogResult<any>) => {
+        if (!result.isCancel) {
+          let $obs: Observable<APIResponse<string>>;
 
-        if (locked) {
-          $obs = this.core.security.unlockUser(item._id)
-        }
-        else {
-          $obs = this.core.security.lockUser(item._id)
-        }
+          if (locked) {
+            $obs = this.core.security.unlockUser(item._id)
+          }
+          else {
+            $obs = this.core.security.lockUser(item._id)
+          }
 
-        $obs.subscribe((results: APIResponse<string>) => {
-          this.core.toaster.showSuccess(`User ${item.fullName} was ${(locked) ? "locked" : "unlocked"} succesfully!`);
-          this.dataChanged.emit(true);
-        },
-          (err) => {
-            throw err
-          });
-      }
-    }, err => {
-      throw err
-    });
+          $obs.subscribe((results: APIResponse<string>) => {
+            this.core.toaster.showSuccess(`User ${item.fullName} was ${(locked) ? "locked" : "unlocked"} succesfully!`);
+            this.dataChanged.emit(true);
+          },
+            (err) => {
+              this.core.handleError(err)
+            });
+        }
+      },
+        err => {
+          this.core.handleError(err)
+        });
   }
 
   // getUserStats(item: UserAccount): string {

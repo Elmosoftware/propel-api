@@ -48,7 +48,7 @@ export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
         this.core.navigation.toRun(data.data[0]);
       },
       (err) => {
-        throw err
+        this.core.handleError(err)
       })
   }
 

@@ -158,7 +158,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
           err => { //If there was an error loading the credential, we are going to prepare a new credential form:
             this.newItem();
             this.loaded = true;
-            throw err
+            this.core.handleError(err)
           });
     }
     else {
@@ -201,9 +201,9 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
       setTimeout(() => {
         this.fh.form.controls.name.disable({ emitEvent: true, onlySelf: true });
         this.fh.form.updateValueAndValidity();
-      });      
+      });
     }
-    
+
     this.fh.form.updateValueAndValidity();
     this.fh.form.markAsPristine();
     this.fh.form.markAsUntouched();
@@ -215,7 +215,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
         let response: UserRegistrationResponse = results.data[0];
 
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
-        
+
         this.fh.setId(response.userId);
         this.fh.form.controls.secretId.patchValue(response.secretId);
         this.setFormValue(this.fh.value);
@@ -229,7 +229,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
         this.core.navigation.replaceHistory(this.fh.getId());
       },
         (err) => {
-          throw err
+          this.core.handleError(err)
         }
       );
   }
@@ -247,12 +247,12 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
 There is security records kept about, so you can't change the user name from now on.`
   }
 
-  getLastLogin(){
+  getLastLogin() {
     if (!this.lastUserLogin) return "";
     return `User last login was ${SystemHelper.getFriendlyTimeFromNow(this.lastUserLogin)}`;
-  } 
-  
-  getLastLoginTooltip(){
+  }
+
+  getLastLoginTooltip() {
     if (!this.lastUserLogin) return "";
     return SystemHelper.formatDate(this.lastUserLogin);
   }

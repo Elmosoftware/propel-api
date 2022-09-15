@@ -94,7 +94,7 @@ export class RunComponent implements OnInit {
           this.startExecution();
         }
       }, err => {
-        throw err
+        this.core.handleError(err)
       });
     }
     else {
@@ -172,7 +172,7 @@ Websockets Error code: ${(err && err.code) ? String(err.code) : "unknown"}.`
         step.status = ExecutionStatus.Faulty;
       }
     })
-    throw err;
+    this.core.handleError(err)
   }
 
   pushMessageToUI(status: InvocationStatus, title: string = "", message: string = "",): void {

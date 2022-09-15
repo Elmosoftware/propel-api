@@ -123,11 +123,11 @@ Also: This can cause to fail any script that is currently using the credential.`
             this.core.toaster.showSuccess("The credential was deleted succesfully!");
             this.dataChanged.emit(true);
           }, err => {
-            throw err
+            this.core.handleError(err)
           })
       }
     }, err => {
-      throw err
+      this.core.handleError(err)
     });
   }
 

@@ -53,12 +53,12 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
               this.core.navigation.toWorkflow(results.data[0]);
             },
               err => {
-                throw err
+                this.core.handleError(err)
               });
         }
       },
         err => {
-          throw err
+          this.core.handleError(err)
         });
   }
 
@@ -72,17 +72,19 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
           .subscribe((results: APIResponse<string>) => {
             this.core.toaster.showSuccess("Workflow deleted succesfully!");
             this.dataChanged.emit(true);
-          }, err => {
-            throw err
-          })
+          },
+            err => {
+              this.core.handleError(err)
+            })
       }
-    }, err => {
-      throw err
-    });
+    },
+      err => {
+        this.core.handleError(err)
+      });
 
   }
 
   run(id: string) {
     this.core.navigation.toRun(id);
-  }  
+  }
 }

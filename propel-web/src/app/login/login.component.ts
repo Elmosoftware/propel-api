@@ -227,7 +227,7 @@ export class LoginComponent implements OnInit {
             }
           },
             err => {
-              throw err
+              this.core.handleError(err)
             });
       })
 
@@ -296,7 +296,7 @@ export class LoginComponent implements OnInit {
             this.formFlow.messageIsError = true
           }
 
-          throw err;
+          this.core.handleError(err)
         });
   }
 

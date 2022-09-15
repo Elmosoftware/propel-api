@@ -97,7 +97,7 @@ export class HistoryComponent implements OnInit {
         }
       },
         err => {
-          throw err
+          this.core.handleError(err)
         });
   }
 

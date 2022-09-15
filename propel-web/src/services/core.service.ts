@@ -145,6 +145,16 @@ export class CoreService {
     }
   }
 
+  /**
+   * This method takes care to handle the exception it will:
+   * Emit one event, verify the connectivity status and redirect or 
+   * act as appropiate depending of the results.
+   * @param error Error
+   */
+  handleError(error: any) {
+    this.injErr.handleError(error)
+  }
+
   private _init() {
     this.injErr.getErrorHandlerSubscription()
       .subscribe((error: PropelError) => {

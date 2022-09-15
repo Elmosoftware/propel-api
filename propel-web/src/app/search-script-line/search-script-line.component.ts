@@ -40,7 +40,7 @@ export class SearchScriptLineComponent extends SearchLine implements OnInit {
   getScriptTooltipMessage(item: Script): string {
     let ret = `This script is enabled and ready to use.`;
 
-    if(!item.enabled) {
+    if (!item.enabled) {
       ret = `This script is now disabled. It can't be selected as part of any Workflow. 
 If there is a Workflow that already have it, the step execution will be prevented.`
     }
@@ -65,15 +65,18 @@ Is targetting: ${(item.isTargettingServers) ? "Servers, (like Web servers, Datab
         concat(this.core.data.save(DataEndpointActions.Script, item),
           this.core.data.delete(DataEndpointActions.Script, item._id))
           .subscribe((results: APIResponse<string>) => {
-          }, err => {
-            throw err
-          }, () => {
-            this.core.toaster.showSuccess("Script deleted succesfully!");
-            this.dataChanged.emit(true);
-          })
+          },
+            err => {
+              this.core.handleError(err)
+            },
+            () => {
+              this.core.toaster.showSuccess("Script deleted succesfully!");
+              this.dataChanged.emit(true);
+            })
       }
-    }, err => {
-      throw err
-    });
+    },
+      err => {
+        this.core.handleError(err)
+      });
   }
 }
