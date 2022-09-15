@@ -4,7 +4,6 @@ import { Route } from "../core/route";
 import { cfg } from "../core/config";
 import { pool } from "../services/invocation-service-pool";
 import { usageStatsService } from "../services/usage-stats-service";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { UsageStats } from "../../propel-shared/models/usage-stats";
 import { APIStatus } from "../../propel-shared/models/api-status";
 import { logger } from "../services/logger-service";
@@ -42,12 +41,12 @@ export class StatusRoute implements Route {
             ret.poolOptions = cfg.poolOptions;
             ret.poolStats = pool.stats;
 
-            res.json(new APIResponse<APIStatus>(null, [ret]));
+            res.json(ret);
         });
 
         handler.get("/stats", async (req, res) => {
             let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
-            let ret = [usageStatsService.currentStats];
+            let ret: UsageStats[] = [usageStatsService.currentStats];
 
             if (token) {
                 ret.push(await usageStatsService.getUserStats(token))
@@ -57,7 +56,7 @@ export class StatusRoute implements Route {
                 ret = []
             }
 
-            res.json(new APIResponse<UsageStats>(null, ret as UsageStats[]));
+            res.json(ret);
         });
 
         return handler;

@@ -2,10 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { SystemHelper } from 'src/util/system-helper';
 import { UsageStats } from '../../../../propel-shared/models/usage-stats';
-import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 import { UIHelper } from 'src/util/ui-helper';
 import { environment } from 'src/environments/environment';
 import { GraphSeriesData } from '../../../../propel-shared/models/graph-series-data';
@@ -35,7 +33,11 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
-    this.refreshData();
+    this.refreshData()
+    .then(_ => {})
+    .catch((err) => {
+      this.core.handleError(err)
+    })
   }
 
   goToResults(id: string) {
@@ -98,25 +100,22 @@ export class HomeComponent implements OnInit {
     this.core.navigation.toGenericAPIKeyCredential();
   }
 
-  refreshData(): void {
-    this.loadingResults = true
+  async refreshData(): Promise<void> {
+    
+    try {
+      let stats: UsageStats[];
 
-    this.core.status.getApplicationUsageStats()
-      .subscribe((results: APIResponse<UsageStats>) => {
-            if (results.count > 0) {
-              this.stats = results.data[0];
+      this.loadingResults = true
+      stats = await this.core.status.getApplicationUsageStats();
+      if(stats.length > 0) this.stats = stats[0];
+      if(stats.length > 1) this.userStats = stats[1];
+      this.loadingResults = false;
+      return Promise.resolve()
 
-              if(results.count == 2) {
-                this.userStats = results.data[1];
-              }
-
-              this.loadingResults = false;
-            }            
-          },
-            err => {
-              this.loadingResults = false;
-              throw err
-            });
+    } catch (error) {
+      this.loadingResults = false;
+      return Promise.reject(error);
+    }
   }
 
   getLatestActivityText(item: GraphSeriesData) {

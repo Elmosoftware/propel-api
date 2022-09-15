@@ -1,12 +1,9 @@
 import { Injectable, OnDestroy, EventEmitter } from '@angular/core';
-import { of, fromEvent } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { fromEvent } from 'rxjs';
 
 import { PropelError } from "../../../propel-shared/core/propel-error";
 import { APIStatusService } from './api-status.service';
 import { logger } from '../../../propel-shared/services/logger-service';
-import { APIResponse } from '../../../propel-shared/core/api-response';
-import { APIStatus } from '../../../propel-shared/models/api-status';
 
 /**
  * Provides connectivity awareness.
@@ -29,7 +26,6 @@ export class ConnectivityService implements OnDestroy {
 
     private statusNetOfflineSubscription$; //Subscription for the window.offline event.
     private statusNetOnlineSubscription$; //Subscription for the window.online event.
-    private statusAPISubscription$; //Subscription for accessing the API.
 
     constructor(private svc: APIStatusService) {
         logger.logInfo("ConnectivityService instance created")
@@ -37,10 +33,49 @@ export class ConnectivityService implements OnDestroy {
         this.initialize();
     }
 
+    /**
+     * Subscribe to the Connectivity status change event.
+     * @returns EventEmitter instance.
+     */
     getConnectivityStatusChangeSubscription(): EventEmitter<ConnectivityStatus> {
         return this.onConnectivityStatusChange;
     }
 
+    ngOnDestroy(): void {
+        try {
+            this.statusNetOfflineSubscription$.unsubscribe();
+            this.statusNetOnlineSubscription$.unsubscribe();
+        }
+        catch (e) {
+        }
+    }
+
+    /**
+     * Verify the connectivity status of the app and update it accordingly.
+     * @param lastError Optionally, an Error object containing the unhandled exception details that 
+     * is causing this request to update connectivity status.
+     * If an error is passed as parameter, the SubscriptionService ConnectivityStatusChange event will be fired.
+     * If no error is passes as parameter, the event will be fired ONLY if there is a status change.
+     */
+    async updateStatus(lastError?: PropelError): Promise<void> {
+        let newStatus: ConnectivityStatus = new ConnectivityStatus();
+        newStatus.lastError = lastError;
+        
+        try {
+            await this.svc.getStatus();
+            newStatus.apiOn = true
+        } catch (error) {
+            newStatus.apiOn = false
+        }
+        
+        //We will fire the event only if there is a connectivity status change or there was an 
+        //error that is requiring to check the connectivity status for proper logging:
+        if (this.isStatusChanged(newStatus) || newStatus.lastError) {
+            this.status = Object.assign({}, newStatus);
+            this.onConnectivityStatusChange.emit(newStatus);
+        }
+    }
+    
     private initialize() {
 
         this.statusNetOnlineSubscription$ = fromEvent(window, "online");
@@ -59,85 +94,8 @@ export class ConnectivityService implements OnDestroy {
         this.updateStatus();
     }
 
-    /**
-     * 
-     * @param lastError Optionally, an Error object containing the unhandled exception details that 
-     * is causing this request to update connectivity status.
-     * If an error is passed as parameter, the SubscriptionService ConnectivityStatusChange event will be fired.
-     * If no error is passes as parameter, the event will be fired ONLY if there is a status change.
-     */
-    updateStatus(lastError?: PropelError): void {
-
-        this.statusAPISubscription$ =
-            this.svc.getStatus()
-                .pipe(
-                    catchError((err) => {
-                        // return of({ error: err });
-                        return of(new APIResponse<APIStatus>(err, []));
-                    }),
-                    map((results: APIResponse<APIStatus>) => {
-                        return this.mapResponse(results, "API", lastError)
-                    })
-                );
-
-        this.statusAPISubscription$
-            .subscribe((data: APIResponse<APIStatus>) => {
-                let newStatus: ConnectivityStatus = this.evaluate(data);
-
-                //We will fire the event only if there is a connectivity status change or there was an 
-                //error that is requiring to check the connectivity status for proper logging:
-                if (this.isStatusChanged(newStatus) || newStatus.lastError) {
-                    this.status = Object.assign({}, newStatus);
-                    this.onConnectivityStatusChange.emit(newStatus);
-                }
-            },
-                err => {
-                    throw err
-                });
-    }
-
-    private mapResponse(data: APIResponse<APIStatus>, endpointType: string, lastError?: PropelError) {
-
-        let ret = {
-            error: null,
-            url: endpointType,
-            lastError: lastError
-        }
-
-        if (data.error) {
-            ret.error = String(data.error);
-        }
-
-        return ret;
-    }
-
-    private evaluate(data: any): ConnectivityStatus {
-
-        let s: ConnectivityStatus = new ConnectivityStatus();
-
-        if (data.url == "API") {
-            s.apiOn = !Boolean(data.error);
-        }
-
-        if (data.lastError) {
-            s.lastError = data.lastError;
-        }
-
-        return s;
-    }
-
     private isStatusChanged(newStatus: ConnectivityStatus): boolean {
         return (this.status.apiOn != newStatus.apiOn || this.status.networkOn != newStatus.networkOn);
-    }
-
-    ngOnDestroy(): void {
-        try {
-            this.statusNetOfflineSubscription$.unsubscribe();
-            this.statusNetOnlineSubscription$.unsubscribe();
-            this.statusAPISubscription$.unsubscribe();
-        }
-        catch (e) {
-        }
     }
 }
 

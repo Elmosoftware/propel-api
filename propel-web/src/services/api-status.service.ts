@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 
 import { environment as env } from 'src/environments/environment';
 import { APIStatus } from "../../../propel-shared/models/api-status";
 import { UsageStats } from "../../../propel-shared/models/usage-stats";
-import { APIResponse } from "../../../propel-shared/core/api-response";
 import { logger } from '../../../propel-shared/services/logger-service';
 import { HttpHelper, Headers } from 'src/util/http-helper';
 
@@ -30,23 +28,25 @@ export class APIStatusService {
   /**
    * Retrieves the API status.
    */
-  getStatus(): Observable<APIResponse<APIStatus>> {
+  async getStatus(): Promise<APIStatus> {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, StatusEndpoint);
 
-    return this.http.get<APIResponse<APIStatus>>(url, { 
+    return this.http.get<APIStatus>(url, { 
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
-    });
+    })
+    .toPromise();
   }
 
   /**
    * Retrieves the Application Usage Statistics.
    */
-  getApplicationUsageStats(): Observable<APIResponse<UsageStats>> {
+  async getApplicationUsageStats(): Promise<UsageStats[]> {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
       [StatusEndpoint, StatusEndpointActions.Stats]);
 
-    return this.http.get<APIResponse<UsageStats>>(url, { 
-      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
-    });
+    return this.http.get<UsageStats[]>(url, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) //, Headers.XPropelNoAuth) 
+    })
+    .toPromise();
   }
 }

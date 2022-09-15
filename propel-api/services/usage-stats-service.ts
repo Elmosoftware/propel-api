@@ -21,14 +21,14 @@ const TOP_LAST_ERRORS: number = 5;
  */
 export class UsageStatsService {
 
-    private _stats: UsageStats | null = null;
+    private _stats!: UsageStats;
     private _updatingStats: boolean = false;
 
     /**
      * Return the current application usage stats or no value if the stats are not created yet.
      * If there is no stats or they are stale, it will take care also to schedule a refresh..
      */
-    get currentStats(): UsageStats | null {
+    get currentStats(): UsageStats {
 
         if (this.areStatsStale) {
             
@@ -49,7 +49,7 @@ export class UsageStatsService {
                 })
         }
 
-        return (this._stats == null) ? null : Object.assign({}, this._stats);
+        return this._stats;
     }
 
     constructor() {
@@ -63,7 +63,7 @@ export class UsageStatsService {
     get areStatsStale(): boolean {
         let statsAge: number;
 
-        if (this._stats == null) return true;
+        if (!this._stats) return true;
         statsAge = ((new Date()).getTime() - this._stats.statsTimestamp.getTime())/1000/60
 
         return statsAge >= cfg.usageStatsStaleMinutes;
