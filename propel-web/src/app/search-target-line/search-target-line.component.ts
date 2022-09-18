@@ -1,15 +1,13 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
-import { concat } from 'rxjs';
+import { from, of } from 'rxjs';
 
 import { Target } from '../../../../propel-shared/models/target';
 import { CoreService } from 'src/services/core.service';
 import { DataEndpointActions } from 'src/services/data.service';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
-import { Entity } from '../../../../propel-shared/models/entity';
-import { UIHelper } from 'src/util/ui-helper';
 import { SearchLine } from 'src/core/search-line';
+import { concatAll } from 'rxjs/operators';
 
 @Component({
   selector: 'app-search-target-line',
@@ -55,24 +53,24 @@ If there is a Workflow that already have it, the execution on this target will b
   duplicate(id: string) {
     //We search for the target first:
     this.core.data.getById(DataEndpointActions.Target, id)
-      .subscribe((results: APIResponse<Entity>) => {
+      .then((target: Target) => {
 
-        if (results.count == 0) {
+        if (!target) {
           this.core.toaster.showWarning("Seems like the items is gone!, maybe someone else deleted. Please double check before to retry.", "Could not find the item");
         }
         else {
           //If exists, we duplicate it:
-          this.core.data.duplicate(DataEndpointActions.Target, (results.data[0] as Target).FQDN)
-            .subscribe((results: APIResponse<string>) => {
-              this.core.navigation.toTarget(results.data[0]);
+          this.core.data.duplicate(DataEndpointActions.Target, target.FQDN)
+            .then((dupId: string) => {
+              this.core.navigation.toTarget(dupId);
             },
-              err => {
-                this.core.handleError(err)
+              (error) => {
+                this.core.handleError(error)
               });
         }
       },
-        err => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         });
   }
 
@@ -88,12 +86,17 @@ If there is a Workflow that already have it, the execution on this target will b
           //have it attached will prevent the execution:
           item.enabled = false;
 
-          concat(this.core.data.save(DataEndpointActions.Target, item),
-            this.core.data.delete(DataEndpointActions.Target, item._id))
-            .subscribe((results: APIResponse<string>) => {
-            },
-              err => {
-                this.core.handleError(err)
+          of(
+            from(this.core.data.save(DataEndpointActions.Target, item)),
+            from(this.core.data.delete(DataEndpointActions.Target, item._id))
+          )
+            .pipe(
+              concatAll()
+            )
+            .subscribe(
+              _ => { },
+              (error) => {
+                this.core.handleError(error)
               },
               () => {
                 this.core.toaster.showSuccess("Target deleted succesfully!");
@@ -101,8 +104,8 @@ If there is a Workflow that already have it, the execution on this target will b
               })
         }
       },
-        err => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         });
   }
 }

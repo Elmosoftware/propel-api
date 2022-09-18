@@ -4,8 +4,9 @@ import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { AdapterModel } from "../schema/mongoose-schema-adapter";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { SecurityToken } from "../../propel-shared/core/security-token";
+import { Entity } from "../../propel-shared/models/entity";
+import { PagedResponse } from "../../propel-shared/core/paged-response";
 
 /**
  * Data Service
@@ -78,16 +79,16 @@ export class DataService {
     /**
      * Add an Entity document to the database.
      * 
-     * @param {any} document Entity document
+     * @param {Entity} document Entity document
      */
-    add(document: any): Promise<APIResponse<any>> {
+    add(document: Entity): Promise<string> {
         return new Promise((resolve, reject) => {
 
             let obj = null;
             this._setAuditData(true, document);
 
             if (!DataService.isValidObjectId(document._id)) {
-                document._id = DataService.getNewobjectId();
+                document._id = DataService.getNewobjectId().toString();
             }
 
             obj = this._model.model.hydrate(document);
@@ -98,10 +99,10 @@ export class DataService {
                     if (this.isDupKeyError(err)) {
                         err = new PropelError(err, ErrorCodes.DuplicatedItem)
                     }
-                    reject(new APIResponse<any>(err, null));
+                    reject(err);
                 }
                 else {
-                    resolve(new APIResponse<any>(null, data._id));
+                    resolve(data._id);
                 }
             })
         })
@@ -109,9 +110,9 @@ export class DataService {
 
     /**
      * Update an existing Entity document.
-     * @param {any} document Entity Document updated data.
+     * @param {Entity} document Entity Document updated data.
      */
-    update(document: any): Promise<APIResponse<any>> {
+    update(document: Entity): Promise<string> {
         return new Promise((resolve, reject) => {
             let e: PropelError | null = null;
 
@@ -126,7 +127,7 @@ export class DataService {
             }
 
             if (e) {
-                reject(new APIResponse<any>(e, null));
+                reject(e);
             }
             else {
                 this._setAuditData(false, document);
@@ -135,7 +136,7 @@ export class DataService {
                         if (this.isDupKeyError(err)) {
                             err = new PropelError(err, ErrorCodes.DuplicatedItem)
                         }
-                        reject(new APIResponse<any>(err, null));
+                        reject(err);
                     }
                     else if (this.isVoidWrite(data)) {
                         let err = new PropelError(`The last UPDATE operation affects no documents. Please verify: \r\n
@@ -143,10 +144,10 @@ export class DataService {
                     - If you have been granted with the necessary permissions.`,
                             ErrorCodes.VoidUpdate
                         );
-                        reject(new APIResponse<any>(err, null));
+                        reject(err);
                     }
                     else {
-                        resolve(new APIResponse<any>(null, document._id));
+                        resolve(document._id);
                     }
                 })
             }
@@ -155,9 +156,9 @@ export class DataService {
 
     /**
      * Fecth documents with different options.
-     * @param {any} queryModifier Query optons that includes Paging, sorting , filtering, etc...
+     * @param {QueryModifier} queryModifier Query optons that includes Paging, sorting, filtering, etc...
      */
-    find(queryModifier: any): Promise<APIResponse<any>> {
+    find(queryModifier: QueryModifier): Promise<PagedResponse<Entity>> {
 
         return new Promise((resolve, reject) => {
             let qm = new QueryModifier(queryModifier);
@@ -185,7 +186,7 @@ Those fields are for internal use only and must not take part on user queries.`)
             }
 
             if (e) {
-                reject(new APIResponse<any>(e, null))
+                reject(e)
             }
             else {
                 let projection: any = null;
@@ -228,7 +229,7 @@ Those fields are for internal use only and must not take part on user queries.`)
                     //We need to return first the total amount of documents for the specified filter:
                     countQuery.exec((err: any, count: number) => {
                         if (err) {
-                            reject(new APIResponse<any>(err, null));
+                            reject(err);
                         }
                         else {
                             //If documents total amount is 0, there is no reason to continue:
@@ -236,7 +237,7 @@ Those fields are for internal use only and must not take part on user queries.`)
                                 this._runFetchQuery(query, resolve, reject, count)
                             }
                             else {
-                                resolve(new APIResponse<any>(null, null, 0));
+                                resolve(new PagedResponse<Entity>());
                             }
                         }
                     });
@@ -252,7 +253,7 @@ Those fields are for internal use only and must not take part on user queries.`)
      * Delete the specified document by his ID.
      * @param {string} id Entity unique identifier.
      */
-    delete(id: string): Promise<APIResponse<any>> {
+    delete(id: string): Promise<string> {
 
         return new Promise((resolve, reject) => {
             let e: PropelError | null = null;
@@ -265,7 +266,7 @@ Those fields are for internal use only and must not take part on user queries.`)
             }
 
             if (e) {
-                reject(new APIResponse<any>(e, null));
+                reject(e);
             }
             else {
                 this._model.model.updateOne({ _id: id }, {
@@ -276,17 +277,17 @@ Those fields are for internal use only and must not take part on user queries.`)
                 }, null,
                     (err: any, data: any) => {
                         if (err) {
-                            reject(new APIResponse<any>(err, null));
+                            reject(err);
                         }
                         else if (this.isVoidWrite(data)) {
                             //The attempt to soft delete a non existent document by Id is not reported as error by Mongoose:
                             let err = new PropelError(`The last DELETE operation affects no documents. This can be caused by the following issues: \r\n
                     - The document you tried to delete no longer exists.
                     - You are not been granted with the necessary permissions.`, ErrorCodes.VoidDelete);
-                            reject(new APIResponse<any>(err, null));
+                            reject(err);
                         }
                         else {
-                            resolve(new APIResponse<any>(null, id));
+                            resolve(id);
                         }
                     })
             }
@@ -344,10 +345,10 @@ Those fields are for internal use only and must not take part on user queries.`)
                     err = new PropelError(err, ErrorCodes.CryptoError);
                 }
 
-                cbReject(new APIResponse<any>(err, null));
+                cbReject(err);
             }
             else {
-                cbResolve(new APIResponse<any>(null, this._postProcessData(data), totalCount));
+                cbResolve(new PagedResponse<Entity>(this._postProcessData(data), totalCount));
             }
         });
     }

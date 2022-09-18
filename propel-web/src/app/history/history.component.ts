@@ -4,12 +4,12 @@ import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { UIHelper } from 'src/util/ui-helper';
 import { InfiniteScrollingService, PagingHelper, SCROLL_POSITION } from 'src/core/infinite-scrolling-module';
 import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
 import { SystemHelper } from 'src/util/system-helper';
 import { DataEndpointActions } from 'src/services/data.service';
+import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 
 export enum IntervalType {
   LastHalfHour = 30,
@@ -65,11 +65,14 @@ export class HistoryComponent implements OnInit {
 
   search() {
     this.resetSearch();
-    this.fetchData(this.svcInfScroll.pageSize, 0);
+    this.fetchData(this.svcInfScroll.pageSize, 0)
+    .catch(this.core.handleError)
   }
   
-  fetchData(top: number, skip: number): void {
+  async fetchData(top: number, skip: number): Promise<void> {
     let qm = new QueryModifier();
+    let paged: PagedResponse<ExecutionLog>;
+    let xLog: ExecutionLogExtended[] 
 
     if (this.svcInfScroll.model) {
       this.core.toaster.showInformation("We are retrieving more data from your search. It will be available soon.", "Retrieving data");
@@ -83,22 +86,23 @@ export class HistoryComponent implements OnInit {
         $gte: SystemHelper.addMinutes(this.fg.controls.interval.value * -1)
       }
     };
-    qm.sortBy = "-startedAt";    
+    qm.sortBy = "-startedAt";  
+    
+    try {
+      paged = await this.core.data.find(DataEndpointActions.ExecutionLog, qm) as PagedResponse<ExecutionLog>;
+      xLog = paged.data.map((l: ExecutionLog) => new ExecutionLogExtended(l))
+      this.svcInfScroll.feed(paged.totalCount, xLog);
 
-    this.core.data.find(DataEndpointActions.ExecutionLog, qm)
-      .subscribe((results: APIResponse<ExecutionLog>) => {
-
-        let xLog: ExecutionLogExtended[] = results.data.map((l: ExecutionLog) => new ExecutionLogExtended(l))
-        this.svcInfScroll.feed(results.totalCount, xLog);
-
-        if (this.svcInfScroll.count > 0) {
-          this.core.toaster.showInformation(`Showing now ${this.svcInfScroll.count} results of a total of ${this.svcInfScroll.totalCount} coincidences found. 
-            ${(this.svcInfScroll.totalCount > this.svcInfScroll.count) ? "Keep scrolling to see more." : ""}   `, "New results have been added.")
-        }
-      },
-        err => {
-          this.core.handleError(err)
-        });
+      if (this.svcInfScroll.count > 0) {
+        this.core.toaster.showInformation(`Showing now ${this.svcInfScroll.count} results of a total of ${this.svcInfScroll.totalCount} coincidences found. 
+          ${(this.svcInfScroll.totalCount > this.svcInfScroll.count) ? "Keep scrolling to see more." : ""}   `, "New results have been added.")
+      }
+      
+      return Promise.resolve();
+      
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
 
   resetSearch() {

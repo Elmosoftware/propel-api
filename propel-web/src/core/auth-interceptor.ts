@@ -85,10 +85,10 @@ export class AuthInterceptor implements HttpInterceptor {
                         this.nav.toHome(true);
                         return throwError(err)
                     }),
-                    switchMap((response: APIResponse<UserLoginResponse>) => {
+                    switchMap((response: UserLoginResponse) => {
                         this._isRefreshing = false;
                         req = this.addAuthorizationHeader(req)
-                        this._refreshTokenSubject.next(response.data[0])
+                        this._refreshTokenSubject.next(response)
                         return next.handle(req);
                     })
                 )

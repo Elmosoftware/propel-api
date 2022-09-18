@@ -1,7 +1,7 @@
 import { db } from "../../core/database";
 import { DataRoute } from "../../routes/data";
 import { DataService } from "../../services/data-service";
-import { APIResponse } from "../../../propel-shared/core/api-response";
+import { PagedResponse } from "../../../propel-shared/core/paged-response";
 
 let d: DataRoute;
 let svc: DataService
@@ -14,7 +14,7 @@ describe("DataRouter class - processFind()", () => {
         d = new DataRoute();
         svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.find = (qm: any) => { //To avoid hitting the DB.
-            return Promise.resolve(new APIResponse<any>(null, "FIND"));
+            return Promise.resolve(new PagedResponse<any>("FIND"));
         }
     })
 
@@ -23,7 +23,7 @@ describe("DataRouter class - processFind()", () => {
         
         //@ts-ignore
         d.processFind(body, svc)
-            .then((value: APIResponse<any>) => {
+            .then((value: PagedResponse<any>) => {
                 expect(value.data[0]).toEqual("FIND");
                 done();
             })
@@ -41,8 +41,8 @@ describe("DataRouter class - processFind()", () => {
                 expect(value).toEqual("Don't expect to return a value here!!!");
                 done();
             })
-            .catch((err: APIResponse<any>) => {
-                expect(err.error.message).toContain("Find action was aborted because the body entity attribute is not a string")
+            .catch((err) => {
+                expect(err.message).toContain("Find action was aborted because the body entity attribute is not a string")
                 done()
             })
     })
@@ -54,8 +54,8 @@ describe("DataRouter class - processFind()", () => {
                 expect(value).toEqual("Don't expect to return a value here!!!");
                 done();
             })
-            .catch((err: APIResponse<any>) => {
-                expect(err.error.message).toContain("The id specified is not a valid identifier")
+            .catch((err) => {
+                expect(err.message).toContain("The id specified is not a valid identifier")
                 done()
             })
     })
@@ -68,10 +68,10 @@ describe("DataRouter class - processSave()", () => {
         d = new DataRoute();
         svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.update = (document: any) => { //To avoid hitting the DB.
-            return Promise.resolve(new APIResponse<any>(null, "UPDATE"));
+            return Promise.resolve("UPDATE");
         }
         svc.add = (document: any) => { //To avoid hitting the DB.
-            return Promise.resolve(new APIResponse<any>(null, "ADD"));
+            return Promise.resolve("ADD");
         }
     })
 
@@ -80,8 +80,8 @@ describe("DataRouter class - processSave()", () => {
         
         //@ts-ignore
         d.processSave(body, svc)
-            .then((value: APIResponse<any>) => {
-                expect(value.data[0]).toEqual("ADD");
+            .then((value: string) => {
+                expect(value).toEqual("ADD");
                 done();
             })
             .catch((err: any) => {
@@ -94,8 +94,8 @@ describe("DataRouter class - processSave()", () => {
         
         //@ts-ignore
         d.processSave(body, svc)
-            .then((value: APIResponse<any>) => {
-                expect(value.data[0]).toEqual("UPDATE");
+            .then((value: string) => {
+                expect(value).toEqual("UPDATE");
                 done();
             })
             .catch((err: any) => {
@@ -108,12 +108,12 @@ describe("DataRouter class - processSave()", () => {
         let body = { action: action, entity: "xxx" }
         //@ts-ignore
         d.processSave(body, svc)
-            .then((value: any) => {
+            .then((value: string) => {
                 expect(value).toEqual("Don't expect to return a value here!!!");
                 done();
             })
-            .catch((err: APIResponse<any>) => {
-                expect(err.error.message).toContain("Save action was aborted because the body doesn't contain an entity object")
+            .catch((err) => {
+                expect(err.message).toContain("Save action was aborted because the body doesn't contain an entity object")
                 done();
             })
     })
@@ -125,7 +125,7 @@ describe("DataRouter class - processDelete()", () => {
         d = new DataRoute();
         svc = db.getService("Script") //Any model name will be fine, we wiil mock the methods inside.
         svc.delete = (id: string) => { //To avoid hitting the DB.
-            return Promise.resolve(new APIResponse<any>(null, "DELETE"));
+            return Promise.resolve("DELETE");
         }
     })
 
@@ -134,8 +134,8 @@ describe("DataRouter class - processDelete()", () => {
         
         //@ts-ignore
         d.processDelete(body, svc)
-            .then((value: APIResponse<any>) => {
-                expect(value.data[0]).toEqual("DELETE");
+            .then((value: string) => {
+                expect(value).toEqual("DELETE");
                 done();
             })
             .catch((err: any) => {
@@ -148,8 +148,8 @@ describe("DataRouter class - processDelete()", () => {
         
         //@ts-ignore
         d.processDelete(body, svc)
-            .then((value: APIResponse<any>) => {
-                expect(value.data[0]).toEqual("DELETE");
+            .then((value: string) => {
+                expect(value).toEqual("DELETE");
                 done();
             })
             .catch((err: any) => {
@@ -166,8 +166,8 @@ describe("DataRouter class - processDelete()", () => {
                 expect(value).toEqual("Don't expect to return a value here!!!");
                 done();
             })
-            .catch((err: APIResponse<any>) => {
-                expect(err.error.message).toContain("Delete action was aborted because the body doesn't contain an entity object")
+            .catch((err) => {
+                expect(err.message).toContain("Delete action was aborted because the body doesn't contain an entity object")
                 done();
             })
     })

@@ -2,11 +2,10 @@ import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Component, OnInit, EventEmitter } from '@angular/core';
-import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { CoreService } from 'src/services/core.service';
 import { DialogResult } from 'src/core/dialog-result';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Workflow } from '../../../../propel-shared/models/workflow';
 import { FormHandler } from 'src/core/form-handler';
 import { compareEntities } from '../../../../propel-shared/models/entity';
@@ -83,32 +82,33 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
-    this.refreshData();
+    this.refreshData()
+    .catch(this.core.handleError)
   }
 
-  refreshData(): void {
+  async refreshData(): Promise<void> {
     let id: string = this.route.snapshot.paramMap.get("id");
 
-    if (id) {
-      this.core.data.getById(DataEndpointActions.Workflow, id, true)
-        .subscribe((data: APIResponse<Workflow>) => {
-          if (data.count == 0) {
-            this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
-            this.newItem();
-          }
-          else {
-            let w: Workflow = data.data[0];
-            this.fh.setValue(w);
-            this.createStepsFormArray(w.steps);
-            this.extractScriptNameAndTargetFromWorkflow(w);
-          }
-        },
-          err => {
-            this.core.handleError(err)
-          });
-    }
-    else {
+    if (!id) {
       this.newItem();
+      return Promise.resolve();
+    }
+
+    try {
+      let workflow: Workflow = await this.core.data.getById(DataEndpointActions.Workflow, id, true) as Workflow;
+
+      if (!workflow) {
+        this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
+        this.newItem();
+        return Promise.resolve();
+      }
+
+      this.fh.setValue(workflow);
+      this.createStepsFormArray(workflow.steps);
+      this.extractScriptNameAndTargetFromWorkflow(workflow);
+      return Promise.resolve()
+    } catch (error) {
+      return Promise.reject(error)
     }
   }
 
@@ -321,28 +321,28 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
 
     //We can reduce the payload by excluding the entire script object and the targets and 
     //sending only the ObjectId for each one of them:
-    let data:any = Object.assign({}, this.fh.value);
+    let data: any = Object.assign({}, this.fh.value);
 
     if (data.steps) {
-      data.steps.forEach((step)  => {
+      data.steps.forEach((step) => {
         if (step.script && step.script._id) {
           step.script = step.script._id;
         }
 
         if (step.targets) {
           step.targets.forEach((target, i) => {
-            if(target && target._id) {
+            if (target && target._id) {
               step.targets[i] = target._id;
             }
           });
         }
-      });    
+      });
     }
 
     this.core.data.save(DataEndpointActions.Workflow, data)
-      .subscribe((results: APIResponse<string>) => {
+      .then((id: string) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
-        this.fh.setId(results.data[0]);
+        this.fh.setId(id);
         this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
         //will allow the "Cancel" button to come back to this version.
         this.showAddNewButton = true;
@@ -357,23 +357,23 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
           this.core.navigation.toRun(this.fh.getId());
         }
       },
-        (err) => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         }
       );
   }
 
   resetForm() {
     this.fh.resetForm();
-    
+
     //Sadly the form array values are not restored automatically to the previous values: 
-    this.createStepsFormArray(this.fh.previousValue.steps, true);      
+    this.createStepsFormArray(this.fh.previousValue.steps, true);
   }
 
   drop(event: CdkDragDrop<string[]>) {
     moveItemInArray((this.fh.form.controls.steps as FormArray).controls, event.previousIndex, event.currentIndex);
   }
-    
+
   dragStarted(event: any) {
     this.isDragging = true;
   }

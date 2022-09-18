@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, EventEmitter, ViewChild, Output } from '@angular/core';
-import { FormGroup, Validators, FormControl, FormArray, ValidatorFn, AbstractControl } from '@angular/forms';
-import { forkJoin } from "rxjs";
+import { FormGroup, Validators, FormControl, FormArray, ValidatorFn } from '@angular/forms';
+import { forkJoin, from } from "rxjs";
 import { NgSelectComponent } from '@ng-select/ng-select';
 
 import { Script } from '../../../../propel-shared/models/script';
@@ -18,6 +18,7 @@ import { DataEndpointActions } from 'src/services/data.service';
 import { Utils } from "../../../../propel-shared/utils/utils";
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
+import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 
 /**
  * Minimum step name length.
@@ -136,11 +137,12 @@ export class WorkflowStepComponent implements OnInit {
 
     //Doing this with a timeout to avoid the "ExpressionChangedAfterItHasBeenCheckedError" error:
     setTimeout(() => {
-      forkJoin([
-        this.refreshScripts(),
-        this.refreshTargets(),
-        this.refreshCredentials()
-      ])
+      forkJoin({
+        scripts: from(this.refreshScripts()),
+        targets: from(this.refreshTargets()),
+        credentials: (this.refreshCredentials())
+        //if there is anything else to refresh, add it here...
+      })
         .subscribe((results) => {
 
           //We are adding here a temporary field "disabled" for both, (Scripts and Targets), this field 
@@ -148,21 +150,21 @@ export class WorkflowStepComponent implements OnInit {
           //them to be selected:
 
           //@ts-ignore
-          this.allScripts = results[0].data.map(item => {
+          this.allScripts = results.scripts.data.map(item => {
             //@ts-ignore
             item.disabled = !item.enabled;
             return item;
           });
 
           //@ts-ignore
-          this.allTargets = results[1].data.map(item => {
+          this.allTargets = results.targets.data.map(item => {
             //@ts-ignore
             item.disabled = !item.enabled;
             return item;
           });
 
           //@ts-ignore
-          this.allCredentials = results[2].data.map(item => {
+          this.allCredentials = results.credentials.data.map(item => {
             //@ts-ignore
             item.disabled = false;
             return item;
@@ -173,22 +175,22 @@ export class WorkflowStepComponent implements OnInit {
     });
   }
 
-  refreshScripts() {
+  refreshScripts(): Promise<PagedResponse<Script>> {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
-    return this.core.data.find(DataEndpointActions.Script, qm);
+    return (this.core.data.find(DataEndpointActions.Script, qm)) as unknown as Promise<PagedResponse<Script>>;
   }
 
-  refreshTargets() {
+  refreshTargets(): Promise<PagedResponse<Target>> {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "friendlyName";
-    return this.core.data.find(DataEndpointActions.Target, qm);
+    return (this.core.data.find(DataEndpointActions.Target, qm)) as unknown as Promise<PagedResponse<Target>>;
   }
 
-  refreshCredentials() {
+  refreshCredentials(): Promise<PagedResponse<Credential>> {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
-    return this.core.data.find(DataEndpointActions.Credential, qm);
+    return (this.core.data.find(DataEndpointActions.Credential, qm)) as unknown as Promise<PagedResponse<Credential>>;
   }
 
   getScriptFromCache(id: string): Script | undefined {

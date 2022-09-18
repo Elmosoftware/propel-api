@@ -37,7 +37,7 @@ export class PropelError {
     /**
       * Original error.
       */
-    public error: Error | null = null;
+    public originalError: Error | null = null;
 
     /**
      * Error timestamp
@@ -116,12 +116,12 @@ export class PropelError {
             paramError = Object.assign({}, error);
 
             //Special case for the "HTTPResponseError" in Angular that embeds the Propel error within:
-            if ((error as any).error?.error && String((error as any).error?.error?.name).startsWith(PROPEL_ERROR_NAME)) {
-                error = Object.assign({}, (error as any).error?.error)
+            if ((error as any).error && String((error as any).error?.name).startsWith(PROPEL_ERROR_NAME)) {
+                error = Object.assign({}, (error as any).error)
             }
         }
 
-        this.parseError(error);
+        this.parseOriginalError(error);
         this.parseInnerExceptions(error);
         this.parseName(error);
         this.parseMessage(error);
@@ -137,14 +137,14 @@ export class PropelError {
      * Parses the supplied error and add it to the error property.
      * @param err Error orerror message.
      */
-    parseError(err: PropelError | Error | string): void {
-        if (this.error) return;
+    parseOriginalError(err: PropelError | Error | string): void {
+        if (this.originalError) return;
 
         if (typeof err == "object") {
-            this.error = Object.assign({}, ((err as any).error ? (err as any).error : err));
+            this.originalError = (err as any).originalError || (err as any).error || err
         }
         else {
-            this.error = new Error(String(err));
+            this.originalError = new Error(String(err));
         }
     }
 
@@ -231,12 +231,18 @@ export class PropelError {
     parseHTTPStatus(err: PropelError | Error | string, httpStatus?: string | undefined, paramError?: any): void {
         if (this.httpStatus) return;
 
-        this.httpStatus = (httpStatus === null || httpStatus === undefined || httpStatus == "") ? "" : parseInt(httpStatus).toString();
+        this.httpStatus = (!httpStatus) ? "" : parseInt(httpStatus).toString();
 
         if (!this.httpStatus && (err as any).srcElement?.readyState) {
             this.httpStatus = String((err as any).srcElement.readyState);
         }  
         
+        if (!this.httpStatus && paramError?.httpStatus) {
+            this.httpStatus = paramError?.httpStatus
+            this.httpStatusText = paramError?.httpStatusText
+            this.isHTTPError = true;
+        }
+
         if (!this.httpStatus && paramError?.status) {
             this.httpStatus = paramError?.status
             this.httpStatusText = paramError?.statusText

@@ -41,24 +41,24 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
 
     //We search for the workflow first:
     this.core.data.getById(DataEndpointActions.Workflow, id)
-      .subscribe((results: APIResponse<Entity>) => {
+      .then((workflow: Workflow) => {
 
-        if (results.count == 0) {
+        if (!workflow) {
           this.core.toaster.showWarning("Seems like the items is gone!, maybe someone else deleted. Please double check before to retry.", "Could not find the item");
         }
         else {
           //If exists, we duplicate it:
-          this.core.data.duplicate(DataEndpointActions.Workflow, (results.data[0] as Workflow).name)
-            .subscribe((results: APIResponse<string>) => {
-              this.core.navigation.toWorkflow(results.data[0]);
+          this.core.data.duplicate(DataEndpointActions.Workflow, workflow.name)
+            .then((dupId: string) => {
+              this.core.navigation.toWorkflow(dupId);
             },
-              err => {
-                this.core.handleError(err)
+              (error) => {
+                this.core.handleError(error)
               });
         }
       },
-        err => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         });
   }
 
@@ -69,19 +69,18 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
     ).subscribe((result: DialogResult<any>) => {
       if (!result.isCancel) {
         this.core.data.delete(DataEndpointActions.Workflow, item._id)
-          .subscribe((results: APIResponse<string>) => {
+          .then((id: string) => {
             this.core.toaster.showSuccess("Workflow deleted succesfully!");
             this.dataChanged.emit(true);
           },
-            err => {
-              this.core.handleError(err)
+            (error) => {
+              this.core.handleError(error)
             })
       }
     },
-      err => {
-        this.core.handleError(err)
+      (error) => {
+        this.core.handleError(error)
       });
-
   }
 
   run(id: string) {

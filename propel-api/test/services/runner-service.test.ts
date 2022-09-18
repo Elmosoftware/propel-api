@@ -34,7 +34,7 @@ describe("Runner Class - execute()", () => {
         
         runner = new Runner();
         runner.saveExecutionLog = (log: ExecutionLog) => {
-            return Promise.resolve(new APIResponse<string>(null, "newid"));
+            return Promise.resolve("newid");
         }
 
         //Mocking the Credential cache inside the runner:

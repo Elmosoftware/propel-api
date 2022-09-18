@@ -7,13 +7,12 @@ import { compareEntities } from '../../../../propel-shared/models/entity';
 import { Target } from "../../../../propel-shared/models/target";
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
-import { forkJoin, Observable } from 'rxjs';
-import { DialogResult } from 'src/core/dialog-result';
+import { forkJoin, Observable, from } from 'rxjs';
 import { FormHandler } from "../../core/form-handler";
 import { DataEndpointActions } from 'src/services/data.service';
 import { Credential } from "../../../../propel-shared/models/credential";
+import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 
 const FRIENDLY_NAME_MIN: number = 3;
 const FRIENDLY_NAME_MAX: number = 25;
@@ -83,75 +82,76 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
     //Doing this with a timeout to avoid the "ExpressionChangedAfterItHasBeenCheckedError" error:
     setTimeout(() => {
-      forkJoin([
-        this.refreshCredentials()
+      forkJoin({
+        credentials: from(this.refreshCredentials())
         //if there is anything else to refresh, add it here...
-      ])
+      })
         .subscribe((results) => {
 
           //We are adding here a temporary field "disabled". This field 
           //is required for the @NgSelect component to identify disabled items in the list and prevent 
           //them to be selected:
 
-          //@ts-ignore
-          this.allWindowsCredentials = results[0].data.map(item => {
+          this.allWindowsCredentials = results.credentials.data.map(item => {
             //@ts-ignore
             item.disabled = false;
             return item;
           });
 
-          this.refreshData();
+          this.refreshData()
+          .catch(this.core.handleError)
         });
     });
   }
 
-  refreshData(): void {
+  async refreshData(): Promise<void> {
     let id: string = this.route.snapshot.paramMap.get("id");
 
-    if (id) {
-      this.core.data.getById(DataEndpointActions.Target, id, true)
-        .subscribe((data: APIResponse<Target>) => {
-          if (data.count == 0) {
-            this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
-            this.newItem();
-          }
-          else {
-
-            let target: Target = data.data[0];
-
-            //If the target has a credential, but is not in the list of credentials in cahce, then
-            //the credential must be deleted:
-            if (target.invokeAs && !this.getCredentialFromCache(target.invokeAs._id)) {
-              let c = new Credential()
-              c._id = target.invokeAs._id
-              c.name = target.invokeAs.name
-              /* Note: We are adding this credential with disabled=false because for some reason the 
-                cross button to remove an item from the dropdown is not working when the item is disabled.
-                So, we are managing this condition with a new "isDisabled" attribute only for this cases.
-              */
-              //@ts-ignore
-              c.disabled = false;
-              //@ts-ignore
-              c.isDisabled = true;
-
-              //Adding the deleted credential to the whole list:
-              this.allWindowsCredentials = [...this.allWindowsCredentials, c];
-              this.invokeAs.select({ name: c.name, value: c }); //Selecting the credential in the dropdown.
-            }
-
-            this.fh.setValue(target)
-          }
-        },
-          err => {
-            this.core.handleError(err)
-          });
-    }
-    else {
+    if (!id) {
       this.newItem();
+      return Promise.resolve();
+    }
+
+    try {
+      let target: Target = await this.core.data.getById(DataEndpointActions.Target, id, true) as Target;
+
+      if (!target) {
+        this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
+        this.newItem();
+        return Promise.resolve();
+      }
+
+      //If the target has a credential, but is not in the list of credentials in cahce, then
+      //the credential must be deleted:
+      if (target.invokeAs && !this.getCredentialFromCache(target.invokeAs._id)) {
+        let c = new Credential()
+        c._id = target.invokeAs._id
+        c.name = target.invokeAs.name
+        /* Note: 
+          We are adding this credential with disabled=false because for some reason the 
+          cross button to remove an item from the dropdown is not working when the item is disabled.
+          So, we are managing this condition with a new "isDisabled" attribute only for this cases.
+        */
+        //@ts-ignore
+        c.disabled = false;
+        //@ts-ignore
+        c.isDisabled = true;
+
+        //Adding the deleted credential to the whole list:
+        this.allWindowsCredentials = [...this.allWindowsCredentials, c];
+        this.invokeAs.select({ name: c.name, value: c }); //Selecting the credential in the dropdown.
+
+      }
+      
+      this.fh.setValue(target)
+      return Promise.resolve();
+    
+    } catch (error) {
+      return Promise.reject(error);
     }
   }
 
-  refreshCredentials() {
+  async refreshCredentials(): Promise<PagedResponse<Credential>> {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
     qm.filterBy = {
@@ -160,7 +160,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
       }
     }
 
-    return this.core.data.find(DataEndpointActions.Credential, qm)
+    return (this.core.data.find(DataEndpointActions.Credential, qm) as unknown as PagedResponse<Credential>)
   }
 
   credentialChanged($event) {
@@ -180,9 +180,9 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
   save() {
     this.core.data.save(DataEndpointActions.Target, this.fh.value)
-      .subscribe((results: APIResponse<string>) => {
+      .then((id: string) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
-        this.fh.setId(results.data[0]);
+        this.fh.setId(id);
         this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
         //will allow the "Cancel" button to come back to this version.
 
@@ -190,11 +190,10 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
         //and if we are creating an item it will edit the created item instead of showing 
         //a new item form:
         this.core.navigation.replaceHistory(this.fh.getId());
-
         this.showAddNewButton = true;
       },
-        (err) => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         }
       );
   }

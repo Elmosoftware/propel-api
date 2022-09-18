@@ -273,8 +273,11 @@ export class NavigationBarComponent implements OnInit {
       `Are you sure you want to log off?`, "Yes, I want!", "No, I'll stay here a little longer")
     ).subscribe((result: DialogResult<any>) => {
       if (!result.isCancel) {
-        this.core.security.logOff();
-        this.core.navigation.toHome(true);
+        this.core.security.logOff()
+          .catch(_ => { }) //Not interested in report log off errors....
+          .finally(() => {
+            this.core.navigation.toHome(true);
+          })
       }
     }, err => {
       this.core.handleError(err)

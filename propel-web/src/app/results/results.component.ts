@@ -4,7 +4,6 @@ import { MatAccordion } from '@angular/material/expansion';
 
 import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
 import { CoreService } from 'src/services/core.service';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { SystemHelper } from 'src/util/system-helper';
 import { ExecutionStep } from '../../../../propel-shared/models/execution-step';
 import { UIHelper } from 'src/util/ui-helper';
@@ -35,26 +34,29 @@ export class ResultsComponent implements OnInit {
   ngOnInit(): void {
     this.executionResults = new Map<string, any>();
     this.allErrors = [];
-    this.refreshData();
+    this.refreshData()
+    .catch(this.core.handleError)
   }
 
-  refreshData() {
+  async refreshData(): Promise<void> {
     let id: string = this.route.snapshot.paramMap.get("id");
 
-    this.core.data.getById(DataEndpointActions.ExecutionLog, id, true)
-      .subscribe((data: APIResponse<ExecutionLog>) => {
-        if (data.count == 0) {
-          this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
-        }
-        else {
-          this.log = data.data[0];
-          this.collapseStatus = (this.log.executionSteps.length == 1) ? false : null;
-          this.parseResults();
-        }
-      },
-        err => {
-          this.core.handleError(err)
-        });
+    try {
+      let log: ExecutionLog = await this.core.data.getById(DataEndpointActions.ExecutionLog, id, true) as ExecutionLog
+      
+      if (!log) {
+        this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
+      }
+      else {
+        this.log = log;
+        this.collapseStatus = (this.log.executionSteps.length == 1) ? false : null;
+        this.parseResults();
+      }
+
+      return Promise.resolve()
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
 
   private buildResultskey(step: ExecutionStep, target?: ExecutionTarget): string {

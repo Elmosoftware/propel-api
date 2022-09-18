@@ -1,5 +1,5 @@
 import { DataService } from "../../services/data-service";
-import { APIResponse } from "../../../propel-shared/core/api-response";
+import { Entity } from "../../../propel-shared/models/entity";
 
 function getModel(inheritFromEntityBase = false) {
 
@@ -31,13 +31,14 @@ describe("DataService Class - update()", () => {
         //@ts-ignore
         let ds = new DataService(m)
 
+        //@ts-ignore
         ds.update(null)
             .then((data: any) => {
                 expect(data).toBe(null); //We dont expect a call here.
                 done();
             })
-            .catch((e: APIResponse<any>) => {
-                expect(e.error.message).toContain(`The method "update" expect a not null reference for the "document" param`);
+            .catch((e) => {
+                expect(e.message).toContain(`The method "update" expect a not null reference for the "document" param`);
                 done()
             })
     }),
@@ -50,13 +51,13 @@ describe("DataService Class - update()", () => {
         ds.update({
             attr1: "Hello",
             attr2: "world"
-        })
+        } as unknown as Entity)
             .then((data: any) => {
                 expect(data).toBe(null); //We dont expect a call here.
                 done();
             })
-            .catch((e: APIResponse<any>) => {
-                expect(e.error.message).toContain(`The method "update" expect a document with an "_id" attribute`);
+            .catch((e) => {
+                expect(e.message).toContain(`The method "update" expect a document with an "_id" attribute`);
                 done()
             })
     }),
@@ -73,8 +74,8 @@ describe("DataService Class - update()", () => {
                 expect(data).toBe(null); //We dont expect a call here.
                 done();
             })
-            .catch((e: APIResponse<any>) => {
-                expect(e.error.message).toContain(`The method "update" expect a valid ObjectId in the parameter "id"`);
+            .catch((e) => {
+                expect(e.message).toContain(`The method "update" expect a valid ObjectId in the parameter "id"`);
                 done()
             })
     })

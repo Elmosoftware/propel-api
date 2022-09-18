@@ -1,5 +1,4 @@
 import { BAD_REQUEST, UNAUTHORIZED } from "http-status-codes";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { WebsocketMessage } from "../../propel-shared/core/websocket-message";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { BEARER_PREFIX, ACCESS_TOKEN_QUERYSTRING_KEY } from "../../propel-shared/core/security-token";
@@ -66,8 +65,8 @@ export class Middleware {
                     return;
                 }
                 else {
-                    return res.status(Number(e.httpStatus)| UNAUTHORIZED)
-                        .json(new APIResponse<any>(e, null));
+                    return res.status(Number(e.httpStatus) || UNAUTHORIZED)
+                        .json(e);
                 }
             }
     

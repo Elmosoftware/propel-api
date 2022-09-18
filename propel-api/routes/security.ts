@@ -3,18 +3,14 @@ import express from "express";
 import { INTERNAL_SERVER_ERROR, NO_CONTENT } from "http-status-codes";
 
 import { Route } from "../core/route";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityService } from "../services/security-service";
 import { SecurityRequest } from "../../propel-shared/core/security-request";
 import { UserAccount } from "../../propel-shared/models/user-account";
-import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
-import { SecuritySharedConfiguration } from "../../propel-shared/core/security-shared-config";
 import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rule";
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
 import { SecurityToken } from "../../propel-shared/core/security-token";
 import { REQUEST_TOKEN_KEY } from "../core/middleware";
-import { UserLoginResponse } from "../../propel-shared/core/user-login-response";
 import { TokenRefreshRequest } from "../../propel-shared/core/token-refresh-request";
 
 /**
@@ -75,7 +71,7 @@ export class SecurityRoute implements Route {
             let ss: SecurityService = new SecurityService(token);
 
             try {
-                res.json(new APIResponse<SecuritySharedConfiguration>(null, await ss.getSharedConfig()));
+                res.json(await ss.getSharedConfig());
             } catch (error) {
                 this.handleError(res, error); 
             }
@@ -88,8 +84,7 @@ export class SecurityRoute implements Route {
             let id: string = req.params.id;
 
             try {
-                let user = await ss.getUserByNameOrID(id);
-                res.json(new APIResponse<UserAccount>(null, user));
+                res.json(await ss.getUserByNameOrID(id));
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -102,8 +97,7 @@ export class SecurityRoute implements Route {
             let user: UserAccount = req.body;
 
             try {
-                let regResponse = await ss.registerOrUpdateUser(user);
-                res.json(new APIResponse<UserRegistrationResponse>(null, regResponse));
+                res.json(await ss.registerOrUpdateUser(user));
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -116,8 +110,7 @@ export class SecurityRoute implements Route {
             let id: string = req.params.id;
 
             try {
-                let regResponse: UserRegistrationResponse = await ss.resetUserPassword(id);
-                res.json(new APIResponse<UserRegistrationResponse>(null, regResponse));
+                res.json(await ss.resetUserPassword(id));
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -130,8 +123,8 @@ export class SecurityRoute implements Route {
             let id: string = req.params.id;
 
             try {
-                let userId = await ss.lockUser(id);
-                res.json(new APIResponse<string>(null, userId));
+                await ss.lockUser(id)
+                res.status(NO_CONTENT).send();
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -144,8 +137,8 @@ export class SecurityRoute implements Route {
             let id: string = req.params.id;
 
             try {
-                let userId = await ss.unlockUser(id);
-                res.json(new APIResponse<string>(null, userId));
+                await ss.unlockUser(id)
+                res.status(NO_CONTENT).send();
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -158,8 +151,7 @@ export class SecurityRoute implements Route {
             let request: SecurityRequest = req.body;
 
             try {
-                let response = await ss.handleUserLogin(request);
-                res.json(new APIResponse<UserLoginResponse>(null, response));
+                res.json(await ss.handleUserLogin(request));
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -172,8 +164,7 @@ export class SecurityRoute implements Route {
             let request: TokenRefreshRequest = req.body;
 
             try {
-                let response = await ss.handleTokenRefresh(request);
-                res.json(new APIResponse<UserLoginResponse>(null, response));
+                res.json(await ss.handleTokenRefresh(request));
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -187,7 +178,7 @@ export class SecurityRoute implements Route {
 
             try {
                 await ss.handleUserLogoff(request);
-                res.status(NO_CONTENT).json(new APIResponse<void>(null, null));
+                res.status(NO_CONTENT).send();
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -197,18 +188,8 @@ export class SecurityRoute implements Route {
     }
 
     handleError(res: express.Response, error: any) {
-        let code: number = INTERNAL_SERVER_ERROR;
-
-        if (typeof error === "object" && error instanceof PropelError && error.httpStatus) {
-            code = Number(error.httpStatus);
-        }
-
-        //If "error" is not an APIResponse, we need to create one:
-        if (!(error instanceof APIResponse || error?.name == "APIResponse" || 
-            (error?.constructor && error.constructor?.name == "APIResponse"))) {
-            error = new APIResponse<any>(error, null);
-        }        
-
+        error = new PropelError(error);
+        let code: number = Number(error.httpStatus) || INTERNAL_SERVER_ERROR;
         res.status(code).json(error);
     }
 }

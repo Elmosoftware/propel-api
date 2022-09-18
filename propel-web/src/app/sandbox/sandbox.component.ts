@@ -1,7 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { FormGroup, FormControl, AbstractControl, Validators, ValidatorFn } from "@angular/forms";
 import { CoreService } from "src/services/core.service";
-import { DataService, DataEndpointActions } from 'src/services/data.service';
+import { DataEndpointActions } from 'src/services/data.service';
 import { ThemePalette } from '@angular/material/core';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { Entity, compareEntities } from '../../../../propel-shared/models/entity';
@@ -13,10 +13,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { NgSelectComponent } from '@ng-select/ng-select';
-import { Credential } from '../../../../propel-shared/models/credential';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
-import { Secret } from '../../../../propel-shared/models/secret';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
+import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 
 @Component({
   selector: 'app-root',
@@ -339,7 +337,7 @@ export class SandboxComponent implements OnInit {
 
     console.info(`%c SANDBOX -> Starting Call 1 for token refreshing.`, "color: gray; background-color: lightblue");
     this.core.data.find(DataEndpointActions.Target, new QueryModifier())
-      .subscribe((result: APIResponse<any>) => {
+      .then((result: PagedResponse<any>) => {
         console.info(`%c SANDBOX -> Receiving Call 1 response! Count is ${result.count}.`, "color: gray; background-color: lightblue");
       }, (err) => {
         console.info(`%c SANDBOX -> Receiving Call 1 error. Message: ${(err.message) ? err.message : JSON.stringify(err)}`, "color: gray; background-color: crimson")
@@ -348,7 +346,7 @@ export class SandboxComponent implements OnInit {
 
     console.info(`%c SANDBOX -> Starting Call 2 for token refreshing.`, "color: gray; background-color: lightblue");
     this.core.data.find(DataEndpointActions.Credential, new QueryModifier())
-      .subscribe((result: APIResponse<any>) => {
+      .then((result: PagedResponse<any>) => {
         console.info(`%c SANDBOX -> Receiving Call 2 response! Count is ${result.count}.`, "color: gray; background-color: lightblue");
       }, (err) => {
         console.info(`%c SANDBOX -> Receiving Call 2 error. Message: ${(err.message) ? err.message : JSON.stringify(err)}`, "color: gray; background-color: crimson")

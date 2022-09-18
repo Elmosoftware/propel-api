@@ -11,6 +11,7 @@ import { cfg } from "../core/config";
 import { Workflow } from "../../propel-shared/models/workflow";
 import { logger } from "./logger-service";
 import { SecurityToken } from "../../propel-shared/core/security-token";
+import { PagedResponse } from "../../propel-shared/core/paged-response";
 
 const TOP_USED_WORKFLOWS: number = 5;
 const TOP_LATEST_EXECUTIONS: number = 5;
@@ -169,7 +170,7 @@ export class UsageStatsService {
             this._stats = stats;
 
         } catch (error) {
-            throw error;
+            return Promise.reject(error);
         }
         finally {
             this._updatingStats = false;
@@ -209,17 +210,19 @@ export class UsageStatsService {
 
         let svc: DataService = db.getService("ExecutionLog")
         let qm = new QueryModifier();
+        let result: PagedResponse<ExecutionLog>
 
         qm.populate = true;
         qm.sortBy = "-startedAt";
 
         if (token) {
             qm.filterBy = {
-                user: { $eq: token.userId }
+                user: { $eq: token?.userId }
             }        
         }
         
-        return (await svc.find(qm)).data
+        result = await svc.find(qm) as PagedResponse<ExecutionLog>;
+        return Promise.resolve(result.data);
     }
 
     private async getAllWorkflowsCount(): Promise<number> {

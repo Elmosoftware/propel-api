@@ -109,21 +109,21 @@ Also: This can cause to fail any script that is currently using the credential.`
     ).subscribe((result: DialogResult<any>) => {
       if (!result.isCancel) {
 
-        //First we try t0 delete the Secret:
+        //First we try to delete the Secret:
         this.core.data.delete(DataEndpointActions.Secret, item.secretId)
-          .subscribe((results: APIResponse<string>) => {
+          .then(_ => {
             //Old Secret was deleted!                      
-          }, err => {
+          }, _ => {
             //We give our best!
           })
 
         //Now deleting the credential itself:
         this.core.data.delete(DataEndpointActions.Credential, item._id)
-          .subscribe((results: APIResponse<string>) => {
+          .then(_ => {
             this.core.toaster.showSuccess("The credential was deleted succesfully!");
             this.dataChanged.emit(true);
-          }, err => {
-            this.core.handleError(err)
+          }, (error) => {
+            this.core.handleError(error)
           })
       }
     }, err => {
@@ -140,8 +140,8 @@ Also: This can cause to fail any script that is currently using the credential.`
 
     //Fetching the Secret holding the Credential secrets:
     this.core.data.getById(DataEndpointActions.Secret, item.secretId, true)
-      .subscribe((data: APIResponse<Secret<SecretValue>>) => {
-        if (data.count == 0) {
+      .then((data: Secret<SecretValue>) => {
+        if (!data) {
           //If the secret is missing:
           item["testStatus"] = TestStatus.Error;
           this.core.toaster.showError("There was an error testing the credential. Please edit the credential to see more details.",
@@ -153,7 +153,7 @@ Also: This can cause to fail any script that is currently using the credential.`
           this.core.toaster.showSuccess(`Credential "${item.name}" is healthy!`, "Succesful Credential test")
         }
       },
-        err => { //If There was an error loading the Secret part of the Credential:
+        (error) => { //If There was an error loading the Secret part of the Credential:
           item["testStatus"] = TestStatus.Error;
           this.core.toaster.showError("There was an error testing the credential. Please edit the credential to see more details.",
             "Credential test error.");

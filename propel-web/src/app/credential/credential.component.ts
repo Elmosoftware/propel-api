@@ -6,7 +6,6 @@ import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard
 import { FormHandler } from 'src/core/form-handler';
 import { CoreService } from 'src/services/core.service';
 import { DataEndpointActions } from 'src/services/data.service';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes, DEFAULT_CREDENTIAL_TYPE } from '../../../../propel-shared/models/credential-types';
 import { Secret, SecretFactory } from "../../../../propel-shared/models/secret";
@@ -18,6 +17,7 @@ import { Utils } from '../../../../propel-shared/utils/utils';
 import { ErrorCodes } from '../../../../propel-shared/core/error-codes';
 import { FormSubcomponentEventData } from 'src/core/form-subcomponent';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
+import { PropelError } from '../../../../propel-shared/core/propel-error';
 
 @Component({
   selector: 'app-credential',
@@ -63,7 +63,7 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
         Validators.maxLength(this.validationParams.descriptionMaxLength)
       ]),
       credentialType: new FormControl(DEFAULT_CREDENTIAL_TYPE),
-      secretId: new FormControl(""), 
+      secretId: new FormControl(""),
       fields: new FormArray([], [
         ValidatorsHelper.maxItems(this.validationParams.fieldsMaxCount)])
     }));
@@ -101,7 +101,8 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
       this.fh.form.controls._id.patchValue(String(id));
     }
 
-    this.refreshData();
+    this.refreshData()
+      .catch(this.core.handleError)
   }
 
   dataChanged(): boolean | Observable<boolean> | Promise<boolean> {
@@ -118,122 +119,109 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
     }, 0);
   }
 
-  refreshData(): void {
+  async refreshData(): Promise<void> {
+    let cred: Credential;
+    let secret;
+
+    if (!this.fh.form.controls._id.value) {
+      this.newItem();
+      return Promise.resolve();
+    }
 
     this.loaded = false;
 
-    if (this.fh.form.controls._id.value) {
-      //Fetching the credential:
-      this.core.data.getById(DataEndpointActions.Credential, this.fh.form.controls._id.value, true)
-        .subscribe((data: APIResponse<Credential>) => {
-          //If the credential doesn't exists:
-          if (data.count == 0) {
-            this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
-            this.newItem();
-            this.loaded = true;
-          }
-          else {
-            let cred: Credential = data.data[0];
-            this.fh.setValue(cred);
-            this._createFieldsFromArray(cred.fields, true);
-            this.fh.form.updateValueAndValidity();
+    try {
+       cred = await this.core.data.getById(DataEndpointActions.Credential,
+        this.fh.form.controls._id.value, true) as Credential;
 
-            //Fetching the Secret:
-            this.core.data.getById(DataEndpointActions.Secret, this.fh.form.controls.secretId.value, true)
-              .subscribe((data: APIResponse<Secret<SecretValue>>) => {
-                if (data.count == 0) {
-                  //If the secret is missing for some reason, we must prepare the form to enter the secret 
-                  //part of the credential again:
-                  this.newItem(true);
-                  this.loaded = true;
+      if (!cred) {
+        this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
+        this.newItem();
+        this.loaded = true;
+        return Promise.resolve();
+      }
 
-                  this.core.toaster.showError("The secret part of the credential is missing.", "Partial credential information.")
-                  this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Credential information is missing",
-                    `The secret part of the credential is missing! This could happen as a result of a database 
-migration or data corruption.
-<p class="mt-2 mb-0">To prevent dependent PowerShell scripts from failing, you must re-enter the 
-missing sensitive data in the form again.</p>`))
-                    .subscribe((result: DialogResult<any>) => {
-                    }, err => {
-                      this.core.handleError(err)
-                    });
-                }
-                else {
-                  this.secret = data.data[0];
-                  this.secretIsValid = true;
-                  this.fh.form.controls.secretId.patchValue(this.secret._id);
-                  this.fh.form.updateValueAndValidity();
-                  this.loaded = true;
-                }
-              },
-                err => { //If There was an error loading the Secret:
-                  let cryptoError: boolean = false;
+      this.fh.setValue(cred);
+      this._createFieldsFromArray(cred.fields, true);
+      this.fh.form.updateValueAndValidity();
 
-                  if (err.error?.errors?.length > 0) {
-                    cryptoError = (err.error.errors[0].errorCode?.key?.toString() == ErrorCodes.CryptoError.key);
-                  }
+      secret = await this.core.data.getById(DataEndpointActions.Secret,
+        this.fh.form.controls.secretId.value, true)
 
-                  //If the Secret exists, but there was an error decrypting it:
-                  if (cryptoError) {
-                    this.core.toaster.showError("Not able to retrieve some part of the credential information.", "Error decrypting data.")
-                    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Credential information is missing",
-                      `<strong>We found an error decrypting this credential secret data.</strong>
+      if (!secret) {
+        //If the secret is missing for some reason, we must prepare the form to enter the secret 
+        //part of the credential again:
+        this.newItem(true);
+        this.loaded = true;
+        this._missingSecretDialog()
+        return Promise.resolve()
+      }
+
+      this.secret = (secret as Secret<SecretValue>);
+      this.secretIsValid = true;
+      this.fh.form.controls.secretId.patchValue(this.secret._id);
+      this.fh.form.updateValueAndValidity();
+      this.loaded = true;
+
+    } catch (error) {
+      let cryptoError: boolean = false;
+      let e: PropelError = new PropelError(error);
+
+      cryptoError = (e.errorCode.key == ErrorCodes.CryptoError.key);
+
+      //If the Secret exists, but there was an error decrypting it:
+      if (cryptoError) {
+        this.core.toaster.showError("Not able to retrieve some part of the credential information.", "Error decrypting data.")
+        this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Credential information is missing",
+          `<strong>We found an error decrypting this credential secret data.</strong>
 This can be caused by data corruption, but most probably by unintended changes in Propel encryption keys that are set 
 by the installer. This is most likely the cause if you can confirm this is happening to other credentials too.
 <p class="mt-2">
 You can now:
-  <ul>
-    <li>Click the <strong>Cancel</strong> button and you will be redirected to the browse page where you can 
+<ul>
+<li>Click the <strong>Cancel</strong> button and you will be redirected to the browse page where you can 
 verify if this is happening to other credentials too.</li>
-    <li>Click the <strong>Ok</strong> button and you will have the chance to enter again the data in 
+<li>Click the <strong>Ok</strong> button and you will have the chance to enter again the data in 
 the credential that will be saved with current encryption keys.</li>
-  </ul>
+</ul>
 </p>
 <p class="mt-2">
 Just a final note: If this issue is not remediated, the scripts consuming this credentials are going to fail in any Quick Task or Workflow they take part.
 </p>`))
-                      .subscribe((result: DialogResult<any>) => {
-                        //If the user is cancelling, wewill redirect to the Browse credentials page:
-                        if (result.isCancel) {
-                          this.core.navigation.toBrowseCredentials();
-                        }
-                        else { //If the user decide to enter the credential again.
+          .subscribe((result: DialogResult<any>) => {
+            //If the user is cancelling, we will redirect to the Browse credentials page:
+            if (result.isCancel) {
+              this.core.navigation.toBrowseCredentials();
+            }
+            else { //If the user decide to enter the credential again.
+              //We would like to do our best effort to delete the old secret first
+              this.core.data.delete(DataEndpointActions.Secret, this.fh.form.controls.secretId.value)
+                .catch(_ => { }) //Oops!, We give our best anyway!
 
-                          //We must try to delete the old one first
-                          this.core.data.delete(DataEndpointActions.Secret, this.fh.form.controls.secretId.value)
-                            .subscribe((results: APIResponse<string>) => {
-                              //Old Secret was deleted!                      
-                            }, err => {
-                              //We give our best!
-                            })
+              //Whatever the error is, we need to create a new secret in the form, (because the 
+              //persisted one is gone):
+              this.newItem(true);
+              this.loaded = true;
+            }
+          },
+            _ => { });
 
-                          //Whatever the error is, we need to create a new secret in the form, (because the 
-                          //persisted one is gone):
-                          this.newItem(true);
-                          this.loaded = true;
-                        }
-                      }, err => {
-                        this.core.handleError(err)
-                      });
-                  }
-                  else {
-                    //If is another kind of error, we can't continue:
-                    this.newItem(true);
-                    this.loaded = true;
-                    this.core.handleError(err)
-                  }
-                });
-          }
-        },
-          err => { //If there was an error loading the credential, we are going to prepare a new credential form:
-            this.newItem();
-            this.loaded = true;
-            this.core.handleError(err)
-          });
-    }
-    else {
-      this.newItem();
-      this.loaded = true;
+        return Promise.resolve();
+      }
+      else {
+        if (!cred) {
+          this.core.toaster.showError("There was an unexpected error retrieving the requested credential. Please verify if is not deleted", "Error retrieving the credential.")
+          this.newItem();
+        }
+        else if (!secret) {
+          this.newItem(true);
+          this.loaded = true;
+          this._missingSecretDialog()
+          return Promise.resolve()
+        }
+        this.loaded = true;
+        return Promise.reject(e)
+      }
     }
   }
 
@@ -277,8 +265,8 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
           }
         }
       },
-        err => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         });
   }
 
@@ -300,7 +288,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
           if (pv) {
             let allFields: ParameterValue[] = this.fh.value.fields;
-            
+
             //We need to ensure the field keeps being unique:
             if (this._fieldIsUnique(allFields, pv.name, i)) {
               allFields[i] = pv;
@@ -314,8 +302,8 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
           }
         }
       },
-        err => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         });
   }
 
@@ -344,59 +332,59 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
   }
 
   save(): void {
+    this.internalSave()
+    .catch(this.core.handleError)
+  }
 
-    this.core.data.save(DataEndpointActions.Secret, this.secret)
-      .subscribe((results: APIResponse<string>) => {
+  private async internalSave(): Promise<void> {
+    let secretId: string;
+    let credentialId: string;
 
-        //Updating the secret id in the credential:
-        this.fh.form.controls.secretId.patchValue(results.data[0]);
-        //Signaling the inner component to indicate the data was saved:
-        // this.saved.next();
+    try {
 
-        //Now we save the credential:
-        this.core.data.save(DataEndpointActions.Credential, this.fh.value)
-          .subscribe((results: APIResponse<string>) => {
-            this.core.toaster.showSuccess("Changes have been saved succesfully.");
-            this.fh.setId(results.data[0]);
-            this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
-            //will allow the "Cancel" button to come back to this version.
-            this.fh.form.markAsPristine();
-            this.fh.form.markAsUntouched();
-            
-            //Signaling the inner component to indicate the data was saved:
-            this.secret._id = this.fh.value.secretId;
-            this.saved.next();
+      secretId = await this.core.data.save(DataEndpointActions.Secret, this.secret)
 
-            //Replacing in the navigation history the URL so when the user navigate back 
-            //and if we are creating an item it will edit the created item instead of showing 
-            //a new item form:
-            this.core.navigation.replaceHistory(this.fh.getId());
-    
-          },
-            (err) => {
-              //If there was an error trying to save the Credential and is a new credential,
-              //we need to try to remove the Secret that was already saved in the previous
-              //transaction:
-              if (!this.fh.value._id) {
+      //Updating the secret id in the credential:
+      this.fh.form.controls.secretId.patchValue(secretId);
+      //Signaling the inner component to indicate the data was saved:
+      // this.saved.next();
 
-                this.core.data.delete(DataEndpointActions.Secret, this.fh.value.secretId)
-                .subscribe((results: APIResponse<string>) => {
-                  //Our best attempt here.
-                },
-                (err) => {});
+      //Now we save the credential:
+      credentialId = await this.core.data.save(DataEndpointActions.Credential, this.fh.value)
 
-                //Removing the Id from the credential:
-                this.fh.form.controls.secretId.patchValue("");
-              }
+      this.core.toaster.showSuccess("Changes have been saved succesfully.");
+      this.fh.setId(credentialId);
+      this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
+      //will allow the "Cancel" button to come back to this version.
+      this.fh.form.markAsPristine();
+      this.fh.form.markAsUntouched();
 
-              this.core.handleError(err)
-            }
-          );
-      },
-        (err) => {
-          this.core.handleError(err)
-        }
-      );
+      //Signaling the inner component to indicate the data was saved:
+      this.secret._id = this.fh.value.secretId;
+      this.saved.next();
+
+      //Replacing in the navigation history the URL so when the user navigate back 
+      //and if we are creating an item it will edit the created item instead of showing 
+      //a new item form:
+      this.core.navigation.replaceHistory(this.fh.getId());
+
+      return Promise.resolve();
+
+    } catch (error) {
+
+      //If there was an error trying to save the Credential and is a new credential,
+      //we need to try to remove the Secret that was already saved in the previous
+      //step:
+      if (!this.fh.value._id) {
+        this.core.data.delete(DataEndpointActions.Secret, this.fh.value.secretId)
+          .catch(_ => { }) //We did our best to delete it.
+
+        //Removing the Id from the credential:
+        this.fh.form.controls.secretId.patchValue("");
+      }
+
+      return Promise.reject(error)
+    }
   }
 
   /**
@@ -435,5 +423,15 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
   private _getCustomField(index: number): ParameterValue {
     return ((this.fh.form.controls.fields as FormArray).controls[index].value as ParameterValue);
+  }
+
+  private _missingSecretDialog(): void {
+    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Credential information is missing",
+          `The secret part of the credential is missing! This could happen as a result of a database 
+migration or data corruption.
+<p class="mt-2 mb-0">To prevent dependent PowerShell scripts from failing, you must re-enter the 
+missing sensitive data in the form again.</p>`))
+          .subscribe(_ => { },
+            _ => { });
   }
 }

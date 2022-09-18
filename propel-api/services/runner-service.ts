@@ -193,7 +193,7 @@ export class Runner {
 
         try {
             this._stats.logStatus = this._execLog.status;
-            this._stats.logId = (await this.saveExecutionLog(this._prepareLogForSave(this._execLog), token)).data[0];
+            this._stats.logId = await this.saveExecutionLog(this._prepareLogForSave(this._execLog), token);
             this._execLog._id = this._stats.logId;
             resultsMessage = new WebsocketMessage(InvocationStatus.Finished, "", this._stats);
         } catch (error) {
@@ -215,7 +215,7 @@ export class Runner {
      * @param log Log to persist.
      * @returns A promis with the result of the operation.
      */
-    async saveExecutionLog(log: ExecutionLog, token: SecurityToken): Promise<APIResponse<string>> {
+    async saveExecutionLog(log: ExecutionLog, token: SecurityToken): Promise<string> {
         let svc: DataService = db.getService("ExecutionLog", token);
         return svc.add(log);
     }

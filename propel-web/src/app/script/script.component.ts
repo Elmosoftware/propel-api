@@ -32,7 +32,7 @@ const FILE_EXT: string = "ps1"
 const MAX_FILE_SIZE: number = 1048576
 const MAX_FILE_SIZE_TEXT: string = "1MB"
 
-@Component({  
+@Component({
   selector: 'app-script',
   templateUrl: './script.component.html',
   styleUrls: ['./script.component.css']
@@ -100,7 +100,8 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
-    this.refreshData();
+    this.refreshData()
+    .catch(this.core.handleError)
   }
 
   resetForm() {
@@ -111,29 +112,30 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
     this.invalidFileMessage = "";
   }
 
-  refreshData(): void {
+  async refreshData(): Promise<void> {
     let id: string = this.route.snapshot.paramMap.get("id");
 
-    if (id) {
-      this.core.data.getById(DataEndpointActions.Script, id, false)
-        .subscribe((data: APIResponse<Script>) => {
-          if (data.count == 0) {
-            this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
-            this.newItem();
-          }
-          else {
-            this.fh.setValue(data.data[0])
-            this.scriptCode = SystemHelper.decodeBase64(data.data[0].code);
-            this.scriptParameters = data.data[0].parameters;
-            this.resetForm();
-          }
-        },
-          err => {
-            this.core.handleError(err)
-          });
-    }
-    else {
+    if (!id) {
       this.newItem();
+      return Promise.resolve()
+    }
+
+    try {
+      let script: Script = await this.core.data.getById(DataEndpointActions.Script, id, false) as Script
+
+      if (!script) {
+        this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
+        this.newItem();
+        return Promise.resolve()
+      }
+
+      this.fh.setValue(script)
+      this.scriptCode = SystemHelper.decodeBase64(script.code);
+      this.scriptParameters = script.parameters;
+      this.resetForm();
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error)
     }
   }
 
@@ -178,11 +180,11 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
           If the script has no parameters and you feel comfident the script is no having any runtime issues you can continue to the next step.`
 
             if (err?.error?.errors) {
-              err.error.errors.forEach((value)=>{
+              err.error.errors.forEach((value) => {
                 if (value.errorCode) {
                   this.invalidFileMessage = `${value.errorCode.description}\r\n${value.errorCode.userMessage}`
                 }
-              });              
+              });
             }
 
             this.core.handleError(err)
@@ -215,10 +217,10 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
     script.code = SystemHelper.encodeBase64(script.code);
 
     this.core.data.save(DataEndpointActions.Script, script)
-      .subscribe((results: APIResponse<string>) => {
+      .then((id: string) => {
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
         this.completed = true
-        this.fh.setId(results.data[0]);
+        this.fh.setId(id);
         this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
         //will allow to come back to previous value if needed.
 
@@ -227,9 +229,9 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
         //a new item form:
         this.core.navigation.replaceHistory(this.fh.getId());
       },
-        (err) => {
+        (error) => {
           this.completed = false;
-          this.core.handleError(err)
+          this.core.handleError(error)
         })
   }
 
@@ -271,5 +273,4 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
   back() {
     this.activeTab--;
   }
-
 }

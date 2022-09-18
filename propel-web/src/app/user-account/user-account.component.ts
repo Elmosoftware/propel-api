@@ -8,7 +8,6 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
 import { DataEndpointActions } from 'src/services/data.service';
 import { SystemHelper } from 'src/util/system-helper';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { UserRegistrationResponse } from '../../../../propel-shared/core/user-registration-response';
 import { compareEntities } from '../../../../propel-shared/models/entity';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
@@ -119,7 +118,8 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
             return item;
           });
 
-          this.refreshData();
+          this.refreshData()
+          .catch(this.core.handleError)
         });
     });
   }
@@ -133,37 +133,41 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
     return this.core.dataChanged(this.fh);
   }
 
-  refreshData(): void {
+  async refreshData(): Promise<void> {
+    let user: UserAccount;
 
     this.loaded = false;
 
-    if (this.fh.form.controls._id.value) {
-      //Fetching the user account:
-      this.core.security.getUser(this.fh.form.controls._id.value)
-        .subscribe((data: APIResponse<UserAccount>) => {
-
-          //If the user account doesn't exists:
-          if (data.count == 0) {
-            this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
-            this.newItem();
-          }
-          else {
-            let user: UserAccount = data.data[0];
-            this.lastUserLogin = user.lastLogin;
-            this.setFormValue(user);
-          }
-
-          this.loaded = true;
-        },
-          err => { //If there was an error loading the credential, we are going to prepare a new credential form:
-            this.newItem();
-            this.loaded = true;
-            this.core.handleError(err)
-          });
-    }
-    else {
+    if (!this.fh.form.controls._id.value) {
       this.newItem();
       this.loaded = true;
+      return Promise.resolve();
+    }
+
+    try {
+
+      throw "TEST THROWING!!!"
+
+
+      //Fetching the user account:
+      user = await this.core.security.getUser(this.fh.form.controls._id.value);
+
+      //If the user account doesn't exists:
+      if (!user) {
+        this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
+        this.newItem();
+        return Promise.resolve();
+      }
+
+      this.lastUserLogin = user.lastLogin;
+      this.setFormValue(user);
+      this.loaded = true;
+      return Promise.resolve();
+
+    } catch (error) {
+      this.newItem();
+      this.loaded = true;
+      return Promise.reject(error);
     }
   }
 
@@ -211,8 +215,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
 
   save(): void {
     this.core.security.saveUser(this.fh.value)
-      .subscribe((results: APIResponse<UserRegistrationResponse>) => {
-        let response: UserRegistrationResponse = results.data[0];
+      .then((response: UserRegistrationResponse) => {
 
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
 
@@ -228,8 +231,8 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
         //a new item form:
         this.core.navigation.replaceHistory(this.fh.getId());
       },
-        (err) => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         }
       );
   }

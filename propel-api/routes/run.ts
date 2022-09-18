@@ -15,6 +15,7 @@ import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rul
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { REQUEST_TOKEN_KEY } from "../core/middleware";
 import { SecurityToken } from "../../propel-shared/core/security-token";
+import { PagedResponse } from "../../propel-shared/core/paged-response";
 
 /**
  * Run endpoint. This receives a Workflowid, takes care of the execution and returns the 
@@ -113,16 +114,31 @@ export class RunRoute implements Route {
         }
     }
 
+    // private async getWorkflow(id: string, token: SecurityToken): Promise<Workflow | undefined> {
+    //     let svc: DataService = db.getService("workflow", token);
+    //     let result: APIResponse<Workflow>;
+    //     let qm = new QueryModifier();
+
+    //     qm.filterBy = { _id: id };
+
+    //     result = await svc.find(qm);
+
+    //     if (result.count == 1) return result.data[0];
+    //     else return undefined;
+    // }
     private async getWorkflow(id: string, token: SecurityToken): Promise<Workflow | undefined> {
         let svc: DataService = db.getService("workflow", token);
-        let result: APIResponse<Workflow>;
+        let result: PagedResponse<Workflow>;
         let qm = new QueryModifier();
 
         qm.filterBy = { _id: id };
 
-        result = await svc.find(qm);
+        try {
+            result = await svc.find(qm) as PagedResponse<Workflow>;
+        } catch (error) {
+            return Promise.reject(error)
+        }
 
-        if (result.count == 1) return result.data[0];
-        else return undefined;
+        return Promise.resolve(result.data[0]);
     }
 }

@@ -8,6 +8,7 @@ import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { POWERSHELL_NULL_LITERAL } from "../../propel-shared/utils/utils";
 import { SecurityToken } from "../../propel-shared/core/security-token";
+import { PagedResponse } from "../../propel-shared/core/paged-response";
 
 /**
  * Temporal cache of credentials, including also the secrets.
@@ -162,6 +163,7 @@ export class CredentialCache {
 
         let svc: DataService = db.getService("Secret", token);
         let qm = new QueryModifier();
+        let results: PagedResponse<Secret<SecretValue>>
 
         qm.filterBy = {
             _id: {
@@ -169,13 +171,20 @@ export class CredentialCache {
             }
         };
 
-        return (await svc.find(qm)).data;
+        try {
+            results =  await svc.find(qm) as PagedResponse<Secret<SecretValue>>;
+        } catch (error) {
+            return Promise.reject(error)
+        }
+
+        return Promise.resolve(results.data)
     }
 
     private async getCredentialsById(credentialIds: string[], token: SecurityToken): Promise<Credential[]> {
 
         let svc: DataService = db.getService("Credential", token);
         let qm = new QueryModifier();
+        let results: PagedResponse<Credential>
 
         qm.filterBy = {
             _id: {
@@ -183,7 +192,13 @@ export class CredentialCache {
             }
         };
 
-        return (await svc.find(qm)).data;
+        try {
+            results = await svc.find(qm) as PagedResponse<Credential>;
+        } catch (error) {
+            return Promise.reject(error)
+        }
+
+        return Promise.resolve(results.data);
     }
 }
 

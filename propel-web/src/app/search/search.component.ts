@@ -13,6 +13,7 @@ import { SearchType, SearchTypeDefinition, DEFAULT_SEARCH_TYPE } from "./search-
 import { Workflow } from '../../../../propel-shared/models/workflow';
 import { environment } from 'src/environments/environment';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
+import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 
 /**
  * Size of each data page.
@@ -113,8 +114,8 @@ export class SearchComponent implements OnInit {
     this.fetchData(this.svcInfScroll.pageSize, 0)
       .then(() => {
         console.log(`Search finished`)
-      }, (err) => {
-        this.core.handleError(err)
+      }, (error) => {
+        this.core.handleError(error)
       })
   }
 
@@ -123,8 +124,8 @@ export class SearchComponent implements OnInit {
       .then(() => {
         console.log(`Processing data page ${ph.page} of ${ph.pages}, (top:${ph.top}, skip:${ph.skip}).`)
       },
-        (err) => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         })
   }
 
@@ -199,23 +200,23 @@ export class SearchComponent implements OnInit {
     });
 
     try {
-      let results = (await this.getData(this.fg.controls.searchType.value, qm));
+      let pagedData = await this.getData(this.fg.controls.searchType.value, qm);
 
       //If is a text search that retrieves no results, we must try now 
       //with a strict search to see if we can get anything:
-      if (!strictSearch && results.count == 0) {
+      if (!strictSearch && pagedData.count == 0) {
         await this.fetchData(top, skip, true);
         return Promise.resolve();
       }
 
-      this.svcInfScroll.feed(results.totalCount, results.data);
+      this.svcInfScroll.feed(pagedData.totalCount, pagedData.data);
 
       if (this.svcInfScroll.count > 0) {
         this.core.toaster.showInformation(`Showing now ${this.svcInfScroll.count} results of a total of ${this.svcInfScroll.totalCount} coincidences found. 
             ${(this.svcInfScroll.totalCount > this.svcInfScroll.count) ? "Keep scrolling to see more." : ""}   `, "New results have been added.")
       }
     } catch (error) {
-      throw error
+      return Promise.reject(error)
     }
 
     //On every new search, we must replace the navigation history, to 
@@ -228,7 +229,7 @@ export class SearchComponent implements OnInit {
     return Promise.resolve();
   }
 
-  getData(type: SearchType, qm: QueryModifier): Promise<APIResponse<Entity>> { // Observable<APIResponse<any>> {
+  async getData(type: SearchType, qm: QueryModifier): Promise<PagedResponse<Entity>> {
 
     ///////////////////////////////////////////////////////////////////////////////
     //DEBUG ONLY: For testing purposes only of the infinite scrrolling feature:
@@ -241,8 +242,7 @@ export class SearchComponent implements OnInit {
     // }
     ///////////////////////////////////////////////////////////////////////////////
 
-    return this.core.data.find(SearchTypeDefinition.getDataEntity(type), qm)
-      .toPromise();
+    return this.core.data.find(SearchTypeDefinition.getDataEntity(type), qm);
   }
 
   resetSearch() {

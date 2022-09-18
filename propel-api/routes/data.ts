@@ -7,7 +7,6 @@ import { db } from "../core/database";
 import { DataRequest, DataRequestAction } from "../../propel-shared/core/data-request";
 import { DataService } from "../services/data-service";
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "http-status-codes";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { Entity } from "../../propel-shared/models/entity";
@@ -16,6 +15,7 @@ import { UserAccountRoles } from "../../propel-shared/models/user-account-roles"
 import { REQUEST_TOKEN_KEY } from "../core/middleware";
 import { SecurityToken } from "../../propel-shared/core/security-token";
 import { SecurityRuleInput } from "../core/security-rule-selector";
+import { PagedResponse } from "../../propel-shared/core/paged-response";
 
 /**
  * Data endpoint. Allows to manage all data operations for the API.
@@ -168,7 +168,7 @@ export class DataRoute implements Route {
             let svc: DataService;
             let body: DataRequest;
             let e: PropelError | null = null;
-            let result$: Promise<APIResponse<any>> | null = null;
+            let result$: Promise<any> | null = null;
             let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
 
             try {
@@ -195,28 +195,28 @@ export class DataRoute implements Route {
                 }
 
                 if (e) {
-                    res.status(BAD_REQUEST).json(new APIResponse(e, null));
+                    res.status(BAD_REQUEST).json(e);
                 }
                 else if (result$) {
                     result$
-                        .then((result: APIResponse<any>) => {
+                        .then((result: any) => {
                             res.json(result);
                         })
-                        .catch((result: APIResponse<any>) => {
-                            res.status(BAD_REQUEST).json(result);
+                        .catch((error) => {
+                            res.status(BAD_REQUEST).json(error);
                         });
                 }
             } catch (error) {
-                res.status(INTERNAL_SERVER_ERROR).json(new APIResponse<any>(error, null));
+                res.status(INTERNAL_SERVER_ERROR).json(error);
             }
         });
 
         return handler;
     }
 
-    processFind(body: DataRequest, svc: DataService): Promise<APIResponse<any>> {
+    processFind(body: DataRequest, svc: DataService): Promise<PagedResponse<Entity>> {
         let e: PropelError | null = null;
-        let ret$: Promise<APIResponse<any>>;
+        let ret$: Promise<PagedResponse<Entity>>;
 
         if (body.entity) {
             //An string entity is an entity ID. So, if valid, we will create 
@@ -238,18 +238,18 @@ export class DataRoute implements Route {
         }
 
         if (e) {
-            ret$ = Promise.reject(new APIResponse<any>(e, null));
+            ret$ = Promise.reject(e);
         }
         else {
-            ret$ = svc.find(body.qm);
+            ret$ = svc.find(new QueryModifier(body.qm));
         }
 
         return ret$;
     }
 
-    processSave(body: DataRequest, svc: DataService): Promise<APIResponse<any>> {
+    processSave(body: DataRequest, svc: DataService): Promise<string> {
         let e: PropelError | null = null;
-        let ret$: Promise<APIResponse<any>>;
+        let ret$: Promise<string>;
 
         if (body.entity && typeof body.entity == "object") {
             if (body.entity._id) {
@@ -261,22 +261,22 @@ export class DataRoute implements Route {
         }
         else {
             e = new PropelError(`Save action was aborted because the body doesn't contain an entity object. ApiRequest object sent "${JSON.stringify(body)}"`)
-            ret$ = Promise.reject(new APIResponse<any>(e, null));
+            ret$ = Promise.reject(e);
         }
 
         return ret$
     }
 
-    processDelete(body: DataRequest, svc: DataService): Promise<APIResponse<any>> {
+    processDelete(body: DataRequest, svc: DataService): Promise<string> {
         let e: PropelError | null = null;
-        let ret$: Promise<APIResponse<any>>;
+        let ret$: Promise<string>;
 
         if (body.entity) {
             ret$ = svc.delete(((body.entity as Entity)._id) ? (body.entity as Entity)._id : String(body.entity));
         }
         else {
             e = new PropelError(`Delete action was aborted because the body doesn't contain an entity object. ApiRequest object sent "${JSON.stringify(body)}"`)
-            ret$ = Promise.reject(new APIResponse<any>(e, null));
+            ret$ = Promise.reject(e);
         }
 
         return ret$

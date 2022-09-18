@@ -6,7 +6,6 @@ import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard
 import { CoreService } from 'src/services/core.service';
 import { WorkflowStepComponentStatus } from '../workflow-step/workflow-step.component';
 import { Workflow } from '../../../../propel-shared/models/workflow';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { DataEndpointActions } from 'src/services/data.service';
 
 @Component({
@@ -43,12 +42,12 @@ export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
     if (!this.status.isValid) return;
 
     this.core.data.save(DataEndpointActions.Workflow, this._createWorkflowFromStep(this.status))
-      .subscribe((data: APIResponse<string>) => {
+      .then((id: string) => {
         this.completed = true;
-        this.core.navigation.toRun(data.data[0]);
+        this.core.navigation.toRun(id);
       },
-      (err) => {
-        this.core.handleError(err)
+      (error) => {
+        this.core.handleError(error)
       })
   }
 

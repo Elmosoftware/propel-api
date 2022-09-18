@@ -68,19 +68,18 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
 
       if (!result.isCancel) {
         this.core.security.resetPassword(item._id)
-          .subscribe((results: APIResponse<UserRegistrationResponse>) => {
-            let result: UserRegistrationResponse = results.data[0];
-            this.core.toaster.showSuccess("Password was reseted succesfully!");
+          .then((result: UserRegistrationResponse) => {
+            this.core.toaster.showSuccess("Password reset finished successfully!");
             (item as any).authCode = result.authCode;
             // this.dataChanged.emit(true);
           },
-            (err) => {
-              this.core.handleError(err)
+            (error) => {
+              this.core.handleError(error)
             });
       }
     },
-      err => {
-        this.core.handleError(err)
+      (error) => {
+        this.core.handleError(error)
       });
   }
 
@@ -109,33 +108,28 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(title, msg)
     )
       .subscribe(async (result: DialogResult<any>) => {
-        if (!result.isCancel) {
-          let $obs: Observable<APIResponse<string>>;
 
-          if (locked) {
-            $obs = this.core.security.unlockUser(item._id)
+        if (result.isCancel) return;
+
+        try {
+           if (locked) {
+            await this.core.security.unlockUser(item._id)
           }
           else {
-            $obs = this.core.security.lockUser(item._id)
+            await this.core.security.lockUser(item._id)
           }
 
-          $obs.subscribe((results: APIResponse<string>) => {
-            this.core.toaster.showSuccess(`User ${item.fullName} was ${(locked) ? "locked" : "unlocked"} succesfully!`);
-            this.dataChanged.emit(true);
-          },
-            (err) => {
-              this.core.handleError(err)
-            });
+          this.core.toaster.showSuccess(`User ${item.fullName} is now ${(locked) ? "locked" : "unlocked"} succesfully!`);
+          this.dataChanged.emit(true);
+
+        } catch (error) {
+          this.core.handleError(error)
         }
       },
-        err => {
-          this.core.handleError(err)
+        (error) => {
+          this.core.handleError(error)
         });
   }
-
-  // getUserStats(item: UserAccount): string {
-  //   return UIHelper.getLastUpdateMessage(item, true);
-  // }
 
   userIsAdmin(item: UserAccount): boolean {
     return this.core.security.userIsAdmin(item);

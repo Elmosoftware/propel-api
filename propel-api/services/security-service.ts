@@ -15,7 +15,6 @@ import { UserAccount } from "../../propel-shared/models/user-account";
 import { UserAccountSecret } from "../../propel-shared/models/user-account-secret";
 import { db } from "../core/database";
 import { Secret } from "../../propel-shared/models/secret";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { Utils } from '../../propel-shared/utils/utils';
 import { ErrorCodes } from '../../propel-shared/core/error-codes';
@@ -24,6 +23,7 @@ import { UserLoginResponse } from '../../propel-shared/core/user-login-response'
 import { allRoutes } from '../routes/all-routes';
 import { UserAccountRoles } from '../../propel-shared/models/user-account-roles';
 import { UserSession } from '../../propel-shared/models/user-session';
+import { PagedResponse } from '../../propel-shared/core/paged-response';
 
 export const LEGACY_USER_ID:string = "000000010000000000100001"
 export const LEGACY_USER_NAME:string = "Unknown user"
@@ -51,7 +51,7 @@ export class SecurityService {
     async getSharedConfig(): Promise<SecuritySharedConfiguration> {
         let svc: DataService = db.getService("useraccount", this._token);
         let qm = new QueryModifier();
-        let result: APIResponse<UserAccount>;
+        let result: PagedResponse<UserAccount>;
         let ret: SecuritySharedConfiguration = new SecuritySharedConfiguration();
 
         qm.top = 1
@@ -67,23 +67,25 @@ export class SecurityService {
                 }
             ]
         }
-        result = await svc.find(qm)
 
-        if (result.error) return Promise.reject(result.error);
+        try {
+            result = await svc.find(qm) as PagedResponse<UserAccount>
+            ret.legacySecurity = result.count == 0
+            ret.authCodeLength = cfg.authorizationCodeLength;
+            ret.passwordMinLength = cfg.passwordMinLength;
+            ret.passwordMaxLength = cfg.passwordMaxLength;
 
-        ret.legacySecurity = result.count == 0
-        ret.authCodeLength = cfg.authorizationCodeLength;
-        ret.passwordMinLength = cfg.passwordMinLength;
-        ret.passwordMaxLength = cfg.passwordMaxLength;
+            // //////////////////////////////////////////////////
+            // //DEBUG ONLY:
+            // if (!cfg.isProduction) {
+            //     //Force legacy security for testing purposes:
+            //     ret.legacySecurity = true;
+            // }
+            // //////////////////////////////////////////////////
+        } catch (error) {
+            return Promise.reject(error);
+        }
 
-        // //////////////////////////////////////////////////
-        // //DEBUG ONLY:
-        // if (!cfg.isProduction) {
-        //     //Force legacy security for testing purposes:
-        //     ret.legacySecurity = true;
-        // }
-        // //////////////////////////////////////////////////
-        
         return Promise.resolve(ret);
     }
 
@@ -124,7 +126,7 @@ export class SecurityService {
      */
     async getUserByNameOrID(nameOrID: string): Promise<UserAccount | undefined> {
         let svc: DataService = db.getService("useraccount", this._token);
-        let result: APIResponse<UserAccount>;
+        let result: PagedResponse<UserAccount>;
         let qm = new QueryModifier();
 
         if (DataService.isValidObjectId(nameOrID)) {
@@ -134,23 +136,24 @@ export class SecurityService {
             qm.filterBy = { name: { $eq: nameOrID } };
         }
 
-        result = await svc.find(qm);
-
-        if (result.count == 1) return result.data[0];
-        else return undefined;
+        result = await svc.find(qm) as PagedResponse<UserAccount>;
+        return Promise.resolve(result.data[0])
     }
 
     async getUserSession(refreshToken: string): Promise<UserSession | undefined> {
         let svc: DataService = db.getService("usersession", this._token);
-        let result: APIResponse<UserSession>;
+        let result: PagedResponse<UserSession>;
         let qm = new QueryModifier();
       
         qm.filterBy = { _id: refreshToken }
 
-        result = await svc.find(qm);
+        try {
+            result = await svc.find(qm) as PagedResponse<UserSession>;
+        } catch (error) {
+            return Promise.reject(error)
+        }
 
-        if (result.count == 1) return result.data[0];
-        else return undefined;
+        return Promise.resolve(result.data[0]);
     }
 
     getLegacyUser(): UserAccount {
@@ -293,28 +296,34 @@ export class SecurityService {
         return ret;
     }
 
-    async lockUser(nameOrId: string): Promise<string> {
+    async lockUser(nameOrId: string): Promise<void> {
         return this.internalLockOrUnlockUser(nameOrId, true)
     }
 
-    async unlockUser(nameOrId: string): Promise<string> {
+    async unlockUser(nameOrId: string): Promise<void> {
         return this.internalLockOrUnlockUser(nameOrId, false)
     }
 
-    private async internalLockOrUnlockUser(nameOrId: string, mustLock: boolean): Promise<string> {
+    private async internalLockOrUnlockUser(nameOrId: string, mustLock: boolean): Promise<void> {
 
-        let user: UserAccount | undefined = await this.getUserByNameOrID(nameOrId);
+        try {
+            let user: UserAccount | undefined = await this.getUserByNameOrID(nameOrId);
+            this.throwIfNoUser(user, nameOrId, `The ${(mustLock) ? "lock" : "unlock"} user operation will be aborted.`)
 
-        this.throwIfNoUser(user, nameOrId, `The ${(mustLock) ? "lock" : "unlock"} user operation will be aborted.`)
+            if (mustLock) {
+                user!.lockedSince = new Date();
+            }
+            else {
+                user!.lockedSince = null;
+            }
+            
+            await this.saveUser(user!)
 
-        if (mustLock) {
-            user!.lockedSince = new Date();
+        } catch (error) {
+            return Promise.reject(error)
         }
-        else {
-            user!.lockedSince = null;
-        }
 
-        return this.saveUser(user!);
+        return Promise.resolve();
     }
 
     private throwIfNoUser(user: UserAccount | undefined, nameOrId: string, additionalInfo: string = ""): void {
@@ -603,7 +612,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     private async createRefreshToken(loginData: LoginData<SecurityRequest>):Promise<string> {
         let svc: DataService;
         let session: UserSession;
-        let result: APIResponse<string>;
+        let sessionId: string;
 
         if (!loginData.user) return Promise.resolve("");
 
@@ -612,10 +621,13 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
         session.startedAt = new Date();
         session.user = DataService.asObjectIdOf<UserAccount>(loginData.user._id);
 
-        result = await svc.add(session)
+        try {
+            sessionId = await svc.add(session);
+        } catch (error) {
+            return Promise.reject(error);
+        }
 
-        if (result.count == 1) return String(result.data[0]);
-        else return "";
+        return Promise.resolve(sessionId);
     }
 
     verifyToken(token: string): SecurityToken {
@@ -623,14 +635,14 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
         try {
             ret.hydrateFromTokenPayload((jwt.verify(token, cfg.encryptionKey) as TokenPayload));
-        } catch (err) {
+        } catch (error) {
 
             //If the token has expired: https://github.com/auth0/node-jsonwebtoken/blob/master/README.md#tokenexpirederror
-            if ((err as Error).name == "TokenExpiredError") {
-                throw new PropelError((err as Error), ErrorCodes.TokenIsExpired, UNAUTHORIZED.toString());
+            if ((error as Error).name == "TokenExpiredError") {
+                throw new PropelError((error as Error), ErrorCodes.TokenIsExpired, UNAUTHORIZED.toString());
             }
 
-            throw new PropelError((err as Error), undefined, UNAUTHORIZED.toString());
+            throw new PropelError((error as Error), undefined, UNAUTHORIZED.toString());
         }
 
         return ret;
@@ -638,15 +650,18 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
     private async getUserSecret(secretId: string): Promise<Secret<UserAccountSecret> | undefined> {
         let svc: DataService = db.getService("secret", this._token);
-        let result: APIResponse<Secret<UserAccountSecret>>;
+        let result: PagedResponse<Secret<UserAccountSecret>>;
         let qm = new QueryModifier();
 
         qm.filterBy = { _id: secretId }
 
-        result = await svc.find(qm);
+        try {
+            result = await svc.find(qm) as PagedResponse<Secret<UserAccountSecret>>;
+        } catch (error) {
+            return Promise.reject(error);
+        }
 
-        if (result.count == 1) return result.data[0];
-        else return undefined;
+        return Promise.resolve(result.data[0]);
     }
 
     private async createNewSecret(passwordOrAuthCode: string): Promise<string> {
@@ -660,35 +675,40 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
 
     private async saveUserSecret(secret: Secret<UserAccountSecret>): Promise<string> {
         let svc: DataService = db.getService("secret", this._token);
-        let result: APIResponse<string>;
+        let id: string;
 
-        //If is a new secret:
-        if (!secret._id) {
-            result = await svc.add(secret);
+        try {
+            //If is a new secret:
+            if (!secret._id) {
+                id = await svc.add(secret);
+            }
+            else {
+                id = await svc.update(secret);
+            }
+        } catch (error) {
+            return Promise.reject(error);
         }
-        else {
-            result = await svc.update(secret);
-        }
-
-        if (result.count == 1) return result.data[0].toString();
-        else throw new PropelError(`There was an error creating or updating the user secret. Following details: ${JSON.stringify(result.error)}`)
+        
+        return Promise.resolve(id);
     }
 
     private async saveUser(user: UserAccount): Promise<string> {
         let svc: DataService = db.getService("useraccount", this._token);
-        let result: APIResponse<string>;
+        let id: string;
 
-        //If is a new user:
-        if (!user._id) {
-            result = await svc.add(user);
-        }
-        else {
-            result = await svc.update(user);
+        try {
+            //If is a new user:
+            if (!user._id) {
+                id = await svc.add(user);
+            }
+            else {
+                id = await svc.update(user);
+            }
+        } catch (error) {
+            return Promise.reject(error)
         }
 
-        if (result.count == 1) return result.data[0].toString();
-        else throw new PropelError(`There was an error creating or updating the user. Following details: ${JSON.stringify(result.error)}`,
-            undefined, INTERNAL_SERVER_ERROR.toString())
+        return Promise.resolve(id);
     }
 
     private createAuthCode(): string {

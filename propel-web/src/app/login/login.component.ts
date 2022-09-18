@@ -2,13 +2,10 @@ import { Component, EventEmitter, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ValidatorsHelper } from 'src/core/validators-helper';
-import { environment } from 'src/environments/environment';
 import { CoreService } from 'src/services/core.service';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { SecurityRequest } from '../../../../propel-shared/core/security-request';
 import { SecuritySharedConfiguration } from '../../../../propel-shared/core/security-shared-config';
-import { UserLoginResponse } from '../../../../propel-shared/core/user-login-response';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 
 //User form Messages:
@@ -152,10 +149,10 @@ export class LoginComponent implements OnInit {
       .then((config: SecuritySharedConfiguration) => {
 
         this.core.security.getUser(this.fg.controls.name.value)
-          .subscribe((data: APIResponse<UserAccount>) => {
+          .then((data: UserAccount) => {
 
             //If the user account doesn't exists:
-            if (data.count == 0) {
+            if (!data) {
               if (this.formFlow.activeFormSection == FormsSection.PreloadRuntimeInfo) {
                 this.formFlow.message = MSG_USER_PRELOAD_NOT_FOUND;
               }
@@ -167,7 +164,7 @@ export class LoginComponent implements OnInit {
               this.formFlow.activeFormSection = FormsSection.User
             }
             else {
-              this.formFlow.user = data.data[0];
+              this.formFlow.user = data;
               this.formFlow.messageIsError = false;
               this.formFlow.activeFormSection = FormsSection.Password
               this.formFlow.authCodeOrPasswordPlaceholder = "Enter here the provided authorization code."
@@ -226,12 +223,10 @@ export class LoginComponent implements OnInit {
               this.fg.updateValueAndValidity();
             }
           },
-            err => {
-              this.core.handleError(err)
+            (error) => {
+              this.core.handleError(error)
             });
       })
-
-
   }
 
   login() {
@@ -250,54 +245,32 @@ export class LoginComponent implements OnInit {
       sr.newPassword = this.fg.controls.newPassword.value;
     }
 
-    this.execLogin(sr);
+    this.execLogin(sr)
+    .catch(this.core.handleError)
   }
 
-  execLogin(sr: SecurityRequest) {
+  async execLogin(sr: SecurityRequest): Promise<void> {
 
-    this.core.security.login(sr)
-     .then((response: APIResponse<UserLoginResponse>) => {
+    try {
+      await this.core.security.login(sr);
 
-        //If there was some error:
-        if (response.count == 0) {
+      this.formFlow.message = MSG_LOGIN_SUCCESS;
+      this.formFlow.messageIsError = false
 
-          if (response.error) {
-            //Embedding the error in a PropelError to get access to the error code, (if any):
-            let appError = new PropelError(response.error);
+      if (this.referrerURL) {
+        this.core.navigation.to(this.referrerURL)
+      }
+      else {
+        this.core.navigation.toHome();
+      }
+    }
+    catch (error) {
+      let e = new PropelError(error);
 
-            if (appError.userMessage) {
-              this.formFlow.message = appError.userMessage;
-            }
-          }
-          else {
-            this.formFlow.message = MSG_LOGIN_ERROR;
-          }
-
-          this.formFlow.messageIsError = true
-        }
-        else {
-          this.formFlow.message = MSG_LOGIN_SUCCESS;
-          this.formFlow.messageIsError = false
-
-          if (this.referrerURL) {
-            this.core.navigation.to(this.referrerURL)
-          }
-          else {
-            this.core.navigation.toHome();
-          }
-        }
-      },
-        err => {
-
-          let appError = new PropelError(err);
-
-          if (appError.userMessage) {
-            this.formFlow.message = appError.userMessage;
-            this.formFlow.messageIsError = true
-          }
-
-          this.core.handleError(err)
-        });
+      this.formFlow.message = e.userMessage || MSG_LOGIN_ERROR;
+      this.formFlow.messageIsError = true
+      return Promise.reject(e)
+    }
   }
 
   goBack() {
@@ -322,7 +295,6 @@ export class LoginComponent implements OnInit {
       this.core.navigation.toHome();
     }
   }
-
 }
 
 /**

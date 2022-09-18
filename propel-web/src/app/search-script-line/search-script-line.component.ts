@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { concat } from 'rxjs';
+import { concat, from, of } from 'rxjs';
 
 import { Script } from '../../../../propel-shared/models/script';
 import { CoreService } from 'src/services/core.service';
@@ -8,6 +8,7 @@ import { DialogResult } from 'src/core/dialog-result';
 import { DataEndpointActions } from 'src/services/data.service';
 import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { SearchLine } from 'src/core/search-line';
+import { concatAll } from 'rxjs/operators';
 
 @Component({
   selector: 'app-search-script-line',
@@ -62,12 +63,17 @@ Is targetting: ${(item.isTargettingServers) ? "Servers, (like Web servers, Datab
         //have it attached will prevent the execution:
         item.enabled = false;
 
-        concat(this.core.data.save(DataEndpointActions.Script, item),
-          this.core.data.delete(DataEndpointActions.Script, item._id))
-          .subscribe((results: APIResponse<string>) => {
-          },
-            err => {
-              this.core.handleError(err)
+        of(
+          from(this.core.data.save(DataEndpointActions.Script, item)),
+          from(this.core.data.delete(DataEndpointActions.Script, item._id))
+        )
+          .pipe(
+            concatAll()
+          )
+          .subscribe(
+            _ => { },
+            (error) => {
+              this.core.handleError(error)
             },
             () => {
               this.core.toaster.showSuccess("Script deleted succesfully!");

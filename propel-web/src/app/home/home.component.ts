@@ -34,10 +34,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData()
-    .then(_ => {})
-    .catch((err) => {
-      this.core.handleError(err)
-    })
+    .catch(this.core.handleError)
   }
 
   goToResults(id: string) {
