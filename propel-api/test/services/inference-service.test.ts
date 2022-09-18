@@ -1,5 +1,5 @@
 import { pool } from "../../services/invocation-service-pool";
-import { InferenceService } from "../../services/inference-service";
+import { ParamInferenceService } from "../../services/param-inference-service";
 import { ScriptParameter } from "../../../propel-shared/models/script-parameter";
 import { LogLevel } from "../../core/config";
 
@@ -97,7 +97,7 @@ return [pscustomobject]@{ ScriptDesc = "SingleOptionalUntypedParam"} | ConvertTo
 `
 }
 
-let infer: InferenceService;
+let infer: ParamInferenceService;
 
 afterAll(() => {
     pool.disposeSync();
@@ -110,7 +110,7 @@ describe("InferenceService Class - infer()", () => {
         process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
         //to void having a flood of logging messages during the test.
         //You can comment the line if you wouldlike to see extra details.
-        infer = new InferenceService();
+        infer = new ParamInferenceService();
     })
 
     test(`Script type: Empty script (no code at all)"`, (done) => {

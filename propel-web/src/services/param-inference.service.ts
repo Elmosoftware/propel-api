@@ -8,7 +8,7 @@ import { ScriptParameter } from '../../../propel-shared/models/script-parameter'
 import { logger } from '../../../propel-shared/services/logger-service';
 import { HttpHelper, Headers } from 'src/util/http-helper';
 
-export const InferEndpoint: string = "infer"
+export const InferenceEndpoint: string = "infer"
 
 /**
  * Data service
@@ -16,22 +16,24 @@ export const InferEndpoint: string = "infer"
 @Injectable({
   providedIn: 'root'
 })
-export class PSParametersInferrerService {
+export class ParamInferenceService {
 
   constructor(private http: HttpClient) {
     logger.logInfo("PSParametersInferrerService instance created")
   }
 
   /**
-   * Persist a new entity instance.
-   * @param entityType Entity type.
-   * @param entity Instance to persist.
+   * Infer script parameters.
+   * @param scriptCode Script code to analyze to extract the parameters.
+   * @returns A collection of Script>Parameter object representing all the 
+   * parameters inthe supplied script.
    */
-  infer(scriptCode: string): Observable<APIResponse<ScriptParameter>> {
-    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, InferEndpoint);
+  async infer(scriptCode: string): Promise<ScriptParameter[]> {
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, InferenceEndpoint);
 
-    return this.http.post<APIResponse<ScriptParameter>>(url, scriptCode, {
+    return this.http.post<ScriptParameter[]>(url, scriptCode, {
       headers: HttpHelper.buildHeaders(Headers.ContentTypeText)
-    });
+    })
+    .toPromise();
   }
 }

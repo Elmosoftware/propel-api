@@ -3,12 +3,12 @@ import express from "express";
 import httpstatus from "http-status-codes";
 
 import { Route } from "../core/route";
-import { InferenceService } from "../services/inference-service";
+import { ParamInferenceService } from "../services/param-inference-service";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { logger } from "../services/logger-service";
 import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rule";
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
+import { PropelError } from "../../propel-shared/core/propel-error";
 
 /**
  * Script parameters inference endpoint. Allows to the API to support parameters inference 
@@ -40,23 +40,22 @@ export class InferRoute implements Route {
 
         const handler = express.Router();
 
-        handler.post("", (req, res) => {
-
-            let infsvc = new InferenceService();
-
-            logger.logDebug(`Starting inference of script parameters. Body Sent:\r\n"${req.body}".`)
-            
-            infsvc.infer(req.body)
-                .then((params: ScriptParameter[]) => {
-                    logger.logDebug(`Script parameters inference process finished with the following results: "${(params) ? JSON.stringify(params) : "null or empty array"}".`)
-                    res.json(new APIResponse(null, params));
-                })
-                .catch((err) => {
-                    logger.logError(`There was an error returned by the Script parameters inference process. Error details: "${String(err)}".`);
-                    res.status(httpstatus.BAD_REQUEST).json(new APIResponse(err, null));
-                })
+        handler.post("", async (req, res) => {
+            try {
+                let infsvc = new ParamInferenceService();
+                res.json(await infsvc.infer(req.body));
+            } catch (error) {
+                logger.logError(`There was an error returned by the Script parameters inference process. Error details: "${String(error)}".`);
+                this.handleError(res, error)
+            }
         });
 
         return handler;
+    }
+
+    handleError(res: express.Response, error: any) {
+        error = new PropelError(error);
+        let code: number = Number(error.httpStatus) || httpstatus.BAD_REQUEST;
+        res.status(code).json(error);
     }
 }

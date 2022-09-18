@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, EventEmitter } from '@angular/core';
+import { Component, OnInit, EventEmitter } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -10,12 +10,10 @@ import { Script } from '../../../../propel-shared/models/script';
 import { compareEntities } from '../../../../propel-shared/models/entity';
 import { CoreService } from 'src/services/core.service';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
-import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
-import { DialogResult } from 'src/core/dialog-result';
 import { ScriptParameter } from "../../../../propel-shared/models/script-parameter";
 import { SystemHelper } from "../../util/system-helper";
 import { DataEndpointActions } from 'src/services/data.service';
+import { PropelError } from '../../../../propel-shared/core/propel-error';
 
 declare var Prism: any;
 
@@ -101,7 +99,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData()
-    .catch(this.core.handleError)
+      .catch(this.core.handleError)
   }
 
   resetForm() {
@@ -166,28 +164,25 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
       let code = String(reader.result);
       this.uploadProgress = 50;
 
-      this.core.psParametersinferrer.infer(code)
-        .subscribe((results: APIResponse<ScriptParameter>) => {
-          this.scriptParameters = results.data;
+      this.core.paramInference.infer(code)
+        .then((params: ScriptParameter[]) => {
+          this.scriptParameters = params;
           this.scriptCode = code;
           this.uploadProgress = 100;
         },
-          (err) => {
+          (error) => {
+            let e: PropelError = new PropelError(error)
             this.scriptCode = code;
             this.scriptParameters = [];
             this.uploadProgress = 100;
             this.invalidFileMessage = `There was an error during the script parameters discovery process. 
           If the script has no parameters and you feel comfident the script is no having any runtime issues you can continue to the next step.`
 
-            if (err?.error?.errors) {
-              err.error.errors.forEach((value) => {
-                if (value.errorCode) {
-                  this.invalidFileMessage = `${value.errorCode.description}\r\n${value.errorCode.userMessage}`
-                }
-              });
+            if (e.errorCode) {
+              this.invalidFileMessage = `${e.errorCode.description}\r\n${e.errorCode.userMessage}`
             }
 
-            this.core.handleError(err)
+            this.core.handleError(e)
           }
         );
     }

@@ -14,7 +14,7 @@ import { environment } from "../environments/environment";
 import { StandardDialogConfiguration } from 'src/app/dialogs/standard-dialog/standard-dlg.component';
 import { FormHandler } from 'src/core/form-handler';
 import { DialogResult } from 'src/core/dialog-result';
-import { PSParametersInferrerService } from './ps-parameters-inferrer.service';
+import { ParamInferenceService } from './param-inference.service';
 import { APIStatusService } from './api-status.service';
 import { ConnectivityService, ConnectivityStatus } from './connectivity.service';
 import { SecurityService } from './security.service';
@@ -40,7 +40,7 @@ export class CoreService {
     private injRun: RunnerService,
     private injDlg: DialogService,
     private injData: DataService,
-    private injInfer: PSParametersInferrerService,
+    private injInfer: ParamInferenceService,
     private injAPIStatus: APIStatusService,
     private injConn: ConnectivityService,
     private injSec: SecurityService) {
@@ -81,7 +81,7 @@ export class CoreService {
     return this.injConn;
   }
 
-  get psParametersinferrer(): PSParametersInferrerService {
+  get paramInference(): ParamInferenceService {
     return this.injInfer;
   }
 

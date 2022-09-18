@@ -39,7 +39,7 @@ import { RunnerService } from './services/runner.service';
 import { LoaderInterceptor } from './core/loader-interceptor';
 import { AuthInterceptor } from './core/auth-interceptor';
 import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
-import { PSParametersInferrerService } from "./services/ps-parameters-inferrer.service";
+import { ParamInferenceService } from "./services/param-inference.service";
 import { InfiniteScrollingModule } from './core/infinite-scrolling-module';
 import { APIStatusService } from "./services/api-status.service";
 
@@ -167,7 +167,7 @@ import { SecurityGuard } from './services/security-guard';
         { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
         DataLossPreventionGuard,
-        PSParametersInferrerService,
+        ParamInferenceService,
         APIStatusService,
         SecurityService,
         SecurityGuard
