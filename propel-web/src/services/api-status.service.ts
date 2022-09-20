@@ -10,7 +10,8 @@ import { HttpHelper, Headers } from 'src/util/http-helper';
 export const StatusEndpoint: string = "status"
 
 export const enum StatusEndpointActions {
-  Stats = "stats"
+  ApplicationStats = "stats",
+  UserStats = "user-stats"
 }
 
 /**
@@ -40,12 +41,25 @@ export class APIStatusService {
   /**
    * Retrieves the Application Usage Statistics.
    */
-  async getApplicationUsageStats(): Promise<UsageStats[]> {
+  async getApplicationUsageStats(): Promise<UsageStats> {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-      [StatusEndpoint, StatusEndpointActions.Stats]);
+      [StatusEndpoint, StatusEndpointActions.ApplicationStats]);
 
-    return this.http.get<UsageStats[]>(url, { 
-      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) //, Headers.XPropelNoAuth) 
+    return this.http.get<UsageStats>(url, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
+    })
+    .toPromise();
+  }
+
+  /**
+   * Retrieves the User Statistics.
+   */
+  async getUserStats(): Promise<UsageStats> {
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
+      [StatusEndpoint, StatusEndpointActions.UserStats]);
+
+    return this.http.get<UsageStats>(url, { 
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
     })
     .toPromise();
   }

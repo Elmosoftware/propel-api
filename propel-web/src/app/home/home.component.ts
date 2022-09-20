@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
@@ -7,6 +7,9 @@ import { UsageStats } from '../../../../propel-shared/models/usage-stats';
 import { UIHelper } from 'src/util/ui-helper';
 import { environment } from 'src/environments/environment';
 import { GraphSeriesData } from '../../../../propel-shared/models/graph-series-data';
+import { SecurityEvent } from 'src/services/security.service';
+import { Subscription } from 'rxjs';
+import { logger } from '../../../../propel-shared/services/logger-service';
 
 const TOP_RESULTS: number = 5;
 
@@ -15,26 +18,50 @@ const TOP_RESULTS: number = 5;
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
   loadingResults: boolean = false;
   stats: UsageStats;
   userStats: UsageStats;
   graphColors: any = environment.graphs.colorScheme;
   graphExecutionsView: any[] = [650, 200];
-
-  get hasUserStats(): boolean {
-    return this.core.security.isUserLoggedIn && Boolean(this.userStats);
-  }
+  securityEventSubscription$: Subscription;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
-
+    
   }
-
+  
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData()
     .catch(this.core.handleError)
+    
+    this.securityEventSubscription$ = this.core.security.getSecurityEventSubscription()
+    .subscribe(async (event: SecurityEvent) => {
+      let action: string = "";
+      try {
+        if (event == SecurityEvent.Login) {
+          action = "Updated user stats in Home page."
+          this.userStats = await this.core.status.getUserStats();
+        }
+        else {
+          action = "Clearing user stats in Home page."
+          this.userStats = null;
+        }
+      } catch (error) {
+        action = `None, Error received when trying to update user stats: "${String(error)}".`
+      }
+      
+      logger.logInfo(`Received Security event "${(event == SecurityEvent.Login) ? "Login" : "Logoff"}". Action taken: ${action}`)
+    })
+  }
+
+  ngOnDestroy(): void {
+    try {
+      this.securityEventSubscription$.unsubscribe();
+    }
+    catch (e) {
+    }
   }
 
   goToResults(id: string) {
@@ -98,19 +125,21 @@ export class HomeComponent implements OnInit {
   }
 
   async refreshData(): Promise<void> {
-    
     try {
-      let stats: UsageStats[];
-
       this.loadingResults = true
-      stats = await this.core.status.getApplicationUsageStats();
-      if(stats.length > 0) this.stats = stats[0];
-      if(stats.length > 1) this.userStats = stats[1];
+      this.stats = await this.core.status.getApplicationUsageStats();
+
+      //If there is a user logged in and we don't get his stats yet:
+      if (this.core.security.isUserLoggedIn && !this.userStats) {
+        this.userStats = await this.core.status.getUserStats();
+      }
+
       this.loadingResults = false;
       return Promise.resolve()
 
     } catch (error) {
       this.loadingResults = false;
+      logger.logError(`There was an error updating stats: "${String(error)}".`)
       return Promise.reject(error);
     }
   }

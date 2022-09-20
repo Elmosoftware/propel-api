@@ -177,10 +177,12 @@ export class UsageStatsService {
         }
     }
 
-    async getUserStats(token: SecurityToken): Promise<UsageStats> {
+    async getUserStats(token: SecurityToken): Promise<UsageStats | null> {
 
         let allExecLogs: ExecutionLog[];
         let stats = new UsageStats();
+
+        if(!token) return Promise.resolve(null);
 
         try {
             allExecLogs = await this.getAllExecutionLogs(token);

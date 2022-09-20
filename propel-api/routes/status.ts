@@ -45,18 +45,12 @@ export class StatusRoute implements Route {
         });
 
         handler.get("/stats", async (req, res) => {
+            res.json(usageStatsService.currentStats);
+        });
+
+        handler.get("/user-stats", async (req, res) => {
             let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
-            let ret: UsageStats[] = [usageStatsService.currentStats];
-
-            if (token) {
-                ret.push(await usageStatsService.getUserStats(token))
-            }
-
-            if (ret[0] == null) {
-                ret = []
-            }
-
-            res.json(ret);
+            res.json(await usageStatsService.getUserStats(token));
         });
 
         return handler;

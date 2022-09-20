@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { catchError, map, tap } from 'rxjs/operators';
 import { RuntimeInfo } from '../../../propel-shared/core/runtime-info';
 import { UserLoginResponse } from '../../../propel-shared/core/user-login-response';
@@ -37,6 +37,11 @@ export const enum SecurityEndpointActions {
     Logoff = "logoff"
 }
 
+export const enum SecurityEvent {
+    Login,
+    Logoff
+}
+
 /**
  * This class help manage every aspect of user security, user authentication and authorization.
  */
@@ -46,19 +51,11 @@ export const enum SecurityEndpointActions {
 export class SecurityService {
 
     private _session: SessionService;
+    private _securityEvent$: EventEmitter<SecurityEvent> = new EventEmitter<SecurityEvent>();
 
     constructor(private http: HttpClient) {
         logger.logInfo("SecurityService instance created");
         this._session = new SessionService();
-    }
-
-    async getConfig(): Promise<SecuritySharedConfiguration> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, SecurityEndpoint);
-
-        return this.http.get<SecuritySharedConfiguration>(url, {
-            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
-        })
-        .toPromise();
     }
 
     /**
@@ -87,6 +84,27 @@ export class SecurityService {
      */
     get runtimeInfo(): RuntimeInfo {
         return this._session.runtimeInfo;
+    }
+
+    /**
+     * Allows to subscribe to security events.
+     * @returns Security event subject.
+     */
+    getSecurityEventSubscription(): EventEmitter<SecurityEvent> {
+        return this._securityEvent$;
+    }
+
+    /**
+     * Gets the security API configuration.
+     * @returns The security api configuration.
+     */
+    async getConfig(): Promise<SecuritySharedConfiguration> {
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, SecurityEndpoint);
+
+        return this.http.get<SecuritySharedConfiguration>(url, {
+            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
+        })
+            .toPromise();
     }
 
     /**
@@ -124,13 +142,13 @@ export class SecurityService {
      * @returns The user ID if the locking was successful
      */
     async lockUser(userId: string): Promise<void> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-            [ SecurityEndpoint, SecurityEndpointActions.LockUser, userId ]);
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+            [SecurityEndpoint, SecurityEndpointActions.LockUser, userId]);
 
-        return this.http.post<void>(url, null, { 
-            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
+        return this.http.post<void>(url, null, {
+            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
         })
-        .toPromise();
+            .toPromise();
     }
 
     /**
@@ -140,13 +158,13 @@ export class SecurityService {
      * @returns The user ID if the locking was successful
      */
     async unlockUser(userId: string): Promise<void> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-            [ SecurityEndpoint, SecurityEndpointActions.UnlockUser, userId ]);
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+            [SecurityEndpoint, SecurityEndpointActions.UnlockUser, userId]);
 
-        return this.http.post<void>(url, null, { 
-            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
+        return this.http.post<void>(url, null, {
+            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
         })
-        .toPromise();
+            .toPromise();
     }
 
     /**
@@ -155,12 +173,13 @@ export class SecurityService {
      * @returns The same user ID if the reset was successful.
      */
     async resetPassword(userId: string): Promise<UserRegistrationResponse> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-            [ SecurityEndpoint, SecurityEndpointActions.ResetUserPassword, userId ]);
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+            [SecurityEndpoint, SecurityEndpointActions.ResetUserPassword, userId]);
 
-        return this.http.post<UserRegistrationResponse>(url, null, { 
-            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) })
-        .toPromise();
+        return this.http.post<UserRegistrationResponse>(url, null, {
+            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
+        })
+            .toPromise();
     }
 
     /**
@@ -187,13 +206,13 @@ export class SecurityService {
      * @returns The user account if exists.
      */
     getUser(userIdOrName: string): Promise<UserAccount> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-            [ SecurityEndpoint, SecurityEndpointActions.GetUser, userIdOrName ]);
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+            [SecurityEndpoint, SecurityEndpointActions.GetUser, userIdOrName]);
 
-        return this.http.get<UserAccount>(url, { 
-            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
+        return this.http.get<UserAccount>(url, {
+            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
         })
-        .toPromise();
+            .toPromise();
     }
 
     /**
@@ -202,13 +221,13 @@ export class SecurityService {
      * @returns The useraccount id if no error.
      */
     saveUser(user: UserAccount): Promise<UserRegistrationResponse> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-            [ SecurityEndpoint, SecurityEndpointActions.SaveUser]);
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+            [SecurityEndpoint, SecurityEndpointActions.SaveUser]);
 
-        return this.http.post<UserRegistrationResponse>(url, user, { 
-            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
+        return this.http.post<UserRegistrationResponse>(url, user, {
+            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
         })
-        .toPromise();
+            .toPromise();
     }
 
     /**
@@ -250,8 +269,8 @@ export class SecurityService {
      * @returns A JWT token.
      */
     async login(request: SecurityRequest): Promise<UserLoginResponse> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-            [ SecurityEndpoint, SecurityEndpointActions.Login ]);
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+            [SecurityEndpoint, SecurityEndpointActions.Login]);
         let ri: RuntimeInfo = this._session.runtimeInfo;
 
         let config = await this.getConfig()
@@ -271,19 +290,20 @@ export class SecurityService {
 Propel is running with the user "${request.userName}" credentials.
 List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u.userName).join(", ")}`)
 
-                    return Promise.reject(new PropelError("Impersonation is not allowed in Propel", 
+                    return Promise.reject(new PropelError("Impersonation is not allowed in Propel",
                         ErrorCodes.UserImpersonation));
                 }
             }
         }
 
         return this.http.post<UserLoginResponse>(url, request,
-            { 
-                headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
+            {
+                headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
             })
             .pipe(
                 map((results: UserLoginResponse) => {
                     this._session.setSessionData(results);
+                    this._securityEvent$.emit(SecurityEvent.Login);
                     return results;
                 }),
                 tap(_ => {
@@ -300,12 +320,12 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
      * @returns A JWT token.
      */
     async refreshAccessToken(request: TokenRefreshRequest): Promise<UserLoginResponse> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-            [ SecurityEndpoint, SecurityEndpointActions.Refresh ]);
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+            [SecurityEndpoint, SecurityEndpointActions.Refresh]);
 
         return this.http.post<UserLoginResponse>(url, request,
-            { 
-                headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
+            {
+                headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
             })
             .pipe(
                 catchError((err) => {
@@ -316,6 +336,7 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
                 }),
                 map((results: UserLoginResponse) => {
                     this._session.setSessionData(results);
+                    this._securityEvent$.emit(SecurityEvent.Login);
                     return results;
                 }),
                 tap(_ => {
@@ -329,21 +350,22 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
      * User Sign out
      */
     logOff(): Promise<void> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
-            [ SecurityEndpoint, SecurityEndpointActions.Logoff]);
+        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+            [SecurityEndpoint, SecurityEndpointActions.Logoff]);
 
         return this.http.post<void>(url, new TokenRefreshRequest(this.refreshToken),
-            { 
+            {
                 //No Auth headers in this call because this method will be automatically called if 
                 //the access token refresh process failed. So we need to ensure the log off will be 
                 //possible under that condition:
-                headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
+                headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
             })
             .pipe(
                 catchError((error) => {
                     let e = new PropelError(error);
                     logger.logWarn(`User log off completed with errors. Following details: "${e.message}"`)
                     this._session.removeSessionData();
+                    this._securityEvent$.emit(SecurityEvent.Logoff);
                     return of()
                 }),
                 tap(_ => {
@@ -351,6 +373,7 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
                 }),
                 map(_ => {
                     this._session.removeSessionData();
+                    this._securityEvent$.emit(SecurityEvent.Logoff);
                 })
             )
             .toPromise();
