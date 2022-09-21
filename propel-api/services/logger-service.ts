@@ -30,14 +30,7 @@ export class EventLogger extends Logger {
         msg = this.timestamp() + msg;
         let print: boolean = (cfg.logLevel.toString().toLowerCase() == LogLevel.Info.toString().toLowerCase() || 
         cfg.logLevel.toString().toLowerCase() == LogLevel.Debug.toString().toLowerCase())
-        
         super.logInfo((print) ? msg : "");
-
-        if(!this.isProd) return;
-        
-        if (print) {
-            this.evLog.info(msg);
-        }
     }
 
     /**
@@ -49,16 +42,11 @@ export class EventLogger extends Logger {
         msg = this.timestamp() + msg;
         let print: boolean = (cfg.logLevel.toString().toLowerCase() == LogLevel.Debug.toString().toLowerCase());
         super.logInfo((print) ? msg : "");
-
-        if(!this.isProd) return; 
-
-        if (print) {
-            this.evLog.info(msg);
-        }
     }
 
     /**
-     * Logs a warning message.
+     * Logs a warning message. In production environment is going to try logging to the configured 
+     * Windows event log source.
      * @param msg Message to log.
      */
     logWarn(msg:string) {
@@ -66,12 +54,16 @@ export class EventLogger extends Logger {
         super.logWarn(msg);
 
         if(!this.isProd) return;
-
-        this.evLog.warn(msg)
+        
+        this.evLog.warn(msg, undefined, _ => {
+            super.logWarn(`EventLogger fails persisting this in the windows Event log. 
+            The provided warning is: "${String(msg)}".`);
+        });
     }
 
     /**
-     * Log an error details.
+     * Log an error details.In production environment is going to try logging to the configured 
+     * Windows event log source.
      * @param err Error to log.
      */
     logError(err: Error | string) {
