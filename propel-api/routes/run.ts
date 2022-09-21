@@ -72,16 +72,16 @@ export class RunRoute implements Route {
             //If the Workflow is missing/deleted, we are not able to proceed.
             if (!workflow) throw new PropelError("The workflow does not exists. Please verify if it was deleted before retrying.");
 
-            logger.logDebug(`Starting execution of Workflow "${(workflow?.name) ? workflow.name : "deleted workflow"}" with id: "${req.params.workFlowId}".`)
+            logger.logInfo(`Starting execution of Workflow "${(workflow?.name) ? workflow.name : "deleted workflow"}" with id: "${req.params.workFlowId}".`)
 
             runner = new Runner();
             runner.execute(workflow, token, subsCallback)
                 .then((msg: WebsocketMessage<ExecutionStats>) => {
-                    logger.logDebug(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished, Status is "${msg.context?.logStatus}".`);
+                    logger.logInfo(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished with status: "${msg.context?.logStatus}".`);
                     ws.send(JSON.stringify(msg));
                 })
                 .catch((err) => {
-                    logger.logDebug(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" finished with the following error: "${String(err)}".`);
+                    logger.logInfo(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" finished with the following error: "${String(err)}".`);
                     ws.send(JSON.stringify(new APIResponse(err, null)));
                 })
                 .finally(() => {

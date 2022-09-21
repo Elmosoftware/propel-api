@@ -28,7 +28,8 @@ logger.logInfo("Propel is starting!");
 
 db.start() //Database setup.
     .then((data: any) => {
-        logger.logInfo(`Successfully connected to Mongo DB instance! Options in use:
+        logger.logInfo(`Successfully connected to Mongo DB instance!`);
+        logger.logDebug(`Mongo DB driver options in use:
         ${JSON.stringify(db.options)
                 .replace(/,/g, "\r\n\t")
                 .replace(/{/g, "")
@@ -44,6 +45,9 @@ db.start() //Database setup.
                     logger.logInfo(`\r\n=============================================================
     CURRENT ENVIRONMENT SETTINGS CORRESPONDS TO: PRODUCTION SITE.
 =============================================================\r\n`)
+                }
+                else {
+                    logger.logInfo(`Propel started successfully with "${cfg.environment}" environment configuration.`);
                 }
 
                 logger.logDebug(`Executing on folder: "${__dirname}".

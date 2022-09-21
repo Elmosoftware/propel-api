@@ -127,6 +127,8 @@ export class Runner {
             let scriptCode: string = "";
             let execStep: ExecutionStep = new ExecutionStep();
 
+            logger.logInfo(`Starting execution of step "${step.name}"`);
+
             //Updating Execution log:
             execStep.stepName = step.name;
             execStep.scriptName = step.script.name;
@@ -171,6 +173,8 @@ export class Runner {
                     //We must do this check before to start executing, because some previous issues with the 
                     //arguments or script decoding can prevent the execution:
                     if (execStep.status == ExecutionStatus.Pending) {
+                        logger.logInfo(`Executing script "${step.script.name}" on "${step.targets.map((t) => t.FQDN).join(", ")}"`)
+                        this._logInvocationArgs(argsList, this._credentialCache.allSecretStrings);
                         execStep.targets = await this._executeOnAllTargets(scriptCode, argsList, step.targets);
                         execStep.status = this._summaryStatus(execStep.targets);
                     }
@@ -307,12 +311,14 @@ export class Runner {
                                 et.status = ExecutionStatus.Success;
                                 et.execResults = (JSONData) ? JSONData : data;
                                 this._currentInvocation = null;
+                                logger.logInfo(`Command invocation in ${target.FQDN} is finished successfully.`)
                                 resolve(et);
                             })
                             .catch((err) => {
                                 et.status = ExecutionStatus.Faulty
                                 et.execErrors.push(new ExecutionError(this.formatError(err)));
                                 this._currentInvocation = null;
+                                logger.logInfo(`Command invocation in ${target.FQDN} is finished with error.`)
                                 resolve(et);
                             })
                             .finally(() => {
@@ -454,8 +460,6 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         ret += `\r\n` //Recall: we are entering our commands via STDIN. If you don't hit enter at the end, 
         //nothing will run!!! :-)
 
-        this._logCommand(ret, this._credentialCache.allSecretStrings);
-
         return ret;
     }
 
@@ -491,26 +495,31 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
     }
 
     /**
-     * This method log a command when in DEBUG mode including all the details of the invocation.
-     * The parameter "censorshipList" is a list of sensitive data that we would like to prevent 
+     * This method log the list of parameters used for the script invocation.
+     * The parameter "secrets" is a list of sensitive data that we would like to prevent 
      * been in the logs, (like passwords, usernames, etc.)
      * @param command command to log.
-     * @param censorshipList list of keywords to scrub.
+     * @param secrets list of keywords to scrub.
      */
-    private _logCommand(command: string, censorshipList: string[]) {
+    private _logInvocationArgs(argumentList: string[], secrets: string[]) {
 
-        if (censorshipList && censorshipList.length > 0) {
-            censorshipList.forEach((secret) =>{
-                command = command.replace(new RegExp(SystemHelper.RegExpEscape(secret), "g"), "********")            
-            })
+        let list: string = "";
+
+        argumentList.forEach((item) => {
+            if (secrets && secrets.length > 0) {
+                secrets.forEach((secret) =>{
+                    item = item.replace(new RegExp(SystemHelper.RegExpEscape(secret), "g"), "********")            
+                })
+            }
+            list += `  ${item}\r\n`
+        })
+        
+        if (!list) {
+            logger.logDebug(`The script has no arguments set.`);
         }
-
-        if (command.length > 300) {
-            command = command.substring(0, 150) + "\r\n       ... (removed part of the script for brevity) ...     \r\n" +
-                command.substring(command.length - 150, command.length)
+        else {
+            logger.logDebug(`Executing script with the following arguments:\r\n${list}`);
         }
-
-        logger.logDebug(`Executing command:\r\n${command}`);
     }
 
     private _prepareLogForSave(log: ExecutionLog): ExecutionLog {
@@ -530,7 +539,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
         })
 
         if (originalSize > maxLogSize) {
-            logger.logDebug(`${removedCount} of all the target execution results has been removed from the execution log because they were exceeding the execution log quota. 
+            logger.logInfo(`${removedCount} of all the target execution results has been removed from the execution log because they were exceeding the execution log quota. 
 Total size of target(s) execution results is: ${originalSize} Bytes (${(originalSize / 1024 / 1024).toFixed(2)}MB)
 Maximum allowed size is: ${cfg.maxWorkflowResultsSize} Bytes (${cfg.maxWorkflowResultsSizeInMB.toFixed(2)}MB).`);
         }

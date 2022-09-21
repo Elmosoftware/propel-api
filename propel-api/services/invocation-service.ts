@@ -87,7 +87,7 @@ export class InvocationService implements Disposable, Resettable {
                 }
             })
 
-            //If the STDOUT has any listeners form previous runs, we will dettach them:
+            //If the STDOUT has any listeners from previous runs, we will dettach them:
             if (this._shell.streams.stdout.listenerCount("data") > 0) {
                 this._shell.streams.stdout.removeAllListeners("data");
             };
@@ -105,8 +105,9 @@ export class InvocationService implements Disposable, Resettable {
                     return;
                 }
 
-                debugInfo += `NEW CHUNK: ${(chunk.length >= 60) ? chunk.substring(0, 25) + "..." + chunk.substring(chunk.length -25, chunk.length) : chunk }
-CHUNK DETAILS: Size:${chunk.length}, 2 End chars:${chunk.charCodeAt(chunk.length - 2)};${chunk.charCodeAt(chunk.length - 1)}`;
+                debugInfo += `STDOUT received: \r\n${(chunk.length >= 80) ? chunk.substring(0, 35) 
+                    + " .... " + chunk.substring(chunk.length -35, chunk.length) : chunk }
+Details: Size=${chunk.length}, Last two chars=${chunk.charCodeAt(chunk.length - 2)};${chunk.charCodeAt(chunk.length - 1)}`;
 
                 if (this._STDOUTs && this._STDOUTs.length > 0) {
                     let prev = this._STDOUTs[this._STDOUTs.length - 1];
@@ -134,7 +135,7 @@ CHUNK DETAILS: Size:${chunk.length}, 2 End chars:${chunk.charCodeAt(chunk.length
                     isFragmentEnd = isFragment && this._endsWithBreakline(chunk);
                 }
 
-                logger.logDebug(`${debugInfo}, EOI: ${isEOI}, Is continuation: ${isFragment}, Is end packet: ${isFragmentEnd}.`) //, EOI removed: ${this._mustDispose}.`)
+                logger.logDebug(`${debugInfo}, Is EOI=${isEOI}, Is a fragment=${isFragment}${(isFragment) ? ", Is final fragment=" + String(isFragmentEnd) + "." : "."}`)
 
                 if (isFragment) {
                     this._STDOUTs[this._STDOUTs.length - 1] += chunk;
@@ -160,12 +161,10 @@ CHUNK DETAILS: Size:${chunk.length}, 2 End chars:${chunk.charCodeAt(chunk.length
             this._shell.invoke()
                 .then((out: string) => {
                     this._emit(InvocationStatus.Stopped);
-                    logger.logDebug(`RESOLVING Invocation.`)
                     resolve(this.getLastReceivedChunk())
                 })
                 .catch((err: any) => {
                     this._emit(InvocationStatus.Failed, String(err));
-                    logger.logDebug(`REJECTING Invocation.`)
                     reject(err);
                 });
         });
