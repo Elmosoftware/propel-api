@@ -8,6 +8,9 @@ import { ObjectPoolStats } from "./object-pool-stats";
  * Implementations can be reseted. Mean to flush all content and restore the state to some default state.
  */
 export interface Resettable {
+    /**
+     * Restore to a default state.
+     */
     reset(): void;
 }
 
@@ -18,9 +21,9 @@ export interface Resettable {
 export interface Disposable {
 
     /**
-     * Synchronous disposing of open handles.
+     * Start the disposing of open handles and come back without waiting for the results.
      */
-    disposeSync(): void;
+    disposeAnForget(): void;
 
     /**
      * Aynchronous disposing of open handles.
@@ -210,7 +213,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         }
     }
 
-    disposeSync() {
+    disposeAnForget() {
         this._dispose()
             .then(() => {})
             .catch((err) => {

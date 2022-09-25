@@ -1,9 +1,9 @@
-import { pool } from "../services/invocation-service-pool";
+import { pool } from "../services/powershell-service-pool";
 import { Workflow } from "../../propel-shared/models/workflow";
 import { WorkflowStep } from "../../propel-shared/models/workflow-step";
 import { ParameterValue } from "../../propel-shared/models/parameter-value";
 import { Target } from "../../propel-shared/models/target";
-import { InvocationService } from "./invocation-service";
+import { PowerShellService } from "./powershell-service";
 import { WebsocketMessage, InvocationStatus, ExecutionStats } from "../../propel-shared/core/websocket-message";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { cfg } from "../core/config";
@@ -19,7 +19,7 @@ import { ExecutionStatus } from "../../propel-shared/models/execution-status";
 import { ExecutionError } from "../../propel-shared/models/execution-error";
 import { db } from "../core/database";
 import { DataService } from "../services/data-service";
-import { CredentialCache, CredentialCacheItem } from "../services/credential-cache";
+import { CredentialCache } from "../services/credential-cache";
 import { APIResponse } from "../../propel-shared/core/api-response";
 import { logger } from "./logger-service";
 import { SecurityToken } from "../../propel-shared/core/security-token";
@@ -36,7 +36,7 @@ export class Runner {
     private _localTarget: Target;
     private _execLog: ExecutionLog | undefined;
     private _cancelExecution: boolean;
-    private _currentInvocation: InvocationService | null;
+    private _currentInvocation: PowerShellService | null;
     private _stats!: ExecutionStats;
     private _credentialCache: CredentialCache;
 
@@ -226,16 +226,20 @@ export class Runner {
 
     /**
      * Calling this method will cancel the workflow execution.
-     * @param killProcessIfRunning If this parameter is true, the execution will be stopped 
-     * immediattely by killing execution process.
+     * @param kill If this parameter is true, the execution will be stopped 
+     * immediately by killing the execution process.
      * if this paramter is false, the execution will be cancelled as soon the current step is done 
      * by preventing next steps to start. 
      */
-    cancelExecution(killProcessIfRunning: boolean = false): void {
+    cancelExecution(kill: boolean = false): void {
+        let msg: string = `A request to cancel the execution has arrived. Execution will be stopped `;
         this._cancelExecution = true;
-        if (killProcessIfRunning && this._currentInvocation &&
-            this._currentInvocation.status == InvocationStatus.Running) {
-            this._currentInvocation?.disposeSync();
+        if (kill && this._currentInvocation?.status == InvocationStatus.Running) {
+            logger.logInfo(msg + `immediately.`)
+            this._currentInvocation.disposeAnForget();
+        }
+        else {
+            logger.logInfo(msg + `before to run next step.`)
         }
     }
 
@@ -293,7 +297,7 @@ export class Runner {
             }
             else {
                 pool.aquire()
-                    .then((invsvc: InvocationService) => {
+                    .then((invsvc: PowerShellService) => {
 
                         this._currentInvocation = invsvc;
 

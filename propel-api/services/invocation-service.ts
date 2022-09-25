@@ -14,6 +14,7 @@ import { PropelError } from "../../propel-shared/core/propel-error";
  * standard output, so you can monitor the execution in realtime, and access to the script execution 
  * results in JSON format.
  * @implements Disposable
+ * @deprecated Use PowerShellService instead
  */
 export class InvocationService implements Disposable, Resettable {
 
@@ -82,7 +83,7 @@ export class InvocationService implements Disposable, Resettable {
             //We need to listen to the events here in order to reject if the execution is cancelled 
             //and forced to stop immediately by killing the PS process:
             this.addSTDOUTEventListener((invMsg: WebsocketMessage<any>) => {
-                if (invMsg.status == InvocationStatus.Killed) {
+                if (invMsg.status == InvocationStatus.Disposed) {
                     reject(new PropelError(invMsg.message));
                 }
             })
@@ -170,7 +171,7 @@ Details: Size=${chunk.length}, Last two chars=${chunk.charCodeAt(chunk.length - 
         });
     }
 
-    disposeSync() {
+    disposeAnForget() {
         this._dispose()
             .then((msg) => {
                 logger.logInfo(`InvocationService dispose message: "${String(msg)}".`)
@@ -245,7 +246,7 @@ Details: Size=${chunk.length}, Last two chars=${chunk.charCodeAt(chunk.length - 
             //@ts-ignore
             ret = SystemHelper.killProcess(this._shell.pid);
             logger.logInfo(msg)
-            status = InvocationStatus.Killed;
+            // status = InvocationStatus.Killed;
         }
         else {
             //Otherwise, we will exit gracefully:

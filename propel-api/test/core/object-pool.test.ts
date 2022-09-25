@@ -13,7 +13,7 @@ class TestPool implements Resettable, Disposable {
     reset() {
     }
 
-    disposeSync() {
+    disposeAnForget() {
         this.isDisposed = true;
     }
 
@@ -276,7 +276,7 @@ describe("ObjectPool Class - Usage", () => {
             expect(pool.stats.availableToGrow).toEqual(2)
             expect(pool.stats.objectsCreated).toEqual(1)
 
-            o.disposeSync();
+            o.disposeAnForget();
             pool.release(o);
 
             expect(pool.stats.objectsAvailable).toEqual(0)
@@ -294,7 +294,7 @@ describe("ObjectPool Class - Usage", () => {
             expect(pool.stats.availableToGrow).toEqual(2)
             expect(pool.stats.objectsCreated).toEqual(1)
 
-            o.disposeSync();
+            o.disposeAnForget();
             pool.release(o);
 
             expect(pool.stats.objectsAvailable).toEqual(0)
@@ -332,7 +332,7 @@ describe("ObjectPool Class - Disposition", () => {
         pool = new ObjectPool<TestPool>(() => new TestPool(), op);
     })
     test(`disposing synchronously"`, (done) => {
-        pool.disposeSync();
+        pool.disposeAnForget();
 
         expect(pool.isDisposing).toBe(true)
         expect(pool.stats.objectsAvailable).toEqual(0)

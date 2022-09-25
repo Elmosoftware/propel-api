@@ -100,7 +100,7 @@ export class RunRoute implements Route {
                     runner.cancelExecution();
                 }
                 else if (m.status == InvocationStatus.UserActionKill) {
-                    logger.logInfo(`Cancelling workflow execution immediattely.`)
+                    logger.logInfo(`Cancelling workflow execution immediately.`)
                     runner.cancelExecution(true);
                 }
                 else {
@@ -114,18 +114,6 @@ export class RunRoute implements Route {
         }
     }
 
-    // private async getWorkflow(id: string, token: SecurityToken): Promise<Workflow | undefined> {
-    //     let svc: DataService = db.getService("workflow", token);
-    //     let result: APIResponse<Workflow>;
-    //     let qm = new QueryModifier();
-
-    //     qm.filterBy = { _id: id };
-
-    //     result = await svc.find(qm);
-
-    //     if (result.count == 1) return result.data[0];
-    //     else return undefined;
-    // }
     private async getWorkflow(id: string, token: SecurityToken): Promise<Workflow | undefined> {
         let svc: DataService = db.getService("workflow", token);
         let result: PagedResponse<Workflow>;

@@ -1,4 +1,4 @@
-import { pool } from "../../services/invocation-service-pool";
+import { pool } from "../../services/powershell-service-pool";
 import { ParamInferenceService } from "../../services/param-inference-service";
 import { ScriptParameter } from "../../../propel-shared/models/script-parameter";
 import { LogLevel } from "../../core/config";
@@ -100,7 +100,7 @@ return [pscustomobject]@{ ScriptDesc = "SingleOptionalUntypedParam"} | ConvertTo
 let infer: ParamInferenceService;
 
 afterAll(() => {
-    pool.disposeSync();
+    pool.disposeAnForget();
     pool.reset();
 })
 

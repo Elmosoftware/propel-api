@@ -1,15 +1,13 @@
-import { join, resolve } from "path";
-
+import { join } from "path";
 import { cfg } from "../core/config";
-import { pool } from "./invocation-service-pool";
+import { pool } from "./powershell-service-pool";
 import { SystemHelper } from "../util/system-helper";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { logger } from "./logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
-import { InvocationService } from "./invocation-service";
+import { PowerShellService } from "./powershell-service";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { PropelError } from "../../propel-shared/core/propel-error";
-
 
 /**
  * This class encapsulates all teh functionality related to Script parameter inference used in the API.
@@ -29,33 +27,31 @@ export class ParamInferenceService {
     async infer(scriptBody: string): Promise<ScriptParameter[]> {
 
         let ret: ScriptParameter[] = [];
-        let invsvc!: InvocationService;
+        let svc!: PowerShellService;
         let fileName!: string;
         let command: string;
-        let commandParams: any[];
 
         try {
-            invsvc = await pool.aquire()
+            logger.logInfo(`Starting parameter inference process...`)
+            svc = await pool.aquire()
 
-            logger.logDebug(`Starting temp file creation.`)
+            logger.logDebug(`Creating temp file...`)
             //Sadly for this we will need to persist the script in the file system, so first 
             //step is to create a temp file with the script content.
             fileName = await SystemHelper.createTempFile("infer-", "ps1", scriptBody);
-
-            command = join(cfg.rootFolder, cfg.PSScriptsFolder, "get-parameters.ps1");
-            commandParams = [
-                { name: "Path", value: fileName }
-            ]
-            logger.logDebug(`Temp file created. Command to run: "${command} -${commandParams[0].name} ${commandParams[0].value}".
+            command = join(cfg.rootFolder, cfg.PSScriptsFolder, "get-parameters.ps1")
+                + ` -Path "${fileName}"`
+            logger.logDebug(`Temp file created. Command to run: "${command}".
             Starting command execution.`);
-            ret = this.parseParameters(await invsvc.invoke(command, commandParams))
-
+            ret = this.parseParameters(await svc.invoke(command));
+            logger.logInfo(`Parameters inference process is done. Parameters found: ${ret.length}.`)
         } catch (error) {
+            logger.logInfo(`Parameters inference process finished with error. Error details: "${String(error)}".`)
             return Promise.reject(error)
         }
         finally {
             //Returning the InvocationService instance to the pool:
-            if (invsvc!) pool.release(invsvc);
+            if (svc!) pool.release(svc);
             //Deleting temp files:
             if (fileName!) {
                 SystemHelper.delete(fileName)

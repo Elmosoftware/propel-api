@@ -10,6 +10,7 @@ import { ObjectPoolStats } from "../core/object-pool-stats";
  * handled. @class ObjectPool used internally can help with both.
  * @implements Disposable
  * @implements Resettable
+ * @deprecated Use PowerShellServicePool instead.
  */
 class InvocationServicePool implements Disposable, Resettable {
 
@@ -50,8 +51,8 @@ class InvocationServicePool implements Disposable, Resettable {
         return this._pool.dispose();
     }
 
-    disposeSync(){
-        this._pool.disposeSync();
+    disposeAnForget(){
+        this._pool.disposeAnForget();
     }
 
     reset() {

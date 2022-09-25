@@ -1,10 +1,9 @@
 import { testingWorkflows } from "./testing-workflows";
-import { pool } from "../../services/invocation-service-pool";
+import { pool } from "../../services/powershell-service-pool";
 import { Runner } from "../../services/runner-service";
 import { ExecutionStatus } from "../../../propel-shared/models/execution-status";
 import { ExecutionStats, WebsocketMessage } from "../../../propel-shared/core/websocket-message";
 import { ExecutionLog } from "../../../propel-shared/models/execution-log";
-import { APIResponse } from "../../../propel-shared/core/api-response";
 import { Secret } from "../../../propel-shared/models/secret";
 import { SecretValue } from "../../../propel-shared/models/secret-value";
 import { Credential } from "../../../propel-shared/models/credential";
@@ -15,7 +14,7 @@ import { DataService } from "../../services/data-service";
 let runner: Runner;
 
 afterAll(() => {
-    pool.disposeSync();
+    pool.disposeAnForget();
     pool.reset();
 })
 

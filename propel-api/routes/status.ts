@@ -2,9 +2,8 @@
 import express from "express";
 import { Route } from "../core/route";
 import { cfg } from "../core/config";
-import { pool } from "../services/invocation-service-pool";
+import { pool } from "../services/powershell-service-pool";
 import { usageStatsService } from "../services/usage-stats-service";
-import { UsageStats } from "../../propel-shared/models/usage-stats";
 import { APIStatus } from "../../propel-shared/models/api-status";
 import { logger } from "../services/logger-service";
 import { SecurityRule } from "../core/security-rule";

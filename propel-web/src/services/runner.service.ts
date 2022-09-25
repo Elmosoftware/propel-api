@@ -65,7 +65,7 @@ export class RunnerService {
 
   /**
    * Cancel the workflow execution.
-   * @param kill Indicates if the execution need to stop immediattely by killing the script executing 
+   * @param kill Indicates if the execution need to stop immediately by killing the script executing 
    * process.
    * By default the execution will stop as soon the current step ends.
    */

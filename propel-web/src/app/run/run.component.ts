@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { DialogResult } from 'src/core/dialog-result';
 import { CoreService } from 'src/services/core.service';
 import { WebsocketMessage, InvocationStatus, ExecutionStats } from "../../../../propel-shared/core/websocket-message";
-import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { ExecutionStatus } from '../../../../propel-shared/models/execution-status';
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
@@ -138,7 +137,7 @@ export class RunComponent implements OnInit {
 
   cancel() {
     this.cancelling = true;
-    this.core.toaster.showInformation((this.killOption) ? "Execution will be stopped immediattely." :
+    this.core.toaster.showInformation((this.killOption) ? "Execution will be stopped immediately." :
       "Execution will be stopped as soon current step ends.", "Cancel execution in progress ...");
     this.core.runner.cancel(this.killOption);
   }

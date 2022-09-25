@@ -10,7 +10,6 @@ export enum InvocationStatus {
     Stopping = "STOPPING",
     Stopped = "STOPPED",
     Failed = "FAILED",
-    Killed = "KILLED",
     Disposed = "DISPOSED",
     Finished = "FINISHED",
     UserActionCancel = "CANCEL",
