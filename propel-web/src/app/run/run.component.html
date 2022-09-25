@@ -1,14 +1,17 @@
 <div class="container-fluid mt-2">
-    <div *ngIf="workflowStatus == 'RUNNING' && currentContext.currentStep" class="d-flex align-items-end flex-column mt-2">
+    <div *ngIf="workflowStatus == 'RUNNING' && currentContext.currentStep" 
+        class="d-flex align-items-start flex-column mt-2">
         <div class="d-flex justify-content-center">
-            <button type="button" class="btn btn-danger" [disabled]="cancelling"
-                (click)="cancel()">{{(cancelling)? "Cancellation in progress..." : "Cancel"}}</button>
-            <div class="d-flex align-items-center mx-2">
-                <span class="text-mini mx-2">Abort on<br>next step</span>
-                <mat-slide-toggle color="primary" [disabled]="cancelling" [(ngModel)]="killOption">
-                </mat-slide-toggle>
-                <span class="text-mini mx-2">Stop immediately!<br>(kill process).</span>
-            </div>
+            <button type="button" class="btn btn-primary" [disabled]="cancelling || aborting" 
+                (click)="cancel(false)">
+                {{(cancelling)? "Cancellation in progress..." : "Cancel"}}
+                <div *ngIf="!cancelling" class="text-subtle">Prevent next steps to start.</div>
+            </button>
+            <button type="button" class="btn btn-danger ml-2" [disabled]="cancelling || aborting" 
+                (click)="cancel(true)">
+                {{(aborting)? "Aborting execution ..." : "Kill it!"}}
+                <div *ngIf="!aborting" class="text-subtle">Stop the execution immediately.</div>
+            </button>
         </div>
     </div>
     <div *ngIf="currentContext.workflowName" class="row mt-2">

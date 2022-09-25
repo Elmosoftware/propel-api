@@ -16,8 +16,8 @@ export class RunComponent implements OnInit {
 
   model: WebsocketMessage<ExecutionStats>[];
   workflowStatus: string = InvocationStatus.NotStarted;
-  killOption: boolean = false;
   cancelling: boolean = false;
+  aborting: boolean = false;
   confirmationRequired: boolean = false;
 
   @ViewChild("container", { static: false }) container: ElementRef;
@@ -135,11 +135,12 @@ export class RunComponent implements OnInit {
         });
   }
 
-  cancel() {
-    this.cancelling = true;
-    this.core.toaster.showInformation((this.killOption) ? "Execution will be stopped immediately." :
-      "Execution will be stopped as soon current step ends.", "Cancel execution in progress ...");
-    this.core.runner.cancel(this.killOption);
+  cancel(kill: boolean) {
+    this.cancelling = !kill;
+    this.aborting = kill;
+    this.core.toaster.showInformation((kill) ? "Execution will be stopped immediately." :
+      "Execution will be stopped as soon current step ends.", "Cancelling execution ...");
+    this.core.runner.cancel(kill);
   }
 
   scrollDown() {
