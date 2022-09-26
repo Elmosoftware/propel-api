@@ -35,8 +35,9 @@ export class Runner {
     private _scriptVal: ScriptValidator;
     private _localTarget: Target;
     private _execLog: ExecutionLog | undefined;
-    private _cancelExecution: boolean;
-    private _currentInvocation: PowerShellService | null;
+    private _cancelledExecution: boolean;
+    private _abortedExecution: boolean;
+    private _currentInvocations: PowerShellService[];
     private _stats!: ExecutionStats;
     private _credentialCache: CredentialCache;
 
@@ -45,8 +46,9 @@ export class Runner {
         this._localTarget = new Target();
         this._localTarget.FQDN = "localhost"
         this._localTarget.friendlyName = this._localTarget.FQDN;
-        this._cancelExecution = false;
-        this._currentInvocation = null;
+        this._cancelledExecution = false;
+        this._abortedExecution = false;
+        this._currentInvocations = [];
         this._credentialCache = new CredentialCache();
     }
 
@@ -81,7 +83,8 @@ export class Runner {
         let abort: boolean = false;
         let resultsMessage: WebsocketMessage<ExecutionStats>;
         this._cb = subscriptionCallback;
-        this._cancelExecution = false;
+        this._cancelledExecution = false;
+        this._abortedExecution = false;
 
         //Creating stats:
         this._stats = new ExecutionStats();
@@ -148,7 +151,7 @@ export class Runner {
                 execStep.execError = new ExecutionError((error as Error));
             }
 
-            if (this._cancelExecution) {
+            if (this._cancelledExecution) {
                 abort = true //Next steps,(if any), will be aborted.
                 execStep.status = ExecutionStatus.CancelledByUser;
             }
@@ -233,10 +236,16 @@ export class Runner {
      */
     cancelExecution(kill: boolean = false): void {
         let msg: string = `A request to cancel the execution has arrived. Execution will be stopped `;
-        this._cancelExecution = true;
-        if (kill && this._currentInvocation?.status == InvocationStatus.Running) {
+        this._cancelledExecution = true;
+
+        if (kill && this._currentInvocations.length > 0) {
+            this._abortedExecution = true;
             logger.logInfo(msg + `immediately.`)
-            this._currentInvocation.disposeAnForget();
+            this._currentInvocations.forEach((inv: PowerShellService) => {
+                if (inv.status == InvocationStatus.Running) {
+                    inv.disposeAnForget();
+                }
+            })
         }
         else {
             logger.logInfo(msg + `before to run next step.`)
@@ -298,8 +307,7 @@ export class Runner {
             else {
                 pool.aquire()
                     .then((invsvc: PowerShellService) => {
-
-                        this._currentInvocation = invsvc;
+                        this._addToCurrentInvocations(invsvc);
 
                         //Subscribe to the STDOUT event listener:
                         invsvc.addSTDOUTEventListener((msg: WebsocketMessage<ExecutionStats>) => {
@@ -312,31 +320,46 @@ export class Runner {
                         invsvc.invoke(this._buildCommand(scriptCode, argsList, target))
                             .then((data: string) => {
                                 let JSONData = SystemHelper.detectJSON(data);
-                                et.status = ExecutionStatus.Success;
+                                et.status = (this._abortedExecution) ? ExecutionStatus.CancelledByUser : ExecutionStatus.Success;
                                 et.execResults = (JSONData) ? JSONData : data;
-                                this._currentInvocation = null;
+                                this._removeFromCurrentInvocations(invsvc)
                                 logger.logInfo(`Command invocation in ${target.FQDN} is finished successfully.`)
                                 resolve(et);
                             })
                             .catch((err) => {
                                 et.status = ExecutionStatus.Faulty
                                 et.execErrors.push(new ExecutionError(this.formatError(err)));
-                                this._currentInvocation = null;
+                                this._removeFromCurrentInvocations(invsvc);
                                 logger.logInfo(`Command invocation in ${target.FQDN} is finished with error.`)
                                 resolve(et);
                             })
                             .finally(() => {
-                                this._currentInvocation = null;
+                                this._removeFromCurrentInvocations(invsvc);
                                 pool.release(invsvc);
                             })
                     })
                     .catch((err) => {
                         //There was some issue trying to aquire an object from the pool:
-                        this._currentInvocation = null;
                         reject(new PropelError(err));
                     })
             }
         });
+    }
+
+    private _addToCurrentInvocations(inv: PowerShellService): void {
+        this._currentInvocations.push(inv);
+    }
+
+    private _removeFromCurrentInvocations(inv: PowerShellService): void {
+        let pos: number = -1;
+
+        this._currentInvocations.forEach((currentInv: PowerShellService, i: number) => {
+            if(currentInv === inv) pos = i;
+        })
+
+        if (pos != -1) {
+            this._currentInvocations.splice(pos, 1);
+        }
     }
 
     private formatError(e: Error | string): Error | string {

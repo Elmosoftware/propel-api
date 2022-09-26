@@ -136,16 +136,18 @@ Details: Size=${chunk.length}, Last two chars=${chunk.charCodeAt(chunk.length - 
     }
 
     dispose(): Promise<void> {
-        let msg: string = "PowerShell instance is disposed. This could be caused by user interruption."
-        this._isDisposed = true;
-        logger.logInfo(msg)
-        this._emit(InvocationStatus.Disposed, msg);
+        this._isDisposed = true;        
         this.reset();
         return this._shell.dispose();
     }
 
     disposeAnForget() {
         this.dispose()
+            .then(_ => {
+                let msg: string = "PowerShell instance is disposed. This could be caused by user interruption."
+                logger.logInfo(msg)
+                this._emit(InvocationStatus.Disposed, msg);
+            })
             .catch((error) => {
                 logger.logWarn(`Powershell service disposing process ended with error. Following details: ${String(error)}`)
             });
