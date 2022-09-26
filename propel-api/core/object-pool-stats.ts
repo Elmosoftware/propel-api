@@ -39,11 +39,11 @@ export class ObjectPoolStats {
     public canGrow: boolean = false;
 
     toString() { 
-        return `Current Object pool stats:
-        Items in use in the pool: ${this.objectsLocked}.
-        Items released in the pool: ${this.availableToGrow}.
-        Current queue size: ${this.queueSize}.
-        Remaining queue space: ${this.remainingQueueSpace}.`
+        return `\tObjects created:${this.objectsCreated}.
+        Available space: ${this.availableToGrow}.
+        Objects In use: ${this.objectsLocked}.
+        Queued: ${this.queueSize}.
+        Queue free space: ${this.remainingQueueSpace}.`
     }
 
     constructor() {
