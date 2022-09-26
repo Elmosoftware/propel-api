@@ -176,6 +176,7 @@ export class Runner {
                     //We must do this check before to start executing, because some previous issues with the 
                     //arguments or script decoding can prevent the execution:
                     if (execStep.status == ExecutionStatus.Pending) {
+                        execStep.startedAt = new Date();
                         logger.logInfo(`Executing script "${step.script.name}" on "${step.targets.map((t) => t.FQDN).join(", ")}"`)
                         this._logInvocationArgs(argsList, this._credentialCache.allSecretStrings);
                         execStep.targets = await this._executeOnAllTargets(scriptCode, argsList, step.targets);
@@ -184,6 +185,9 @@ export class Runner {
                 } catch (error) {
                     execStep.status = ExecutionStatus.Faulty;
                     execStep.execError = new ExecutionError((error as Error));
+                }
+                finally {
+                    execStep.endedAt = new Date();
                 }
 
                 //If the step has errors and the workflow is configured to abort in that situation:
@@ -317,6 +321,7 @@ export class Runner {
 
                         //Invoke the Script:
                         et.status = ExecutionStatus.Running;
+                        et.startedAt = new Date();
                         invsvc.invoke(this._buildCommand(scriptCode, argsList, target))
                             .then((data: string) => {
                                 let JSONData = SystemHelper.detectJSON(data);
@@ -334,6 +339,7 @@ export class Runner {
                                 resolve(et);
                             })
                             .finally(() => {
+                                et.endedAt = new Date();
                                 this._removeFromCurrentInvocations(invsvc);
                                 pool.release(invsvc);
                             })

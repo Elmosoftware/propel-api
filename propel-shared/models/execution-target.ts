@@ -32,6 +32,16 @@ export class ExecutionTarget {
      */
     public status: ExecutionStatus = ExecutionStatus.Pending;
 
+    /**
+     * Execution start timestamp.
+     */
+     public startedAt?: Date;
+
+     /**
+      * Execution end timestamp.
+      */
+     public endedAt?: Date;
+
     constructor() {
     }
 }

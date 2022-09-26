@@ -626,6 +626,16 @@ class Schemas {
                     {
                         type: String,
                         isRequired: true
+                    }),
+                new SchemaField("startedAt", `Execution target start timestamp (UTC).`,
+                    {
+                        type: Date,
+                        isRequired: false
+                    }),
+                new SchemaField("endedAt", `Execution target end timestamp (UTC).`,
+                    {
+                        type: Date,
+                        isRequired: false
                     })
             ])
             .setDescription("Results and errors of a script execution on one particular target.")
@@ -673,6 +683,16 @@ class Schemas {
                 new SchemaField("execError", `Errors on this step.`,
                     {
                         type: this.executionError
+                    }),
+                new SchemaField("startedAt", `Execution step start timestamp (UTC).`,
+                    {
+                        type: Date,
+                        isRequired: false
+                    }),
+                new SchemaField("endedAt", `Execution step end timestamp (UTC).`,
+                    {
+                        type: Date,
+                        isRequired: false
                     })
             ])
             .setDescription("Details of a Workflow step execution")

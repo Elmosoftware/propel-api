@@ -45,6 +45,16 @@ export class ExecutionStep {
      */
     public execError: ExecutionError | null = null;
 
+    /**
+     * Execution start timestamp.
+     */
+     public startedAt?: Date;
+
+     /**
+      * Execution end timestamp.
+      */
+     public endedAt?: Date;
+
     constructor() {
     }
 }

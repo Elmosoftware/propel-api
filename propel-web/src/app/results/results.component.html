@@ -13,8 +13,8 @@
                 </div>
                 <div class="row mt-2">
                     <div class="col-auto">
-                        <span class="overflowEllipsis">{{ getDurationDetails(true) }}</span>
-                        <i class="fas fa-binoculars text-mini ml-2" matTooltip="{{ getDurationDetails(false) }}"
+                        <span class="overflowEllipsis">{{ getTotalDurationDetails(true) }}</span>
+                        <i class="fas fa-binoculars text-mini ml-2" matTooltip="{{ getTotalDurationDetails(false) }}"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                     </div>
                 </div>
@@ -57,13 +57,22 @@
             <mat-expansion-panel *ngFor="let step of log.executionSteps; let i=index" 
                 [expanded]="i == (log.executionSteps.length - 1)">
                 <mat-expansion-panel-header class="step-header">
-                    <mat-panel-title class="align-items-baseline">
-                        <app-status-icon size="small" iconStyle="dark" [status]="step.status" class="mr-2">
-                        </app-status-icon>
-                        <span [ngClass]="{
-                            'item-disabled': !step.scriptEnabled }">{{step.stepName}}</span>
-                        <i class="fas fa-binoculars ml-2 text-mini" matTooltip="{{getStepDetails(i)}}"
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                    <mat-panel-title class="align-items-baseline justify-content-between">
+                        <div>
+                            <app-status-icon size="small" iconStyle="dark" [status]="step.status" class="mr-2">
+                            </app-status-icon>
+                            <span [ngClass]="{
+                                'item-disabled': !step.scriptEnabled 
+                            }" class="icon-binoculars-after-mini" matTooltip="{{getStepDetails(i)}}"
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                            {{step.stepName}}</span>
+                        </div>
+                        <div *ngIf="step.startedAt" class="text-subtle">
+                            <i class="fas fa-stopwatch"></i>
+                            <span matTooltip="{{getDurationDetails(step, false)}}"
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                                {{getDurationDetails(step)}}</span>
+                        </div>
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="content-container">
@@ -80,16 +89,24 @@
                     <mat-accordion multi displayMode="flat" togglePosition="before">
                         <mat-expansion-panel *ngFor="let target of step.targets; let i=index" expanded="true">
                             <mat-expansion-panel-header class="target-header">
-                                <mat-panel-title class="align-items-baseline">
-                                    <app-status-icon size="small" iconStyle="dark" [status]="target.status" class="mr-2">
-                                    </app-status-icon>
-                                    <span style="padding-top: 1px"  [ngClass]="{
-                                        'item-disabled': target.status == 'SKIPPED' }">{{target.name}}&nbsp;({{target.FQDN}})</span>
-                                    <i class="fas ml-2 text-mini" 
-                                        [ngClass]="{
-                                            'fa-binoculars': target.status == 'SKIPPED' }"
-                                        matTooltip="The target was disabled or deleted at the moment of the execution."
-                                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                                <mat-panel-title class="align-items-baseline justify-content-between">
+                                    <div>
+                                        <app-status-icon size="small" iconStyle="dark" [status]="target.status" class="mr-2">
+                                        </app-status-icon>
+                                        <span style="padding-top: 1px"  [ngClass]="{
+                                            'item-disabled': target.status == 'SKIPPED' }">{{target.name}}&nbsp;({{target.FQDN}})</span>
+                                        <i class="fas ml-2 text-mini" 
+                                            [ngClass]="{
+                                                'fa-binoculars': target.status == 'SKIPPED' }"
+                                            matTooltip="The target was disabled or deleted at the moment of the execution."
+                                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                                    </div>
+                                    <div *ngIf="target.startedAt" class="text-subtle">
+                                        <i class="fas fa-stopwatch"></i>
+                                        <span matTooltip="{{getDurationDetails(target, false)}}"
+                                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                                            {{getDurationDetails(target)}}</span>
+                                    </div>
                                 </mat-panel-title>
                             </mat-expansion-panel-header>
                             <div class="content-container">

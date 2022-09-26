@@ -183,6 +183,7 @@ body{
     content: "\f1e5";
     font-weight: 900;
     font-size: 0.8rem;
+    margin-left: 0.3rem;
 }
 
 .icon-user::after {

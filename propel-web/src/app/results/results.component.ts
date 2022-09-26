@@ -150,7 +150,7 @@ export class ResultsComponent implements OnInit {
     return ret;
   }
 
-  getDurationDetails(friendly: boolean = true) {
+  getTotalDurationDetails(friendly: boolean = true) {
     let ret: string = ""
     let user: string = "an Unknown user"
 
@@ -182,6 +182,23 @@ Total duration: ${SystemHelper.getDuration(this.log.startedAt, this.log.endedAt)
       ret = `Script: "${step.scriptName}" ${(!step.scriptEnabled) ? "(The script was disabled or deleted at the moment of the execution)" : ""}.
 Targets: ${UIHelper.getTargetList(step)}.
 Parameters: ${UIHelper.getParameterValuesList(step.values)}.`
+    }
+
+    return ret;
+  }
+
+  getDurationDetails(partial: ExecutionStep | ExecutionTarget, friendly: boolean = true) {
+    let ret: string = ""
+
+    if (!(partial.startedAt && partial.endedAt)) return ret;
+
+    if (friendly) {
+      ret = SystemHelper.getDuration(partial.startedAt, partial.endedAt)
+    }
+    else {
+      ret = `Start at: ${SystemHelper.formatDate(partial.startedAt)}
+End at: ${SystemHelper.formatDate(partial.endedAt)}
+Total duration: ${SystemHelper.getDuration(partial.startedAt, partial.endedAt)}.`
     }
 
     return ret;
