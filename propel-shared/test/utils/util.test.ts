@@ -298,6 +298,10 @@ describe("Utils Class - isQuotedString()", () => {
         //@ts-ignore
         expect(Utils.isQuotedString("\"Hello world\"")).toEqual(true);
     })
+    test(`isQuotedString(""Hello\`"world2"")`, () => {
+        //@ts-ignore
+        expect(Utils.isQuotedString(`"Hello\`"world2"`)).toEqual(true);
+    })
 })
 
 describe("Utils Class - addQuotes()", () => {
@@ -337,6 +341,10 @@ describe("Utils Class - addQuotes()", () => {
     test(`addQuotes("'Hello world'")`, () => {
         //@ts-ignore
         expect(Utils.addQuotes("'Hello world'")).toEqual("'Hello world'");
+    })
+    test(`addQuotes("Hello\`"world2")`, () => {
+        //@ts-ignore
+        expect(Utils.addQuotes(`Hello\`"world2`)).toEqual(`"Hello\`"world2"`);
     })
 })
 
@@ -459,21 +467,37 @@ describe("Utils Class - JavascriptToPowerShellValueConverter()", () => {
         Utils.JavascriptToPowerShellValueConverter(pv)
         expect(pv.value).toEqual("");
     })
-    test(`For a Native type other than "String" and "Boolean" with any value that is not and empty string - original value must be preserved.`, () => {
+    test(`For a Native type "Array" with a string value that is not and empty string - a literal array must be returned.`, () => {
         let pv = new ParameterValue();
         pv.nativeType = "Array";
         //@ts-ignore
         pv.value = "any value here"
         Utils.JavascriptToPowerShellValueConverter(pv)
-        expect(pv.value).toEqual("any value here");
+        expect(pv.value).toEqual(`@("any value here")`);
     })
-    test(`For a Native type other than "String" and "Boolean" with an empty string as value - original value must be changes by "$null".`, () => {
+    test(`For a Native type "Array" with an array value - a literal array must be returned.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = ["any value here", `"A quoted value"`]
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual(`@("any value here","A quoted value")`);
+    })
+    test(`For a Native type "Array" with an empty string as value - original value must be changed to an empty PowerShell array literal: @()."$null".`, () => {
         let pv = new ParameterValue();
         pv.nativeType = "Array";
         //@ts-ignore
         pv.value = ""
         Utils.JavascriptToPowerShellValueConverter(pv)
-        expect(pv.value).toEqual("$null");
+        expect(pv.value).toEqual("@()");
+    })
+    test(`For a Native type "Array" with an empty array as value - original value must be changed to an empty PowerShell array literal: @()."$null".`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = []
+        Utils.JavascriptToPowerShellValueConverter(pv)
+        expect(pv.value).toEqual("@()");
     })
     test(`For a "String" Native type that not contains double quotes, ("), the value must remain unchanged.`, () => {
         let pv = new ParameterValue();
@@ -580,21 +604,61 @@ describe("Utils Class - PowershellToJavascriptValueConverter()", () => {
         Utils.PowerShellToJavascriptValueConverter(pv)
         expect(pv.value).toEqual("");
     })
-    test(`For a Native type other than "String" and "Boolean" with any value that is not and empty string - original value must be preserved.`, () => {
+    test(`For an Array type that is an empty string - we must get an empty JS array.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = ""
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual([]);
+    })
+    test(`For an Array type that is not an empty string - we must get a JS array.`, () => {
         let pv = new ParameterValue();
         pv.nativeType = "Array";
         //@ts-ignore
         pv.value = "any value here"
         Utils.PowerShellToJavascriptValueConverter(pv)
-        expect(pv.value).toEqual("any value here");
+        expect(pv.value).toEqual(["any value here"]);
     })
-    test(`For a Native type other than "String" and "Boolean" with the value "$null" - original value must be changed to an empty string.`, () => {
+    test(`For an Array type that is a single numeric value - we must get a JS array.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = 34.5678
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual([34.5678]);
+    })
+    test(`For an Array type that is a regular string array - we must get a JS array.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = `@("First Value", "Second value")`
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual(["First Value", "Second value"]);
+    })
+    test(`For an Array type that is an empty array - we must get a JS array.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = `@()`
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual([]);
+    })
+    test(`For an Array type that is a numeric array - we must get a JS array.`, () => {
+        let pv = new ParameterValue();
+        pv.nativeType = "Array";
+        //@ts-ignore
+        pv.value = `@(1,2, 3,      4)`
+        Utils.PowerShellToJavascriptValueConverter(pv)
+        expect(pv.value).toEqual([1,2,3,4]);
+    })
+    test(`For an Array with the value "$null" - original value must be changed to an empty string.`, () => {
         let pv = new ParameterValue();
         pv.nativeType = "Array";
         //@ts-ignore
         pv.value = "$null"
         Utils.PowerShellToJavascriptValueConverter(pv)
-        expect(pv.value).toEqual("");
+        expect(pv.value).toEqual([]);
     })
     test(`For a "String" Native type that not contains double quotes, ("), the value must remain unchanged.`, () => {
         let pv = new ParameterValue();

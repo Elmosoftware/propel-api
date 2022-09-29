@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, EventEmitter, ViewChild, Output } from '@angular/core';
+import { Component, OnInit, Input, EventEmitter, ViewChild, Output, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { FormGroup, Validators, FormControl, FormArray, ValidatorFn } from '@angular/forms';
 import { forkJoin, from } from "rxjs";
 import { NgSelectComponent } from '@ng-select/ng-select';
@@ -19,6 +19,8 @@ import { Utils } from "../../../../propel-shared/utils/utils";
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
+import { CustomValueDialogData } from '../dialogs/custom-value-dlg/custom-value-dlg.component';
+import { DialogResult } from 'src/core/dialog-result';
 
 /**
  * Minimum step name length.
@@ -81,6 +83,7 @@ export class WorkflowStepComponent implements OnInit {
   @ViewChild("script") scriptDropdown;
   @ViewChild('targets') targets: NgSelectComponent;
   @ViewChild('credentials') credentials: NgSelectComponent;
+  @ViewChildren('ngSelectArrays') ngSelectArrays: QueryList<NgSelectComponent>;
 
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<WorkflowStep>;
@@ -175,6 +178,37 @@ export class WorkflowStepComponent implements OnInit {
     });
   }
 
+  addNewValue(selectId: number) {
+    //From all the NGSelect used for arrays, we need to choose the one with the specific id:
+    let select: NgSelectComponent = this.ngSelectArrays.find((control: NgSelectComponent) => {
+      return Number(control.element.attributes.getNamedItem("id").value) == selectId
+    })
+    
+    let paramName: string = select.element.attributes.getNamedItem("title").value
+    let param = this.tryGetParameter(paramName)
+    let isNumberArray: boolean = false
+    let dlgTitle: string = ""
+    
+    if (param) {
+      isNumberArray = (param.type == "System.Int32[]")
+      dlgTitle = `Add a new ${(isNumberArray) ? "numeric" : "text"} value for $${param.name}`
+    }
+    
+    select.close(); //Closing the ng-select before to show the dialog to avoid the dialog 
+    //displaying behing the select. 
+
+    this.core.dialog.showCustomValueDialog({ typeIsString: !isNumberArray, title: dlgTitle})
+    .subscribe((result: DialogResult<CustomValueDialogData>) => {
+      if (!result.isCancel) {
+        select.itemsList.addItem(result.value.value);
+        let item = select.itemsList.findItem(result.value.value);
+        select.select(item);
+      }
+    }, err => {
+      throw err
+    });
+  }
+
   refreshScripts(): Promise<PagedResponse<Script>> {
     let qm: QueryModifier = new QueryModifier();
     qm.sortBy = "name";
@@ -260,6 +294,16 @@ export class WorkflowStepComponent implements OnInit {
               pv.value = pv.value.join(",")
             }
             else {
+              //For array types, sometimes ng-select returns the item object, instead of 
+              //only the value:
+              if (pv.nativeType == "Array" && Array.isArray(pv.value)) {
+                (pv.value as Array<any>) = (pv.value as Array<any>)
+                  .map((val) => {
+                    if (typeof val == "object" && val.value) return val.value
+                    else return val
+                  })
+              }
+
               Utils.JavascriptToPowerShellValueConverter(pv);
             }
           })
@@ -533,6 +577,7 @@ export class WorkflowStepComponent implements OnInit {
   }
 
   getValidSet(paramName: string): any[] {
+    if (!this.hasValidSet(paramName)) return []
     return this.validSets[paramName];
   }
 

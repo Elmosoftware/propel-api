@@ -77,7 +77,7 @@ This could happen when a script is updated with breaking changes. Please review 
         return new Code("WRONG_PROPEL_PARAM",
             `Incorrect definition for the $PropelCredentials parameter.`,
             `The $PropelCredentials parameter is managed by Propel and allows the script to access the required credentials.           
-            The definition of this parameter is wrong. Please verify that : Type must be System.Object[], it can't has a default value and also no ValidSet is allowed.`,
+            The definition of this parameter is wrong. Please verify that : Type must be System.Object, it can't has a default value and also no ValidSet is allowed.`,
             false);
     }
 

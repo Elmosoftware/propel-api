@@ -1,17 +1,29 @@
 param (
-    $Param = @("Uno", "Dos")
+    [hashtable]$HashTableVariable = @{One = 1; Two = 2; Three = 3}
 )
 
 
-"Value:"
-$Param
+"HashTableVariable Value:"
+$HashTableVariable
 
-"Is Null?:"
-$Param -eq $null
+"HashTableVariable Is Null?:"
+if($HashTableVariable -eq $null){
+    $true
+}
+else {
+    $false
+}
 
-"Type:"
-$Param.GetType().FullName
+"HashTableVariable Type:"
+if ($HashTableVariable -eq $null) {
+   '$null'
+}
+else {
+    $HashTableVariable.GetType().FullName
+}
 
+"HashTableVariable count:"
+$HashTableVariable.count;
 <#
 $x= @(
     [pscustomobject]@{ 
@@ -72,7 +84,7 @@ $x2[1].CredentialAWS | format-table *
 $x2[1].CredentialAWS.Fields | format-table *
 
 
-#>
+
 
 $x2= [pscustomobject]@{
     CredentialWindows = [pscustomobject]@{ 
@@ -106,3 +118,4 @@ $x2.CredentialAWS | format-table *
 "`r`nx2.CredentialWindows.Fields:"
 $x2.CredentialAWS.Fields | format-table *
 
+#>

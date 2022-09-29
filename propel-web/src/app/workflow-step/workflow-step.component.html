@@ -63,14 +63,19 @@
             <div class="form-group">
                 <hr class="my-4">
             </div>
+
+            <!-- 
+                Starting here the script parameters 
+                ========================================================
+            -->
             <label class="mb-2"><strong>Parameter values:</strong></label>
             <div *ngIf="selectedScript.parameters && selectedScript.parameters.length > 0; else noParams">
                 <div formArrayName="values" *ngFor="let child of parameterValues.controls; let i=index">
                     <label>${{child.controls.name.value}}</label>
                     <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
                     <ng-container [formGroupName]="i">
-                        <!-- Propel parameter requires specific treatment -->
-                        <div *ngIf="isPropelParameter(child.controls.name.value); else notPropelParameter" class="form-group">
+                        <!-- Propel custom parameters requires specific treatment -->
+                        <div *ngIf="isPropelParameter(child.controls.name.value); else otherParameterTypes" class="form-group">
                             <ng-select #credentials [items]="allCredentials" [multiple]="true" [closeOnSelect]="false"
                                 [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name"
                                 clearAllText="Clear" [compareWith]="compareFn"
@@ -89,8 +94,29 @@
                                 </ng-template>
                             </ng-select>
                         </div>
-                        <ng-template #notPropelParameter>
+                        <!-- Parameters of native array types, also required specific controls: -->
+                        <ng-template #otherParameterTypes>
                             <div [ngSwitch]="child.controls.nativeType.value">
+                                <div *ngSwitchCase="'Array'" class="form-group">
+                                    <div class="d-flex">
+                                        <!-- "id" and "title" will be used internally to locate 
+                                            the component and parameter to add new items. -->
+                                        <ng-select #ngSelectArrays
+                                            [id]="i" [title]="child.controls.name.value" 
+                                            [items]="getValidSet(child.controls.name.value)" 
+                                            [multiple]="true"
+                                            [closeOnSelect]="false" [clearSearchOnAdd]="true" 
+                                            [searchable]="false" clearAllText="Clear"
+                                            [compareWith]="compareFn" placeholder="Select all the text" 
+                                            formControlName="value" class="w-100">
+                                            <ng-template *ngIf="!hasValidSet(child.controls.name.value)" ng-footer-tmp>
+                                                <div class="cursor-pointer" (click)="addNewValue(i)">
+                                                    <i class="fas fa-plus mr-2"></i>Add a new value
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                </div>
                                 <div *ngSwitchCase="'Boolean'" class="form-group">
                                     <div class="d-flex justify-content-center">
                                         <label class="mr-2 mt-1 text-mini">$false</label>

@@ -129,6 +129,14 @@ body{
     font-size: 1em;
 }
 
+.send-to-back {
+    z-index: 1;
+}
+
+.bring-to-front {
+    z-index: 1000;
+}
+
 /* 
   NAVIGATION BAR
   ==========================================================
@@ -417,6 +425,10 @@ textarea::placeholder {
 
 .remove-border-right {
     border-right: none;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }
 
 /*

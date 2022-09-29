@@ -151,9 +151,6 @@ export class Utils {
             case "System.Xml.XmlDocument":
                 ret = "Object";
                 break;
-            case "System.Object[]":
-                ret = "Array";
-                break;
             case "System.String[]":
                 ret = "Array";
                 break;
@@ -240,6 +237,35 @@ export class Utils {
         else if (pv.nativeType == "String") {
             pv.value = this.backtickDoubleQuotes(pv.value)
         }
+        else if (pv.nativeType == "Array") {
+            let tempArray: any[] = []
+
+            if (pv.value) {
+                if (!Array.isArray(pv.value)) {
+                    tempArray = [pv.value]
+                }
+                else {
+                    tempArray = pv.value
+                }
+            }
+            else {
+                tempArray = []
+            }
+
+            pv.value = `@(${tempArray
+                .map((val) => {
+                    //If is not a numeric value, we need to quote each item of the array:
+                    if (isNaN(parseInt(String(val)))) {
+                        val = Utils.backtickDoubleQuotes(val)
+                        if (!Utils.isQuotedString(val)) {
+                            val = Utils.addQuotes(val);
+                        }
+                    }
+                    return val;
+                })
+                .join(",")})`
+            // }
+        }
         //If the native type is not a string and the value is an empty string, we must replace 
         //it by the null PowerShell literal:
         else if (pv.nativeType != "String" && pv.value == "") {
@@ -253,6 +279,9 @@ export class Utils {
      * @param pv Parameter value to convert.
      */
     static PowerShellToJavascriptValueConverter(pv: ParameterValue): void {
+
+        let arrayStart: string = `@(`
+        let arrayEnd: string = `)`
 
         if (!pv || !pv.nativeType) {
             return;
@@ -269,6 +298,35 @@ export class Utils {
         //Double quoted strings in PowerShell works differently, so we need to convert any:
         else if (pv.nativeType == "String") {
             pv.value = this.removeBacktickDoubleQuotes(pv.value)
+        }
+        else if (pv.nativeType == "Array") {
+
+            if (pv.value == "" || pv.value == POWERSHELL_NULL_LITERAL) {
+                pv.value = ([] as unknown as string)
+            }
+            else {
+                pv.value = String(pv.value)
+
+                if (pv.value.startsWith(arrayStart)) {
+                    pv.value = pv.value.substring(arrayStart.length);
+                }
+                if (pv.value.endsWith(arrayEnd)) {
+                    pv.value = pv.value.substring(0, pv.value.length - arrayEnd.length);
+                }
+
+                if (pv.value.trim() == "") {
+                    pv.value = ([] as unknown as string)
+                }
+                else {
+                    pv.value = (pv.value
+                        .trim()
+                        .split(",")
+                        .map((val: string) => {
+                            if (isNaN(parseInt(String(val)))) return Utils.removeQuotes(val.trim())
+                            return Number(val)
+                        }) as unknown as string)
+                }
+            }
         }
         //If the native type is not a string and the value is a null PowerShell literal, we 
         //must replace it by an empty string:
@@ -755,18 +813,7 @@ Supplied values are: "min":${JSON.stringify(min)}", "max":${JSON.stringify(max)}
      * @returns The Path portion of a URL.
      */
     static getURLPath(url: string): string {
-
-        // if (!url) return "";
-        // url = new URL(url.toLowerCase(), "http://.").pathname //Including a dummy base URL in the 
-        // //case the supplied URL not include one, to avoid the contructor throwing a ERR_INVALID_URL error.
-
-        // //We must ensure the format is always the same for the path: Must start with a 
-        // //forward slash and must end without one:
-        // url = ((url.startsWith("/")) ? "" : "/") + url.slice(0, url.length - ((url.endsWith("/")) ? 1 : 0));
-
-        // return url;
         if (!url) return "";
-
         return this.joinURLPath(new URL(url.toLowerCase(), "http://.").pathname); //Including a dummy base URL 
         //in the case the supplied URL not include one, to avoid the constructor throwing a ERR_INVALID_URL error.
     }
@@ -795,7 +842,7 @@ Supplied values are: "min":${JSON.stringify(min)}", "max":${JSON.stringify(max)}
 
                 if (path.indexOf("/") !== -1) {
                     return this.joinURLPath(...path.split("/"))
-                    .substring(1); //removing the extra "/" at the beginning because 
+                        .substring(1); //removing the extra "/" at the beginning because 
                     //will be included again in the return.
                 }
                 else {

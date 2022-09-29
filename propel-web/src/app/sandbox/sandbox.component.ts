@@ -15,6 +15,7 @@ import { Utils } from '../../../../propel-shared/utils/utils';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
+import { CustomValueDialogData } from '../dialogs/custom-value-dlg/custom-value-dlg.component';
 
 @Component({
   selector: 'app-root',
@@ -25,10 +26,31 @@ export class SandboxComponent implements OnInit {
 
   @ViewChild(MatAccordion) accordion: MatAccordion;
   @ViewChild('MyNGSelect') myNGSelect: NgSelectComponent;
+  @ViewChild('MyNGSelectWithNew') MyNGSelectWithNew: NgSelectComponent;
 
   dropItem(item: any) {
     console.log("clearing the item!!!")
     this.myNGSelect.clearItem(item);
+  }
+
+  createNewItem() {
+    // alert("Create!");
+    // let newItem = "New One";
+    // this.MyNGSelectWithNew.itemsList.addItem(newItem);
+    // const item = this.MyNGSelectWithNew.itemsList.findItem(newItem)
+    // this.MyNGSelectWithNew.select(item);
+
+    this.core.dialog.showCustomValueDialog()
+    .subscribe((result: DialogResult<CustomValueDialogData>) => {
+      if (!result.isCancel) {
+        this.MyNGSelectWithNew.itemsList.addItem(result.value.value);
+        let item = this.MyNGSelectWithNew.itemsList.findItem(result.value.value);
+        this.MyNGSelectWithNew.select(item);
+      }
+    }, err => {
+      throw err
+    });
+    
   }
 
   title = 'propel-web';
@@ -102,6 +124,7 @@ export class SandboxComponent implements OnInit {
       ValidatorsHelper.minItems(2),
       ValidatorsHelper.maxItems(4)
     ]),
+    textList: new FormControl(this.sampleData.textList),
     password: new FormControl("", [
       Validators.required
     ])
@@ -137,7 +160,7 @@ export class SandboxComponent implements OnInit {
       // notDisabledColor.disabled = false;
       this.sampleData.colors.push(this.allColors[2]);
       // this.sampleData.colors.push(notDisabledColor);
-
+      this.sampleData.textList = ["First", "Second"]
     }
 
     this.sampleForm.patchValue(this.sampleData);
@@ -374,6 +397,15 @@ export class SandboxComponent implements OnInit {
       "Confirmation required",
       `Do you confirm the action?`)
     ).subscribe((result: DialogResult<any>) => {
+      alert(`Result is: "${JSON.stringify(result)}".`);
+    }, err => {
+      throw err
+    });
+  }
+
+  showCustomValueDialog(initialValue?: string | number, isString?: boolean) {
+    this.core.dialog.showCustomValueDialog({ value: initialValue, typeIsString: isString })
+    .subscribe((result: DialogResult<any>) => {
       alert(`Result is: "${JSON.stringify(result)}".`);
     }, err => {
       throw err
@@ -1177,6 +1209,7 @@ class SampleData {
   enabled: boolean = false;
   country?: Country = null;
   colors: Color[] = [];
+  textList: string[] = [];
 
   constructor() {
   }

@@ -1,5 +1,5 @@
 import { ValidatorFn, AbstractControl, FormGroup, FormArray } from '@angular/forms';
-import * as moment from 'moment';
+import { SystemHelper } from 'src/util/system-helper';
 
 import { UIHelper } from 'src/util/ui-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
@@ -108,13 +108,11 @@ export class ValidatorsHelper {
   static anyDate(): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } | null => {
       let ret: any = null;
-      let d = moment(control.value)
 
-      if (control.value && !d.isValid()) {
+      if (control.value && !SystemHelper.isValidDate(control.value)) {
         ret = {
           'anyDate': {
-            value: control.value,
-            invalidAt: d.invalidAt()
+            value: control.value
           }
         }
       }

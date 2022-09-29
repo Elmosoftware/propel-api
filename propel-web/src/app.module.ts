@@ -46,6 +46,7 @@ import { APIStatusService } from "./services/api-status.service";
 //Dialogs
 import { WorkflowStepDialogComponent } from './app/dialogs/workflow-step-dlg/workflow-step-dlg.component';
 import { CustomFieldDialogComponent } from './app/dialogs/custom-field-dlg/custom-field-dlg.component';
+import { CustomValueDialogComponent } from './app/dialogs/custom-value-dlg/custom-value-dlg.component';
 
 //Components
 import { NavigationBarComponent } from './app/navigation-bar/navigation-bar.component';
@@ -103,6 +104,7 @@ import { SecurityGuard } from './services/security-guard';
         WorkflowComponent,
         WorkflowStepDialogComponent,
         CustomFieldDialogComponent,
+        CustomValueDialogComponent,
         ResultsComponent,
         DynamicTableComponent,
         SearchComponent,

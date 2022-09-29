@@ -1,38 +1,66 @@
+<a id="Top"></a>
 <h1>SANDBOX!</h1>
+<hr>
+<button type="button" pageScroll href="#Logos" class="btn btn-primary m-2">Logos</button>
+<button type="button" pageScroll href="#FunctionalityTest" class="btn btn-primary m-2">Functionality Test</button>
+<button type="button" pageScroll href="#Typography" class="btn btn-primary m-2">Typography</button>
+<button type="button" pageScroll href="#Charts" class="btn btn-primary m-2">Charts</button>
+<button type="button" pageScroll href="#Bootstrap" class="btn btn-primary m-2">Bootstrap</button>
+<button type="button" pageScroll href="#FontAwesome" class="btn btn-primary m-2">Font awesome</button>
+<button type="button" pageScroll href="#AngularMaterial" class="btn btn-primary m-2">Angular Material</button>
+<button type="button" pageScroll href="#Dialogs" class="btn btn-primary m-2">Dialogs</button>
+<button type="button" pageScroll href="#ProgressBar" class="btn btn-primary m-2">ProgressBar</button>
+<button type="button" pageScroll href="#PropelIcons" class="btn btn-primary m-2">Propel Icons</button>
+<button type="button" pageScroll href="#ReactiveFormsSample" class="btn btn-primary m-2">Reactive forms</button>
+<button type="button" pageScroll href="#MaterialAccordion" class="btn btn-primary m-2">Accordion</button>
+<button type="button" pageScroll href="#MaterialTable" class="btn btn-primary m-2">Table</button>
 <hr>
 <div class="container">
   <div>
-    <p><strong>
+    <!-- LOGOS -->
+    <p>
+      <a id="Logos"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+        top!</button><strong>
         <h2>Test Logo</h2>
-      </strong></p>
+      </strong>
+    </p>
     <hr>
     <img src="../../assets/img/logo2.png" alt="Propel" class="d-inline-block" style="width: 21rem;">
     <img src="../../assets/img/logo2-white.svg" alt="Propel" class="d-inline-block" style="width: 21rem;">
 
   </div>
   <div>
-    <p><strong>
-        <h2>Functionality Test:</h2>
-      </strong></p>
+    <!-- FUNCTIONALITY TEST -->
+    <p>
+      <a id="FunctionalityTest"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+        top!</button><strong>
+        <h2>Functionality Test</h2>
+      </strong>
+    </p>
     <hr>
-    <button type="button" class="btn-secondary" (click)="goToHome()">Go to Home!!!</button><button type="button"
+    <button type="button" class="btn-secondary m-1" (click)="goToHome()">Go to Home!!!</button><button type="button"
       class="btn-secondary" (click)="throwErrorTest()">Test ERRRRRROR!</button>
-    <button type="button" class="btn-secondary" (click)="showToastError()">Show toaster Error</button>
-    <button type="button" class="btn-secondary" (click)="showToastInfo()">Show toaster Info</button>
-    <button type="button" class="btn-secondary" (click)="showToastWarning()">Show toaster Warning</button>
-    <button type="button" class="btn-secondary" (click)="showToastSuccess()">Show toaster Success</button>
-    <button type="button" class="btn-secondary" (click)="testGetById()">testGetById</button>
-    <button type="button" class="btn-secondary" (click)="testFind()">testFind</button>
-    <button type="button" class="btn-secondary" (click)="testInsert()">testInsert</button>
-    <button type="button" class="btn-secondary" (click)="testUpdate()">testUpdate</button>
-    <button type="button" class="btn-secondary" (click)="testDelete()">testDelete</button>
-    <button type="button" class="btn-secondary" (click)="testTwoCallsforRefreshToken()">Test 2 calls for refresh token</button>
+    <button type="button" class="btn-secondary m-1" (click)="showToastError()">Show toaster Error</button>
+    <button type="button" class="btn-secondary m-1" (click)="showToastInfo()">Show toaster Info</button>
+    <button type="button" class="btn-secondary m-1" (click)="showToastWarning()">Show toaster Warning</button>
+    <button type="button" class="btn-secondary m-1" (click)="showToastSuccess()">Show toaster Success</button>
+    <button type="button" class="btn-secondary m-1" (click)="testGetById()">testGetById</button>
+    <button type="button" class="btn-secondary m-1" (click)="testFind()">testFind</button>
+    <button type="button" class="btn-secondary m-1" (click)="testInsert()">testInsert</button>
+    <button type="button" class="btn-secondary m-1" (click)="testUpdate()">testUpdate</button>
+    <button type="button" class="btn-secondary m-1" (click)="testDelete()">testDelete</button>
+    <button type="button" class="btn-secondary m-1" (click)="testTwoCallsforRefreshToken()">Test 2 calls for refresh
+      token</button>
   </div>
   <div>
 
-    <p><strong>
+    <!-- TYPOGRAPHY -->
+    <p>
+      <a id="Typography"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+        top!</button><strong>
         <h2>Typography:</h2>
-      </strong></p>
+      </strong>
+    </p>
     <hr>
 
     <div>
@@ -69,56 +97,55 @@
     <hr>
 
     <div>
-      <p><strong>
+      <!-- CHARTS -->
+      <p>
+        <a id="Charts"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+          top!</button><strong>
           <h3>Charts:</h3>
-        </strong></p>
+        </strong>
+      </p>
       <div class="row">
-        <ngx-charts-number-card [results]="single" [view]="view" [scheme]="colorScheme"  
-          [cardColor]="cardColor"
+        <ngx-charts-number-card [results]="single" [view]="view" [scheme]="colorScheme" [cardColor]="cardColor"
           (select)="onSelectChart($event)">
         </ngx-charts-number-card>
       </div>
       <div class="row">
-        <ngx-charts-bar-vertical [results]="single"  
-          [view]="view" [scheme]="colorScheme" 
-          [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" 
-          [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" 
-          [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
+        <ngx-charts-bar-vertical [results]="single" [view]="view" [scheme]="colorScheme" [gradient]="gradient"
+          [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
           (select)="onSelectChart($event)">
         </ngx-charts-bar-vertical>
       </div>
       <div class="row">
-        <ngx-charts-bar-vertical-2d [results]="multi"  
-          [view]="view" [scheme]="colorScheme" 
-          [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" 
-          [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" 
-          [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
+        <ngx-charts-bar-vertical-2d [results]="multi" [view]="view" [scheme]="colorScheme" [gradient]="gradient"
+          [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
           (select)="onSelectChart($event)">
         </ngx-charts-bar-vertical-2d>
       </div>
       <div class="row">
-        <ngx-charts-line-chart [results]="multiRotated"  
-          [view]="view" [scheme]="colorScheme" 
-          [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" 
-          [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" 
-          [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
+        <ngx-charts-line-chart [results]="multiRotated" [view]="view" [scheme]="colorScheme" [gradient]="gradient"
+          [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
           (select)="onSelectChart($event)">
         </ngx-charts-line-chart>
       </div>
       <div class="row">
-        <ngx-charts-area-chart [results]="multiRotated"  
-          [view]="view" [scheme]="colorScheme" 
-          [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" 
-          [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" 
-          [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
+        <ngx-charts-area-chart [results]="multiRotated" [view]="view" [scheme]="colorScheme" [gradient]="gradient"
+          [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
           (select)="onSelectChart($event)">
         </ngx-charts-area-chart>
       </div>
     </div>
     <div>
-      <p><strong>
+      <!-- BOOTSTRAP -->
+      <p>
+        <a id="Bootstrap"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+          top!</button><strong>
           <h3>Bootstrap NavBar:</h3>
-        </strong></p>
+        </strong>
+      </p>
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand navbar-brand-collapsed ml-2 navbar-iso" href="javascript:void(0)" (click)="goToHome()">
           <img src="../../assets/img/logo2-white.svg" alt="Propel"
@@ -348,16 +375,24 @@
       </div>
     </div>
     <div>
-      <p><strong>
+      <!-- FontAwesome -->
+      <p>
+        <a id="FontAwesome"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+          top!</button><strong>
           <h2>Font Awesome:</h2>
-        </strong></p>
+        </strong>
+      </p>
       <hr>
       <p>Here Font awesome fab:<i class="fab fa-500px fa-3x"></i></p>
     </div>
     <div>
-      <p><strong>
+      <!-- ANGULAR MATERIAL -->
+      <p>
+        <a id="AngularMaterial"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+          top!</button><strong>
           <h2>Angular Material:</h2>
-        </strong></p>
+        </strong>
+      </p>
       <hr>
       <p><strong>
           <h4>Slide toggle Primary:</h4>
@@ -397,16 +432,38 @@
         tooltip</button>
       <button type="button" class="btn" matTooltip="{{tooltipSampleLong}}" matTooltipClass="tooltipsWithBreakLines"
         matTooltipPosition="right">Programmatic long text with break lines tooltip</button>
-      <p><strong>
-          <h4>Dialogs:</h4>
-        </strong></p>
-      <button type="button" class="btn-secondary" (click)="showLongConfirmationDialog()">Show Long Confirmation</button>
-      <button type="button" class="btn-secondary" (click)="showShortConfirmationDialog()">Show Short
-        Confirmation</button>
 
-      <p class="my-4"><strong>
+      <!-- DIALOGS -->
+      <p>
+        <a id="Dialogs"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+          top!</button>
+        <strong>
+          <h4>Dialogs:</h4>
+        </strong>
+      </p>
+      <button type="button" class="btn-secondary m-1" (click)="showLongConfirmationDialog()">
+        Show Long Confirmation</button>
+      <button type="button" class="btn-secondary m-1" (click)="showShortConfirmationDialog()">
+        Show Short Confirmation</button>
+      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog()">
+        Show CustomValueDialog (no initial value)</button>
+      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog('my initial text')">
+        Show CustomValueDialog (with initial text value)</button>
+      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog(23)">
+        Show CustomValueDialog (with initial numeric value)</button>
+      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog(null, true)">
+        Show CustomValueDialog (no initial text value)</button>
+      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog(null, false)">
+        Show CustomValueDialog (no initial numeric value)</button>
+
+      <!-- PROGRESS BAR -->
+      <p>
+        <a id="ProgressBar"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+          top!</button>
+        <strong>
           <h4>Progress Bar:</h4>
-        </strong></p>
+        </strong>
+      </p>
 
       <p class="my-3"><strong>
           <h5>Determinate:</h5>
@@ -550,10 +607,14 @@
       </div>
 
       <div>
-        <p><strong>
+        <!-- PROPEL ICONS -->
+        <p>
+          <a id="PropelIcons"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+            top!</button><strong>
             <app-status-icon size="big" status="SUCCESS"></app-status-icon>
             <h2>Propel Icons:</h2>
-          </strong></p>
+          </strong>
+        </p>
         <hr>
         <ul class="list-group">
           <li class="list-group-item">PENDING:
@@ -616,7 +677,10 @@
       </div>
 
       <div>
-        <p><strong>
+        <!-- REACTIVE FORMS SAMPLE -->
+        <p>
+          <a id="ReactiveFormsSample"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back
+            to top!</button><strong>
             <h2>Reactive Forms sample: </h2>
           </strong>
         </p>
@@ -679,6 +743,23 @@
               {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
           </div>
           <div class="form-group">
+            <label class="mr-2" for="multipleSelectWithNew">Multiple values allowing to add new ones</label>
+            <ng-select [items]="sampleData.textList" [multiple]="true" labelForId="multipleSelectWithNew"
+              [closeOnSelect]="false" [clearSearchOnAdd]="true" [searchable]="true" clearAllText="Clear"
+              [compareWith]="compareFn" placeholder="Select all the text" 
+              formControlName="textList" class="send-to-back" #MyNGSelectWithNew>
+              <ng-template ng-footer-tmp>
+                <div class="cursor-pointer" (click)="createNewItem()">
+                  <i class="fas fa-plus mr-2"></i>Add a new item
+                </div>
+              </ng-template>
+            </ng-select>
+            <small *ngIf="getErrorText(this.sampleForm.controls.colors)" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls.colors) }}</small>
+            <small class="form-text text-muted">Current control status:
+              {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
+          </div>
+          <div class="form-group">
             <label for="password" class="data-required">Password</label>
             <div class="form-inline">
               <input [type]="viewpw ? 'text' : 'password'" class="form-control" id="password"
@@ -699,7 +780,10 @@
       </div>
 
       <div>
-        <p><strong>
+        <!-- MATERIAL ACCORDION -->
+        <p>
+          <a id="MaterialAccordion"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back
+            to top!</button><strong>
             <h2>Material Accordion: </h2>
           </strong>
         </p>
@@ -752,7 +836,10 @@
       </div>
 
       <div>
-        <p><strong>
+        <!-- MATERIAL TABLE -->
+        <p>
+          <a id="MaterialTable"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back to
+            top!</button><strong>
             <h2>Material Table: </h2>
           </strong>
         </p>
@@ -786,6 +873,8 @@
 
       <p class="my-4"><strong>
           <h2>EOF!!!</h2>
-        </strong></p>
+        </strong>
+        <button type="button" pageScroll href="#Top" class="btn btn-primary m-2">Back to top!</button>
+      </p>
     </div>
   </div>

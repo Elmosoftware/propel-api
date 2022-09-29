@@ -13,6 +13,7 @@ import { StandardDialogComponent, StandardDialogConfiguration } from "../app/dia
 import { WorkflowStepDialogComponent } from 'src/app/dialogs/workflow-step-dlg/workflow-step-dlg.component';
 import { ParameterValue } from '../../../propel-shared/models/parameter-value';
 import { CustomFieldDialogComponent } from 'src/app/dialogs/custom-field-dlg/custom-field-dlg.component';
+import { CustomValueDialogComponent, CustomValueDialogData } from 'src/app/dialogs/custom-value-dlg/custom-value-dlg.component';
 
 @Injectable()
 export class DialogService {
@@ -69,6 +70,22 @@ export class DialogService {
         let dialogRef = this.dialog.open(CustomFieldDialogComponent, {
             data: options,
             width: "660px"
+        });
+
+        return dialogRef.afterClosed()
+            .pipe(
+                map((value) => {
+                    if (!value) return new DialogResult<any>(0, null)
+                    else return value;
+                })
+            )
+    }
+
+    showCustomValueDialog(value?: CustomValueDialogData): Observable<DialogResult<any>> {
+
+        let dialogRef = this.dialog.open(CustomValueDialogComponent, {
+            data: value,
+            width: "550px"
         });
 
         return dialogRef.afterClosed()
