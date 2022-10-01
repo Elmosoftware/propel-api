@@ -306,11 +306,11 @@ describe("Runner Class - execute()", () => {
 
                     //1st Step:
                     expect(runner.executionLog?.executionSteps[0].execError).toBe(null);
-                    expect(runner.executionLog?.executionSteps[0].status).toEqual(ExecutionStatus.Faulty);
+                    expect(runner.executionLog?.executionSteps[0].status).toEqual(ExecutionStatus.CancelledByUser);
                     expect(runner.executionLog?.executionSteps[0].targets.length).toEqual(1); //Localhost!
-                    expect(runner.executionLog?.executionSteps[0].targets[0].execErrors.length).toEqual(1);
+                    expect(runner.executionLog?.executionSteps[0].targets[0].execErrors.length).toEqual(0);
                     expect(runner.executionLog?.executionSteps[0].targets[0].execResults.length).toEqual(0);
-                    expect(runner.executionLog?.executionSteps[0].targets[0].status).toEqual(ExecutionStatus.Faulty);
+                    expect(runner.executionLog?.executionSteps[0].targets[0].status).toEqual(ExecutionStatus.CancelledByUser);
 
                     //2nd Step:
                     expect(runner.executionLog?.executionSteps[1].execError).toBe(null);

@@ -433,8 +433,7 @@ export class Runner {
                 let value: string = POWERSHELL_NULL_LITERAL;
                 let prefix: string = "";
                 let sufix: string = "";
-
-                this._scriptVal.validateParameter(param, suppliedParam);
+                let includeInList: boolean = true;
 
                 if (suppliedParam !== undefined) {
                     value = suppliedParam.value;
@@ -447,12 +446,24 @@ export class Runner {
                     value = this._buildPropelVariableValue(value);
                 }
 
+                //If the parameter is not required, has no default value and neither a 
+                //value was assigned to it, we must not include it in the list:
+                if (!param.required && !param.hasDefault && (value == POWERSHELL_NULL_LITERAL || value == "")) {
+                    includeInList = false;
+                }
+                else {
+                    //If is going to be included in the parameters list, we must validate is ok:
+                    this._scriptVal.validateParameter(param, suppliedParam);
+                }
+
                 if (value !== POWERSHELL_NULL_LITERAL && param.nativeType == "String") {
                     prefix = `"`;
                     sufix = `"`;
                 }
 
-                ret.push(`-${param.name}:${prefix}${value}${sufix}`)
+                if(includeInList){
+                    ret.push(`-${param.name}:${prefix}${value}${sufix}`)
+                } 
             })
         }
 
