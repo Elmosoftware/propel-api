@@ -11,7 +11,7 @@ import { compareEntities } from '../../../../propel-shared/models/entity';
 import { CoreService } from 'src/services/core.service';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
 import { ScriptParameter } from "../../../../propel-shared/models/script-parameter";
-import { SystemHelper } from "../../util/system-helper";
+import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { DataEndpointActions } from 'src/services/data.service';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
 
@@ -128,7 +128,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
       }
 
       this.fh.setValue(script)
-      this.scriptCode = SystemHelper.decodeBase64(script.code);
+      this.scriptCode = SharedSystemHelper.decodeBase64(script.code);
       this.scriptParameters = script.parameters;
       this.resetForm();
       return Promise.resolve();
@@ -209,7 +209,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
   save() {
     let script: Script = Object.assign({}, this.fh.form.value);
-    script.code = SystemHelper.encodeBase64(script.code);
+    script.code = SharedSystemHelper.encodeBase64(script.code);
 
     this.core.data.save(DataEndpointActions.Script, script)
       .then((id: string) => {

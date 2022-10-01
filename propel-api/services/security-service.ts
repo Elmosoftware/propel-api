@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED, FORBIDDEN } from "http-status-codes";
-import { nanoid } from 'nanoid'
 
 import { cfg } from "../core/config";
 import { PropelError } from "../../propel-shared/core/propel-error";
@@ -24,6 +23,7 @@ import { allRoutes } from '../routes/all-routes';
 import { UserAccountRoles } from '../../propel-shared/models/user-account-roles';
 import { UserSession } from '../../propel-shared/models/user-session';
 import { PagedResponse } from '../../propel-shared/core/paged-response';
+import { SharedSystemHelper } from '../../propel-shared/utils/shared-system-helper';
 
 export const LEGACY_USER_ID:string = "000000010000000000100001"
 export const LEGACY_USER_NAME:string = "Unknown user"
@@ -712,7 +712,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
     }
 
     private createAuthCode(): string {
-        return nanoid(cfg.authorizationCodeLength);
+        return SharedSystemHelper.getUniqueId(cfg.authorizationCodeLength);
     }
 }
 

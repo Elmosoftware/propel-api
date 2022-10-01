@@ -7,9 +7,11 @@ import { PropelError } from "../core/propel-error";
 import { WindowsSecret } from "../models/windows-secret";
 import { AWSSecret } from "../models/aws-secret";
 import { GenericAPIKeySecret } from "../models/generic-apikey-secret";
+import { SharedSystemHelper } from "./shared-system-helper";
 
 export const POWERSHELL_NULL_LITERAL = "$null"
 export const MILLISECONDS_DAY: number = 1000 * 60 * 60 * 24;
+const INPUT_DATE_FORMAT: string = "YYYY-MM-DDTHH:mm"
 
 /**
  * Utilities.
@@ -240,31 +242,33 @@ export class Utils {
         else if (pv.nativeType == "Array") {
             let tempArray: any[] = []
 
-            if (pv.value) {
+            if (pv.value && pv.value?.length > 0) {
                 if (!Array.isArray(pv.value)) {
                     tempArray = [pv.value]
                 }
                 else {
                     tempArray = pv.value
                 }
+
+                pv.value = `@(${tempArray
+                    .map((val) => {
+                        //If is not a numeric value, we need to quote each item of the array:
+                        if (isNaN(parseInt(String(val)))) {
+                            val = Utils.backtickDoubleQuotes(val)
+                            if (!Utils.isQuotedString(val)) {
+                                val = Utils.addQuotes(val);
+                            }
+                        }
+                        return val;
+                    })
+                    .join(",")})`
             }
             else {
-                tempArray = []
+                pv.value = ""
             }
-
-            pv.value = `@(${tempArray
-                .map((val) => {
-                    //If is not a numeric value, we need to quote each item of the array:
-                    if (isNaN(parseInt(String(val)))) {
-                        val = Utils.backtickDoubleQuotes(val)
-                        if (!Utils.isQuotedString(val)) {
-                            val = Utils.addQuotes(val);
-                        }
-                    }
-                    return val;
-                })
-                .join(",")})`
-            // }
+        }
+        else if(pv.nativeType == "Date") {
+            pv.value = SharedSystemHelper.toISOFormat(pv.value)
         }
         //If the native type is not a string and the value is an empty string, we must replace 
         //it by the null PowerShell literal:
@@ -327,6 +331,9 @@ export class Utils {
                         }) as unknown as string)
                 }
             }
+        }
+        else if(pv.nativeType == "Date") {
+            pv.value = SharedSystemHelper.formatDate(pv.value, INPUT_DATE_FORMAT)
         }
         //If the native type is not a string and the value is a null PowerShell literal, we 
         //must replace it by an empty string:

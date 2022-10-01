@@ -4,7 +4,7 @@ import { MatAccordion } from '@angular/material/expansion';
 
 import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
 import { CoreService } from 'src/services/core.service';
-import { SystemHelper } from 'src/util/system-helper';
+import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { ExecutionStep } from '../../../../propel-shared/models/execution-step';
 import { UIHelper } from 'src/util/ui-helper';
 import { ExecutionTarget } from '../../../../propel-shared/models/execution-target';
@@ -160,13 +160,13 @@ export class ResultsComponent implements OnInit {
 
     if (this.log) {
       if (friendly) {
-        ret = `Started by ${user} ${SystemHelper.getFriendlyTimeFromNow(this.log.startedAt)}, took ${SystemHelper.getFriendlyDuration(this.log.startedAt, this.log.endedAt)} to finish.`
+        ret = `Started by ${user} ${SharedSystemHelper.getFriendlyTimeFromNow(this.log.startedAt)}, took ${SharedSystemHelper.getFriendlyDuration(this.log.startedAt, this.log.endedAt)} to finish.`
       }
       else {
-        ret = `Start at: ${SystemHelper.formatDate(this.log.startedAt)}
-End at: ${SystemHelper.formatDate(this.log.endedAt)}
+        ret = `Start at: ${SharedSystemHelper.formatDate(this.log.startedAt)}
+End at: ${SharedSystemHelper.formatDate(this.log.endedAt)}
 Started by: ${user}
-Total duration: ${SystemHelper.getDuration(this.log.startedAt, this.log.endedAt)}.`
+Total duration: ${SharedSystemHelper.getDuration(this.log.startedAt, this.log.endedAt)}.`
       }
     }
 
@@ -193,12 +193,12 @@ Parameters: ${UIHelper.getParameterValuesList(step.values)}.`
     if (!(partial.startedAt && partial.endedAt)) return ret;
 
     if (friendly) {
-      ret = SystemHelper.getDuration(partial.startedAt, partial.endedAt)
+      ret = SharedSystemHelper.getDuration(partial.startedAt, partial.endedAt)
     }
     else {
-      ret = `Start at: ${SystemHelper.formatDate(partial.startedAt)}
-End at: ${SystemHelper.formatDate(partial.endedAt)}
-Total duration: ${SystemHelper.getDuration(partial.startedAt, partial.endedAt)}.`
+      ret = `Start at: ${SharedSystemHelper.formatDate(partial.startedAt)}
+End at: ${SharedSystemHelper.formatDate(partial.endedAt)}
+Total duration: ${SharedSystemHelper.getDuration(partial.startedAt, partial.endedAt)}.`
     }
 
     return ret;

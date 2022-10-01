@@ -1,5 +1,5 @@
 import { ValidatorFn, AbstractControl, FormGroup, FormArray } from '@angular/forms';
-import { SystemHelper } from 'src/util/system-helper';
+import { SharedSystemHelper } from '../../../propel-shared/utils/shared-system-helper';
 
 import { UIHelper } from 'src/util/ui-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
@@ -109,7 +109,7 @@ export class ValidatorsHelper {
     return (control: AbstractControl): { [key: string]: any } | null => {
       let ret: any = null;
 
-      if (control.value && !SystemHelper.isValidDate(control.value)) {
+      if (control.value && !SharedSystemHelper.isValidDate(control.value)) {
         ret = {
           'anyDate': {
             value: control.value

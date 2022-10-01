@@ -7,7 +7,7 @@ import { FormHandler } from 'src/core/form-handler';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
 import { DataEndpointActions } from 'src/services/data.service';
-import { SystemHelper } from 'src/util/system-helper';
+import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { UserRegistrationResponse } from '../../../../propel-shared/core/user-registration-response';
 import { compareEntities } from '../../../../propel-shared/models/entity';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
@@ -252,11 +252,11 @@ There is security records kept about, so you can't change the user name from now
 
   getLastLogin() {
     if (!this.lastUserLogin) return "";
-    return `User last login was ${SystemHelper.getFriendlyTimeFromNow(this.lastUserLogin)}`;
+    return `User last login was ${SharedSystemHelper.getFriendlyTimeFromNow(this.lastUserLogin)}`;
   }
 
   getLastLoginTooltip() {
     if (!this.lastUserLogin) return "";
-    return SystemHelper.formatDate(this.lastUserLogin);
+    return SharedSystemHelper.formatDate(this.lastUserLogin);
   }
 }

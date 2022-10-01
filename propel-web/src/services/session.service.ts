@@ -2,7 +2,7 @@ import { RuntimeInfo } from '../../../propel-shared/core/runtime-info';
 import { SecurityToken } from '../../../propel-shared/core/security-token';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { environment } from 'src/environments/environment';
-import { SystemHelper } from 'src/util/system-helper';
+import { SharedSystemHelper } from '../../../propel-shared/utils/shared-system-helper';
 import { Utils } from '../../../propel-shared/utils/utils';
 import { PropelError } from '../../../propel-shared/core/propel-error';
 import { RDPUser } from '../../../propel-shared/core/rdp-user';
@@ -100,7 +100,7 @@ export class SessionService {
         if (accessTokenSections.length !== 3) throw new PropelError(`Invalid token. 
 The provided JWT token is not properly formatted. We expect Header, Payload and Signature sections and we get ${accessTokenSections.length} sections.`);
 
-        accessTokenPayload = SystemHelper.decodeBase64(accessTokenSections[1]);
+        accessTokenPayload = SharedSystemHelper.decodeBase64(accessTokenSections[1]);
 
         if (!Utils.isValidJSON(accessTokenPayload)) {
             throw new PropelError(`Invalid token payload. 

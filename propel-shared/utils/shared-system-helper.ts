@@ -1,17 +1,32 @@
-import { generate } from "shortid";
+/**
+ * IMPORTANT:
+ * ==========
+ *      There is an open [nanoid issue](https://github.com/ai/nanoid/issues/365) that is 
+ * preventing v4 or above to work on Node.JS. Take this in mind at the moment of think in a 
+ * possible migration.
+ */
+import { nanoid } from "nanoid";
 import * as moment from 'moment';
 
-import { PropelError } from "../../../propel-shared/core/propel-error";
+import { PropelError } from "../core/propel-error";
 
+const DEFAULT_ID_LENGTH: number = 14;
 const DEFAULT_DATE_FORMAT: string = "dddd, MMMM Do YYYY, h:mm:ss a [(]ZZ[)]";
-const DEFAULT_DURATION_FORMAT: string = "HH:mm:ss";
+const DEFAULT_TIME_FORMAT: string = "HH:mm:ss";
 
 /**
  * File System utilities.
  */
-export class SystemHelper {
+export class SharedSystemHelper {
 
     constructor(){
+    }
+
+    /**
+     * Returns a short and unique identifier.
+     */
+     static getUniqueId(length: number = DEFAULT_ID_LENGTH): string{
+        return nanoid(length);
     }
 
     /**
@@ -41,13 +56,6 @@ export class SystemHelper {
     }
 
     /**
-     * Returns a short and unique identifier.
-     */
-    static getUniqueId(): string{
-        return generate();
-    }
-
-    /**
      * This is a wrapper for "moment().fromNow()" method.
      * It returns a human friendly string indicating how much time past or is left between 
      * the specified date and the current one.
@@ -55,7 +63,7 @@ export class SystemHelper {
      * @param date Comparison date.
      */
     static getFriendlyTimeFromNow(date: Date): string{
-        return moment(date).fromNow();
+        return moment.default(date).fromNow();
     }
 
     /**
@@ -63,7 +71,21 @@ export class SystemHelper {
      * @param date A Date object or a string compatible date.
      */
     static isValidDate(date: Date | string): boolean {
-        return moment(date).isValid();
+        return moment.default(date).isValid();
+    }
+
+    /**
+     * If the date is valid, this is going to return the [ISO-8601 date representation](https://www.iso.org/iso-8601-date-and-time-format.html).
+     * This full representation of a date has the following format:
+     * @example
+     *      2022-09-12T00:00:00.000-03:00
+     * @param date Date object or Date string representation to convert.
+     * @returns ISO string representing the provided date or an empty string if the preoviced date
+     * is invalid.
+     */
+    static toISOFormat(date: Date | string): string {
+        if(!this.isValidDate(date)) return ""
+        else return moment.default(date).toISOString();
     }
 
     /**
@@ -79,7 +101,7 @@ export class SystemHelper {
         }
 
         if (this.isValidDate(date)) {
-            ret = moment(date).format(format);
+            ret = moment.default(date).format(format);
         }
 
         return ret;
@@ -96,14 +118,14 @@ export class SystemHelper {
         let ret: string = "";
 
         if (!format) {
-            format = DEFAULT_DURATION_FORMAT;
+            format = DEFAULT_TIME_FORMAT;
         }
 
         if (this.isValidDate(start) && this.isValidDate(end)) {
-            let s = moment(start);
-            let e = moment(end);
+            let s = moment.default(start);
+            let e = moment.default(end);
             let diff = e.diff(s, "milliseconds");
-            ret = moment()
+            ret = moment.default()
                 .startOf('day')
                 .milliseconds(diff)
                 .format(format);
@@ -124,14 +146,14 @@ export class SystemHelper {
         let splitDuration: string[] = [];
 
         if (!format) {
-            format = DEFAULT_DURATION_FORMAT;
+            format = DEFAULT_TIME_FORMAT;
         }
 
         splitDuration = this.getDuration(start, end, format)
             .split(":");
 
         if (splitDuration.length == 3) {
-            ret = moment.duration({
+            ret = moment.default.duration({
                 hours: Number(splitDuration[0]), 
                 minutes: Number(splitDuration[1]), 
                 seconds: Number(splitDuration[2])
@@ -147,6 +169,6 @@ export class SystemHelper {
      * @param date Date to wich we are add the minutes. If not specified, current date and time will be used.
      */
     static addMinutes(minutes: number, date = new Date()): Date {
-        return moment(date).add(minutes, "minutes").toDate();
+        return moment.default(date).add(minutes, "minutes").toDate();
     }
 }

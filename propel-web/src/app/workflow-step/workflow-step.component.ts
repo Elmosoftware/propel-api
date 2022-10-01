@@ -12,7 +12,7 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { ScriptParameter } from '../../../../propel-shared/models/script-parameter';
-import { SystemHelper } from 'src/util/system-helper';
+import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { DataEndpointActions } from 'src/services/data.service';
 import { Utils } from "../../../../propel-shared/utils/utils";
@@ -250,7 +250,7 @@ export class WorkflowStepComponent implements OnInit {
     let scriptLabel = (this.selectedScript) ? ` for ${this.selectedScript.name}` : "";
 
     if (!this.quickTaskId) {
-      this.quickTaskId = SystemHelper.getUniqueId();
+      this.quickTaskId = SharedSystemHelper.getUniqueId();
     }
 
     ret = `Quick Task${scriptLabel} #${this.quickTaskId}`;

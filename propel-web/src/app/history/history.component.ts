@@ -7,7 +7,7 @@ import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { UIHelper } from 'src/util/ui-helper';
 import { InfiniteScrollingService, PagingHelper, SCROLL_POSITION } from 'src/core/infinite-scrolling-module';
 import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
-import { SystemHelper } from 'src/util/system-helper';
+import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { DataEndpointActions } from 'src/services/data.service';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 
@@ -83,7 +83,7 @@ export class HistoryComponent implements OnInit {
     qm.populate = true;
     qm.filterBy = {
       startedAt: {
-        $gte: SystemHelper.addMinutes(this.fg.controls.interval.value * -1)
+        $gte: SharedSystemHelper.addMinutes(this.fg.controls.interval.value * -1)
       }
     };
     qm.sortBy = "-startedAt";  
@@ -178,8 +178,8 @@ export class ExecutionLogExtended {
 
     this.log = log;
     
-    this.startDate = SystemHelper.formatDate(log.startedAt);
-    this.startDateFriendly = SystemHelper.getFriendlyTimeFromNow(log.startedAt);
+    this.startDate = SharedSystemHelper.formatDate(log.startedAt);
+    this.startDateFriendly = SharedSystemHelper.getFriendlyTimeFromNow(log.startedAt);
     
     this.workflowName = log.workflow.name;
     if (log.workflow.isQuickTask) {
@@ -190,10 +190,10 @@ Parameters:\r\n${UIHelper.getParameterValuesList(log.workflow.steps[0].values)}`
       this.workflowNameTooltip = `${log.workflow.name}:\r\n${(log.workflow.description) ? log.workflow.description : "No description available."}`;
     }
     
-    this.duration = SystemHelper.getDuration(log.startedAt, log.endedAt);
-    this.durationTooltip = `Start at: ${SystemHelper.formatDate(log.startedAt)}
-End at: ${SystemHelper.formatDate(log.endedAt)}
-Total duration: ${SystemHelper.getDuration(log.startedAt, log.endedAt)}.`
+    this.duration = SharedSystemHelper.getDuration(log.startedAt, log.endedAt);
+    this.durationTooltip = `Start at: ${SharedSystemHelper.formatDate(log.startedAt)}
+End at: ${SharedSystemHelper.formatDate(log.endedAt)}
+Total duration: ${SharedSystemHelper.getDuration(log.startedAt, log.endedAt)}.`
 
     this.stepsAmount = log.workflow.steps.length.toString();
     this.stepsAmountTooltip = `The workflow has defined ${log.workflow.steps.length} step${(log.workflow.steps.length > 1) ? "s" : ""}.`;

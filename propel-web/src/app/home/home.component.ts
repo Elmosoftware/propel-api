@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
-import { SystemHelper } from 'src/util/system-helper';
+import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { UsageStats } from '../../../../propel-shared/models/usage-stats';
 import { UIHelper } from 'src/util/ui-helper';
 import { environment } from 'src/environments/environment';
@@ -149,7 +149,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   getFriendlyStartTime(startTime: Date): string {
-    return SystemHelper.getFriendlyTimeFromNow(startTime);
+    return SharedSystemHelper.getFriendlyTimeFromNow(startTime);
   }
 
   getShortErrorText(text: string) : string {

@@ -1,7 +1,7 @@
 import * as stemmer from 'stemmer';
 import { removeStopwords } from 'stopword';
 
-import { SystemHelper } from "./system-helper";
+import { SharedSystemHelper } from '../../../propel-shared/utils/shared-system-helper';
 import { WorkflowStep } from '../../../propel-shared/models/workflow-step';
 import { ExecutionStep } from '../../../propel-shared/models/execution-step';
 import { ParameterValue } from '../../../propel-shared/models/parameter-value';
@@ -71,7 +71,7 @@ export class UIHelper {
             //Stemming words:
             ret = ret
                 .map((word) => {
-                    let stemmed = stemmer(word);
+                    let stemmed = stemmer.default(word);
                     //We will keep the stemmed version only if is varying in length.
                     return (stemmed.length != word.length) ? stemmed : word;
                 })
@@ -239,10 +239,10 @@ export class UIHelper {
         lastUser = (item.lastUpdateBy) ? item.lastUpdateBy : item.createdBy;
     
         if (friendly) {
-          ret = SystemHelper.getFriendlyTimeFromNow(lastUpdate);
+          ret = SharedSystemHelper.getFriendlyTimeFromNow(lastUpdate);
         }
         else {
-          ret = SystemHelper.formatDate(lastUpdate);
+          ret = SharedSystemHelper.formatDate(lastUpdate);
         }
     
         return `${prefix} ${ret} ${(lastUser) ? "by " + lastUser : ""}`;

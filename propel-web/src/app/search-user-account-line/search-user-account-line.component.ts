@@ -1,11 +1,8 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
-import { Observable } from 'rxjs';
 import { DialogResult } from 'src/core/dialog-result';
 import { SearchLine } from 'src/core/search-line';
 import { CoreService } from 'src/services/core.service';
-import { SystemHelper } from 'src/util/system-helper';
-import { UIHelper } from 'src/util/ui-helper';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
+import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { UserRegistrationResponse } from '../../../../propel-shared/core/user-registration-response';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
@@ -35,12 +32,12 @@ export class SearchUserAccountLineComponent extends SearchLine implements OnInit
   }
 
   getTooltipMessage(user: UserAccount): string {
-    let lastUpdated: string = (user.lastUpdateOn) ? SystemHelper.formatDate(user.lastUpdateOn) : "never"
-    let lastPasswordChange: string = (user.lastPasswordChange) ? SystemHelper.formatDate(user.lastPasswordChange) : "never"
-    let lastLogin: string = (user.lastLogin) ? SystemHelper.formatDate(user.lastLogin) : "never"
+    let lastUpdated: string = (user.lastUpdateOn) ? SharedSystemHelper.formatDate(user.lastUpdateOn) : "never"
+    let lastPasswordChange: string = (user.lastPasswordChange) ? SharedSystemHelper.formatDate(user.lastPasswordChange) : "never"
+    let lastLogin: string = (user.lastLogin) ? SharedSystemHelper.formatDate(user.lastLogin) : "never"
 
     let ret: string = `User stats:
-Added on: ${SystemHelper.formatDate(user.createdOn)}
+Added on: ${SharedSystemHelper.formatDate(user.createdOn)}
 Last updated on: ${lastUpdated}
 Last password change: ${lastPasswordChange}
 Last login on: ${lastLogin}
@@ -53,7 +50,7 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
     let ret: string = `With assigned role "${item.role}."`;
 
     if (this.userIsLocked(item)) {
-      ret += `\r\nThe user is locked since ${SystemHelper.getFriendlyTimeFromNow(item.lockedSince)}.`
+      ret += `\r\nThe user is locked since ${SharedSystemHelper.getFriendlyTimeFromNow(item.lockedSince)}.`
     }
 
     return ret;

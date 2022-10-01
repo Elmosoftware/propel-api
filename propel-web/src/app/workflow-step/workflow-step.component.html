@@ -63,7 +63,6 @@
             <div class="form-group">
                 <hr class="my-4">
             </div>
-
             <!-- 
                 Starting here the script parameters 
                 ========================================================
@@ -123,6 +122,12 @@
                                         <mat-slide-toggle color="primary" formControlName="value">
                                         </mat-slide-toggle>
                                         <label class="ml-2 mt-1 text-mini">$true</label>
+                                    </div>
+                                </div>
+                                <div *ngSwitchCase="'Date'" class="form-group">
+                                    <div class="d-flex justify-content-center">
+                                        <input type="datetime-local" class="form-control" 
+                                        formControlName="value">
                                     </div>
                                 </div>
                                 <div *ngSwitchDefault class="form-group">
