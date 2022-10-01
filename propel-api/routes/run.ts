@@ -62,7 +62,7 @@ export class RunRoute implements Route {
         let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
 
         let subsCallback = (data: any) => {
-            ws.send(JSON.stringify(data));
+            this.sendWebSocketMessage(ws, data);
         }
 
         try {
@@ -78,11 +78,13 @@ export class RunRoute implements Route {
             runner.execute(workflow, token, subsCallback)
                 .then((msg: WebsocketMessage<ExecutionStats>) => {
                     logger.logInfo(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished with status: "${msg.context?.logStatus}".`);
-                    ws.send(JSON.stringify(msg));
+                    // ws.send(JSON.stringify(msg));
+                    this.sendWebSocketMessage(ws, msg);
                 })
                 .catch((err) => {
                     logger.logInfo(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" finished with the following error: "${String(err)}".`);
-                    ws.send(JSON.stringify(new APIResponse(err, null)));
+                    // ws.send(JSON.stringify(new APIResponse(err, null)));
+                    this.sendWebSocketMessage(ws, new APIResponse(err, null));
                 })
                 .finally(() => {
                     ws.close()
@@ -128,5 +130,28 @@ export class RunRoute implements Route {
         }
 
         return Promise.resolve(result.data[0]);
+    }
+
+    sendWebSocketMessage(ws: any, message: any) {
+
+        if (ws.readyState !== ws.OPEN) {
+                logger.logWarn(`A message was sent when the socket is not opened. 
+This is mostly caused by the user closing the app or browser. Message will be disregard, but the execution will continue.
+Current websocket status is: "${this.getWebsocketStatusName(ws.readyState)}".
+Message was: "${JSON.stringify(message)}".`)
+        }
+        else {
+            ws.send(JSON.stringify(message));
+        }
+    }
+
+    getWebsocketStatusName(state: number):string {
+        let s = {
+            0: "CONNECTING",
+            1: "OPEN",
+            2: "CLOSING",
+            3: "CLOSED"
+        }
+        return (s as any)[state] || "UNKNOWN";
     }
 }
