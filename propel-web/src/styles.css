@@ -304,6 +304,20 @@ body{
     font-size: 1rem;
 }
 
+.icon-edit-mini::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f044";
+    font-weight: 900;
+    font-size: .8rem;
+}
+
+.icon-edit-subtle::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f044";
+    font-weight: 900;
+    font-size: .7rem;
+}
+
 /* 
   FORMS
   ==========================================================

@@ -36,21 +36,20 @@
             <li class="list-group-item mx-3" *ngFor="let item of svcInfScroll.model">
                 <div class="row">
                     <app-status-icon size="small" [status]="item.log.status" class="mr-2"></app-status-icon>
-                    <div *ngIf="!item.log.workflow.isQuickTask; else quickTask">
-                        <a href="javascript:void(0)" (click)="goToEditWorkflow(item.log.workflow._id)"
-                            [matTooltip]="getWorkflowNameTooltip(item)" matTooltipClass="tooltipsWithBreakLines"
-                            matTooltipPosition="above">{{item.workflowName}}</a>
-                    </div>
-                    <ng-template #quickTask>
-                        <span [matTooltip]="item.workflowNameTooltip" matTooltipClass="tooltipsWithBreakLines"
-                            matTooltipPosition="above">{{item.workflowName}}</span>
-                    </ng-template>
+                    <a href="javascript:void(0)" (click)="goToResults(item.log._id)">
+                        {{item.workflowName}}</a>
+                    <button *ngIf="!item.log.workflow.isQuickTask" 
+                        class="btn button-icon-small icon-edit-subtle ml-2"
+                        type="button" (click)="goToEditWorkflow(item.log.workflow._id)" 
+                        [matTooltip]="getWorkflowNameTooltip(item)"
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                    </button>
                 </div>
                 <div class="row">
                     <div class="col-auto text-subtle">
-                        <a href="javascript:void(0)" (click)="goToResults(item.log._id)"
-                            [matTooltip]="getTimeStampTooltip(item)" matTooltipClass="tooltipsWithBreakLines"
-                            matTooltipPosition="above" [innerHtml]="getTimeStamp(item)"></a>
+                        <div [matTooltip]="getTimeStampTooltip(item)" 
+                            matTooltipClass="tooltipsWithBreakLines"
+                            matTooltipPosition="above" [innerHtml]="getTimeStamp(item)"></div>
                     </div>
                     <div class="col-auto ml-auto text-subtle">
                         <div class="mx-2 d-inline" [matTooltip]="item.durationTooltip"

@@ -123,7 +123,7 @@ export class HistoryComponent implements OnInit {
   }
 
   getTimeStampTooltip(item: ExecutionLogExtended) {
-    return item.startDate + "\r\nClick here to see the execution details."
+    return item.startDate + ", Total duration:" + item.duration + ".";
   }
 
   onScrollEndHandler(e: SCROLL_POSITION): void {
