@@ -242,32 +242,27 @@ export class Utils {
         else if (pv.nativeType == "Array") {
             let tempArray: any[] = []
 
-            if (pv.value && pv.value?.length > 0) {
-                if (!Array.isArray(pv.value)) {
-                    tempArray = [pv.value]
-                }
-                else {
-                    tempArray = pv.value
-                }
-
-                pv.value = `@(${tempArray
-                    .map((val) => {
-                        //If is not a numeric value, we need to quote each item of the array:
-                        if (isNaN(parseInt(String(val)))) {
-                            val = Utils.backtickDoubleQuotes(val)
-                            if (!Utils.isQuotedString(val)) {
-                                val = Utils.addQuotes(val);
-                            }
-                        }
-                        return val;
-                    })
-                    .join(",")})`
+            if (!Array.isArray(pv.value)) {
+                tempArray = [pv.value]
             }
             else {
-                pv.value = ""
+                tempArray = pv.value
             }
+
+            pv.value = `@(${tempArray
+                .map((val) => {
+                    //If is not a numeric value, we need to quote each item of the array:
+                    if (isNaN(parseInt(String(val)))) {
+                        val = Utils.backtickDoubleQuotes(val)
+                        if (!Utils.isQuotedString(val)) {
+                            val = Utils.addQuotes(val);
+                        }
+                    }
+                    return val;
+                })
+                .join(",")})`
         }
-        else if(pv.nativeType == "Date") {
+        else if (pv.nativeType == "Date") {
             pv.value = SharedSystemHelper.toISOFormat(pv.value)
         }
         //If the native type is not a string and the value is an empty string, we must replace 
@@ -332,7 +327,7 @@ export class Utils {
                 }
             }
         }
-        else if(pv.nativeType == "Date") {
+        else if (pv.nativeType == "Date") {
             pv.value = SharedSystemHelper.formatDate(pv.value, INPUT_DATE_FORMAT)
         }
         //If the native type is not a string and the value is a null PowerShell literal, we 
@@ -373,7 +368,7 @@ export class Utils {
     }
 
     /**
-     * Escape any regular expresssion charcter in the supplied text.
+     * Escape any regular expresssion character in the supplied text.
      * Based on the suggestion to escape Regular expression chars as indicated in MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
      * @param text text to escape.
      */

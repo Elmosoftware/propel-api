@@ -446,13 +446,16 @@ export class Runner {
                     value = this._buildPropelVariableValue(value);
                 }
 
-                //If the parameter is not required, has no default value and neither a 
-                //value was assigned to it, we must not include it in the list:
-                if (!param.required && !param.hasDefault && (value == POWERSHELL_NULL_LITERAL || value == "")) {
+                //If the parameter is not required, has no default value and also
+                //it can be null or empty and no value was assigned to it, we don't need
+                //to include it in the list or arguments:
+                if (!param.required && !param.hasDefault &&
+                    (param.canBeNull || param.canBeEmpty) && 
+                    (value == POWERSHELL_NULL_LITERAL || value == "" || value == "@()")) {
                     includeInList = false;
                 }
                 else {
-                    //If is going to be included in the parameters list, we must validate is ok:
+                    // If is going to be included in the parameters list, we must validate is ok:
                     this._scriptVal.validateParameter(param, suppliedParam);
                 }
 

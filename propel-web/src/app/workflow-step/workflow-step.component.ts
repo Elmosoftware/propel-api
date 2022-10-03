@@ -184,6 +184,7 @@ export class WorkflowStepComponent implements OnInit {
       return Number(control.element.attributes.getNamedItem("id").value) == selectId
     })
     
+    //We are storing in the ngSelect "title" attricute the name of the parameter:
     let paramName: string = select.element.attributes.getNamedItem("title").value
     let param = this.tryGetParameter(paramName)
     let isNumberArray: boolean = false
@@ -421,13 +422,43 @@ export class WorkflowStepComponent implements OnInit {
         pv.value = (p.hasDefault) ? p.defaultValue : "";
       }
 
-      //If the parameter has a valid set defined, we need to add it to our valid sets object:
-      if (p.validValues && p.validValues.length > 0) {
-        this.validSets[p.name] = this.buildValidSet(p.validValues);
+      if (p.isPropelParameter) {
+        //For the form edition, we need to convert the string value of the propel parameter in a string array:
+        if (pv.value) {
+          //@ts-ignore
+          pv.value = pv.value.split(",")
+        }
+      }
+      else {
+        //Converting the native Powershell value representation to a Javascript native value:
+        Utils.PowerShellToJavascriptValueConverter(pv);
+      }
 
-        //If the actual parameter value is invalid, we are going to remove it:
-        if (pv.value && !(this.validSets[p.name] as any[]).find(item => item.value == pv.value)) {
-          pv.value = "";
+      //If the parameter has a valid set defined, we need to add it to our valid sets object:
+      //NOTE: Valid values set for Array parameters are ignored. Powershell at least up to v5 is 
+      //not processing them so there is no point to keep it.
+      if (p.validValues && p.validValues.length > 0) {
+        if (pv.nativeType !== "Array") {
+          this.validSets[p.name] = this.buildValidSet(p.validValues);
+
+          //If the actual parameter value is invalid, we are going to remove it:
+          if (pv.value && !(this.validSets[p.name] as any[]).find(item => item.value == pv.value)) {
+            pv.value = "";
+          }
+        }
+        else {
+          // pv.value = (pv.value as unknown as Array<any>).map( value => String(value)) as unknown as string;
+          this.validSets[p.name] = this.buildValidSet(
+            ([...new Set<string>([...p.validValues])])
+            .sort());
+          
+          //We need to review now the parameter values and remove the ones that are not in 
+          //the valid set:
+          pv.value = (pv.value as unknown as Array<any>)
+            .filter((value) => {
+              return this.validSets[p.name]
+              .filter(validValue => String(validValue.value) == String(value)).length > 0 
+            }) as unknown as string;
         }
       }
 
@@ -445,19 +476,14 @@ export class WorkflowStepComponent implements OnInit {
 
       if (p.isPropelParameter) {
         vfns.push(ValidatorsHelper.maxItems(CREDENTIALS_MAX));
-        //For the form edition, we need to convert the string value of the propel parameter in a string array:
-        if (pv.value) {
-          //@ts-ignore
-          pv.value = pv.value.split(",")
-        }
       }
 
       if (p.required) {
         vfns.push(Validators.required)
       }
-
-      //Converting the native Powershell value representation to a Javascript native value:
-      Utils.PowerShellToJavascriptValueConverter(pv);
+      else if(!p.canBeNull || !p.canBeEmpty) {
+        vfns.push(ValidatorsHelper.notNullOrEmpty())
+      }
 
       //Adding the controls to the array:
       fg = new FormGroup({

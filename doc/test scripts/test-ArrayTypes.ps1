@@ -10,7 +10,9 @@ param (
     
     [Parameter(HelpMessage='String Array with validate set.')]
     [ValidateSet("First", "Second", "Third", "Fourth")]
-    [string[]]$TypeStringArrayWithValidSet = @("First", "Second"),
+    [string[]]$TypeStringArrayWithValidSet = @("First", "Second", "Non Existent"), #Adding a 
+    #item not in the validset that will be removed by Propel when editing the values for 
+    #a Workflow execution.
 
     [Parameter(HelpMessage='Numeric Array.')]
     [int[]]$TypeNumericArray = @(1, 2),
@@ -20,7 +22,8 @@ param (
 
     [Parameter(HelpMessage='Numeric Array with validate set.')]
     [ValidateSet(1, 2, 3, 4)]
-    [int[]]$TypeNumericArrayWithValidSet = @(1, 2),
+    [int[]]$TypeNumericArrayWithValidSet = @(1, 2, 23), #Adding a item not in the validset that will be 
+    #removed by Propel when editing the values for a Workflow execution. 
     
     [Parameter(HelpMessage='Object Array.')]
     $TypeObjectArray = @(@{One = 1; Two = 2}, @{Three = 3; Four = 4})

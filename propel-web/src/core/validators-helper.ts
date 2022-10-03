@@ -16,6 +16,32 @@ export class ValidatorsHelper {
   }
 
   /**
+   * Prevents null, string empty values or empty arrays.
+   * @returns 
+   */
+  static notNullOrEmpty(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      let ret: any = null;
+      let isNullOrEmpty: boolean = (control.value == null || control.value == undefined 
+        || String(control.value) == "");
+
+      if (Array.isArray(control.value)) {
+        isNullOrEmpty = (control.value.length == 0)
+      }
+
+      if (isNullOrEmpty) {
+        ret = {
+          'notNullOrEmpty': {
+            value: control.value
+          }
+        }
+      }
+
+      return ret;
+    };
+  }
+
+  /**
    * Prevents to have less that the specified amount of items in an array property.
    * Is identical to "min" validator, but only for arrays in order to have specific 
    * array error messages.
@@ -280,6 +306,9 @@ export class ValidatorsHelper {
     }
     else if (control.errors.fieldsEquality && control.touched) {
       ret = control.errors.fieldsEquality.message
+    }
+    else if(control.errors.notNullOrEmpty && control.touched) {
+      ret = `A not null or empty value is required for this field.`
     }
 
     return ret;
