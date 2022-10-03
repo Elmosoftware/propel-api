@@ -4,3 +4,8 @@
     font-weight: 400;
     padding-bottom: 3px;
 }
+.param-literal {
+    font-size: 0.7rem;
+    color: var(--colors-dark-highlight);
+    font-weight: 900;
+}

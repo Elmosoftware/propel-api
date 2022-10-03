@@ -3,41 +3,41 @@
 	This is a Testing script. You can configure duration plus other params to facilitate testing.
 #>
 
-#region Script Parameters
+#region Script Parameter
 param (
-    [Parameter(HelpMessage='Not required int32 parameter.')]
+    [Parameter(HelpMessage='Not Nullable int32 parameter.')]
     [ValidateNotNull()]
     [int]$IntegerParam,
 
-    [Parameter(HelpMessage='Not Required swithc parameter.')]
+    [Parameter(HelpMessage='Not Nullable swithc parameter.')]
     [ValidateNotNull()]
     [switch]$SwitchParam,
 
-    [Parameter(HelpMessage='Not required boolean parameter.')]
+    [Parameter(HelpMessage='Not Nullable boolean parameter.')]
     [ValidateNotNull()]
     [boolean]$BooleanParam,
 
-    [Parameter(HelpMessage='Not required string parameter.')]
+    [Parameter(HelpMessage='Not Nullable string parameter.')]
     [ValidateNotNull()]
     [string]$StringParam,
 
-    [Parameter(HelpMessage='Not required double parameter.')]
+    [Parameter(HelpMessage='Not Nullable double parameter.')]
     [ValidateNotNull()]
     [double]$DoubleParam,
     
-    [Parameter(HelpMessage='Not required dateTime parameter')]
+    [Parameter(HelpMessage='Not Nullable dateTime parameter')]
     [ValidateNotNull()]
     [DateTime]$DatetimeParam,
 
-    [Parameter(HelpMessage='Not required string array parameter.')]
+    [Parameter(HelpMessage='Not Nullable string array parameter.')]
     [ValidateNotNull()]
     [string[]]$ArrayStringParam,
 
-    [Parameter(HelpMessage='Not required numeric array parameter.')]
+    [Parameter(HelpMessage='Not Nullable numeric array parameter.')]
     [ValidateNotNull()]
     [int[]]$ArrayIntParam,
     
-    [Parameter(HelpMessage='Not required hashtable param.')]
+    [Parameter(HelpMessage='Not Nullable hashtable param.')]
     [ValidateNotNull()]
     [hashtable]$HashTableParam
 )

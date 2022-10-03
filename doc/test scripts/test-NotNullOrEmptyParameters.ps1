@@ -5,39 +5,39 @@
 
 #region Script Parameters
 param (
-    [Parameter(HelpMessage='Not required int32 parameter.')]
+    [Parameter(HelpMessage='Not Nullable or Empty int32 parameter.')]
     [ValidateNotNullOrEmpty()]
     [int]$IntegerParam,
 
-    [Parameter(HelpMessage='Not Required switch parameter.')]
+    [Parameter(HelpMessage='Not Nullable or Empty switch parameter.')]
     [ValidateNotNullOrEmpty()]
     [switch]$SwitchParam,
 
-    [Parameter(HelpMessage='Not required boolean parameter.')]
+    [Parameter(HelpMessage='Not Nullable or Empty boolean parameter.')]
     [ValidateNotNullOrEmpty()]
     [boolean]$BooleanParam,
 
-    [Parameter(HelpMessage='Not required string parameter.')]
+    [Parameter(HelpMessage='Not Nullable or Empty string parameter.')]
     [ValidateNotNullOrEmpty()]
     [string]$StringParam,
 
-    [Parameter(HelpMessage='Not required double parameter.')]
+    [Parameter(HelpMessage='Not Nullable or Empty double parameter.')]
     [ValidateNotNullOrEmpty()]
     [double]$DoubleParam,
     
-    [Parameter(HelpMessage='Not required dateTime parameter')]
+    [Parameter(HelpMessage='Not Nullable or Empty dateTime parameter')]
     [ValidateNotNullOrEmpty()]
     [DateTime]$DatetimeParam,
 
-    [Parameter(HelpMessage='Not required string array parameter.')]
+    [Parameter(HelpMessage='Not Nullable or Empty string array parameter.')]
     [ValidateNotNullOrEmpty()]
     [string[]]$ArrayStringParam,
 
-    [Parameter(HelpMessage='Not required numeric array parameter.')]
+    [Parameter(HelpMessage='Not Nullable or Empty numeric array parameter.')]
     [ValidateNotNullOrEmpty()]
     [int[]]$ArrayIntParam,
     
-    [Parameter(HelpMessage='Not required hashtable param.')]
+    [Parameter(HelpMessage='Not Nullable or Empty hashtable param.')]
     [ValidateNotNullOrEmpty()]
     [hashtable]$HashTableParam
 )

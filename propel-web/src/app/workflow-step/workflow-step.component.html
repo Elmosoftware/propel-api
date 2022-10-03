@@ -70,7 +70,9 @@
             <label class="mb-2"><strong>Parameter values:</strong></label>
             <div *ngIf="selectedScript.parameters && selectedScript.parameters.length > 0; else noParams">
                 <div formArrayName="values" *ngFor="let child of parameterValues.controls; let i=index">
-                    <label>${{child.controls.name.value}}</label>
+                    <label [ngClass]="{
+                        'data-required': isParamRequired(child.controls.name.value)
+                    }" >${{child.controls.name.value}}</label>
                     <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
                     <ng-container [formGroupName]="i">
                         <!-- Propel custom parameters requires specific treatment -->
@@ -134,6 +136,7 @@
                                     <div *ngIf="!hasValidSet(child.controls.name.value); else withValidSet">
                                         <input type="text" class="form-control" formControlName="value"
                                             [placeholder]="getPlaceHolderText(child.controls.nativeType.value)">
+                                        <div *ngIf="nativeTypeIsLiteral(child.controls.nativeType.value)" class="param-literal">This value will be trated as literal when passing to the script, so be careful...</div>
                                     </div>
                                     <ng-template #withValidSet>
                                         <ng-select [items]="getValidSet(child.controls.name.value)" [multiple]="false"

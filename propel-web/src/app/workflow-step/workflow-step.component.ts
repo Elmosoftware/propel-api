@@ -500,6 +500,21 @@ export class WorkflowStepComponent implements OnInit {
     this.step.values = newValues;
   }
 
+  nativeTypeIsLiteral(nativeType: string) {
+    return nativeType == "Object"
+  }
+
+  isParamRequired(paramName: string): boolean {
+    let ret: boolean = false;
+    let param = this.tryGetParameter(paramName);
+
+    if (param) {
+      ret = param.required || !param.canBeEmpty || !param.canBeNull
+    }
+
+    return ret;
+  }
+  
   getPlaceHolderText(nativeType: string) {
 
     let ret: string = ""
