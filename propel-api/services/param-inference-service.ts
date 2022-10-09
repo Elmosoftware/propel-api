@@ -5,6 +5,7 @@ import { SystemHelper } from "../util/system-helper";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { logger } from "./logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
+import { TypeConverter } from "../../propel-shared/core/type-converter";
 import { PowerShellService } from "./powershell-service";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { PropelError } from "../../propel-shared/core/propel-error";
@@ -94,7 +95,7 @@ Error details: ${String(error)}`);
                 sp.name = param.Name;
                 sp.description = (param.HelpMessage) ? param.HelpMessage : "";
                 sp.type = param.ParameterType;
-                sp.nativeType = Utils.powershellToJavascriptTypeConverter(sp.type);
+                sp.nativeType = TypeConverter.fromPowerShellType(sp.type)
                 sp.required = param.IsMandatory;
                 sp.validValues = param.ValidValues;
                 sp.canBeNull = param.CanBeNull;

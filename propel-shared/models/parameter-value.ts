@@ -13,7 +13,7 @@ export class ParameterValue {
     /**
      * Parameter value.
      */
-    public value: string = "";
+    public value: any = "";
 
     /**
      * Parameter native Javascript type.

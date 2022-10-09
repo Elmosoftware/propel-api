@@ -658,3 +658,63 @@ Session: {
 	sessionStartsAt: Date --> Session starts timestamp (used for the expiration)
 }
 	
+---------------------------------------------------------------------------
+Refactor of conversion of valus from Powershell to JS and viceversa:
+___________________________________________________________________
+
+
+const PSConversion = {
+    [`${PSType.Object}`]: {
+		type: JSType.Object,
+		converter: new JavascriptObjectConverter()
+ }
+
+const JSConversion = {
+    [`${JSType.Object}`]: {
+		type: PSType.Object,
+		converter: new PowerShellObjectConverter()
+ }
+
+ const TypeConversion: {
+	JavascriptToPowerShell: JSConversion
+	PowerShellToJavascript: PSConversion
+ }
+
+
+
+
+interface ValueConverter {
+	convert(value: any): any 
+}
+
+class PowerShellObjectConverter implements ValueConverter{
+	convert(value: any): any {
+		//here how to convert from Powerhsell Object to Javascript Object.
+	}
+}
+
+class JavascriptObjectConverter implements ValueConverter{
+	convert(value: any): any {
+		//here how to convert from Powerhsell Object to Javascript Object.
+	}
+}
+
+class ParameterValueConverter {
+	toPowerShell(pv: ParameterValue): ParameterValue {
+		let newValue = TypeConversion.JavascriptToPowerShell[pv.nativeType].convert(pv.value)
+		pv.value = newValue;
+		return pv;
+	}
+
+	toJavascript(pv: ParameterValue): ParameterValue {
+		let psType: PSType = TypeConversion.JavascriptToPowerShell[pv.nativeType].type
+		let newValue = TypeConversion.PowerShellToJavascript[psType].convert(pv.value)
+		pv.value = newValue;
+		return pv;
+	}
+}
+
+
+
+
+

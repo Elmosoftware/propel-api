@@ -8,10 +8,10 @@ import { Credential } from "../../../propel-shared/models/credential";
 import { CredentialTypes } from "../../../propel-shared/models/credential-types";
 import { ParameterValue } from "../../../propel-shared/models/parameter-value";
 import { Secret } from "../../../propel-shared/models/secret";
-import { SecretValue } from "../../../propel-shared/models/secret-value";
 import { WindowsSecret } from "../../../propel-shared/models/windows-secret";
 import { AWSSecret } from "../../../propel-shared/models/aws-secret";
 import { ScriptParameter } from "../../../propel-shared/models/script-parameter";
+import { JSType, PSType } from "../../../propel-shared/core/type-definitions";
 
 export class TestingWorkflows {
 
@@ -243,9 +243,9 @@ export class TestingWorkflows {
         let sp = new ScriptParameter();
 
         sp.name = "PropelCredentials"
-        sp.nativeType = "System.Object"
+        sp.nativeType = JSType.Object
         sp.required = false
-        sp.type = "Object"
+        sp.type = PSType.Object
         sp.canBeEmpty = true
         sp.canBeNull = true
         sp.isPropelParameter = true
@@ -482,6 +482,7 @@ export class TestingWorkflows {
         let pv = new ParameterValue();
         pv.name = "PropelCredentials"
         pv.value = testingWorkflows.CredentialAWS02._id
+        pv.nativeType = JSType.Object
 
         let step: WorkflowStep = new WorkflowStep();
         step.name = "STEP #1 FAST"

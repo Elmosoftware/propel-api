@@ -4,12 +4,12 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { DialogResult } from 'src/core/dialog-result';
 import { ValidatorsHelper } from 'src/core/validators-helper';
-import { DataEndpointActions } from 'src/services/data.service';
+import { JSType } from '../../../../../propel-shared/core/type-definitions';
 import { ParameterValue } from '../../../../../propel-shared/models/parameter-value';
 
 const NAME_MAX: number = 20
 const VALUE_MAX: number = 255
-const DEFAULT_NATIVETYPE: string = "String"
+const DEFAULT_NATIVETYPE: string = JSType.String
 
 @Component({
   selector: 'app-custom-field-dlg',

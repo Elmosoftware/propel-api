@@ -108,75 +108,6 @@ export class Utils {
     }
 
     /**
-     * Converts the supplied PowerShell type to his Javascript equivalent.
-     * @param type Powershell type full name to convert to the Javascript equivalent.
-     */
-    static powershellToJavascriptTypeConverter(type: string): string {
-
-        let ret = "";
-        type = String(type);
-
-        switch (type) {
-            case "System.Object":
-                ret = "Object";
-                break;
-            case "System.String":
-                ret = "String";
-                break;
-            case "System.Char":
-                ret = "String";
-                break;
-            case "System.Byte":
-                ret = "Number";
-                break;
-            case "System.Int32":
-                ret = "Number";
-                break;
-            case "System.Int64":
-                ret = "Number";
-                break;
-            case "System.Boolean":
-                ret = "Boolean";
-                break;
-            case "System.Decimal":
-                ret = "Number";
-                break;
-            case "System.Single":
-                ret = "Number";
-                break;
-            case "System.Double":
-                ret = "Number";
-                break;
-            case "System.DateTime":
-                ret = "Date";
-                break;
-            case "System.Xml.XmlDocument":
-                ret = "Object";
-                break;
-            case "System.String[]":
-                ret = "Array";
-                break;
-            case "System.Int32[]":
-                ret = "Array";
-                break;
-            case "System.Array":
-                ret = "Array";
-                break;
-            case "System.Collections.Hashtable":
-                ret = "Object";
-                break;
-            case "System.Management.Automation.SwitchParameter":
-                ret = "Boolean";
-                break;
-            default:
-                throw new Error(`The specified PowerShell type is not supported by this API. Therefore can't be converted to a Javascript type.\n
-                Type specified: "${type}".`)
-        }
-
-        return ret;
-    }
-
-    /**
      * Add a backtick before any double quote in the supplied string. This helps on Powershell 
      * strings parsing when the string delimiter is a double quote.
      * @example
@@ -212,129 +143,6 @@ export class Utils {
         }
 
         return value.replace(/`"/gi, "\"")
-    }
-
-    /**
-     * This method convert the parameter value supplied, from a native Javascript value to a 
-     * one can be understood by PowerShell during the script execution.
-     * @param pv Parameter value to convert.
-     */
-    static JavascriptToPowerShellValueConverter(pv: ParameterValue): void {
-
-        if (!pv || !pv.nativeType) {
-            return;
-        }
-
-        //If is a boolean type, we need to change the native boolean literals of Javascript by 
-        //the ones used in powershell:
-        if (pv.nativeType == "Boolean") {
-            if (typeof pv.value == "boolean") {
-                pv.value = (pv.value) ? "$true" : "$false";
-            }
-            else {
-                pv.value = (pv.value == "true") ? "$true" : "$false";
-            }
-        }
-        //Double quoted strings in PowerShell works differently, so we need to convert any:
-        else if (pv.nativeType == "String") {
-            pv.value = this.backtickDoubleQuotes(pv.value)
-        }
-        else if (pv.nativeType == "Array") {
-            let tempArray: any[] = []
-
-            if (!Array.isArray(pv.value)) {
-                tempArray = [pv.value]
-            }
-            else {
-                tempArray = pv.value
-            }
-
-            pv.value = `@(${tempArray
-                .map((val) => {
-                    //If is not a numeric value, we need to quote each item of the array:
-                    if (isNaN(parseInt(String(val)))) {
-                        val = Utils.backtickDoubleQuotes(val)
-                        if (!Utils.isQuotedString(val)) {
-                            val = Utils.addQuotes(val);
-                        }
-                    }
-                    return val;
-                })
-                .join(",")})`
-        }
-        else if (pv.nativeType == "Date") {
-            pv.value = SharedSystemHelper.toISOFormat(pv.value)
-        }
-        //If the native type is not a string and the value is an empty string, we must replace 
-        //it by the null PowerShell literal:
-        else if (pv.nativeType != "String" && pv.value == "") {
-            pv.value = POWERSHELL_NULL_LITERAL
-        }
-    }
-
-    /**
-     * This method convert the parameter value supplied, from a native PowerShell value to the 
-     * corresponding native Javascript value.
-     * @param pv Parameter value to convert.
-     */
-    static PowerShellToJavascriptValueConverter(pv: ParameterValue): void {
-
-        let arrayStart: string = `@(`
-        let arrayEnd: string = `)`
-
-        if (!pv || !pv.nativeType) {
-            return;
-        }
-
-        //If is a boolean type, we need to change the native PowerShell literals for boolean to
-        // a Javascript boolean value:
-        if (pv.nativeType == "Boolean") {
-            if (typeof pv.value !== "boolean") {
-                //@ts-ignore
-                pv.value = Boolean(pv.value == "$true");
-            }
-        }
-        //Double quoted strings in PowerShell works differently, so we need to convert any:
-        else if (pv.nativeType == "String") {
-            pv.value = this.removeBacktickDoubleQuotes(pv.value)
-        }
-        else if (pv.nativeType == "Array") {
-
-            if (pv.value == "" || pv.value == POWERSHELL_NULL_LITERAL) {
-                pv.value = ([] as unknown as string)
-            }
-            else {
-                pv.value = String(pv.value)
-
-                if (pv.value.startsWith(arrayStart)) {
-                    pv.value = pv.value.substring(arrayStart.length);
-                }
-                if (pv.value.endsWith(arrayEnd)) {
-                    pv.value = pv.value.substring(0, pv.value.length - arrayEnd.length);
-                }
-
-                if (pv.value.trim() == "") {
-                    pv.value = ([] as unknown as string)
-                }
-                else {
-                    pv.value = (pv.value
-                        .trim()
-                        .split(",")
-                        .map((val: string) => {
-                            if (isNaN(parseInt(String(val)))) return Utils.removeQuotes(val.trim())
-                            return Number(val)
-                        }) as unknown as string)
-                }
-            }
-        }
-        else if (pv.nativeType == "Date") {
-            pv.value = SharedSystemHelper.formatDate(pv.value, INPUT_DATE_FORMAT)
-        }
-        //If the native type is not a string and the value is a null PowerShell literal, we 
-        //must replace it by an empty string:
-        else if (pv.nativeType != "String" && pv.value == POWERSHELL_NULL_LITERAL) {
-            pv.value = ""
-        }
     }
 
     /**
@@ -689,7 +497,7 @@ ${this.tabs(1)}Name = "${credential.name}";
 ${this.tabs(1)}Type = "${credential.credentialType}";
 ${this.tabs(1)}Fields = [pscustomobject]@{
 ${this.tabs(2)}${credential.fields
-                .map((item, i) => { return `${(i > 0) ? this.tabs(2) : ""}${item.name} = "${this.backtickDoubleQuotes(item.value)}";` })
+                .map((item, i) => { return `${(i > 0) ? this.tabs(2) : ""}${item.name} = "${this.backtickDoubleQuotes(String(item.value))}";` })
                 .join(`\r\n`)}\r\n${this.tabs(2)}};\r\n`
 
         //Building the secret part:    

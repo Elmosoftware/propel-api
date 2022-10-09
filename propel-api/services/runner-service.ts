@@ -14,7 +14,7 @@ import { SystemHelper } from "../util/system-helper";
 import { ExecutionLog } from "../../propel-shared/models/execution-log";
 import { ExecutionStep } from "../../propel-shared/models/execution-step";
 import { ExecutionTarget } from "../../propel-shared/models/execution-target";
-import { POWERSHELL_NULL_LITERAL, Utils } from "../../propel-shared/utils/utils";
+import { Utils } from "../../propel-shared/utils/utils";
 import { ExecutionStatus } from "../../propel-shared/models/execution-status";
 import { ExecutionError } from "../../propel-shared/models/execution-error";
 import { db } from "../core/database";
@@ -24,6 +24,8 @@ import { APIResponse } from "../../propel-shared/core/api-response";
 import { logger } from "./logger-service";
 import { SecurityToken } from "../../propel-shared/core/security-token";
 import { UserAccount } from "../../propel-shared/models/user-account";
+import { TypeConverter } from "../../propel-shared/core/type-converter";
+import { JSType, PowerShellLiterals } from "../../propel-shared/core/type-definitions";
 
 /**
  * This class responsibility is everything related to run a specified workflow and 
@@ -430,7 +432,8 @@ export class Runner {
 
             step.script.parameters.forEach((param: ScriptParameter) => {
                 let suppliedParam: ParameterValue | undefined = step.values.find((sp) => sp.name == param.name);
-                let value: string = POWERSHELL_NULL_LITERAL;
+                let type = TypeConverter.getConvertibleJSType(param.nativeType)
+                let value: string | string[] = type.emptyOrNull;
                 let prefix: string = "";
                 let sufix: string = "";
                 let includeInList: boolean = true;
@@ -451,7 +454,7 @@ export class Runner {
                 //to include it in the list or arguments:
                 if (!param.required && !param.hasDefault &&
                     (param.canBeNull || param.canBeEmpty) && 
-                    (value == POWERSHELL_NULL_LITERAL || value == "" || value == "@()")) {
+                    value == type.emptyOrNull) {
                     includeInList = false;
                 }
                 else {
@@ -459,7 +462,7 @@ export class Runner {
                     this._scriptVal.validateParameter(param, suppliedParam);
                 }
 
-                if (value !== POWERSHELL_NULL_LITERAL && param.nativeType == "String") {
+                if (value !== type.emptyOrNull && type.type == JSType.String) {
                     prefix = `"`;
                     sufix = `"`;
                 }
@@ -519,7 +522,7 @@ ${this._scriptVal.getErrors()?.message} `, ErrorCodes.WrongParameterData)
     private _buildPropelVariableValue(credentialIds: any): string {
         let ret: string = ""
 
-        if(!credentialIds || String(credentialIds) == POWERSHELL_NULL_LITERAL) return String(credentialIds) 
+        if(!credentialIds || String(credentialIds) == PowerShellLiterals.$null) return String(credentialIds) 
 
         if (!Array.isArray(credentialIds)) {
             credentialIds = credentialIds

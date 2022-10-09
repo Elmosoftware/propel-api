@@ -6,9 +6,9 @@ import { Secret } from "../../propel-shared/models/secret";
 import { SecretValue } from "../../propel-shared/models/secret-value";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { PropelError } from "../../propel-shared/core/propel-error";
-import { POWERSHELL_NULL_LITERAL } from "../../propel-shared/utils/utils";
 import { SecurityToken } from "../../propel-shared/core/security-token";
 import { PagedResponse } from "../../propel-shared/core/paged-response";
+import { TypeConverter } from "../../propel-shared/core/type-converter";
 
 /**
  * Temporal cache of credentials, including also the secrets.
@@ -63,12 +63,13 @@ export class CredentialCache {
                     //Need to look in the collection of parameter values for that parameter:
                     step.values.map((pv) => {
                         if (pv.name == param.name) {
+                            let type = TypeConverter.getConvertibleJSType(pv.nativeType)
                             //The values will be a comma separated list of all the credentials 
                             //set in the Propel parmeter, (if any):
-                            if (pv.value && pv.value != POWERSHELL_NULL_LITERAL) {
+                            if (pv.value && pv.value != type.emptyOrNull) {
                                 pv.value
                                     .split(",")
-                                    .map((id) => credentialIds.add(String(id).trim())) //Set is preventing to add duplicates.
+                                    .map((id:any) => credentialIds.add(String(id).trim())) //Set is preventing to add duplicates.
                             }
                         }
                     })

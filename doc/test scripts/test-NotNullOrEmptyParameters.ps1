@@ -1,6 +1,8 @@
 
 <#
 	This is a Testing script. You can configure duration plus other params to facilitate testing.
+
+
 #>
 
 #region Script Parameters
@@ -58,6 +60,8 @@ $SwitchParam -eq $null
 $StringParam
 "StringParam is Null?:"
 $StringParam -eq $null
+"StringParam is NullOrEmpty?:"
+[String]::IsNullOrEmpty($StringParam)
 "DoubleParam:"
 $DoubleParam
 "DoubleParam is Null?:"

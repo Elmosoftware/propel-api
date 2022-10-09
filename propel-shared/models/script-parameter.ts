@@ -21,12 +21,12 @@ export class ScriptParameter {
     public description: string = "";
 
     /**
-     * If defined in the parameter, the PowerShell type.
+     * This will be the native Javascript type used for conversion purposes.
      */
     public nativeType: string = "";
 
     /**
-     * If the native type is defined, this will be the Javascript type used for conversion purposes.
+     * This is the Powershell type.
      */
     public type: string = "";
 

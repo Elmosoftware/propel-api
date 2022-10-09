@@ -2,6 +2,7 @@ import { pool } from "../../services/powershell-service-pool";
 import { ParamInferenceService } from "../../services/param-inference-service";
 import { ScriptParameter } from "../../../propel-shared/models/script-parameter";
 import { LogLevel } from "../../core/config";
+import { JSType, PSType } from "../../../propel-shared/core/type-definitions";
 
 let testScripts = {
     EmptyScript:
@@ -253,8 +254,8 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[0].position).toEqual(0);
                 expect(params[0].name).toEqual("TestParam1StringWithValidSet");
                 expect(params[0].description).toEqual("");
-                expect(params[0].type).toEqual("System.String");
-                expect(params[0].nativeType).toEqual("String");
+                expect(params[0].type).toEqual(PSType.String);
+                expect(params[0].nativeType).toEqual(JSType.String);
                 expect(params[0].required).toEqual(true);
                 expect(params[0].validValues.length).toEqual(2);
                 expect(params[0].canBeNull).toEqual(true);
@@ -266,8 +267,8 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[1].position).toEqual(1);
                 expect(params[1].name).toEqual("TestParam2HashNotNullOrEmpty");
                 expect(params[1].description).toEqual("");
-                expect(params[1].type).toEqual("System.Collections.Hashtable");
-                expect(params[1].nativeType).toEqual("Object");
+                expect(params[1].type).toEqual(PSType.Hashtable);
+                expect(params[1].nativeType).toEqual(JSType.Object);
                 expect(params[1].required).toEqual(false);
                 expect(params[1].validValues.length).toEqual(0);
                 expect(params[1].canBeNull).toEqual(false);
@@ -278,8 +279,8 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[2].position).toEqual(2);
                 expect(params[2].name).toEqual("TestParam3IntMandatory");
                 expect(params[2].description).toEqual("");
-                expect(params[2].type).toEqual("System.Int32");
-                expect(params[2].nativeType).toEqual("Number");
+                expect(params[2].type).toEqual(PSType.Int32);
+                expect(params[2].nativeType).toEqual(JSType.Number);
                 expect(params[2].required).toEqual(true);
                 expect(params[2].validValues.length).toEqual(0);
                 expect(params[2].canBeNull).toEqual(false);
@@ -290,8 +291,8 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[3].position).toEqual(3);
                 expect(params[3].name).toEqual("TestParam4DoubleWithThrow");
                 expect(params[3].description).toEqual("");
-                expect(params[3].type).toEqual("System.Double");
-                expect(params[3].nativeType).toEqual("Number");
+                expect(params[3].type).toEqual(PSType.Double);
+                expect(params[3].nativeType).toEqual(JSType.Number);
                 expect(params[3].required).toEqual(false);
                 expect(params[3].validValues.length).toEqual(0);
                 expect(params[3].canBeNull).toEqual(true);
@@ -302,8 +303,8 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[4].position).toEqual(-2147483648);
                 expect(params[4].name).toEqual("TestParam5SwitchWithNoDataType");
                 expect(params[4].description).toEqual("");
-                expect(params[4].type).toEqual("System.Management.Automation.SwitchParameter");
-                expect(params[4].nativeType).toEqual("Boolean");
+                expect(params[4].type).toEqual(PSType.Switch);
+                expect(params[4].nativeType).toEqual(JSType.Boolean);
                 expect(params[4].required).toEqual(false);
                 expect(params[4].validValues.length).toEqual(0);
                 expect(params[4].canBeNull).toEqual(true);
@@ -313,8 +314,8 @@ describe("InferenceService Class - infer()", () => {
                 //Parameter #6: TestParam6JustParamName:
                 expect(params[5].name).toEqual("TestParam6JustParamName");
                 expect(params[5].description).toEqual("");
-                expect(params[5].type).toEqual("System.Object");
-                expect(params[5].nativeType).toEqual("Object");
+                expect(params[5].type).toEqual(PSType.Object);
+                expect(params[5].nativeType).toEqual(JSType.Object);
                 expect(params[5].required).toEqual(false);
                 expect(params[5].validValues.length).toEqual(0);
                 expect(params[5].canBeNull).toEqual(true);
@@ -324,8 +325,8 @@ describe("InferenceService Class - infer()", () => {
                 //Parameter #7: TestParam7StringWithValidateScriptAndHelpMessage:
                 expect(params[6].name).toEqual("TestParam7StringWithValidateScriptAndHelpMessage");
                 expect(params[6].description).toEqual("This is the TestParam7 with a help message.");
-                expect(params[6].type).toEqual("System.String");
-                expect(params[6].nativeType).toEqual("String");
+                expect(params[6].type).toEqual(PSType.String);
+                expect(params[6].nativeType).toEqual(JSType.String);
                 expect(params[6].required).toEqual(true);
                 expect(params[6].validValues.length).toEqual(0);
                 expect(params[6].canBeNull).toEqual(true);
@@ -335,8 +336,8 @@ describe("InferenceService Class - infer()", () => {
                 //Parameter #8: TestParam8DateTimeWithHelpMessage:
                 expect(params[7].name).toEqual("TestParam8DateTimeWithHelpMessage");
                 expect(params[7].description).toEqual("This is the TestParam8 with a help message.");
-                expect(params[7].type).toEqual("System.DateTime");
-                expect(params[7].nativeType).toEqual("Date");
+                expect(params[7].type).toEqual(PSType.DateTime);
+                expect(params[7].nativeType).toEqual(JSType.Date);
                 expect(params[7].required).toEqual(false);
                 expect(params[7].validValues.length).toEqual(0);
                 expect(params[7].canBeNull).toEqual(true);
@@ -346,8 +347,8 @@ describe("InferenceService Class - infer()", () => {
                 //Parameter #9: TestParam9WIthValidateLength:
                 expect(params[8].name).toEqual("TestParam9WIthValidateLength");
                 expect(params[8].description).toEqual("This is the TestParam9 with a help message.");
-                expect(params[8].type).toEqual("System.String");
-                expect(params[8].nativeType).toEqual("String");
+                expect(params[8].type).toEqual(PSType.String);
+                expect(params[8].nativeType).toEqual(JSType.String);
                 expect(params[8].required).toEqual(false);
                 expect(params[8].validValues.length).toEqual(0);
                 expect(params[8].canBeNull).toEqual(true);
@@ -356,8 +357,8 @@ describe("InferenceService Class - infer()", () => {
                 //Parameter #10: TestParam10WIthValidateRange:
                 expect(params[9].name).toEqual("TestParam10WIthValidateRange");
                 expect(params[9].description).toEqual("This is the TestParam10 with a help message.");
-                expect(params[9].type).toEqual("System.Int32");
-                expect(params[9].nativeType).toEqual("Number");
+                expect(params[9].type).toEqual(PSType.Int32);
+                expect(params[9].nativeType).toEqual(JSType.Number);
                 expect(params[9].required).toEqual(false);
                 expect(params[9].validValues.length).toEqual(0);
                 expect(params[9].canBeNull).toEqual(true);
@@ -367,8 +368,8 @@ describe("InferenceService Class - infer()", () => {
                 //Parameter #11: TestParam11WIthArray:
                 expect(params[10].name).toEqual("TestParam11WIthArray");
                 expect(params[10].description).toEqual("This is the TestParam11 with default.");
-                expect(params[10].type).toEqual("System.Array");
-                expect(params[10].nativeType).toEqual("Array");
+                expect(params[10].type).toEqual(PSType.Array);
+                expect(params[10].nativeType).toEqual(JSType.Array);
                 expect(params[10].required).toEqual(false);
                 expect(params[10].validValues.length).toEqual(0);
                 expect(params[10].canBeNull).toEqual(true);

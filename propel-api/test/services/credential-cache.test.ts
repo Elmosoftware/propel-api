@@ -8,6 +8,7 @@ import { AWSSecret } from "../../../propel-shared/models/aws-secret";
 import { ParameterValue } from "../../../propel-shared/models/parameter-value";
 import { Workflow } from "../../../propel-shared/models/workflow";
 import { SecurityToken } from "../../../propel-shared/core/security-token";
+import { JSType } from "../../../propel-shared/core/type-definitions";
 
 
 let w = new WindowsSecret()
@@ -74,6 +75,7 @@ function getTestWorkflow(propelCredentials: Credential[], totalTargets: number =
     let propelCredentialsValue: string = ""
 
     pv.name = "PropelCredentials"
+    pv.nativeType = JSType.Object
 
     propelCredentials.forEach((cred: Credential, i: number) => {
         propelCredentialsValue += ((i == 0) ? "" : ",") + cred._id;

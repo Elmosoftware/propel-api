@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, EventEmitter, ViewChild, Output, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, OnInit, Input, EventEmitter, ViewChild, Output, ViewChildren, QueryList } from '@angular/core';
 import { FormGroup, Validators, FormControl, FormArray, ValidatorFn } from '@angular/forms';
 import { forkJoin, from } from "rxjs";
 import { NgSelectComponent } from '@ng-select/ng-select';
@@ -15,12 +15,13 @@ import { ScriptParameter } from '../../../../propel-shared/models/script-paramet
 import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { DataEndpointActions } from 'src/services/data.service';
-import { Utils } from "../../../../propel-shared/utils/utils";
+import { ParameterValueConverter } from "../../../../propel-shared/core/value-converter";
 import { Credential } from '../../../../propel-shared/models/credential';
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 import { CustomValueDialogData } from '../dialogs/custom-value-dlg/custom-value-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
+import { JSType } from '../../../../propel-shared/core/type-definitions';
 
 /**
  * Minimum step name length.
@@ -106,7 +107,7 @@ export class WorkflowStepComponent implements OnInit {
   ngOnInit(): void {
     let nameValidators: any[] = [Validators.required]
 
-    //For a quicktask the isalways fixed, no need to add the validators for the name length:
+    //For a quicktask the is always fixed, no need to add the validators for the name length:
     if (!this.isQuickTask) {
       nameValidators.push(Validators.minLength(NAME_MIN));
       nameValidators.push(Validators.maxLength(NAME_MAX));
@@ -297,7 +298,7 @@ export class WorkflowStepComponent implements OnInit {
             else {
               //For array types, sometimes ng-select returns the item object, instead of 
               //only the value:
-              if (pv.nativeType == "Array" && Array.isArray(pv.value)) {
+              if (pv.nativeType == JSType.Array && Array.isArray(pv.value)) {
                 (pv.value as Array<any>) = (pv.value as Array<any>)
                   .map((val) => {
                     if (typeof val == "object" && val.value) return val.value
@@ -305,7 +306,7 @@ export class WorkflowStepComponent implements OnInit {
                   })
               }
 
-              Utils.JavascriptToPowerShellValueConverter(pv);
+              ParameterValueConverter.toPowerShell(pv)
             }
           })
         }
@@ -425,13 +426,12 @@ export class WorkflowStepComponent implements OnInit {
       if (p.isPropelParameter) {
         //For the form edition, we need to convert the string value of the propel parameter in a string array:
         if (pv.value) {
-          //@ts-ignore
           pv.value = pv.value.split(",")
         }
       }
       else {
-        //Converting the native Powershell value representation to a Javascript native value:
-        Utils.PowerShellToJavascriptValueConverter(pv);
+        //Converting the Powershell value representation to a Javascript native value:
+        ParameterValueConverter.toJavascript(pv)
       }
 
       //If the parameter has a valid set defined, we need to add it to our valid sets object:
@@ -464,10 +464,10 @@ export class WorkflowStepComponent implements OnInit {
 
       //Assigning the validators based on the parameter type and if it is required or not:
       switch (p.nativeType) {
-        case "Number":
+        case JSType.Number:
           vfns.push(ValidatorsHelper.anyNumber());
           break;
-        case "Date":
+        case JSType.Date:
           vfns.push(ValidatorsHelper.anyDate());
           break;
         default:
@@ -501,7 +501,7 @@ export class WorkflowStepComponent implements OnInit {
   }
 
   nativeTypeIsLiteral(nativeType: string) {
-    return nativeType == "Object"
+    return nativeType == JSType.Object
   }
 
   isParamRequired(paramName: string): boolean {
@@ -520,19 +520,19 @@ export class WorkflowStepComponent implements OnInit {
     let ret: string = ""
 
     switch (nativeType) {
-      case "String":
+      case JSType.String:
         ret = "Any text is accepted here.";
         break;
-      case "Number":
+      case JSType.Number:
         ret = "Please enter any number here.";
         break;
-      case "Date":
+      case JSType.Date:
         ret = `Please enter a valid date here. Format must be ISO-8601. e.g.: "YYYY-MM-DDThh:mm:ss" time must be 24hs format.`
         break;
-      case "Array":
+      case JSType.Array:
         ret = `You can specify multiple values here separated by a comma. e.g.: Value 1, Value 2, Value 3.`
         break;
-      case "Object":
+      case JSType.Object:
         ret = `This value will be passed literally to the script, watch out for any typos.`
         break;
       default:

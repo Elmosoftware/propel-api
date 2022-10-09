@@ -16,6 +16,7 @@ import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { Target } from '../../../../propel-shared/models/target';
 import { DataEndpointActions } from 'src/services/data.service';
+import { JSType } from '../../../../propel-shared/core/type-definitions';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -296,7 +297,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
     if (step && step.values && step.values.length > 0) {
       step.values.forEach((pv: ParameterValue, i: number) => {
-        let quotes: string = (pv.nativeType == "String") ? `"` : "";
+        let quotes: string = (pv.nativeType == JSType.String) ? `"` : "";
         let sep: string = (i < step.values.length - 1) ? ", " : "";
         ret += `${pv.name} = ${quotes}${pv.value}${quotes}${sep}`;
       })
