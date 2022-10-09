@@ -4,7 +4,6 @@ import { SearchLine } from 'src/core/search-line';
 import { CoreService } from 'src/services/core.service';
 import { DataEndpointActions } from 'src/services/data.service';
 import { UIHelper } from 'src/util/ui-helper';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { Credential } from "../../../../propel-shared/models/credential";
 import { CredentialTypes } from '../../../../propel-shared/models/credential-types';

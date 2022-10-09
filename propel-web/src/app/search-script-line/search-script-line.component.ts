@@ -1,12 +1,11 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { concat, from, of } from 'rxjs';
+import { from, of } from 'rxjs';
 
 import { Script } from '../../../../propel-shared/models/script';
 import { CoreService } from 'src/services/core.service';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
 import { DataEndpointActions } from 'src/services/data.service';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { SearchLine } from 'src/core/search-line';
 import { concatAll } from 'rxjs/operators';
 

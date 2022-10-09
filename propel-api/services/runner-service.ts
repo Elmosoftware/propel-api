@@ -20,7 +20,6 @@ import { ExecutionError } from "../../propel-shared/models/execution-error";
 import { db } from "../core/database";
 import { DataService } from "../services/data-service";
 import { CredentialCache } from "../services/credential-cache";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { logger } from "./logger-service";
 import { SecurityToken } from "../../propel-shared/core/security-token";
 import { UserAccount } from "../../propel-shared/models/user-account";
@@ -94,9 +93,7 @@ export class Runner {
         try {
             await this._credentialCache.build(workflow, token)
          } catch (error) {
-            let e = ((error as any)?.errors && (error as any).errors.length > 0) ? (error as any).errors[0] : error
-            let message: string = (e.errorCode?.userMessage) ? e.errorCode?.userMessage : e.message;
-
+            let e = new PropelError(error as Error)
             this._stats.logId = "";
             this._stats.logStatus =ExecutionStatus.Faulty;
 
@@ -104,7 +101,7 @@ export class Runner {
                 `There was an error during the preparation.\r\n` + 
                 `If this error is related to the credentials assigned to one specific target or the ` + 
                 `credentials set to one or more Propel parameters in any of the scripts, please verify them ` +
-                `before to retry. Following the error details: ` + message, this._stats);
+                `before to retry. Following the error details: ` + e.message, this._stats);
         }
 
         this._stats.workflowName = workflow.name;
@@ -210,7 +207,6 @@ export class Runner {
             this._execLog._id = this._stats.logId;
             resultsMessage = new WebsocketMessage(InvocationStatus.Finished, "", this._stats);
         } catch (error) {
-            error = ((error as APIResponse<any>).error) ? (error as APIResponse<any>).error : error;
             let e = new PropelError((error as Error), ErrorCodes.saveLogFailed);
             logger.logError(e);
             this._stats.logStatus = ExecutionStatus.Faulty

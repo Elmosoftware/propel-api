@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Observable } from 'rxjs';
 import { environment as env } from 'src/environments/environment';
-import { APIResponse } from "../../../propel-shared/core/api-response";
 import { ScriptParameter } from '../../../propel-shared/models/script-parameter';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { HttpHelper, Headers } from 'src/util/http-helper';

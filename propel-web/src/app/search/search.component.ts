@@ -3,7 +3,6 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CoreService } from 'src/services/core.service';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { Entity } from '../../../../propel-shared/models/entity';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { UIHelper } from 'src/util/ui-helper';
@@ -12,7 +11,6 @@ import { InfiniteScrollingService, PagingHelper, SCROLL_POSITION } from 'src/cor
 import { SearchType, SearchTypeDefinition, DEFAULT_SEARCH_TYPE } from "./search-type";
 import { Workflow } from '../../../../propel-shared/models/workflow';
 import { environment } from 'src/environments/environment';
-import { PropelError } from '../../../../propel-shared/core/propel-error';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 
 /**
@@ -231,8 +229,8 @@ export class SearchComponent implements OnInit {
 
   async getData(type: SearchType, qm: QueryModifier): Promise<PagedResponse<Entity>> {
 
-    ///////////////////////////////////////////////////////////////////////////////
-    //DEBUG ONLY: For testing purposes only of the infinite scrrolling feature:
+    // /////////////////////////////////////////////////////////////////////////////
+    // // DEBUG ONLY: For testing purposes only of the infinite scrolling feature:
     // if (environment.production == false) {
     //   if (type == SearchType.Workflows) {
     //     return this._fakeWorkflowCreation(3000, 100, qm);    
@@ -240,7 +238,7 @@ export class SearchComponent implements OnInit {
     //     // throw new PropelError("TEST ERROR", ErrorCodes.CryptoError)
     //   }
     // }
-    ///////////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////////
 
     return this.core.data.find(SearchTypeDefinition.getDataEntity(type), qm);
   }
@@ -320,7 +318,7 @@ export class SearchComponent implements OnInit {
     });
   }
 
-  private _fakeWorkflowCreation(totalWorkflows: number, msTimeout: number, qm: QueryModifier): Promise<APIResponse<Workflow>> {
+  private _fakeWorkflowCreation(totalWorkflows: number, msTimeout: number, qm: QueryModifier): Promise<PagedResponse<Workflow>> {
     //================================================================================================
     //DEBUG ONLY:
     //================================================================================================
@@ -340,7 +338,7 @@ export class SearchComponent implements OnInit {
 
     //To emulate no data retrieved, sent the search term "nodata":
     if (words.length > 0 && words[0] == "nodata") {
-      return Promise.resolve(new APIResponse<Workflow>(null, data, 0))
+      return Promise.resolve(new PagedResponse<Workflow>(data, 0))
     }
 
     for (let i = (skip + 1); i < (skip + top + 1); i++) {
@@ -365,6 +363,6 @@ dictum at tempor commodo ullamcorper a.`; // Searched word is ${word}.`;
       }
     }
 
-    return Promise.resolve(new APIResponse<Workflow>(null, data, totalWorkflows))
+    return Promise.resolve(new PagedResponse<Workflow>(data, totalWorkflows))
   }
 }

@@ -9,7 +9,6 @@ import { SecurityService } from "src/services/security.service";
 import { NavigationService } from "src/services/navigation.service";
 import { UserLoginResponse } from "../../../propel-shared/core/user-login-response";
 import { TokenRefreshRequest } from "../../../propel-shared/core/token-refresh-request";
-import { APIResponse } from "../../../propel-shared/core/api-response";
 import { logger } from "../../../propel-shared/services/logger-service";
 
 /**

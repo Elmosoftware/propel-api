@@ -5,7 +5,6 @@ import { Route } from "../core/route";
 import { Runner } from "../services/runner-service";
 import { db } from "../core/database";
 import { DataService } from "../services/data-service";
-import { APIResponse } from "../../propel-shared/core/api-response";
 import { Workflow } from "../../propel-shared/models/workflow";
 import { ExecutionStats, WebsocketMessage, InvocationStatus } from "../../propel-shared/core/websocket-message";
 import { logger } from "../services/logger-service";
@@ -78,13 +77,12 @@ export class RunRoute implements Route {
             runner.execute(workflow, token, subsCallback)
                 .then((msg: WebsocketMessage<ExecutionStats>) => {
                     logger.logInfo(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished with status: "${msg.context?.logStatus}".`);
-                    // ws.send(JSON.stringify(msg));
                     this.sendWebSocketMessage(ws, msg);
                 })
                 .catch((err) => {
                     logger.logInfo(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" finished with the following error: "${String(err)}".`);
-                    // ws.send(JSON.stringify(new APIResponse(err, null)));
-                    this.sendWebSocketMessage(ws, new APIResponse(err, null));
+                    let msg = new WebsocketMessage<ExecutionStats>(InvocationStatus.Failed, (err.message) ? err.message : String(err))
+                    this.sendWebSocketMessage(ws, msg);
                 })
                 .finally(() => {
                     ws.close()
@@ -111,7 +109,7 @@ export class RunRoute implements Route {
             });
         } catch (err) {
             logger.logError((err as Error));
-            ws.send(JSON.stringify(new APIResponse(err, null)));
+            ws.send(JSON.stringify(err));
             ws.close();
         }
     }

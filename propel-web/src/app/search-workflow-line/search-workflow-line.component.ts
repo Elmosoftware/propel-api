@@ -1,11 +1,9 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Workflow } from '../../../../propel-shared/models/workflow';
 import { CoreService } from 'src/services/core.service';
-import { APIResponse } from '../../../../propel-shared/core/api-response';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
 import { DataEndpointActions } from 'src/services/data.service';
-import { Entity } from '../../../../propel-shared/models/entity';
 import { SearchLine } from 'src/core/search-line';
 
 @Component({
