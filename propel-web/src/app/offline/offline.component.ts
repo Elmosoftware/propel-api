@@ -32,13 +32,11 @@ export class OfflineComponent implements OnInit {
     if (!this.status) return;
 
     if (this.status.networkOn && this.status.apiOn) {
-      this.retry();
+      this.core.navigation.toHome(true)
     }
   }
 
   retry() {
-    this.core.zone.run(() => {
-      this.core.navigation.toHome();
-    })
+    this.core.connectivity.updateStatus()
   }
 }
