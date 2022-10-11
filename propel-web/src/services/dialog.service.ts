@@ -85,7 +85,7 @@ export class DialogService {
 
         let dialogRef = this.dialog.open(CustomValueDialogComponent, {
             data: value,
-            width: "550px"
+            width: "660px"
         });
 
         return dialogRef.afterClosed()
