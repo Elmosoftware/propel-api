@@ -115,9 +115,24 @@ export class HistoryComponent implements OnInit {
       });
   }
 
+  getWorkflowName(item: ExecutionLogExtended): string {
+    let ret: string = "";
+
+    if (!item.log?.workflow) return ret;
+
+    ret = item.log.workflow.name;
+
+    if (item.log.workflow.isQuickTask) {
+      ret = UIHelper.removeIDFromQuickTaskName(ret)
+    }
+
+    return ret;
+  }
+
   getWorkflowNameTooltip(item: ExecutionLogExtended){ 
     return item.workflowNameTooltip + "\r\nClick here to edit this Workflow."
   }
+
   getTimeStamp(item: ExecutionLogExtended): string {
     return item.startDateFriendly + ((item.executedBy) ? " by " + item.executedBy : "");
   }

@@ -1,4 +1,4 @@
-import { UIHelper } from "./ui-helper";
+import { UIHelper, QUICK_TASK_ID_PREFIX } from "./ui-helper";
 
 describe("UIHelper Class", () => {
 
@@ -61,7 +61,6 @@ describe("UIHelper Class", () => {
 
     describe("highlighText()", () => {
         
-
         let text: string;
 
         beforeEach(() => {
@@ -136,6 +135,35 @@ describe("UIHelper Class", () => {
             let words = ["light", "fiercely"];
             let cs = 400;
             expect(UIHelper.highlighText(text, words, cs)).toEqual("There is a sinister <mark>light</mark> at the end of the street where the wind blows <mark>fiercely</mark> side by side with human soul.");
+        });
+    });
+    describe("newQuickTaskName()", () => {
+        it("No script name supplied", () => {
+            let n = UIHelper.newQuickTaskName()
+            expect(n.startsWith("Quick Task")).toBe(true);
+            expect(n).toContain(QUICK_TASK_ID_PREFIX)
+        });
+        it("With script name supplied", () => {
+            let n = UIHelper.newQuickTaskName("Script Any")
+            expect(n.startsWith("Quick Task for Script Any")).toBe(true);
+            expect(n).toContain(QUICK_TASK_ID_PREFIX)
+        });
+    });
+    describe("removeIDFromQuickTaskName()", () => {
+        it("No Quick Task name supplied", () => {
+            let name = UIHelper.removeIDFromQuickTaskName("")
+            expect(name).toEqual("");
+            expect(name).not.toContain(QUICK_TASK_ID_PREFIX)
+        });
+        it("No valid Quick Task name supplied", () => {
+            let name = UIHelper.removeIDFromQuickTaskName("any text value")
+            expect(name).toEqual("any text value");
+            expect(name).not.toContain(QUICK_TASK_ID_PREFIX)
+        });
+        it("Valid Quick Task name supplied", () => {
+            let name = UIHelper.removeIDFromQuickTaskName(UIHelper.newQuickTaskName("MyScript"))
+            expect(name).toEqual("Quick Task for MyScript");
+            expect(name).not.toContain(QUICK_TASK_ID_PREFIX)
         });
     });
 });

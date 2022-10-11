@@ -7,6 +7,8 @@ import { ExecutionStep } from '../../../propel-shared/models/execution-step';
 import { ParameterValue } from '../../../propel-shared/models/parameter-value';
 import { AuditedEntity } from "../../../propel-shared/models/audited-entity";
 
+export const QUICK_TASK_ID_PREFIX: string = "QTid:#"
+
 /**
  * UI Helper class.
  */
@@ -153,10 +155,10 @@ export class UIHelper {
             text = text.substring(0, match.s + offset) +
                 prefix + text.substring(match.s + offset, match.e + offset + 1) + suffix +
                 text.substring(match.e + offset + 1);
-            
+
             //We update start and end of the match to include prefix. In this way will be easier to calculate the chunks:
             match.s = match.s + offset;
-            match.e = match.s + prefix.length + match.word.length + suffix.length; 
+            match.e = match.s + prefix.length + match.word.length + suffix.length;
 
             if (chunkSize > 0) {
                 let chunk: any = {
@@ -200,7 +202,7 @@ export class UIHelper {
 
             text = chunkedText;
         }
-        
+
         return text;
     }
 
@@ -234,17 +236,41 @@ export class UIHelper {
         let lastUser: string;
 
         if (!item || item.lastUpdateOn === undefined || item.createdOn === undefined) return ret
-        
+
         lastUpdate = (item.lastUpdateOn) ? item.lastUpdateOn : item.createdOn;
         lastUser = (item.lastUpdateBy) ? item.lastUpdateBy : item.createdBy;
-    
+
         if (friendly) {
-          ret = SharedSystemHelper.getFriendlyTimeFromNow(lastUpdate);
+            ret = SharedSystemHelper.getFriendlyTimeFromNow(lastUpdate);
         }
         else {
-          ret = SharedSystemHelper.formatDate(lastUpdate);
+            ret = SharedSystemHelper.formatDate(lastUpdate);
         }
-    
+
         return `${prefix} ${ret} ${(lastUser) ? "by " + lastUser : ""}`;
-      }
+    }
+
+    static newQuickTaskName(scriptName?: string):string {
+        let ret: string = ""
+        let scriptLabel = (scriptName) ? ` for ${scriptName}` : "";
+
+        ret = `Quick Task${scriptLabel} ${QUICK_TASK_ID_PREFIX}${SharedSystemHelper.getUniqueId()}`;
+        return ret;
+    }
+
+    static removeIDFromQuickTaskName(quickTaskName: string):string {
+        let ret: string = quickTaskName;
+        let pos: number = -1
+
+        if (!quickTaskName) return ret;
+        pos = String(quickTaskName).indexOf(QUICK_TASK_ID_PREFIX)
+
+        if(pos !== -1) {
+            ret = String(quickTaskName)
+                .slice(0, pos)
+                .trim()
+        }
+
+        return ret;
+    }
 }

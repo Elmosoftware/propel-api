@@ -1,6 +1,6 @@
 <div class="container mt-2">
     <form [formGroup]="fh.form">
-        <div *ngIf="!isQuickTask; else noQuickTask" class="form-group">
+        <div *ngIf="!isQuickTask; else QuickTask" class="form-group">
             <label for="name" class="data-required">Name</label>
             <input type="text" class="form-control" id="name" aria-describedby="name" placeholder="Enter the step name."
                 formControlName="name" required>
@@ -10,8 +10,8 @@
                 {{ sampleFormOrControlStatus(fh.form.controls.name) }}</small> -->
             <!-- DEBUG -->
         </div>
-        <ng-template #noQuickTask>
-            <div class="subtitle my-2">{{ fh.form.controls.name.value }}</div>
+        <ng-template #QuickTask>
+            <div class="subtitle my-2">{{ getFriendlyQuickTaskName(fh.form.controls.name.value) }}</div>
         </ng-template>
         <div class="form-group">
             <label class="data-required mr-2" for="script">Script to execute</label>

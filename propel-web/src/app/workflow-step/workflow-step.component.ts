@@ -22,6 +22,7 @@ import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 import { CustomValueDialogData } from '../dialogs/custom-value-dlg/custom-value-dlg.component';
 import { DialogResult } from 'src/core/dialog-result';
 import { JSType } from '../../../../propel-shared/core/type-definitions';
+import { UIHelper } from 'src/util/ui-helper';
 
 /**
  * Minimum step name length.
@@ -93,7 +94,6 @@ export class WorkflowStepComponent implements OnInit {
   allCredentials: Credential[];
   selectedScript: Script | undefined;
   validSets: any = {};
-  quickTaskId: string = "";
   credentialTypes = CredentialTypes;
 
   get parameterValues(): FormArray {
@@ -247,17 +247,12 @@ export class WorkflowStepComponent implements OnInit {
     });
   }
 
-  getQuickTaskName(): string {
-    let ret: string = ""
-    let scriptLabel = (this.selectedScript) ? ` for ${this.selectedScript.name}` : "";
+  getFullQuickTaskName(): string {
+    return UIHelper.newQuickTaskName(this.selectedScript?.name)
+  }
 
-    if (!this.quickTaskId) {
-      this.quickTaskId = SharedSystemHelper.getUniqueId();
-    }
-
-    ret = `Quick Task${scriptLabel} #${this.quickTaskId}`;
-
-    return ret;
+  getFriendlyQuickTaskName(name: string): string {
+    return UIHelper.removeIDFromQuickTaskName(name);
   }
 
   setValue(value?: WorkflowStep) {
@@ -271,7 +266,7 @@ export class WorkflowStepComponent implements OnInit {
       //A quick task doesn't require a name. Is not a repetible action, so 
       //we are assigning one name randomly:
       if (this.isQuickTask) {
-        value.name = this.getQuickTaskName();
+        value.name = this.getFullQuickTaskName();
       }
     }
     else if (typeof value.script == "string") {
@@ -350,7 +345,7 @@ export class WorkflowStepComponent implements OnInit {
     this.enableOrDisableTargets();
 
     if (this.isQuickTask) {
-      this.fh.form.controls.name.patchValue(this.getQuickTaskName());
+      this.fh.form.controls.name.patchValue(this.getFullQuickTaskName());
     }
 
     this.fh.form.updateValueAndValidity();

@@ -140,6 +140,20 @@ export class ResultsComponent implements OnInit {
       return ret;
   }
 
+  getWorkflowName(): string {
+    let ret: string = "";
+
+    if (!this.log?.workflow) return ret;
+
+    ret = this.log.workflow.name;
+
+    if (this.log.workflow.isQuickTask) {
+      ret = UIHelper.removeIDFromQuickTaskName(ret)
+    }
+
+    return ret;
+  }
+
   getWorkflowDescription() {
     let ret: string = ""
 
@@ -148,6 +162,11 @@ export class ResultsComponent implements OnInit {
     }
 
     return ret;
+  }
+
+  getStepName(stepName: string): string {
+    if (this.log?.workflow?.isQuickTask) return UIHelper.removeIDFromQuickTaskName(stepName)
+    else return stepName;
   }
 
   getTotalDurationDetails(friendly: boolean = true) {

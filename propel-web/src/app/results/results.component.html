@@ -6,7 +6,7 @@
                 <div class="row">
                     <div class="col-auto">
                         <app-status-icon size="big" [status]="log.status" class="mr-2"></app-status-icon>
-                        <span class="title overflowEllipsis align-bottom">{{ log.workflow.name }}</span>
+                        <span class="title overflowEllipsis align-bottom">{{ getWorkflowName() }}</span>
                         <i class="fas fa-binoculars text-mini ml-2" matTooltip="{{ getWorkflowDescription() }}"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                     </div>
@@ -65,7 +65,7 @@
                                 'item-disabled': !step.scriptEnabled 
                             }" class="icon-binoculars-after-mini" matTooltip="{{getStepDetails(i)}}"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
-                            {{step.stepName}}</span>
+                            {{ getStepName(step.stepName) }}</span>
                         </div>
                         <div *ngIf="step.startedAt" class="text-subtle">
                             <i class="fas fa-stopwatch"></i>

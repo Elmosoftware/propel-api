@@ -37,7 +37,7 @@
                 <div class="row">
                     <app-status-icon size="small" [status]="item.log.status" class="mr-2"></app-status-icon>
                     <a href="javascript:void(0)" (click)="goToResults(item.log._id)">
-                        {{item.workflowName}}</a>
+                        {{ getWorkflowName(item) }}</a>
                     <button *ngIf="!item.log.workflow.isQuickTask" 
                         class="btn button-icon-small icon-edit-subtle ml-2"
                         type="button" (click)="goToEditWorkflow(item.log.workflow._id)" 
