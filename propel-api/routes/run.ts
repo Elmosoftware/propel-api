@@ -57,10 +57,10 @@ export class RunRoute implements Route {
     async run(ws: any, req: express.Request): Promise<void> {
 
         let workflow: Workflow | undefined;
-        let runner: Runner;
+        let runner: Runner = new Runner();
         let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
 
-        let subsCallback = (data: any) => {
+        let subsCallback = (data: WebsocketMessage<ExecutionStats>) => {
             this.sendWebSocketMessage(ws, data);
         }
 
@@ -73,7 +73,6 @@ export class RunRoute implements Route {
 
             logger.logInfo(`Starting execution of Workflow "${(workflow?.name) ? workflow.name : "deleted workflow"}" with id: "${req.params.workFlowId}".`)
 
-            runner = new Runner();
             runner.execute(workflow, token, subsCallback)
                 .then((msg: WebsocketMessage<ExecutionStats>) => {
                     logger.logInfo(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" is finished with status: "${msg.context?.logStatus}".`);
@@ -81,8 +80,7 @@ export class RunRoute implements Route {
                 })
                 .catch((err) => {
                     logger.logInfo(`Execution of Workflow "${(workflow?.name) ? workflow.name : `with id "${req.params.workFlowId}"`}" finished with the following error: "${String(err)}".`);
-                    let msg = new WebsocketMessage<ExecutionStats>(InvocationStatus.Failed, (err.message) ? err.message : String(err))
-                    this.sendWebSocketMessage(ws, msg);
+                    this.sendWebSocketErrorMessage(ws, err as Error, runner.currentStats);
                 })
                 .finally(() => {
                     ws.close()
@@ -109,7 +107,7 @@ export class RunRoute implements Route {
             });
         } catch (err) {
             logger.logError((err as Error));
-            ws.send(JSON.stringify(err));
+            this.sendWebSocketErrorMessage(ws, err as Error, runner.currentStats)
             ws.close();
         }
     }
@@ -130,7 +128,7 @@ export class RunRoute implements Route {
         return Promise.resolve(result.data[0]);
     }
 
-    sendWebSocketMessage(ws: any, message: any) {
+    sendWebSocketMessage(ws: any, message: WebsocketMessage<ExecutionStats>) {
 
         if (ws.readyState !== ws.OPEN) {
                 logger.logWarn(`A message was sent when the socket is not opened. 
@@ -141,6 +139,13 @@ Message was: "${JSON.stringify(message)}".`)
         else {
             ws.send(JSON.stringify(message));
         }
+    }
+
+    sendWebSocketErrorMessage(ws: any, error: Error, stats: ExecutionStats) {
+        let e: PropelError = new PropelError(error);
+        let msg = new WebsocketMessage<ExecutionStats>(InvocationStatus.Failed,
+            (e.userMessage) ? e.userMessage : e.message, stats);
+        this.sendWebSocketMessage(ws, msg)
     }
 
     getWebsocketStatusName(state: number):string {

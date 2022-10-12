@@ -97,11 +97,10 @@ export class Runner {
             this._stats.logId = "";
             this._stats.logStatus =ExecutionStatus.Faulty;
 
-            return new WebsocketMessage(InvocationStatus.Failed,
-                `There was an error during the preparation.\r\n` + 
+            throw new PropelError(`There was an error during the preparation.\r\n` + 
                 `If this error is related to the credentials assigned to one specific target or the ` + 
                 `credentials set to one or more Propel parameters in any of the scripts, please verify them ` +
-                `before to retry. Following the error details: ` + e.message, this._stats);
+                `before to retry. Following the error details: ` + e.message);
         }
 
         this._stats.workflowName = workflow.name;
