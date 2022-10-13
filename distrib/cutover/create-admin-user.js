@@ -1,7 +1,7 @@
 /*
     To execute this script:
     Open a Command or Powershell console and type:
-        mongo create-admin-user.js
+        mongosh create-admin-user.js
 
     The script will run and create one MongoDB admin user in the "admin" system database.
 */

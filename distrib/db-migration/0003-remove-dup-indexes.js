@@ -21,7 +21,7 @@
      db = conn.getDB("admin");
      /*
          Variables "adu" and "adp", "apu", "app" must be passed with the "-- eval" parameter" like this:
-             mongo --eval "var adu='Admin user name here'; var adp='Admin password here';apu='Regular user name here'; var app='Regular user password here';" myscript.js
+             mongosh --eval "var adu='Admin user name here'; var adp='Admin password here';apu='Regular user name here'; var app='Regular user password here';" myscript.js
      */
      db.auth(adu, adp);
      db = conn.getDB(DB_NAME);
