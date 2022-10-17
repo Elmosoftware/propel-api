@@ -12,12 +12,11 @@ import { WorkflowStep } from '../../../../../propel-shared/models/workflow-step'
 })
 export class WorkflowStepDialogComponent implements OnInit {
 
-  status: WorkflowStepComponentStatus = null;
+  status: WorkflowStepComponentStatus | undefined = undefined;
   step: WorkflowStep;
 
   get title(): string {
     return "New Step"
-    // return ((this.fh.getId()) ? "Editing" : "New") + " " + this.entityName;
   }
 
   constructor(public dialogRef: MatDialogRef<WorkflowStep>,
@@ -32,7 +31,7 @@ export class WorkflowStepDialogComponent implements OnInit {
     }    
   }
 
-  closeDlg(id): void {
+  closeDlg(id: number): void {
     this.dialogRef.close(new DialogResult<any>(id, this.status));
   }
 

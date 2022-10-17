@@ -90,7 +90,7 @@ export class SearchTypeDefinition {
         return this.getAttribute(type, "defaultSort");
     }
 
-    static getAdditionalFilterConditions(type: SearchType): string {
+    static getAdditionalFilterConditions(type: SearchType): any {
         return this.getAttribute(type, "additionalFilter");
     }
 
@@ -99,7 +99,7 @@ export class SearchTypeDefinition {
         let ret: string;
 
         if(this._def[type]) {
-            ret = this._def[type][attr];
+            ret = (this._def as any)[type][attr];
         }
         else {
             throw new PropelError(`There is no search type define with name ${type}`)

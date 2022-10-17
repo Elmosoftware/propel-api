@@ -46,8 +46,8 @@ describe("HttpHelper Class", () => {
             //@ts-ignore
             let h = HttpHelper.buildHeaders({name: "Header1", value: "Value1"});
             expect(h.keys().length).toEqual(1);
-            expect(h.getAll("Header1").length).toEqual(1);
-            expect(h.getAll("Header1")[0]).toEqual("Value1");
+            expect(h.getAll("Header1")!.length).toEqual(1);
+            expect(h.getAll("Header1")![0]).toEqual("Value1");
         });
     });
     describe("buildHeaders()", () => {
@@ -55,10 +55,10 @@ describe("HttpHelper Class", () => {
             //@ts-ignore
             let h = HttpHelper.buildHeaders({name: "Header1", value: ["Value11", "Value12", "Value13"]});
             expect(h.keys().length).toEqual(1);
-            expect(h.getAll("Header1").length).toEqual(3);
-            expect(h.getAll("Header1")[0]).toEqual("Value11");
-            expect(h.getAll("Header1")[1]).toEqual("Value12");
-            expect(h.getAll("Header1")[2]).toEqual("Value13");
+            expect(h.getAll("Header1")!.length).toEqual(3);
+            expect(h.getAll("Header1")![0]).toEqual("Value11");
+            expect(h.getAll("Header1")![1]).toEqual("Value12");
+            expect(h.getAll("Header1")![2]).toEqual("Value13");
         });
     });
     describe("buildHeaders()", () => {
@@ -68,12 +68,12 @@ describe("HttpHelper Class", () => {
                 { name: "Header2", value: "Value2" },
                 { name: "Header3", value: "Value3" });
             expect(h.keys().length).toEqual(3);
-            expect(h.getAll("Header1").length).toEqual(1);
-            expect(h.getAll("Header1")[0]).toEqual("Value1");
-            expect(h.getAll("Header2").length).toEqual(1);
-            expect(h.getAll("Header2")[0]).toEqual("Value2");
-            expect(h.getAll("Header3").length).toEqual(1);
-            expect(h.getAll("Header3")[0]).toEqual("Value3");
+            expect(h.getAll("Header1")!.length).toEqual(1);
+            expect(h.getAll("Header1")![0]).toEqual("Value1");
+            expect(h.getAll("Header2")!.length).toEqual(1);
+            expect(h.getAll("Header2")![0]).toEqual("Value2");
+            expect(h.getAll("Header3")!.length).toEqual(1);
+            expect(h.getAll("Header3")![0]).toEqual("Value3");
         });
     });
     describe("buildHeaders()", () => {
@@ -83,13 +83,13 @@ describe("HttpHelper Class", () => {
                 { name: "Header2", value: ["Value21", "Value22"] },
                 { name: "Header3", value: "Value3" });
             expect(h.keys().length).toEqual(3);
-            expect(h.getAll("Header1").length).toEqual(1);
-            expect(h.getAll("Header1")[0]).toEqual("Value1");
-            expect(h.getAll("Header2").length).toEqual(2);
-            expect(h.getAll("Header2")[0]).toEqual("Value21");
-            expect(h.getAll("Header2")[1]).toEqual("Value22");
-            expect(h.getAll("Header3").length).toEqual(1);
-            expect(h.getAll("Header3")[0]).toEqual("Value3");
+            expect(h.getAll("Header1")!.length).toEqual(1);
+            expect(h.getAll("Header1")![0]).toEqual("Value1");
+            expect(h.getAll("Header2")!.length).toEqual(2);
+            expect(h.getAll("Header2")![0]).toEqual("Value21");
+            expect(h.getAll("Header2")![1]).toEqual("Value22");
+            expect(h.getAll("Header3")!.length).toEqual(1);
+            expect(h.getAll("Header3")![0]).toEqual("Value3");
         });
     });
     describe("buildHeaders()", () => {
@@ -98,10 +98,10 @@ describe("HttpHelper Class", () => {
             let h = HttpHelper.buildHeaders(Headers.ContentTypeJson, 
                 Headers.XPropelNoAuth);
             expect(h.keys().length).toEqual(2);
-            expect(h.getAll("Content-Type").length).toEqual(1);
-            expect(h.getAll("Content-Type")[0]).toEqual("application/json");
-            expect(h.getAll("X-Propel-NoAuth").length).toEqual(1);
-            expect(h.getAll("X-Propel-NoAuth")[0]).toEqual("");
+            expect(h.getAll("Content-Type")!.length).toEqual(1);
+            expect(h.getAll("Content-Type")![0]).toEqual("application/json");
+            expect(h.getAll("X-Propel-NoAuth")!.length).toEqual(1);
+            expect(h.getAll("X-Propel-NoAuth")![0]).toEqual("");
         });
     });
 });

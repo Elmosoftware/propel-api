@@ -1,4 +1,4 @@
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { schemaRepo } from "../../../propel-shared/schema/schema-repository";
 import { SchemaDefinition } from '../../../propel-shared/schema/schema-definition';
 import { DataEndpointActions } from 'src/services/data.service';
@@ -8,14 +8,14 @@ import { DataEndpointActions } from 'src/services/data.service';
  */
 export class FormHandler<T> {
 
-    private originalValue: T;
+    private originalValue!: T;
     private schemaDef: Readonly<SchemaDefinition>;
-    private _form: FormGroup
+    private _form: UntypedFormGroup
 
     /**
      * Returns the form instance.
      */
-    get form(): FormGroup {
+    get form(): UntypedFormGroup {
         return this._form;
     }
 
@@ -46,19 +46,18 @@ export class FormHandler<T> {
      * @param entityType Type for the form data. Must inherit from *"Entity"*.
      * @param form Formgroup to handle.
      */
-    constructor(entityType: DataEndpointActions | string, form: FormGroup) {
-        // this.schemaDef = schemaRepo.getEntitySchemaByName(entityType.name); 
+    constructor(entityType: DataEndpointActions | string, form: UntypedFormGroup) {
         this.schemaDef = schemaRepo.getSchemaByName(entityType.toString()); 
         this._form = form;
 
         if (this.schemaDef.isEntity) {
-            this._form.addControl("_id", new FormControl("", []));
+            this._form.addControl("_id", new UntypedFormControl("", []));
         }
 
         //If the schema has audit fields, we can add them here too:
         if (this.schemaDef.auditFieldsList.length > 0) {
             this.schemaDef.auditFieldsList.forEach((field) => {
-                this._form.addControl(field, new FormControl({ value: "", disabled: true }, []));
+                this._form.addControl(field, new UntypedFormControl({ value: "", disabled: true }, []));
             })
         }
     }
@@ -70,7 +69,7 @@ export class FormHandler<T> {
     setValue(value: T): void {
         this.originalValue = value;
         // this.form.patchValue(Object.assign({}, value));
-        this.form.patchValue(value);
+        this.form.patchValue(value as { [key: string]: any; });
         this.form.markAsPristine();
         this.form.markAsUntouched();
     }
@@ -83,7 +82,7 @@ export class FormHandler<T> {
      */
     setId(id: string): void {
         if (this.hasId) {
-            this.form.controls._id.patchValue(id);
+            this.form.controls['_id'].patchValue(id);
         }        
     }
 
@@ -95,7 +94,7 @@ export class FormHandler<T> {
         let ret: string =  "";
 
         if (this.hasId) {
-            ret = this.form.controls._id.value;
+            ret = this.form.controls['_id'].value;
         }
 
         return ret;        

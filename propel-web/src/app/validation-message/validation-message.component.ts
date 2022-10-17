@@ -9,7 +9,7 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 })
 export class ValidationMessageComponent implements OnInit {
 
-  @Input() control: AbstractControl;
+  @Input() control!: AbstractControl;
   
   constructor() { }
 
@@ -21,8 +21,7 @@ export class ValidationMessageComponent implements OnInit {
   }
 
   get errorMessage(): string {
-    if (this.isInvalid) {
-      return ValidatorsHelper.getErrorText(this.control);
-    }
+    if (this.isInvalid) return ValidatorsHelper.getErrorText(this.control);
+    else return ""
   }
 }

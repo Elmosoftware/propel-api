@@ -20,7 +20,7 @@
                 [compareWith]="compareFn" (change)="scriptChanged($event)"
                 placeholder="Select the script you want to execute." formControlName="script">
             </ng-select>
-            <app-validation-message [control]="fh.form.controls.script">
+            <app-validation-message [control]="fh.form.controls['script']">
             </app-validation-message>
             <div *ngIf="fh.form.value.script && fh.form.value.script.enabled == false">
                 <div class="alert fade show alert-warning alert-dismissible my-2" role="alert">
@@ -56,7 +56,7 @@
             <!-- <small class="form-text text-muted">Current control status:
                 {{ sampleFormOrControlStatus(fh.form.controls.targets) }}</small> -->
             <!-- DEBUG -->
-            <app-validation-message [control]="fh.form.controls.targets">
+            <app-validation-message [control]="fh.form.controls['targets']">
             </app-validation-message>
         </div>
         <div *ngIf="selectedScript">

@@ -10,7 +10,7 @@ import { SecurityRequest } from '../../../propel-shared/core/security-request';
 import { TokenRefreshRequest } from '../../../propel-shared/core/token-refresh-request';
 import { SecurityToken } from '../../../propel-shared/core/security-token';
 import { SecuritySharedConfiguration } from '../../../propel-shared/core/security-shared-config';
-import { of, throwError } from 'rxjs';
+import { lastValueFrom, of, throwError } from 'rxjs';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { environment as env } from 'src/environments/environment';
 import { RDPUser } from '../../../propel-shared/core/rdp-user';
@@ -101,10 +101,9 @@ export class SecurityService {
     async getConfig(): Promise<SecuritySharedConfiguration> {
         let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, SecurityEndpoint);
 
-        return this.http.get<SecuritySharedConfiguration>(url, {
+        return lastValueFrom(this.http.get<SecuritySharedConfiguration>(url, {
             headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
-        })
-            .toPromise();
+        }));
     }
 
     /**
@@ -161,10 +160,9 @@ export class SecurityService {
         let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
             [SecurityEndpoint, SecurityEndpointActions.UnlockUser, userId]);
 
-        return this.http.post<void>(url, null, {
+        return lastValueFrom(this.http.post<void>(url, null, {
             headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
-        })
-            .toPromise();
+        }));
     }
 
     /**
@@ -176,10 +174,9 @@ export class SecurityService {
         let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
             [SecurityEndpoint, SecurityEndpointActions.ResetUserPassword, userId]);
 
-        return this.http.post<UserRegistrationResponse>(url, null, {
+        return lastValueFrom(this.http.post<UserRegistrationResponse>(url, null, {
             headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
-        })
-            .toPromise();
+        }));
     }
 
     /**
@@ -209,10 +206,9 @@ export class SecurityService {
         let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
             [SecurityEndpoint, SecurityEndpointActions.GetUser, userIdOrName]);
 
-        return this.http.get<UserAccount>(url, {
+        return lastValueFrom(this.http.get<UserAccount>(url, {
             headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
-        })
-            .toPromise();
+        }));
     }
 
     /**
@@ -224,10 +220,9 @@ export class SecurityService {
         let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
             [SecurityEndpoint, SecurityEndpointActions.SaveUser]);
 
-        return this.http.post<UserRegistrationResponse>(url, user, {
+        return lastValueFrom(this.http.post<UserRegistrationResponse>(url, user, {
             headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
-        })
-            .toPromise();
+        }));
     }
 
     /**
@@ -255,8 +250,8 @@ export class SecurityService {
             try {
                 await this.login(new SecurityRequest());
                 return Promise.resolve("Legacy security is on. Login was successful.");
-            } catch (error) {
-                return Promise.reject(`There was an error trying to login with Legacy security: "${error.message}"`)
+            } catch (error: any) {
+                return Promise.reject(`There was an error trying to login with Legacy security: "${(error.message) ? error.message : JSON.stringify(error)}"`)
             }
         else {
             return Promise.resolve("Legacy security is disabled and no refresh token was found. Session reconnection is not possible.");
@@ -277,6 +272,7 @@ export class SecurityService {
 
         if (!config.legacySecurity) {
             if (ri && ri.userName && ri.RDPUsers.length !== 0) {
+                //@ts-ignore   TODO: Fix warning: "Not all code paths return a value."
                 let user = ri.RDPUsers.find((u: RDPUser) => {
                     if (u.userName == request.userName) {
                         return u;
@@ -296,7 +292,7 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
             }
         }
 
-        return this.http.post<UserLoginResponse>(url, request,
+        return lastValueFrom(this.http.post<UserLoginResponse>(url, request,
             {
                 headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
             })
@@ -309,8 +305,7 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
                 tap(_ => {
                     logger.logInfo(`User ${this._session.sessionData.userFullName} (${this._session.sessionData.userName}) just login. Access expiring by "${(this.sessionData.expiresAt ? this.sessionData.expiresAt.toLocaleString() : "not defined")}".`)
                 })
-            )
-            .toPromise();
+            ));
     }
 
     /**
@@ -323,7 +318,7 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
         let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
             [SecurityEndpoint, SecurityEndpointActions.Refresh]);
 
-        return this.http.post<UserLoginResponse>(url, request,
+        return lastValueFrom(this.http.post<UserLoginResponse>(url, request,
             {
                 headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
             })
@@ -342,8 +337,7 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
                 tap(_ => {
                     logger.logInfo(`Access token refreshed successfully, expiring on "${(this.sessionData.expiresAt ? this.sessionData.expiresAt.toLocaleString() : "not defined")}".`)
                 })
-            )
-            .toPromise();
+            ));
     }
 
     /**
@@ -353,7 +347,7 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
         let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
             [SecurityEndpoint, SecurityEndpointActions.Logoff]);
 
-        return this.http.post<void>(url, new TokenRefreshRequest(this.refreshToken),
+        return lastValueFrom(this.http.post<void>(url, new TokenRefreshRequest(this.refreshToken),
             {
                 //No Auth headers in this call because this method will be automatically called if 
                 //the access token refresh process failed. So we need to ensure the log off will be 
@@ -375,7 +369,6 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
                     this._session.removeSessionData();
                     this._securityEvent$.emit(SecurityEvent.Logoff);
                 })
-            )
-            .toPromise();
+            ));
     }
 }

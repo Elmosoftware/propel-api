@@ -10,7 +10,7 @@ import { st } from 'stopword';
 })
 export class OfflineComponent implements OnInit {
 
-  status: ConnectivityStatus
+  status!: ConnectivityStatus
 
   constructor(private core: CoreService) {
     this.evaluateStatus(core.connectivity.status);

@@ -10,7 +10,7 @@
             <div class="form-group">
                 <input type="text" class="form-control" id="value" aria-describedby="value"
                     placeholder="Enter the value here." formControlName="value" required>
-                <app-validation-message [control]="fh.controls.value"></app-validation-message>
+                <app-validation-message [control]="fh.controls['value']"></app-validation-message>
             </div>
         </form>
     </div>

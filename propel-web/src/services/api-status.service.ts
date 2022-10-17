@@ -6,6 +6,7 @@ import { APIStatus } from "../../../propel-shared/models/api-status";
 import { UsageStats } from "../../../propel-shared/models/usage-stats";
 import { logger } from '../../../propel-shared/services/logger-service';
 import { HttpHelper, Headers } from 'src/util/http-helper';
+import { lastValueFrom } from 'rxjs';
 
 export const StatusEndpoint: string = "status"
 
@@ -32,10 +33,9 @@ export class APIStatusService {
   async getStatus(): Promise<APIStatus> {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, StatusEndpoint);
 
-    return this.http.get<APIStatus>(url, { 
+    return lastValueFrom(this.http.get<APIStatus>(url, { 
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
-    })
-    .toPromise();
+    }));
   }
 
   /**
@@ -45,10 +45,9 @@ export class APIStatusService {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
       [StatusEndpoint, StatusEndpointActions.ApplicationStats]);
 
-    return this.http.get<UsageStats>(url, { 
+    return lastValueFrom(this.http.get<UsageStats>(url, { 
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth) 
-    })
-    .toPromise();
+    }));
   }
 
   /**
@@ -58,9 +57,8 @@ export class APIStatusService {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
       [StatusEndpoint, StatusEndpointActions.UserStats]);
 
-    return this.http.get<UsageStats>(url, { 
+    return lastValueFrom(this.http.get<UsageStats>(url, { 
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
-    })
-    .toPromise();
+    }));
   }
 }

@@ -21,8 +21,8 @@ const DEFAULT_PAGINATOR_MIN_ROWS: number = 50;
 })
 export class DynamicTableComponent implements OnInit {
 
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true }) paginator!: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort!: MatSort;
 
   get data(): any {
     return this._data;
@@ -46,7 +46,7 @@ export class DynamicTableComponent implements OnInit {
    * can specify only the columns you want to be displayed at left only. 
    */
   @Input("column-order")
-  set columnOrder(value: string[]) {
+  set columnOrder(value: string | string[]) {
     if (Array.isArray(value)) {
       this._columnOrder = value
     }
@@ -61,7 +61,7 @@ export class DynamicTableComponent implements OnInit {
   /**
    * Minimum amount of rows to fore showing the paginator.
    */
-  @Input("paginator-min-rows") paginatorMinRows: string;
+  @Input("paginator-min-rows") paginatorMinRows!: string;
   get showPaginator(): boolean {
     let ret: boolean = false;
     let min: number;
@@ -120,16 +120,16 @@ export class DynamicTableComponent implements OnInit {
   private _excludedFields: string[] = [];
   private _data: any;
   private _columnOrder: string[] = [];
-  dataSource: MatTableDataSource<any>;
-  columns: string[];
+  dataSource!: MatTableDataSource<any>;
+  columns!: string[];
   filter: string = "";
   
   paginatorPageSizeOptions: number[] = [];
 
 
   get noMatches(): boolean {
-    return this.filter && this.dataSource && this.dataSource.filteredData
-      && this.dataSource.filteredData.length == 0;
+    return Boolean(this.filter && this.dataSource && this.dataSource.filteredData
+      && this.dataSource.filteredData.length == 0);
   }
 
   constructor() { }

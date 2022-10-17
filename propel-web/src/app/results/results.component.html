@@ -155,7 +155,8 @@
                             <i class="fas fa-bug fa-2x py-2"
                                 matTooltip="Below the errors returned by any of the targets."
                                 matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                            <app-dynamic-table [data]="allErrors" [show-filter]="false" excluded-fields="stack"
+                            <app-dynamic-table [data]="allErrors" [show-filter]="false" 
+                                [excluded-fields]="['stack']"
                                 column-order="Target Name" class="errors-header"></app-dynamic-table>
                         </div>
                     </div>

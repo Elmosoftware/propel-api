@@ -17,11 +17,11 @@ export class APIKeySecretComponent implements OnInit, FormSubcomponentInterface<
 
   //#region FormSubcomponentInterface implementation
 
-  @Input() model: GenericAPIKeySecret;
+  @Input() model!: GenericAPIKeySecret;
 
-  @Input() reset: Observable<void>;
+  @Input() reset!: Observable<void>;
 
-  @Input() saved: Observable<void>;
+  @Input() saved!: Observable<void>;
 
   /**
    * Change event, will be throw every time the form suffer any change.
@@ -42,7 +42,7 @@ export class APIKeySecretComponent implements OnInit, FormSubcomponentInterface<
   fg: FormGroup;
   viewAppId: boolean = false;
   viewAPIKey: boolean = false;
-  previousValue: GenericAPIKeySecret;
+  previousValue!: GenericAPIKeySecret;
 
   constructor(private core: CoreService) {
 

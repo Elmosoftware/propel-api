@@ -18,11 +18,11 @@ export class WindowsSecretComponent implements OnInit, FormSubcomponentInterface
 
   //#region FormSubcomponentInterface implementation
 
-  @Input() model: WindowsSecret;
+  @Input() model!: WindowsSecret;
 
-  @Input() reset: Observable<void>;
+  @Input() reset!: Observable<void>;
 
-  @Input() saved: Observable<void>;
+  @Input() saved!: Observable<void>;
 
   /**
    * Change event, will be throw every time the form suffer any change.
@@ -42,7 +42,7 @@ export class WindowsSecretComponent implements OnInit, FormSubcomponentInterface
   private requestCount$: EventEmitter<number>;
   fg: FormGroup;
   viewPassword: boolean = false;
-  previousValue: WindowsSecret;
+  previousValue!: WindowsSecret;
 
   constructor(private core: CoreService) {
 

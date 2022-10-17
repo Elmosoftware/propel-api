@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 
 export class WebsocketService<T> {
 
-  private _socket: WebSocketSubject<T>;
+  private _socket!: WebSocketSubject<T>; //TODO: need to fix, it can actually be null...
 
   constructor(private url: string) {
   }

@@ -254,12 +254,12 @@ export class AppPages {
      */
     getPageFromName(name: string): PageMetadata {
 
-        let ret: PageMetadata;
+        let ret: PageMetadata | undefined;
         let props = Object.getOwnPropertyNames(this)
         
         props.forEach((key: string) => {
-            if (this[key].name == name) {
-                ret = this[key];
+            if ((this as any)[key].name == name) {
+                ret = (this as any)[key];
             }
         });
 
@@ -303,7 +303,7 @@ export class AppPages {
     /**
      * Page security details, indicating theroles that are granting access, etc..
      */
-    security: PageSecurity;
+    security!: PageSecurity;
 
     /**
      * Indicates if the page need to be excluded from navigation history.
@@ -324,12 +324,12 @@ export class PageSecurity {
     /**
      * Indicates if non-authenticated users can access the page.
      */
-    restricted: boolean;
+    restricted!: boolean;
     
     /**
      * Indicates if only Administrators can access.
      */
-    adminOnly: boolean;
+    adminOnly!: boolean;
     
     constructor() {
         

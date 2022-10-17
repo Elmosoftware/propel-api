@@ -20,12 +20,12 @@ export class StatusIconComponent implements OnInit {
   /**
    * Status the icon must represent.
    */
-  @Input() status: string;
+  @Input() status!: string;
 
   /**
    * A tooltip text that helps the user to clarify the symbolism.
    */
-  @Input() tooltipText: string;
+  @Input() tooltipText!: string;
 
   /**
    * Icon style. It change the icon representation to match better the background.
@@ -42,7 +42,7 @@ export class StatusIconComponent implements OnInit {
   /**
    * Size of the icon.
    */
-  @Input() size: IconSizes = IconSizes.Small;
+  @Input() size: IconSizes | string = IconSizes.Small;
 
 
   get tooltip(): string {

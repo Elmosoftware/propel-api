@@ -8,7 +8,7 @@ import { Clipboard } from '@angular/cdk/clipboard';
 })
 export class AuthenticationCodeComponent implements OnInit {
 
-  @Input() code: string;
+  @Input() code!: string;
 
   codeCopied: boolean = false;
 

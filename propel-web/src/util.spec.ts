@@ -1,4 +1,5 @@
-import { processQWINSTAOutput } from "../util";
+//@ts-ignore
+import { processQWINSTAOutput } from "../util"
 
 describe("Electron Support files", () => {
     describe("Util.processQWINSTAOutput", () => {

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
@@ -51,7 +51,7 @@ enum LoginType {
 export class LoginComponent implements OnInit {
 
   private requestCount$: EventEmitter<number>;
-  fg: FormGroup;
+  fg: UntypedFormGroup;
   viewAuthCodeOrPassword: boolean = false;
   viewNewPassword: boolean = false;
   viewPasswordConfirmation: boolean = false;
@@ -59,7 +59,7 @@ export class LoginComponent implements OnInit {
 
   //Form validation constant parameters:
   validationParams: any;
-  formFlow: FormFlow;
+  formFlow!: FormFlow;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
@@ -68,16 +68,16 @@ export class LoginComponent implements OnInit {
       get namePattern() { return "^[0-9a-zA-Z\.]+$" },
     }
 
-    this.fg = new FormGroup({
-      name: new FormControl("", [
+    this.fg = new UntypedFormGroup({
+      name: new UntypedFormControl("", [
         Validators.required,
         Validators.maxLength(this.validationParams.nameMaxLength),
         ValidatorsHelper.pattern(new RegExp(this.validationParams.namePattern, "g"),
           "The user name can contain letters, numbers and the dot character only.")
       ]),
-      authCodeOrPassword: new FormControl(""),
-      newPassword: new FormControl(""),
-      passwordConfirmation: new FormControl("")
+      authCodeOrPassword: new UntypedFormControl(""),
+      newPassword: new UntypedFormControl(""),
+      passwordConfirmation: new UntypedFormControl("")
     });
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
@@ -111,13 +111,13 @@ export class LoginComponent implements OnInit {
     // }
     // ////////////////////////////////////////////////////////////////////////////
 
-    this.referrerURL = this.route.snapshot.queryParamMap.get("referrerURL")
+    this.referrerURL = this.route.snapshot.queryParamMap.get("referrerURL") ?? ""
     this.formFlow = new FormFlow();
 
     //If we have the user that is running Propel specified in the runtime info, then we must set it 
     //in the form and switch directly to the "passwords" section of the login form:
     if (this.core.security.runtimeInfo) {
-      this.fg.controls.name.patchValue(this.core.security.runtimeInfo.userName);
+      this.fg.controls['name'].patchValue(this.core.security.runtimeInfo.userName);
       this.formFlow.activeFormSection = FormsSection.PreloadRuntimeInfo;
       this.formFlow.isUserSectionEnabled = false;
       this.continue(); //Moving to the "password" section.
@@ -143,12 +143,12 @@ export class LoginComponent implements OnInit {
 
   continue() {
 
-    if (!this.fg.controls.name.valid) return;
+    if (!this.fg.controls['name'].valid) return;
 
     this.core.security.getConfig()
       .then((config: SecuritySharedConfiguration) => {
 
-        this.core.security.getUser(this.fg.controls.name.value)
+        this.core.security.getUser(this.fg.controls['name'].value)
           .then((data: UserAccount) => {
 
             //If the user account doesn't exists:
@@ -187,16 +187,17 @@ export class LoginComponent implements OnInit {
               }
 
               //Preparing the form controls:
-              this.fg.controls.authCodeOrPassword.patchValue("");
-              this.fg.controls.authCodeOrPassword.clearValidators();
-              this.fg.controls.newPassword.patchValue("");
-              this.fg.controls.newPassword.clearValidators();
-              this.fg.controls.passwordConfirmation.patchValue("");
-              this.fg.controls.passwordConfirmation.clearValidators();
+              //Preparing the form controls:
+              this.fg.controls['authCodeOrPassword'].patchValue("");
+              this.fg.controls['authCodeOrPassword'].clearValidators();
+              this.fg.controls['newPassword'].patchValue("");
+              this.fg.controls['newPassword'].clearValidators();
+              this.fg.controls['passwordConfirmation'].patchValue("");
+              this.fg.controls['passwordConfirmation'].clearValidators();
 
               //If is a regular login we just need the password field:
               if (this.formFlow.loginType == LoginType.Regular) {
-                this.fg.controls.authCodeOrPassword.addValidators([
+                this.fg.controls['authCodeOrPassword'].addValidators([
                   Validators.required,
                   Validators.maxLength(config.passwordMaxLength),
                   Validators.minLength(config.passwordMinLength)
@@ -204,16 +205,16 @@ export class LoginComponent implements OnInit {
               }
               //For any other case we need the new password and the password confirmation fields:
               else {
-                this.fg.controls.authCodeOrPassword.addValidators([
+                this.fg.controls['authCodeOrPassword'].addValidators([
                   Validators.required,
                   ValidatorsHelper.exactLength(config.authCodeLength)
                 ])
-                this.fg.controls.newPassword.addValidators([
+                this.fg.controls['newPassword'].addValidators([
                   Validators.required,
                   Validators.minLength(config.passwordMinLength),
                   Validators.maxLength(config.passwordMaxLength)
                 ])
-                this.fg.controls.passwordConfirmation.addValidators([
+                this.fg.controls['passwordConfirmation'].addValidators([
                   Validators.required,
                   ValidatorsHelper.fieldsEquality("newPassword", "passwordConfirmation",
                     `The new passwords do not match. Please verify the values entered.`)
@@ -237,16 +238,18 @@ export class LoginComponent implements OnInit {
     this.formFlow.message = MSG_LOGIN_START;
     this.formFlow.messageIsError = false;
 
-    sr.userName = this.fg.controls.name.value;
-    sr.password = this.fg.controls.authCodeOrPassword.value;
+    sr.userName = this.fg.controls['name'].value;
+    sr.password = this.fg.controls['authCodeOrPassword'].value;
 
     //if is a first login or a password reset:
     if (this.formFlow.loginType !== LoginType.Regular) {
-      sr.newPassword = this.fg.controls.newPassword.value;
+      sr.newPassword = this.fg.controls['newPassword'].value;
     }
 
     this.execLogin(sr)
-    .catch(this.core.handleError)
+    .catch((error) => {
+      this.core.handleError(error)
+    })
   }
 
   async execLogin(sr: SecurityRequest): Promise<void> {
@@ -265,7 +268,7 @@ export class LoginComponent implements OnInit {
       }
     }
     catch (error) {
-      let e = new PropelError(error);
+      let e = new PropelError(error as Error);
 
       this.formFlow.message = e.userMessage || MSG_LOGIN_ERROR;
       this.formFlow.messageIsError = true
@@ -306,6 +309,6 @@ class FormFlow {
   messageIsError: boolean = false;
   message: string = "";
   loginType: LoginType = LoginType.Regular;
-  user: UserAccount;
+  user!: UserAccount;
   isUserSectionEnabled: boolean = true
 }

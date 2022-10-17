@@ -451,9 +451,9 @@
         Show CustomValueDialog (with initial text value)</button>
       <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog(23)">
         Show CustomValueDialog (with initial numeric value)</button>
-      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog(null, true)">
+      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog(undefined, true)">
         Show CustomValueDialog (no initial text value)</button>
-      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog(null, false)">
+      <button type="button" class="btn-secondary m-1" (click)="showCustomValueDialog(undefined, false)">
         Show CustomValueDialog (no initial numeric value)</button>
 
       <!-- PROGRESS BAR -->
@@ -697,20 +697,20 @@
             <label for="name" class="data-required">Name</label>
             <input type="text" class="form-control" id="name" aria-describedby="name"
               placeholder="Enter your name (min: 3 chars, max: 10 chars)" formControlName="name" required>
-            <small *ngIf="getErrorText(this.sampleForm.controls.name)" class="form-text data-invalid-message">{{
-              getErrorText(this.sampleForm.controls.name) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls['name'])" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls['name']) }}</small>
             <small class="form-text text-muted">Current control status:
-              {{ sampleFormOrControlStatus(this.sampleForm.controls.name) }}</small>
+              {{ sampleFormOrControlStatus(this.sampleForm.controls['name']) }}</small>
           </div>
           <div class="form-group">
             <label class="data-required mr-2">Disabled</label>
             <mat-slide-toggle color="primary" id="enabled" formControlName="enabled">
             </mat-slide-toggle>
             <label class="ml-2">Enabled</label>
-            <small *ngIf="getErrorText(this.sampleForm.controls.enabled)" class="form-text data-invalid-message">{{
-              getErrorText(this.sampleForm.controls.enabled) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls['enabled'])" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls['enabled']) }}</small>
             <small class="form-text text-muted">Current control status:
-              {{ sampleFormOrControlStatus(this.sampleForm.controls.enabled) }}</small>
+              {{ sampleFormOrControlStatus(this.sampleForm.controls['enabled']) }}</small>
           </div>
           <div class="form-group">
             <label class="data-required mr-2" for="simpleSelect">Selection of simple value</label>
@@ -718,10 +718,10 @@
               labelForId="simpleSelect" [compareWith]="compareFn" placeholder="Select a country"
               formControlName="country">
             </ng-select>
-            <small *ngIf="getErrorText(this.sampleForm.controls.country)" class="form-text data-invalid-message">{{
-              getErrorText(this.sampleForm.controls.country) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls['country'])" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls['country']) }}</small>
             <small class="form-text text-muted">Current control status:
-              {{ sampleFormOrControlStatus(this.sampleForm.controls.country) }}</small>
+              {{ sampleFormOrControlStatus(this.sampleForm.controls['country']) }}</small>
           </div>
           <div class="form-group">
             <label class="mr-2" for="multipleSelect">Selection of multiple values</label>
@@ -737,10 +737,10 @@
                   'item-disabled': !item.enabled }">{{item.name}}</span>
               </ng-template>
             </ng-select>
-            <small *ngIf="getErrorText(this.sampleForm.controls.colors)" class="form-text data-invalid-message">{{
-              getErrorText(this.sampleForm.controls.colors) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls['colors'])" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls['colors']) }}</small>
             <small class="form-text text-muted">Current control status:
-              {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
+              {{ sampleFormOrControlStatus(this.sampleForm.controls['colors']) }}</small>
           </div>
           <div class="form-group">
             <label class="mr-2" for="multipleSelectWithNew">Multiple values allowing to add new ones</label>
@@ -754,10 +754,10 @@
                 </div>
               </ng-template>
             </ng-select>
-            <small *ngIf="getErrorText(this.sampleForm.controls.colors)" class="form-text data-invalid-message">{{
-              getErrorText(this.sampleForm.controls.colors) }}</small>
+            <small *ngIf="getErrorText(this.sampleForm.controls['colors'])" class="form-text data-invalid-message">{{
+              getErrorText(this.sampleForm.controls['colors']) }}</small>
             <small class="form-text text-muted">Current control status:
-              {{ sampleFormOrControlStatus(this.sampleForm.controls.colors) }}</small>
+              {{ sampleFormOrControlStatus(this.sampleForm.controls['colors']) }}</small>
           </div>
           <div class="form-group">
             <label for="password" class="data-required">Password</label>

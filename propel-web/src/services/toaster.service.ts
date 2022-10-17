@@ -102,7 +102,7 @@ export class ToasterService {
      * @param message Message to show in the toaster.
      * @param title Optional toaster title.
      */
-    showInformation(message, title = 'Information') {
+    showInformation(message?: string, title = 'Information') {
         this.zone.run(() => {
             this.toastr.info(message, title);
         });
@@ -113,7 +113,7 @@ export class ToasterService {
      * @param message Message to show in the toaster.
      * @param title Optional toaster title.
      */
-    showWarning(message, title = 'Warning!') {
+    showWarning(message?: string, title = 'Warning!') {
         this.zone.run(() => {
             this.toastr.warning(message, title);
         });

@@ -4,20 +4,20 @@
             <label for="FQDN" class="data-required">Fully Qualified Domain Name</label>
             <input type="text" class="form-control" id="FQDN" aria-describedby="FQDN"
                 placeholder="Enter the server full name, (e.g.: myserver.mydomain.com)" formControlName="FQDN" required>
-            <app-validation-message [control]="fh.form.controls.FQDN"></app-validation-message>            
+            <app-validation-message [control]="fh.form.controls['FQDN']"></app-validation-message>            
         </div>
         <div class="form-group">
             <label for="friendlyName" class="data-required">Friendly name</label>
             <input type="text" class="form-control" id="friendlyName" aria-describedby="friendlyName"
                 placeholder="Enter a friendly name, (usually a shorter one)." formControlName="friendlyName" required>
-            <app-validation-message [control]="fh.form.controls.friendlyName"></app-validation-message>            
+            <app-validation-message [control]="fh.form.controls['friendlyName']"></app-validation-message>            
         </div>
         <div class="form-group">
             <label for="description">Description</label>
             <textarea class="form-control" id="description" aria-describedby="description"
                 placeholder="Enter here some brief description of the server, something that could help to identify his purpose easily."
                 rows="3" formControlName="description"></textarea>
-            <app-validation-message [control]="fh.form.controls.description"></app-validation-message>            
+            <app-validation-message [control]="fh.form.controls['description']"></app-validation-message>            
         </div>
         <div class="form-group">
             <label class="mr-2" for="invokeAs">Invoke with this credentials</label>
@@ -54,7 +54,7 @@
                 </mat-slide-toggle>
                 <label class="ml-2 mt-1 text-mini">Ready to use.</label>
             </div>
-            <app-validation-message [control]="fh.form.controls.enabled"></app-validation-message>            
+            <app-validation-message [control]="fh.form.controls['enabled']"></app-validation-message>            
         </div>
         <div class="form-group">
             <hr class="my-4">

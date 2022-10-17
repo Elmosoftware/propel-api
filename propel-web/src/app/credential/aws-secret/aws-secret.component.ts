@@ -17,11 +17,11 @@ export class AWSSecretComponent implements OnInit, FormSubcomponentInterface<AWS
 
   //#region FormSubcomponentInterface implementation
 
-  @Input() model: AWSSecret;
+  @Input() model!: AWSSecret;
 
-  @Input() reset: Observable<void>;
+  @Input() reset!: Observable<void>;
 
-  @Input() saved: Observable<void>;
+  @Input() saved!: Observable<void>;
 
   /**
    * Change event, will be throw every time the form suffer any change.
@@ -42,7 +42,7 @@ export class AWSSecretComponent implements OnInit, FormSubcomponentInterface<AWS
   fg: FormGroup;
   viewAccessKey: boolean = false;
   viewSecretKey: boolean = false;
-  previousValue: AWSSecret;
+  previousValue!: AWSSecret;
 
   constructor(private core: CoreService) {
 

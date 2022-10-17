@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, EventEmitter } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, Observable, of } from 'rxjs';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
@@ -13,6 +13,7 @@ import { compareEntities } from '../../../../propel-shared/models/entity';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 import { UserAccountRoles } from '../../../../propel-shared/models/user-account-roles';
 import { Utils } from '../../../../propel-shared/utils/utils';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-user-account',
@@ -21,14 +22,14 @@ import { Utils } from '../../../../propel-shared/utils/utils';
 })
 export class UserAccountComponent implements OnInit, DataLossPreventionInterface {
 
-  @ViewChild("role") roleDropdown;
+  @ViewChild("role") roleDropdown!: NgSelectComponent;
 
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<UserAccount>;
   allRoles: any[] = [];
   loaded: boolean = false;
   authCode: string = "";
-  lastUserLogin: Date = null;
+  lastUserLogin: Date | null = null;
 
   //Form validation constant parameters:
   validationParams: any = {
@@ -45,36 +46,36 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
   }
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
-    this.fh = new FormHandler(DataEndpointActions.UserAccount, new FormGroup({
-      name: new FormControl("", [
+    this.fh = new FormHandler(DataEndpointActions.UserAccount, new UntypedFormGroup({
+      name: new UntypedFormControl("", [
         Validators.required,
         Validators.maxLength(this.validationParams.nameMaxLength),
         ValidatorsHelper.pattern(new RegExp(this.validationParams.namePattern, "g"),
           "The user name can contain letters, numbers and the dot character only.")
       ]),
-      fullName: new FormControl("", [
+      fullName: new UntypedFormControl("", [
         Validators.required,
         Validators.maxLength(this.validationParams.fullNameMaxLength)
       ]),
-      initials: new FormControl("", [
+      initials: new UntypedFormControl("", [
         Validators.required,
         Validators.maxLength(this.validationParams.initialsMaxLength),
         ValidatorsHelper.pattern(new RegExp(this.validationParams.initialsPattern, "g"),
           "The user initials can contain only letters.")
       ]),
-      email: new FormControl("", [
+      email: new UntypedFormControl("", [
         Validators.required,
         ValidatorsHelper.pattern(new RegExp(this.validationParams.emailPattern, "g"),
           "The user e-mail must be a valid email.")
       ]),
-      role: new FormControl("", [
+      role: new UntypedFormControl("", [
         Validators.required
       ]),
-      secretId: new FormControl(""),
-      lastPasswordChange: new FormControl(""),
-      lastLogin: new FormControl(""),
-      mustReset: new FormControl(""),
-      lockedSince: new FormControl(""),
+      secretId: new UntypedFormControl(""),
+      lastPasswordChange: new UntypedFormControl(""),
+      lastLogin: new UntypedFormControl(""),
+      mustReset: new UntypedFormControl(""),
+      lockedSince: new UntypedFormControl(""),
     }));
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
@@ -96,7 +97,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
 
     //If a user id is provided:
     if (id) {
-      this.fh.form.controls._id.patchValue(String(id));
+      this.fh.form.controls['_id'].patchValue(String(id));
     }
 
     //Doing this with a timeout to avoid the "ExpressionChangedAfterItHasBeenCheckedError" error:
@@ -119,7 +120,9 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
           });
 
           this.refreshData()
-          .catch(this.core.handleError)
+          .catch((error) => {
+            this.core.handleError(error)
+          })
         });
     });
   }
@@ -138,19 +141,15 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
 
     this.loaded = false;
 
-    if (!this.fh.form.controls._id.value) {
+    if (!this.fh.form.controls['_id'].value) {
       this.newItem();
       this.loaded = true;
       return Promise.resolve();
     }
 
     try {
-
-      throw "TEST THROWING!!!"
-
-
       //Fetching the user account:
-      user = await this.core.security.getUser(this.fh.form.controls._id.value);
+      user = await this.core.security.getUser(this.fh.form.controls['_id'].value);
 
       //If the user account doesn't exists:
       if (!user) {
@@ -197,13 +196,13 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
     //We need to ensure the name can't be updated when the user already log in: 
     if (this.canEditName) {
       setTimeout(() => {
-        this.fh.form.controls.name.enable({ emitEvent: false });
+        this.fh.form.controls['name'].enable({ emitEvent: false });
         this.fh.form.updateValueAndValidity();
       });
     }
     else {
       setTimeout(() => {
-        this.fh.form.controls.name.disable({ emitEvent: true, onlySelf: true });
+        this.fh.form.controls['name'].disable({ emitEvent: true, onlySelf: true });
         this.fh.form.updateValueAndValidity();
       });
     }
@@ -220,7 +219,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
 
         this.fh.setId(response.userId);
-        this.fh.form.controls.secretId.patchValue(response.secretId);
+        this.fh.form.controls['secretId'].patchValue(response.secretId);
         this.setFormValue(this.fh.value);
         this.fh.form.markAsPristine();
         this.fh.form.markAsUntouched();

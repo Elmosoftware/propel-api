@@ -13,11 +13,11 @@ import { SearchLine } from 'src/core/search-line';
 })
 export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
 
-  @Input() model: Workflow[];
+  @Input() override model!: Workflow[];
 
-  @Input() term: string;
+  @Input() override term!: string;
 
-  @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output("dataChanged") override dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   get isAdmin(): boolean {
     return this.core.security.isUserLoggedIn && this.core.security.sessionData.roleIsAdmin;
@@ -38,8 +38,8 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
   duplicate(id: string) {
 
     //We search for the workflow first:
-    this.core.data.getById(DataEndpointActions.Workflow, id)
-      .then((workflow: Workflow) => {
+    this.core.data.getById<Workflow>(DataEndpointActions.Workflow, id)
+      .then((workflow?: Workflow) => {
 
         if (!workflow) {
           this.core.toaster.showWarning("Seems like the items is gone!, maybe someone else deleted. Please double check before to retry.", "Could not find the item");

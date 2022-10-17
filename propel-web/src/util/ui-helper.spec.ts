@@ -4,9 +4,11 @@ describe("UIHelper Class", () => {
 
     describe("tokenizeAndStem()", () => {
         it("For s = null -> []", () => {
+            //@ts-ignore
             expect(UIHelper.tokenizeAndStem(null)).toEqual([]);
         });
         it("For s = undefined -> []", () => {
+            //@ts-ignore
             expect(UIHelper.tokenizeAndStem(undefined)).toEqual([]);
         });
         it("For s = {any number} -> []", () => {
@@ -69,12 +71,14 @@ describe("UIHelper Class", () => {
         })
         
         it(`For a null text and valid words must return an empty string`, () => {
+            //@ts-ignore
             expect(UIHelper.highlighText(null, ["valid", "words"])).toEqual("");
         });
         it("For null word and a valid text must return an empty string", () => {
             expect(UIHelper.highlighText(text, [])).toEqual("");
         });
         it("For null word and a null text must return an empty string", () => {
+            //@ts-ignore
             expect(UIHelper.highlighText(null, null)).toEqual("");
         });
         it(`Total words 1, found 0, no chunk size, `, () => {

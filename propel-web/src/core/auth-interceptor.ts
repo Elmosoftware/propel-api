@@ -24,7 +24,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
     constructor(private security: SecurityService, private nav: NavigationService) {
         this._isRefreshing = false;
-        this._refreshTokenSubject = new BehaviorSubject<UserLoginResponse>(null);
+        this._refreshTokenSubject = new BehaviorSubject<UserLoginResponse>((null as unknown as UserLoginResponse));
     }
     /**
      * This interceptor is intended to include automatically the Authorization header with the 
@@ -73,13 +73,13 @@ export class AuthInterceptor implements HttpInterceptor {
         }
         else {
             this._isRefreshing = true;
-            this._refreshTokenSubject.next(null);
+            this._refreshTokenSubject.next((null as unknown as UserLoginResponse));
             logger.logInfo(`Starting Access token refresh process...`)
             return from(this.security.refreshAccessToken(new TokenRefreshRequest(this.security.refreshToken)))
                 .pipe(
                     catchError((err) => {
                         this._refreshTokenSubject.complete()
-                        this._refreshTokenSubject = new BehaviorSubject<UserLoginResponse>(null);
+                        this._refreshTokenSubject = new BehaviorSubject<UserLoginResponse>((null as unknown as UserLoginResponse));
                         this._isRefreshing = false;
                         this.nav.toHome(true);
                         return throwError(err)

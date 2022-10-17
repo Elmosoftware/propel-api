@@ -16,14 +16,13 @@ const REFRESH_TOKEN_KEY: string = "PropelRefreshToken"
  */
 export class SessionService {
     
-    private _securityToken: SecurityToken;
+    private _securityToken?: SecurityToken;
     private _refreshToken: string = "";
-    private _runtimeInfo: RuntimeInfo;
+    private _runtimeInfo!: RuntimeInfo;
 
     constructor() {
         logger.logInfo("SessionService instance created");
         
-        this._securityToken = null;
         this.fetchRuntimeInfo();
         this.fetchRefreshToken();
 
@@ -76,7 +75,7 @@ export class SessionService {
      * Returns all the session details including information about the user, token expiration, etc.
      */
     get sessionData(): SecurityToken {
-        return this._securityToken;
+        return this._securityToken!; //TODO: Need to fix in the future, this can actually be undefined.
     }
 
     /**
@@ -118,7 +117,7 @@ The payload in the provided JWT token can't be parsed as JSON. Payload content i
      * Remove any active session data.
      */
     removeSessionData() {
-        this._securityToken = null;
+        this._securityToken = undefined;
         this.removeRefreshToken();   
     }
     
@@ -127,7 +126,7 @@ The payload in the provided JWT token can't be parsed as JSON. Payload content i
      * the refresh token from the local storage.
      */
     private fetchRefreshToken(): void {
-        let refreshToken: string = localStorage.getItem(REFRESH_TOKEN_KEY);
+        let refreshToken: string = localStorage.getItem(REFRESH_TOKEN_KEY) ?? "";
 
         if (refreshToken) {
             this._refreshToken = refreshToken;
@@ -138,7 +137,7 @@ The payload in the provided JWT token can't be parsed as JSON. Payload content i
      * Caching the runtime info gathered by Electron when the app starts:
      */
     private fetchRuntimeInfo(): void {
-        let runtimeInfo: string = sessionStorage.getItem(RUNTIME_INFO_KEY);
+        let runtimeInfo: string = sessionStorage.getItem(RUNTIME_INFO_KEY) ?? "";
 
         if (runtimeInfo) {
             try {
@@ -149,7 +148,7 @@ The payload in the provided JWT token can't be parsed as JSON. Payload content i
         }
     }
 
-    private saveRefreshToken(refreshToken): void {
+    private saveRefreshToken(refreshToken: string): void {
         if(!refreshToken){
             this.removeRefreshToken()
         }

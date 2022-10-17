@@ -30,6 +30,7 @@ class PaginationMock {
 describe("InfiniteScrollingService Class", () => {
     describe("Constructor", () => {
         it(`Must throw an error if the parameter "pageSize" is null.`, () => {
+            //@ts-ignore
             expect(() => { new InfiniteScrollingService(null) })
                 .toThrowError(`The parameter "pageSize" can't be null.`)
         });
@@ -46,7 +47,8 @@ describe("InfiniteScrollingService Class", () => {
 
             expect(svc.maxRenderedPages).toEqual(2);
             expect(svc.pageSize).toEqual(50);
-            expect(svc.model).toBe(null);
+            //@ts-ignore
+            expect(svc.model).toBe(undefined);
             expect(svc.modelCapacity).toEqual(2 * 50);
             expect(svc.count).toEqual(0);
             expect(svc.totalCount).toEqual(0);
@@ -68,6 +70,7 @@ describe("InfiniteScrollingService Class", () => {
         });
 
         it(`Must throw an error if the parameter "dataPage" is null.`, () => {
+            //@ts-ignore
             expect(() => { svc.feed(1, null) })
                 .toThrowError(`The parameter "dataPage" can't be null"`);
         });
@@ -85,7 +88,7 @@ describe("InfiniteScrollingService Class", () => {
         it(`Must not throw any error if the parameters are valid.`, () => {
             svc.feed(p.totalCount, p.getPage(svc.pageSize, 0));
 
-            expect(svc.model.length).toEqual(PAGE_SIZE);
+            expect(svc.model!.length).toEqual(PAGE_SIZE);
             expect(svc.pageSize).toEqual(PAGE_SIZE);
             expect(svc.maxRenderedPages).toEqual(RENDERED_PAGES);
             expect(svc.modelCapacity).toEqual(PAGE_SIZE * RENDERED_PAGES);
@@ -95,7 +98,7 @@ describe("InfiniteScrollingService Class", () => {
             svc.feed(p.totalCount, p.getPage(svc.pageSize, 0));
             svc.feed(p.totalCount, p.getPage(svc.pageSize, 0));
 
-            expect(svc.model.length).toEqual(PAGE_SIZE * 2);
+            expect(svc.model!.length).toEqual(PAGE_SIZE * 2);
             expect(svc.count).toEqual(PAGE_SIZE * 2);
         });
         it(`Adding 3 pages of data. "model.length" still 20 while count is now 30.`, () => {
@@ -103,7 +106,7 @@ describe("InfiniteScrollingService Class", () => {
             svc.feed(p.totalCount, p.getPage(svc.pageSize, 0));
             svc.feed(p.totalCount, p.getPage(svc.pageSize, 0));
 
-            expect(svc.model.length).toEqual(PAGE_SIZE * 2);
+            expect(svc.model!.length).toEqual(PAGE_SIZE * 2);
             expect(svc.count).toEqual(PAGE_SIZE * 3);
         });
     });

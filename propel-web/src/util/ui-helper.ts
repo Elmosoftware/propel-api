@@ -232,7 +232,7 @@ export class UIHelper {
      */
     static getLastUpdateMessage(item: AuditedEntity, friendly: boolean = true, prefix: string = "Last modified"): string {
         let ret: string = "";
-        let lastUpdate: Date;
+        let lastUpdate: Date | null;
         let lastUser: string;
 
         if (!item || item.lastUpdateOn === undefined || item.createdOn === undefined) return ret
@@ -240,11 +240,13 @@ export class UIHelper {
         lastUpdate = (item.lastUpdateOn) ? item.lastUpdateOn : item.createdOn;
         lastUser = (item.lastUpdateBy) ? item.lastUpdateBy : item.createdBy;
 
-        if (friendly) {
-            ret = SharedSystemHelper.getFriendlyTimeFromNow(lastUpdate);
-        }
-        else {
-            ret = SharedSystemHelper.formatDate(lastUpdate);
+        if (lastUpdate) {
+            if (friendly) {
+                ret = SharedSystemHelper.getFriendlyTimeFromNow(lastUpdate);
+            }
+            else {
+                ret = SharedSystemHelper.formatDate(lastUpdate);
+            }
         }
 
         return `${prefix} ${ret} ${(lastUser) ? "by " + lastUser : ""}`;

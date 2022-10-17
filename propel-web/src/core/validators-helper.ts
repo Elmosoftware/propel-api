@@ -1,4 +1,4 @@
-import { ValidatorFn, AbstractControl, FormGroup, FormArray } from '@angular/forms';
+import { ValidatorFn, AbstractControl, UntypedFormGroup, UntypedFormArray } from '@angular/forms';
 import { SharedSystemHelper } from '../../../propel-shared/utils/shared-system-helper';
 
 import { UIHelper } from 'src/util/ui-helper';
@@ -217,9 +217,10 @@ export class ValidatorsHelper {
     message: string = DEFAULT_CONFIRMATION_FIELDS_EQUALITY_MESSAGE): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } | null => {
       let ret: any = null;
-      let parent: FormGroup | FormArray = control.parent;
-      let value: string = parent.controls[fieldName].value;
-      let confValue: string = parent.controls[confirmationFieldName].value;
+      let parent: UntypedFormGroup | UntypedFormArray | null = control.parent;
+
+      let value = (parent as any).controls[fieldName].value;
+      let confValue: string = (parent as any).controls[confirmationFieldName].value;
 
       if (value !== confValue) {
         ret = {
@@ -248,66 +249,66 @@ export class ValidatorsHelper {
     if (!(control.dirty || control.touched)) return ret;
 
     //Standard Validators:
-    if (control.errors.required) {
+    if (control.errors['required']) {
       ret = `This information is required in order to continue.`;
     }
-    else if (control.errors.min && control.touched) {
-      ret = `The minimum allowed value for this field is "${control.errors.min.min}".`
+    else if (control.errors['min'] && control.touched) {
+      ret = `The minimum allowed value for this field is "${control.errors['min'].min}".`
     }
-    else if (control.errors.max && control.touched) {
-      ret = `The maximum allowed value for this field is "${control.errors.max.max}".`
+    else if (control.errors['max'] && control.touched) {
+      ret = `The maximum allowed value for this field is "${control.errors['max'].max}".`
     }
-    else if (control.errors.minlength && control.touched) {
-      ret = `This must be at least ${control.errors.minlength.requiredLength} characters long. 
-          (${control.errors.minlength.requiredLength - control.errors.minlength.actualLength} more needed).`
+    else if (control.errors['minlength'] && control.touched) {
+      ret = `This must be at least ${control.errors['minlength'].requiredLength} characters long. 
+          (${control.errors['minlength'].requiredLength - control.errors['minlength'].actualLength} more needed).`
     }
-    else if (control.errors.maxlength && control.touched) {
-      ret = `This can't be longer than ${control.errors.maxlength.requiredLength}. 
-          (Need to remove at least ${control.errors.maxlength.actualLength - control.errors.maxlength.requiredLength} characters).`
+    else if (control.errors['maxlength'] && control.touched) {
+      ret = `This can't be longer than ${control.errors['maxlength'].requiredLength}. 
+          (Need to remove at least ${control.errors['maxlength'].actualLength - control.errors['maxlength'].requiredLength} characters).`
     }
     //Custom Validators:
-    else if (control.errors.minItems && control.touched) {
-      if (control.errors.minItems.requiredLength == 1) {
+    else if (control.errors['minItems'] && control.touched) {
+      if (control.errors['minItems'].requiredLength == 1) {
         ret = "You need to add at least 1 item to the list."
       }
       else {
-        ret = `You need to add at least ${control.errors.minItems.requiredLength} items to the list.
-            (${control.errors.minItems.requiredLength - control.errors.minItems.actualLength} extra item(s) needed).`
+        ret = `You need to add at least ${control.errors['minItems'].requiredLength} items to the list.
+            (${control.errors['minItems'].requiredLength - control.errors['minItems'].actualLength} extra item(s) needed).`
       }
     }
-    else if (control.errors.maxItems && control.touched) {
-      if (control.errors.maxItems.requiredLength == 1) {
+    else if (control.errors['maxItems'] && control.touched) {
+      if (control.errors['maxItems'].requiredLength == 1) {
         ret = "You can't add more than one item to this list."
       }
       else {
-        ret = `You can add a maximum of ${control.errors.maxItems.requiredLength} items to the list.
-            You Need to remove at least ${control.errors.maxItems.actualLength - control.errors.maxItems.requiredLength} item(s).`
+        ret = `You can add a maximum of ${control.errors['maxItems'].requiredLength} items to the list.
+            You Need to remove at least ${control.errors['maxItems'].actualLength - control.errors['maxItems'].requiredLength} item(s).`
       }
     }
-    else if (control.errors.FQDN && control.touched) {
+    else if (control.errors['FQDN'] && control.touched) {
       ret = "The fully Qualified Domain Name entered, doesn't seem to be valid. Please check that meets the required format. (e.g.: myserver.mydomain.com)"
     }
-    else if (control.errors.anyNumber && control.touched) {
+    else if (control.errors['anyNumber'] && control.touched) {
       ret = "Only numeric values are allowed."
     }
-    else if (control.errors.anyDate && control.touched) {
+    else if (control.errors['anyDate'] && control.touched) {
       ret = "The date is not valid, Please recall dates need to be in ISO-8601 format."
     }
-    else if (control.errors.searchableText && control.touched) {
+    else if (control.errors['searchableText'] && control.touched) {
       ret = "We didnt find any searchable words in the supplied text. If you want to do a strict search, please surround the text by quotes."
     }
-    else if (control.errors.pattern && control.touched) {
-      ret = control.errors.pattern.message
+    else if (control.errors['pattern'] && control.touched) {
+      ret = control.errors['pattern'].message
     }
-    else if (control.errors.exactLength && control.touched) {
-      let diff: number = control.errors.exactLength.actualLength - control.errors.exactLength.expectedLength;
+    else if (control.errors['exactLength'] && control.touched) {
+      let diff: number = control.errors['exactLength'].actualLength - control.errors['exactLength'].expectedLength;
       let exceeded: boolean = diff > 0;
-      ret = `Expected exactly ${control.errors.exactLength.expectedLength} characters. You have ${Math.abs(diff)} character(s) ${(exceeded) ? "more" : "less"} than expected.`
+      ret = `Expected exactly ${control.errors['exactLength'].expectedLength} characters. You have ${Math.abs(diff)} character(s) ${(exceeded) ? "more" : "less"} than expected.`
     }
-    else if (control.errors.fieldsEquality && control.touched) {
-      ret = control.errors.fieldsEquality.message
+    else if (control.errors['fieldsEquality'] && control.touched) {
+      ret = control.errors['fieldsEquality'].message
     }
-    else if(control.errors.notNullOrEmpty && control.touched) {
+    else if(control.errors['notNullOrEmpty'] && control.touched) {
       ret = `A not null or empty value is required for this field.`
     }
 

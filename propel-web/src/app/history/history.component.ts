@@ -1,5 +1,5 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { CoreService } from 'src/services/core.service';
@@ -31,12 +31,12 @@ const PAGE_SIZE: number = 50;
 })
 export class HistoryComponent implements OnInit {
 
-  private requestCount$: EventEmitter<number>;
+  private requestCount$!: EventEmitter<number>;
 
   intervalTypeEnum = IntervalType;
-  fg: FormGroup;
-  svcInfScroll: InfiniteScrollingService<ExecutionLogExtended>;
-  onDataFeed: EventEmitter<PagingHelper>;
+  fg!: UntypedFormGroup;
+  svcInfScroll!: InfiniteScrollingService<ExecutionLogExtended>;
+  onDataFeed!: EventEmitter<PagingHelper>;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
@@ -57,7 +57,7 @@ export class HistoryComponent implements OnInit {
         }
       })
     
-    this.fg.controls.interval.valueChanges
+    this.fg.controls['interval'].valueChanges
       .subscribe((val) => {
         this.search();
       })
@@ -66,7 +66,9 @@ export class HistoryComponent implements OnInit {
   search() {
     this.resetSearch();
     this.fetchData(this.svcInfScroll.pageSize, 0)
-    .catch(this.core.handleError)
+    .catch((error) => {
+      this.core.handleError(error)
+    })
   }
   
   async fetchData(top: number, skip: number): Promise<void> {
@@ -83,7 +85,7 @@ export class HistoryComponent implements OnInit {
     qm.populate = true;
     qm.filterBy = {
       startedAt: {
-        $gte: SharedSystemHelper.addMinutes(this.fg.controls.interval.value * -1)
+        $gte: SharedSystemHelper.addMinutes(this.fg.controls['interval'].value * -1)
       }
     };
     qm.sortBy = "-startedAt";  
@@ -166,8 +168,8 @@ export class HistoryComponent implements OnInit {
   }
 
   private _buildForm(): void {
-    this.fg = new FormGroup({
-      interval: new FormControl()
+    this.fg = new UntypedFormGroup({
+      interval: new UntypedFormControl()
     });
   }
 }

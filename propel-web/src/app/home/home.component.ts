@@ -21,11 +21,11 @@ const TOP_RESULTS: number = 5;
 export class HomeComponent implements OnInit, OnDestroy {
 
   loadingResults: boolean = false;
-  stats: UsageStats;
-  userStats: UsageStats;
+  stats!: UsageStats;
+  userStats: UsageStats | undefined = undefined;
   graphColors: any = environment.graphs.colorScheme;
   graphExecutionsView: any[] = [650, 200];
-  securityEventSubscription$: Subscription;
+  securityEventSubscription$!: Subscription;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
     
@@ -34,7 +34,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData()
-    .catch(this.core.handleError)
+    .catch((error) => {
+      this.core.handleError(error)
+    })
     
     this.securityEventSubscription$ = this.core.security.getSecurityEventSubscription()
     .subscribe(async (event: SecurityEvent) => {
@@ -46,7 +48,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
         else {
           action = "Clearing user stats in Home page."
-          this.userStats = null;
+          this.userStats = undefined;
         }
       } catch (error) {
         action = `None, Error received when trying to update user stats: "${String(error)}".`
@@ -148,15 +150,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     return `${this.getFriendlyStartTime(item.lastTimeUpdated)}${(item?.extra?.userFullName) ? " by " + String(item.extra.userFullName) : ""}`
   }
 
-  getFriendlyStartTime(startTime: Date): string {
-    return SharedSystemHelper.getFriendlyTimeFromNow(startTime);
+  getFriendlyStartTime(startTime: Date | undefined): string {
+    if(!startTime) return ""
+    else return SharedSystemHelper.getFriendlyTimeFromNow(startTime);
   }
 
   getShortErrorText(text: string) : string {
     return UIHelper.getShortText(text, 0, 75);
   }
   
-  onSelectChart($event) {
+  onSelectChart($event: any) {
     this.goToHistory();
   }
 }

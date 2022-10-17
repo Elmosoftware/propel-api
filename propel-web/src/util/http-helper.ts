@@ -51,8 +51,10 @@ export class HttpHelper {
      * @param query Query string
      * @returns a wellformed URL
      */
-    static buildURL(proto: Protocol | string, baseUrl: string, paths: string | string[] = "", query: URLSearchParams = null): string {
-        let ret: string = "";
+    static buildURL(proto: Protocol | string, baseUrl: string, paths: string | string[] = "", 
+        query?: URLSearchParams): string {
+        
+            let ret: string = "";
 
         if (!proto || !baseUrl) return ret;
 

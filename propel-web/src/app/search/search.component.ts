@@ -1,5 +1,5 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CoreService } from 'src/services/core.service';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
@@ -27,12 +27,12 @@ const SEARCH_TEXT_MAX: number = 50;
 })
 export class SearchComponent implements OnInit {
 
-  private requestCount$: EventEmitter<number>;
+  private requestCount$!: EventEmitter<number>;
 
   searchTypeEnum = SearchType;
-  fg: FormGroup;
-  svcInfScroll: InfiniteScrollingService<Entity>;
-  onDataFeed: EventEmitter<PagingHelper>;
+  fg!: UntypedFormGroup;
+  svcInfScroll!: InfiniteScrollingService<Entity>;
+  onDataFeed!: EventEmitter<PagingHelper>;
   currentSearchTerm: string = "";
 
   get termIsQuoted(): boolean {
@@ -52,7 +52,7 @@ export class SearchComponent implements OnInit {
   get searchTerm(): string {
     let ret: string = "";
 
-    if (this.fg.controls.searchText.valid) {
+    if (this.fg.controls['searchText'].valid) {
       if (this.termIsQuoted) {
         ret = this.fg.value.searchText;
       }
@@ -68,7 +68,7 @@ export class SearchComponent implements OnInit {
   get browseMode(): boolean {
     let ret: boolean = false;
 
-    if (this.fg.controls.browse.value && this.fg.controls.browse.value.toLowerCase() == "true") {
+    if (this.fg.controls['browse'].value && this.fg.controls['browse'].value.toLowerCase() == "true") {
       ret = true;
     }
 
@@ -127,7 +127,7 @@ export class SearchComponent implements OnInit {
         })
   }
 
-  onDataChangedHandler($events): void {
+  onDataChangedHandler($events: any): void {
     console.log(`Data changed, refreshing ...`)
     this.search();
   }
@@ -168,7 +168,11 @@ export class SearchComponent implements OnInit {
           qm.filterBy.$or.push({
             [field]: {
               $regex: termsToSearch[0],
-              $options: "gi"
+              /*
+                Starting on Mongo DB v5.1, the global search modifier, ("g"), is no longer supported.
+                More details [here](https://www.mongodb.com/docs/manual/reference/operator/query/regex/#mongodb-query-op.-options).
+              */
+              $options: "i"
             }
           })
         });
@@ -198,7 +202,7 @@ export class SearchComponent implements OnInit {
     });
 
     try {
-      let pagedData = await this.getData(this.fg.controls.searchType.value, qm);
+      let pagedData = await this.getData(this.fg.controls['searchType'].value, qm);
 
       //If is a text search that retrieves no results, we must try now 
       //with a strict search to see if we can get anything:
@@ -275,7 +279,7 @@ export class SearchComponent implements OnInit {
   private _processMatches(data: any[], words: string[], fields: string[]): any[] {
     data.forEach((entity: any) => {
       fields.forEach((fieldName, i) => {
-        let chunk: number | null = (i == 0) ? null : 30;
+        let chunk: number | undefined = (i == 0) ? undefined : 30;
         entity[fieldName] = UIHelper.highlighText(entity[fieldName], words, chunk);
       })
     })
@@ -300,21 +304,21 @@ export class SearchComponent implements OnInit {
     }
 
     if (this.route.snapshot.queryParamMap.get("term")) {
-      term = this.route.snapshot.queryParamMap.get("term")
+      term = this.route.snapshot.queryParamMap.get("term") ?? ""
     }
 
     if (this.route.snapshot.queryParamMap.get("browse")) {
-      browse = this.route.snapshot.queryParamMap.get("browse")
+      browse = this.route.snapshot.queryParamMap.get("browse") ?? browse
     }
 
-    this.fg = new FormGroup({
-      searchText: new FormControl(term, [
+    this.fg = new UntypedFormGroup({
+      searchText: new UntypedFormControl(term, [
         Validators.minLength(SEARCH_TEXT_MIN),
         Validators.maxLength(SEARCH_TEXT_MAX),
         ValidatorsHelper.searchableText()
       ]),
-      searchType: new FormControl(searchType),
-      browse: new FormControl(browse)
+      searchType: new UntypedFormControl(searchType),
+      browse: new UntypedFormControl(browse)
     });
   }
 
@@ -322,7 +326,7 @@ export class SearchComponent implements OnInit {
     //================================================================================================
     //DEBUG ONLY:
     //================================================================================================
-    if (environment.production) return;
+    if (environment.production) return Promise.reject("Not a prod feature.");
 
     let data: Workflow[] = [];
     let top: number = Number(qm.top);

@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, ViewChild, Output, ViewChildren, QueryList } from '@angular/core';
-import { FormGroup, Validators, FormControl, FormArray, ValidatorFn } from '@angular/forms';
+import { Validators, ValidatorFn, UntypedFormArray, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { forkJoin, from } from "rxjs";
 import { NgSelectComponent } from '@ng-select/ng-select';
 
@@ -69,35 +69,35 @@ export class WorkflowStepComponent implements OnInit {
    * If the value is false, the form will be prepared to edit a new or already existing
    * workflow step.
    */
-  @Input("quick-task") isQuickTask: boolean;
+  @Input("quick-task") isQuickTask!: boolean;
 
   /**
    * The workflow step to edit. If no value provided a new Workflow step will be created 
    * either for a quieck task or not.
    */
-  @Input("step") step: WorkflowStep;
+  @Input("step") step!: WorkflowStep;
 
   /**
    * Change event, will be throw every time the form suffer any change.
    */
   @Output() change = new EventEmitter<WorkflowStepComponentStatus>();
 
-  @ViewChild("script") scriptDropdown;
-  @ViewChild('targets') targets: NgSelectComponent;
-  @ViewChild('credentials') credentials: NgSelectComponent;
-  @ViewChildren('ngSelectArrays') ngSelectArrays: QueryList<NgSelectComponent>;
+  @ViewChild("script") scriptDropdown: any;
+  @ViewChild('targets') targets!: NgSelectComponent;
+  @ViewChild('credentials') credentials!: NgSelectComponent;
+  @ViewChildren('ngSelectArrays') ngSelectArrays!: QueryList<NgSelectComponent>;
 
-  private requestCount$: EventEmitter<number>;
-  fh: FormHandler<WorkflowStep>;
-  allScripts: Script[];
-  allTargets: Target[];
-  allCredentials: Credential[];
+  private requestCount$!: EventEmitter<number>;
+  fh!: FormHandler<WorkflowStep>;
+  allScripts!: Script[];
+  allTargets!: Target[];
+  allCredentials!: Credential[];
   selectedScript: Script | undefined;
   validSets: any = {};
   credentialTypes = CredentialTypes;
 
-  get parameterValues(): FormArray {
-    return (this.fh.form.controls.values as FormArray);
+  get parameterValues(): UntypedFormArray {
+    return (this.fh.form.controls['values'] as UntypedFormArray);
   }
 
   constructor(private core: CoreService) {
@@ -113,19 +113,19 @@ export class WorkflowStepComponent implements OnInit {
       nameValidators.push(Validators.maxLength(NAME_MAX));
     }
 
-    this.fh = new FormHandler("WorkflowStep", new FormGroup({
-      name: new FormControl("", nameValidators),
-      enabled: new FormControl(true, [
+    this.fh = new FormHandler("WorkflowStep", new UntypedFormGroup({
+      name: new UntypedFormControl("", nameValidators),
+      enabled: new UntypedFormControl(true, [
         Validators.required
       ]),
-      abortOnError: new FormControl(true, [
+      abortOnError: new UntypedFormControl(true, [
         Validators.required
       ]),
-      script: new FormControl("", [
+      script: new UntypedFormControl("", [
         Validators.required
       ]),
-      targets: new FormControl(""),
-      values: new FormArray([])
+      targets: new UntypedFormControl(""),
+      values: new UntypedFormArray([])
     }));
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
@@ -181,12 +181,14 @@ export class WorkflowStepComponent implements OnInit {
 
   addNewValue(selectId: number) {
     //From all the NGSelect used for arrays, we need to choose the one with the specific id:
-    let select: NgSelectComponent = this.ngSelectArrays.find((control: NgSelectComponent) => {
-      return Number(control.element.attributes.getNamedItem("id").value) == selectId
+    let select: NgSelectComponent | undefined = this.ngSelectArrays.find((control: NgSelectComponent) => {
+      return Number(control.element.attributes.getNamedItem("id")?.value) == selectId
     })
+
+    if (!select) return
     
     //We are storing in the ngSelect "title" attricute the name of the parameter:
-    let paramName: string = select.element.attributes.getNamedItem("title").value
+    let paramName: string | undefined = select.element.attributes.getNamedItem("title")?.value
     let param = this.tryGetParameter(paramName)
     let isNumberArray: boolean = false
     let dlgTitle: string = ""
@@ -197,14 +199,14 @@ export class WorkflowStepComponent implements OnInit {
     }
     
     select.close(); //Closing the ng-select before to show the dialog to avoid the dialog 
-    //displaying behing the select. 
+      //displaying behing the select.
 
     this.core.dialog.showCustomValueDialog({ typeIsString: !isNumberArray, title: dlgTitle})
     .subscribe((result: DialogResult<CustomValueDialogData>) => {
       if (!result.isCancel) {
-        select.itemsList.addItem(result.value.value);
-        let item = select.itemsList.findItem(result.value.value);
-        select.select(item);
+        select!.itemsList.addItem(result.value.value);
+        let item = select!.itemsList.findItem(result.value.value);
+        select!.select(item);
       }
     }, err => {
       throw err
@@ -270,7 +272,7 @@ export class WorkflowStepComponent implements OnInit {
       }
     }
     else if (typeof value.script == "string") {
-      value.script = this.getScriptFromCache(value.script);
+      value.script = this.getScriptFromCache(value.script)!;
     }
 
     this.step = value;
@@ -331,21 +333,21 @@ export class WorkflowStepComponent implements OnInit {
     if (this.selectedScript) {
       //If the script is targetting servers, we need to ensure at least one:
       if (this.selectedScript.isTargettingServers) {
-        this.fh.form.controls.targets.setValidators([
+        this.fh.form.controls['targets'].setValidators([
           ValidatorsHelper.minItems(1),
           ValidatorsHelper.maxItems(TARGETS_MAX)
         ])
       }
       else {
-        this.fh.form.controls.targets.clearValidators();
-        this.fh.form.controls.targets.patchValue([]);
+        this.fh.form.controls['targets'].clearValidators();
+        this.fh.form.controls['targets'].patchValue([]);
       }
     }
 
     this.enableOrDisableTargets();
 
     if (this.isQuickTask) {
-      this.fh.form.controls.name.patchValue(this.getFullQuickTaskName());
+      this.fh.form.controls['name'].patchValue(this.getFullQuickTaskName());
     }
 
     this.fh.form.updateValueAndValidity();
@@ -357,10 +359,10 @@ export class WorkflowStepComponent implements OnInit {
     //displaying this component inside a dialog:
     setTimeout(() => {
       if (this.selectedScript && this.selectedScript.isTargettingServers) {
-        this.fh.form.controls.targets.enable({ onlySelf: true, emitEvent: false })
+        this.fh.form.controls['targets'].enable({ onlySelf: true, emitEvent: false })
       }
       else {
-        this.fh.form.controls.targets.disable({ onlySelf: true, emitEvent: false })
+        this.fh.form.controls['targets'].disable({ onlySelf: true, emitEvent: false })
       }
       this.fh.form.updateValueAndValidity();
     });
@@ -379,8 +381,9 @@ export class WorkflowStepComponent implements OnInit {
     let newValues: ParameterValue[] = [];
 
     //Removing all the controls for the parameter values:
-    (this.fh.form.controls.values as FormArray).controls.splice(0, (this.fh.form.controls.values as FormArray).controls.length);
-    this.fh.form.controls.values.reset();
+    (this.fh.form.controls['values'] as UntypedFormArray).controls
+      .splice(0, (this.fh.form.controls['values'] as UntypedFormArray).controls.length);
+    this.fh.form.controls['values'].reset();
     this.fh.form.updateValueAndValidity();
 
     //If there is no selected script or it has no parameters:
@@ -390,16 +393,16 @@ export class WorkflowStepComponent implements OnInit {
 
     this.selectedScript.parameters.forEach((p: ScriptParameter) => {
 
-      let pv: ParameterValue;
+      let pv: ParameterValue | undefined = undefined;
       let vfns: ValidatorFn[] = [];
-      let fg: FormGroup;
+      let fg: UntypedFormGroup;
 
       //First we pair the parameters in the selected scrip with the values, (if any), already
       //provided in the "step" input:
       if (this.step.values) {
         pv = this.step.values.find((item: ParameterValue) => {
           return item.name == p.name;
-        });
+        })!;
       }
 
       //If the parameter value exists:
@@ -437,7 +440,7 @@ export class WorkflowStepComponent implements OnInit {
           this.validSets[p.name] = this.buildValidSet(p.validValues);
 
           //If the actual parameter value is invalid, we are going to remove it:
-          if (pv.value && !(this.validSets[p.name] as any[]).find(item => item.value == pv.value)) {
+          if (pv.value && !(this.validSets[p.name] as any[]).find(item => item.value == pv?.value)) {
             pv.value = "";
           }
         }
@@ -450,9 +453,9 @@ export class WorkflowStepComponent implements OnInit {
           //We need to review now the parameter values and remove the ones that are not in 
           //the valid set:
           pv.value = (pv.value as unknown as Array<any>)
-            .filter((value) => {
+            .filter((value:any) => {
               return this.validSets[p.name]
-              .filter(validValue => String(validValue.value) == String(value)).length > 0 
+              .filter((validValue: any) => String(validValue.value) == String(value)).length > 0 
             }) as unknown as string;
         }
       }
@@ -481,13 +484,13 @@ export class WorkflowStepComponent implements OnInit {
       }
 
       //Adding the controls to the array:
-      fg = new FormGroup({
-        name: new FormControl(pv.name),
-        value: new FormControl(pv.value, vfns),
-        nativeType: new FormControl(pv.nativeType)
+      fg = new UntypedFormGroup({
+        name: new UntypedFormControl(pv.name),
+        value: new UntypedFormControl(pv.value, vfns),
+        nativeType: new UntypedFormControl(pv.nativeType)
       });
 
-      (this.fh.form.controls.values as FormArray).push(fg);
+      (this.fh.form.controls['values'] as UntypedFormArray).push(fg);
 
       newValues.push(pv);
     })
@@ -537,9 +540,11 @@ export class WorkflowStepComponent implements OnInit {
     return ret;
   }
 
-  tryGetParameter(paramName: string): ScriptParameter | null {
+  tryGetParameter(paramName?: string): ScriptParameter | undefined {
 
-    let ret: ScriptParameter = null;
+    let ret: ScriptParameter | undefined;
+
+    if(!paramName) return ret;
 
     if (this.selectedScript && this.selectedScript.parameters && this.selectedScript.parameters.length > 0) {
       ret = this.selectedScript.parameters.find((p: ScriptParameter) => {
@@ -553,7 +558,7 @@ export class WorkflowStepComponent implements OnInit {
   getParamDescription(paramName: string): string {
 
     let ret: string = "";
-    let param: ScriptParameter;
+    let param: ScriptParameter | undefined;
 
     param = this.tryGetParameter(paramName);
 
@@ -566,11 +571,11 @@ export class WorkflowStepComponent implements OnInit {
 
   isPropelParameter(paramName: string): boolean {
     let ret: boolean = false;
-    let param: ScriptParameter;
+    let param: ScriptParameter | undefined;
 
     param = this.tryGetParameter(paramName);
 
-    ret = param && param.isPropelParameter;
+    ret = Boolean(param && param.isPropelParameter);
 
     return ret;
   }
@@ -586,8 +591,8 @@ export class WorkflowStepComponent implements OnInit {
   getselectedTargetNames(): string[] {
     let ret: string[] = [];
 
-    this.fh.form.controls.targets.value.forEach((id: string) => {
-      let target: Target = this.getTargetFromCache(id);
+    this.fh.form.controls['targets'].value.forEach((id: string) => {
+      let target: Target | undefined = this.getTargetFromCache(id);
 
       if (target) {
         ret.push(target.friendlyName);

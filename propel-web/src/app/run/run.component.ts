@@ -14,13 +14,13 @@ import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard
 })
 export class RunComponent implements OnInit {
 
-  model: WebsocketMessage<ExecutionStats>[];
+  model!: WebsocketMessage<ExecutionStats>[];
   workflowStatus: string = InvocationStatus.NotStarted;
   cancelling: boolean = false;
   aborting: boolean = false;
   confirmationRequired: boolean = false;
 
-  @ViewChild("container", { static: false }) container: ElementRef;
+  @ViewChild("container", { static: false }) container!: ElementRef;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
@@ -33,8 +33,9 @@ export class RunComponent implements OnInit {
   get currentContext(): ExecutionStats {
     let ret: ExecutionStats;
 
-    if (this.hasMessages) {
-      ret = this.model[this.model.length - 1].context;
+    if (this.hasMessages && this.model.length > 0 &&
+       this.model[this.model.length - 1].context !== undefined) {
+      ret = this.model[this.model.length - 1].context!;
     }
     else {
       ret = new ExecutionStats();
@@ -53,9 +54,9 @@ export class RunComponent implements OnInit {
     return ret;
   }
 
-  get lastMessage(): WebsocketMessage<ExecutionStats> | null {
+  get lastMessage(): WebsocketMessage<ExecutionStats> | undefined {
     if (this.hasMessages) return this.model[this.model.length - 1];
-    else return null;
+    else return undefined;
   }
 
   get statusMessage(): string {
@@ -77,9 +78,11 @@ export class RunComponent implements OnInit {
     this.core.setPageTitle(this.route.snapshot.data);
     this.model = [];
 
-    if (this.route.snapshot.queryParamMap.get("conf")) {
-      this.confirmationRequired = (this.route.snapshot.queryParamMap.get("conf").toLowerCase() == "true") ? true : false;
-    }
+    // if (this.route.snapshot.queryParamMap.get("conf")) {
+    //   this.confirmationRequired = (this.route.snapshot.queryParamMap.get("conf").toLowerCase() == "true") ? true : false;
+    // }
+    this.confirmationRequired = (this.route.snapshot.queryParamMap.get("conf") ?? "")
+      .toLowerCase() == "true" ? true : false;
 
     if (this.confirmationRequired) {
       this.pushMessageToUI(InvocationStatus.NotStarted, "Waiting for user confirmation...")
@@ -105,7 +108,7 @@ export class RunComponent implements OnInit {
     this.core.toaster.showInformation("Starting execution ...");
     this.pushMessageToUI(InvocationStatus.NotStarted, "Starting... please wait.")
     this.workflowStatus = InvocationStatus.Running;
-    let workflowId: string = this.route.snapshot.paramMap.get("id");
+    let workflowId: string = this.route.snapshot.paramMap.get("id") ?? "";
 
     //Replacing the history entry to ensure to request confirmation to the user when 
     //navigates back:
@@ -120,13 +123,15 @@ export class RunComponent implements OnInit {
           this.processError(err);
         },
         () => {
-          this.workflowStatus = this.lastMessage.context.logStatus;
+          this.workflowStatus = this.lastMessage?.context?.logStatus ?? "";
           this.scrollDown();
 
-          if (this.lastMessage.context.logId) {
+          let logId: string = this.lastMessage?.context?.logId ?? ""
+          
+          if (logId) {
             this.core.toaster.showInformation("Showing results soon...", "Execution is done.")
             setTimeout(() => {
-              this.core.navigation.toResults(this.lastMessage.context.logId);
+              this.core.navigation.toResults(logId);
             }, 500);
           }
           else { //If there is no logId, means something prevent the execution to complete:
@@ -180,7 +185,7 @@ Websockets Error code: ${(err && err.code) ? String(err.code) : "unknown"}.`
       new ExecutionStats());
 
     if (title) {
-      m.context.workflowName = title //We will use this to display a custom message.
+      m.context!.workflowName = title //We will use this to display a custom message.
     }
     else {
       m.context = this.currentContext;

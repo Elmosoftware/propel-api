@@ -18,6 +18,18 @@ import { PagerService, PagingHelper } from "../services/pager-service";
  */
 export class InfiniteScrollingService<T> {
 
+    private _model?: T[];
+
+    private _cache: PageCache<T>;
+
+    private _pager: PagerService;
+
+    /**
+     * Maximum number of data pages that will be incuded in the model at any time.
+     * This value is readonly and is set when the instance is created.
+     */
+    public readonly maxRenderedPages: number;
+
     /**
      * @constructor
      * Create the Service instance by setting initial parameters. 
@@ -29,7 +41,7 @@ export class InfiniteScrollingService<T> {
      * * The service will always keep in the attribute "model" a maximum of "maxRenderedPages" pages of data. You can 
      * check the "modelCapacity" attribute to get the value.  
      */
-    constructor(pageSize: number) {
+     constructor(pageSize: number) {
 
         let errorMsg: string = "";
 
@@ -51,21 +63,9 @@ export class InfiniteScrollingService<T> {
         this._pager = new PagerService(pageSize);
         this.modelChanged = new EventEmitter();
         this.dataFeed = new EventEmitter<PagingHelper>();
-        this._model = null;
+        this._model = undefined;
         this._cache = new PageCache<T>();
     }
-
-    private _model: T[];
-
-    private _cache: PageCache<T>;
-
-    private _pager: PagerService;
-
-    /**
-     * Maximum number of data pages that will be incuded in the model at any time.
-     * This value is readonly and is set when the instance is created.
-     */
-    public readonly maxRenderedPages: number;
 
     /**
      * Defined size of each data page.
@@ -122,25 +122,13 @@ export class InfiniteScrollingService<T> {
         return ret;        
     }
 
-    // /**
-    //  * Returns a boolean value that indicates if there is a page before the active one.
-    //  */
-    // public get hasPreviousPage(): boolean {
-    //     return this._pager.hasPreviousPage;
-    // }
-
-    // /**
-    //  * Returns a boolean value that indicates if there is a page after the active one.
-    //  */
-    // public get hasNextPage(): boolean {
-    //     return this._pager.hasNextPage;
-    // }
-
     /**
      * Data that need to be rendered. This property must be used for angular binding.
      */
-    public get model(): T[] {
-        return this._model;
+    public get model(): T[] | undefined {
+        // if(!this.model) return []
+        // else return this._model!;
+        return this._model!;
     }
 
     /**
@@ -222,7 +210,7 @@ export class InfiniteScrollingService<T> {
         //If we go to the first item in the entire list, we will need to add to the model all the cached pages up:
         //NOTE: I'm aware this is not the most performant way to do this, but is the easiest :-)
         while (this._cache.up.length > 0) {
-            this._addToModel(SCROLL_POSITION.Top, this._cache.up.pop())
+            this._addToModel(SCROLL_POSITION.Top, this._cache.up.pop()!)
         }
     }
 
@@ -232,7 +220,7 @@ export class InfiniteScrollingService<T> {
      */
     fullScrollDown() {
         while (this._cache.down.length > 0) {
-            this._addToModel(SCROLL_POSITION.Bottom, this._cache.down.pop())
+            this._addToModel(SCROLL_POSITION.Bottom, this._cache.down.pop()!)
         }
     }
 
@@ -245,7 +233,7 @@ export class InfiniteScrollingService<T> {
         if (position == SCROLL_POSITION.Bottom) { //If we scrolled to the bottom:
             //If there is some cached pages we added back to the model:
             if (this._cache.down.length > 0) {
-                this._addToModel(position, this._cache.down.pop());
+                this._addToModel(position, this._cache.down.pop()!);
             }
             //If there is nothing on the cache, but we still need to retrieve pages from API:
             else if (this._pager.hasNextPage) {
@@ -261,7 +249,7 @@ export class InfiniteScrollingService<T> {
         }
         else { //If we scrolling to the top and there is cached pages to show:
             if (this._cache.up.length > 0) {
-                this._addToModel(position, this._cache.up.pop())
+                this._addToModel(position, this._cache.up.pop()!)
             }
         }
     }

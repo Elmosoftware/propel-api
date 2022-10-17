@@ -49,7 +49,7 @@ export class CustomValueDialogComponent implements OnInit {
       this.fh.markAsUntouched();
   }
 
-  closeDlg(id): void {
+  closeDlg(id: number): void {
     this.dialogRef.close(new DialogResult<any>(id, this.fh.getRawValue()));
   }
 
@@ -61,7 +61,7 @@ export class CustomValueDialogComponent implements OnInit {
     //By default we are going to edit text:
     if (!data) {
       data = {
-        value: null,
+        value: undefined,
         typeIsString: true,
         stringMaxLength: DEFAULT_MAX_LENGTH
       }

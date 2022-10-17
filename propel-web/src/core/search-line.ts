@@ -8,27 +8,27 @@ export class SearchLine {
     /**
      * The data to be represented in the line.
      */
-     model: AuditedEntity[];
+     model!: AuditedEntity[];
 
      /**
       * Trigered on every data change made to the model.
       */
-     dataChanged: EventEmitter<boolean>;
+     dataChanged!: EventEmitter<boolean>;
 
      /**
       * Search term
       */
-     term: string;
+     term!: string;
 
 
     constructor() {
     }
 
-    getText(text, showPartial: boolean = false): string {
+    getText(text: string, showPartial: boolean = false): string {
         let words: string[];
         if (!this.term) return text;
         words = Utils.removeQuotes(this.term).split(" ");
-        return UIHelper.highlighText(text, words, (showPartial) ? 30 : null);
+        return UIHelper.highlighText(text, words, (showPartial) ? 30 : undefined);
     }
 
     getLastUpdate(item: AuditedEntity): string {

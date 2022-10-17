@@ -21,7 +21,7 @@ export class GraphSeriesData {
     /**
      * Data capturing timestamp.
      */
-    public lastTimeUpdated: Date | null;
+    public lastTimeUpdated: Date | undefined;
 
     /**
      * Extra data.
@@ -35,7 +35,7 @@ export class GraphSeriesData {
      * @param _id Data identifier.
      * @param lastTimeUpdated Timestamp of the captured data.
      */
-    constructor(name: string, value: number, _id: string = "", lastTimeUpdated: Date | null = null, 
+    constructor(name: string, value: number, _id: string = "", lastTimeUpdated: Date | undefined = undefined, 
         extra: any = undefined) {
 
         this.name = name;

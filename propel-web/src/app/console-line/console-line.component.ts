@@ -11,7 +11,7 @@ export class ConsoleLineComponent implements OnInit {
   private sepSexa: string = ":";
   private sepDec: string = ".";  
 
-  @Input() model: WebsocketMessage<ExecutionStats>;
+  @Input() model!: WebsocketMessage<ExecutionStats>;
   isControlMsg: boolean = true;
   isErrorMsg: boolean = false;
   message: string = "";
@@ -32,7 +32,7 @@ export class ConsoleLineComponent implements OnInit {
 
     switch (this.model.status) {
       case InvocationStatus.Preparing:
-        ret = `Preparing step #${String(this.model.context.currentStep).padStart(2, "0")} "${this.model.context.steps[this.model.context.currentStep - 1].stepName}"...`;
+        ret = `Preparing step #${String(this.model.context?.currentStep).padStart(2, "0")} "${this.model.context?.steps[this.model.context?.currentStep - 1].stepName}"...`;
         break;
       case InvocationStatus.Running:
         if (!ret) {

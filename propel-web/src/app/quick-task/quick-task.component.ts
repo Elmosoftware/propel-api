@@ -15,11 +15,11 @@ import { DataEndpointActions } from 'src/services/data.service';
 })
 export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
 
-  status: WorkflowStepComponentStatus = null;
+  status: WorkflowStepComponentStatus;
   completed: boolean = false;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
-    this.status = new WorkflowStepComponentStatus(false, false, null, null);
+    this.status = new WorkflowStepComponentStatus(false, false);
   }
 
   ngOnInit(): void {
@@ -54,10 +54,10 @@ export class QuickTaskComponent implements OnInit, DataLossPreventionInterface {
   private _createWorkflowFromStep(status: WorkflowStepComponentStatus): Workflow {
     let ret = new Workflow();
 
-    ret.name = status.step.name;
+    ret.name = status.step!.name;
     ret.isQuickTask = true;
 
-    ret.steps.push(status.step);
+    ret.steps.push(status.step!);
 
     return ret;
   }

@@ -55,7 +55,7 @@ export class CustomFieldDialogComponent implements OnInit {
       this.fh.markAsUntouched();
   }
 
-  closeDlg(id): void {
+  closeDlg(id: number): void {
     this.dialogRef.close(new DialogResult<any>(id, this.fh.getRawValue()));
   }
 

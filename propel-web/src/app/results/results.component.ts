@@ -19,11 +19,11 @@ import { DataEndpointActions } from 'src/services/data.service';
 })
 export class ResultsComponent implements OnInit {
 
-  @ViewChild(MatAccordion) accordion: MatAccordion;
+  @ViewChild(MatAccordion) accordion!: MatAccordion;
 
-  log: ExecutionLog;
-  executionResults: Map<string, any>
-  allErrors: any[];
+  log!: ExecutionLog;
+  executionResults!: Map<string, any>
+  allErrors!: any[];
   collapseStatus: boolean | null = null;
   showGrouped: boolean = true;
 
@@ -35,11 +35,13 @@ export class ResultsComponent implements OnInit {
     this.executionResults = new Map<string, any>();
     this.allErrors = [];
     this.refreshData()
-    .catch(this.core.handleError)
+      .catch((error) => {
+        this.core.handleError(error)
+      })
   }
 
   async refreshData(): Promise<void> {
-    let id: string = this.route.snapshot.paramMap.get("id");
+    let id: string = this.route.snapshot.paramMap.get("id") ?? "";
 
     try {
       let log: ExecutionLog = await this.core.data.getById(DataEndpointActions.ExecutionLog, id, true) as ExecutionLog
@@ -103,12 +105,12 @@ export class ResultsComponent implements OnInit {
 
         //Adding the errors, (if any), to the ungrouped error list:
         target.execErrors.forEach((value: ExecutionError) => {
-          let e = Object.assign({}, value);
+          let e: any = Object.assign({}, value);
           e["Target Name"] = target.name;
           this.allErrors.push(e);
         })
       });
-      this.setResults(step, null, stepData);
+      this.setResults(step, undefined, stepData);
       stepData = [];
     })
   }

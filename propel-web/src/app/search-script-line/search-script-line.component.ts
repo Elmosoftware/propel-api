@@ -16,11 +16,11 @@ import { concatAll } from 'rxjs/operators';
 })
 export class SearchScriptLineComponent extends SearchLine implements OnInit {
 
-  @Input() model: Script[];
+  @Input() override model!: Script[];
 
-  @Input() term: string;
+  @Input() override term!: string;
 
-  @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output("dataChanged") override dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   get isAdmin(): boolean {
     return this.core.security.isUserLoggedIn && this.core.security.sessionData.roleIsAdmin;

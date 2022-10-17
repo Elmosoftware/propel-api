@@ -4,21 +4,21 @@
             <label for="name" class="data-required">Name</label>
             <input type="text" class="form-control" id="name" aria-describedby="name"
                 placeholder="Enter the Workflow name." formControlName="name" required>
-            <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
+            <app-validation-message [control]="name"></app-validation-message>
         </div>
         <div class="form-group">
             <label for="description">Description</label>
             <textarea class="form-control" id="description" aria-describedby="description"
                 placeholder="Explain here what exactly this workflow does."
                 rows="4" formControlName="description"></textarea>
-            <app-validation-message [control]="fh.form.controls.description"></app-validation-message>
+            <app-validation-message [control]="description"></app-validation-message>
         </div>
         <div class="form-group mb-0">
             <div class="d-flex justify-content-center mb-2">
                 <button class="btn btn-primary" type="button" (click)="addStep()"><i class="fas fa-list-ol mr-2"></i>Add Step</button>
             </div>
             <div class="d-flex justify-content-center mb-2">
-                <app-validation-message [control]="fh.form.controls.steps"></app-validation-message>
+                <app-validation-message [control]="steps"></app-validation-message>
             </div>
             <div *ngIf="steps && steps.controls.length > 1 && showChangeOrderAlert" 
                 class="d-flex justify-content-center mb-2">
@@ -70,7 +70,7 @@
                         </div>
                     </div>
                 </td>
-                <td><a href="javascript:void(0)" (click)="editStep(i)">{{child.controls.name.value}}</a></td>
+                <td><a href="javascript:void(0)" (click)="editStep(i)">{{getStepName(i)}}</a></td>
                 <td>{{getStepDetails(i)}}&hellip;&nbsp;
                     <i class="fas fa-binoculars" matTooltip="{{getStepDetails(i, true)}}" 
                     matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i></td>

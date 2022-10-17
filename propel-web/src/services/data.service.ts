@@ -11,6 +11,7 @@ import { Utils } from '../../../propel-shared/utils/utils';
 import { PropelError } from '../../../propel-shared/core/propel-error';
 import { HttpHelper, Headers } from 'src/util/http-helper';
 import { map } from 'rxjs/operators';
+import { lastValueFrom } from 'rxjs';
 
 export const DataEndpoint: string = "data";
 
@@ -42,10 +43,11 @@ export class DataService {
    * @param id Unique identifier.
    * @param populate Boolean value that indicates if subdocuments will be populated. true by default.
    */
-  async getById(entityType: DataEndpointActions, id: string, populate: boolean = true): Promise<Entity | undefined> {
+  // async getById(entityType: DataEndpointActions, id: string, populate: boolean = true): Promise<Entity | undefined> {
+  async getById<T>(entityType: DataEndpointActions, id: string, populate: boolean = true): Promise<T | undefined> {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, [ DataEndpoint, entityType ]);
     let req: DataRequest = new DataRequest();
-    let qm: QueryModifier = null;
+    let qm: QueryModifier | undefined;
 
     if (!populate) {
       qm = new QueryModifier();
@@ -56,15 +58,14 @@ export class DataService {
     req.entity = id;
     req.qm = qm;
 
-    return this.http.post<PagedResponse<Entity>>(url, req, { 
+    return lastValueFrom(this.http.post<PagedResponse<T>>(url, req, { 
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
     })
     .pipe(
-      map((result: PagedResponse<Entity>) => {
+      map((result: PagedResponse<T>) => {
         return result.data[0]; 
       })
-    )
-    .toPromise()
+    ))
   }
 
   /**
@@ -79,10 +80,13 @@ export class DataService {
     req.action = DataRequestAction.Find;
     req.qm = qm;
 
-    return this.http.post<PagedResponse<Entity>>(url, req, { 
+    // return this.http.post<PagedResponse<Entity>>(url, req, { 
+    //   headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
+    // })
+    // .toPromise();
+    return lastValueFrom(this.http.post<PagedResponse<Entity>>(url, req, { 
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
-    })
-    .toPromise();
+    }));
   }
 
   /**
@@ -97,10 +101,9 @@ export class DataService {
     req.action = DataRequestAction.Save;
     req.entity = doc;
 
-    return this.http.post<string>(url, req, { 
+    return lastValueFrom(this.http.post<string>(url, req, { 
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
-    })
-    .toPromise();
+    }));
   }
 
   /**
@@ -115,10 +118,9 @@ export class DataService {
     req.action = DataRequestAction.Delete;
     req.entity = id;
 
-    return this.http.post<string>(url, req, { 
+    return lastValueFrom(this.http.post<string>(url, req, { 
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson) 
-    })
-    .toPromise();
+    }));
   }
 
   /**
@@ -157,7 +159,7 @@ export class DataService {
 
         let master: PagedResponse<Entity> = await this.find(entityType, qm);
         //This is the item that have the data that is going to be duplicated:
-        let masterCopy: Entity = master.data.find((item) => (item as any)[property] == identifier); 
+        let masterCopy: Entity = master.data.find((item) => (item as any)[property] == identifier)!; 
         let newName = Utils.getNextDuplicateName(identifier, master.data.map(item => (item as any)[property]))
   
         masterCopy._id = ""; //Removing the ID from the master copy, so save will create a new document.

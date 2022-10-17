@@ -16,11 +16,11 @@ import { concatAll } from 'rxjs/operators';
 })
 export class SearchTargetLineComponent extends SearchLine implements OnInit {
 
-  @Input() model: Target[];
+  @Input() override model!: Target[];
 
-  @Input() term: string;
+  @Input() override term!: string;
 
-  @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output("dataChanged") override dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   get isAdmin(): boolean {
     return this.core.security.isUserLoggedIn && this.core.security.sessionData.roleIsAdmin;
@@ -52,8 +52,8 @@ If there is a Workflow that already have it, the execution on this target will b
 
   duplicate(id: string) {
     //We search for the target first:
-    this.core.data.getById(DataEndpointActions.Target, id)
-      .then((target: Target) => {
+    this.core.data.getById<Target>(DataEndpointActions.Target, id)
+      .then((target: Target | undefined) => {
 
         if (!target) {
           this.core.toaster.showWarning("Seems like the items is gone!, maybe someone else deleted. Please double check before to retry.", "Could not find the item");

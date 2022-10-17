@@ -14,11 +14,11 @@ import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard
 })
 export class SearchUserAccountLineComponent extends SearchLine implements OnInit {
 
-  @Input() model: UserAccount[];
+  @Input() override model!: UserAccount[];
 
-  @Input() term: string;
+  @Input() override term!: string;
 
-  @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output("dataChanged") override dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   constructor(private core: CoreService) {
     super()
@@ -37,7 +37,7 @@ export class SearchUserAccountLineComponent extends SearchLine implements OnInit
     let lastLogin: string = (user.lastLogin) ? SharedSystemHelper.formatDate(user.lastLogin) : "never"
 
     let ret: string = `User stats:
-Added on: ${SharedSystemHelper.formatDate(user.createdOn)}
+Added on: ${SharedSystemHelper.formatDate(user.createdOn!)}
 Last updated on: ${lastUpdated}
 Last password change: ${lastPasswordChange}
 Last login on: ${lastLogin}
@@ -50,7 +50,7 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
     let ret: string = `With assigned role "${item.role}."`;
 
     if (this.userIsLocked(item)) {
-      ret += `\r\nThe user is locked since ${SharedSystemHelper.getFriendlyTimeFromNow(item.lockedSince)}.`
+      ret += `\r\nThe user is locked since ${SharedSystemHelper.getFriendlyTimeFromNow(item.lockedSince!)}.`
     }
 
     return ret;

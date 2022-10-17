@@ -5,6 +5,7 @@ import { environment as env } from 'src/environments/environment';
 import { ScriptParameter } from '../../../propel-shared/models/script-parameter';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { HttpHelper, Headers } from 'src/util/http-helper';
+import { lastValueFrom } from 'rxjs';
 
 export const InferenceEndpoint: string = "infer"
 
@@ -29,9 +30,8 @@ export class ParamInferenceService {
   async infer(scriptCode: string): Promise<ScriptParameter[]> {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, InferenceEndpoint);
 
-    return this.http.post<ScriptParameter[]>(url, scriptCode, {
+    return lastValueFrom(this.http.post<ScriptParameter[]>(url, scriptCode, {
       headers: HttpHelper.buildHeaders(Headers.ContentTypeText)
-    })
-    .toPromise();
+    }));
   }
 }

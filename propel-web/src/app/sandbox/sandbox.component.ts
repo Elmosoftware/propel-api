@@ -24,9 +24,9 @@ import { CustomValueDialogData } from '../dialogs/custom-value-dlg/custom-value-
 })
 export class SandboxComponent implements OnInit {
 
-  @ViewChild(MatAccordion) accordion: MatAccordion;
-  @ViewChild('MyNGSelect') myNGSelect: NgSelectComponent;
-  @ViewChild('MyNGSelectWithNew') MyNGSelectWithNew: NgSelectComponent;
+  @ViewChild(MatAccordion) accordion!: MatAccordion;
+  @ViewChild('MyNGSelect') myNGSelect!: NgSelectComponent;
+  @ViewChild('MyNGSelectWithNew') MyNGSelectWithNew!: NgSelectComponent;
 
   dropItem(item: any) {
     console.log("clearing the item!!!")
@@ -178,15 +178,15 @@ export class SandboxComponent implements OnInit {
 
   //#region MatTable Sample
 
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true }) paginator!: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort!: MatSort;
 
   tableTotalResults: number = 10;
-  targetResultsTable: TargetResultsTable;
+  targetResultsTable!: TargetResultsTable;
   tableFilterBy: string = "";
   showFilter: boolean = true;
-  excludedFieldsList: string;
-  sortedColumnsList: string
+  excludedFieldsList!: string;
+  sortedColumnsList!: string
 
   applyFilter() {
     this.targetResultsTable.applyFilter(this.tableFilterBy);
@@ -1174,7 +1174,7 @@ export class SandboxComponent implements OnInit {
     }
   ];
 
-  view: any[] = null; //[700, 400];
+  view = [700, 400];
 
   // options
   showXAxis = true;
@@ -1186,13 +1186,13 @@ export class SandboxComponent implements OnInit {
   showYAxisLabel = true;
   yAxisLabel = 'Population';
 
-  // colorScheme = "air"
-  colorScheme = {
-    domain: ["#ffe89e", "#ff7878", "#328AAB", "#e6c761", "#e69a9a", "#487e92", "#ab3a32", "#924d48"] 
-  };
+  colorScheme = "air"
+  // colorScheme = {
+  //   domain: ["#ffe89e", "#ff7878", "#328AAB", "#e6c761", "#e69a9a", "#487e92", "#ab3a32", "#924d48"] 
+  // };
   cardColor: string = '#232837';
 
-  onSelectChart($event) {
+  onSelectChart($event: any) {
     console.log(JSON.stringify($event));
   }
 
@@ -1207,7 +1207,7 @@ class SampleData {
 
   name: string = "";
   enabled: boolean = false;
-  country?: Country = null;
+  country?: Country = undefined;
   colors: Color[] = [];
   textList: string[] = [];
 
@@ -1234,22 +1234,6 @@ class Color extends Entity {
   }
 }
 
-// class TableDataSample {
-//   readonly id: number;
-//   readonly text: string;
-//   readonly date: Date;
-//   readonly bol: boolean;
-//   readonly longText: string;
-
-//   constructor(id: number) {
-//     this.id = id;
-//     this.text = `This is the ${id.toString()}`;
-//     this.date = new Date((new Date()).getTime() + (86400000 * id));
-//     this.bol = Boolean(id % 3);
-//     this.longText = "This is a random long text to verify how the table accomodate on long content in cells."
-//   }
-// }
-
 class TargetResultsTable {
 
   readonly isValidJSON: boolean;
@@ -1263,8 +1247,8 @@ class TargetResultsTable {
   }
 
   get noMatches(): boolean {
-    return this.currentFilterTerm && this.dataSource.filteredData
-      && this.dataSource.filteredData.length == 0
+    return Boolean(this.currentFilterTerm && this.dataSource.filteredData
+      && this.dataSource.filteredData.length == 0)
   }
 
   applyFilter(term: string) {
@@ -1314,6 +1298,7 @@ class TargetResultsTable {
     }
     else {
       parsedData = [{
+        //@ts-ignore
         Results: this.dataSource.toString()
       }]
       this.columns.push("Results");

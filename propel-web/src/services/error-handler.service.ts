@@ -21,8 +21,8 @@ export class ErrorHandlerService implements ErrorHandler {
    * Implementation of CustomErrorHandler class.
    * @param error Error.
    */
-  handleError(error) {
-    let e = new PropelError(error);
+  handleError(error: any) {
+    let e = new PropelError(error as Error);
 
     console.error(`%c [${e.name}]: ${e.message}\r\nat ${e.timestamp.toISOString()}, (local time:${e.timestamp.toLocaleString()})`, "color: #ff3b3b; font-size: 14px; font-weight: Bold");
     console.dir(e);

@@ -59,11 +59,11 @@ export class InfiniteScrollingDirective {
 
   //Listener of the element scroll:
   @HostListener('scroll', ['$event'])
-  onScroll(event) {
+  onScroll(event: any) {
     this._processEvent(event);
   }
 
-  private _processEvent(event?) {
+  private _processEvent(event?: any) {
     try {
       if (!event && !this.scrollWindow) {
         console.warn(`Ignoring "window:scroll" event because the property "scrollWindow" is set to "false";`)
@@ -89,7 +89,7 @@ export class InfiniteScrollingDirective {
     }
   }
 
-  private _getScrollingPercent(event?): number {
+  private _getScrollingPercent(event?: any): number {
 
     let ret: number = 0
 

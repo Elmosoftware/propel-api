@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy, EventEmitter } from '@angular/core';
-import { fromEvent } from 'rxjs';
+import { fromEvent, Observable, Subscription } from 'rxjs';
 
 import { PropelError } from "../../../propel-shared/core/propel-error";
 import { APIStatusService } from './api-status.service';
@@ -24,8 +24,8 @@ export class ConnectivityService implements OnDestroy {
      */
     private onConnectivityStatusChange: EventEmitter<ConnectivityStatus> = new EventEmitter();
 
-    private statusNetOfflineSubscription$; //Subscription for the window.offline event.
-    private statusNetOnlineSubscription$; //Subscription for the window.online event.
+    private statusNetOfflineSubscription$?: Subscription; //Subscription for the window.offline event.
+    private statusNetOnlineSubscription$?: Subscription; //Subscription for the window.online event.
 
     constructor(private svc: APIStatusService) {
         logger.logInfo("ConnectivityService instance created")
@@ -43,8 +43,13 @@ export class ConnectivityService implements OnDestroy {
 
     ngOnDestroy(): void {
         try {
-            this.statusNetOfflineSubscription$.unsubscribe();
-            this.statusNetOnlineSubscription$.unsubscribe();
+            if (this.statusNetOnlineSubscription$) {
+                this.statusNetOnlineSubscription$.unsubscribe();
+            }
+            
+            if (this.statusNetOfflineSubscription$) {
+                this.statusNetOfflineSubscription$.unsubscribe();
+            }
         }
         catch (e) {
         }
@@ -78,15 +83,25 @@ export class ConnectivityService implements OnDestroy {
     
     private initialize() {
 
-        this.statusNetOnlineSubscription$ = fromEvent(window, "online");
-        this.statusNetOfflineSubscription$ = fromEvent(window, "offline");
+        // this.statusNetOnlineSubscription$ = fromEvent(window, "online");
+        // this.statusNetOfflineSubscription$ = fromEvent(window, "offline");
 
-        this.statusNetOnlineSubscription$.subscribe(() => {
+        // this.statusNetOnlineSubscription$.subscribe(() => {
+        //     logger.logInfo("window.online event has been fired.");
+        //     this.updateStatus();
+        // });
+
+        // this.statusNetOfflineSubscription$.subscribe(() => {
+        //     logger.logWarn("window.OFFLINE event has been fired.");
+        //     this.updateStatus();
+        // });
+        this.statusNetOnlineSubscription$ = fromEvent(window, "online")
+            .subscribe(() => {
             logger.logInfo("window.online event has been fired.");
             this.updateStatus();
         });
-
-        this.statusNetOfflineSubscription$.subscribe(() => {
+        this.statusNetOfflineSubscription$ = fromEvent(window, "offline")
+            .subscribe(() => {
             logger.logWarn("window.OFFLINE event has been fired.");
             this.updateStatus();
         });
@@ -110,7 +125,7 @@ export class ConnectivityStatus {
      * @param lastError ErrorLog objectthat contains the information for the last error sent to this service.
      */
     constructor(networkOn: boolean = window.navigator.onLine, apiOn: boolean = false,
-        lastError: PropelError = null) {
+        lastError?: PropelError) {
         this.networkOn = networkOn;
         this.apiOn = apiOn;
         this.lastError = lastError;
@@ -129,5 +144,5 @@ export class ConnectivityStatus {
     /**
      * Last error sent to this service.
      */
-    lastError: PropelError;
+    lastError?: PropelError;
 }

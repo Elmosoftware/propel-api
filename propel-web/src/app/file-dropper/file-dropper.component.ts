@@ -18,7 +18,7 @@ const PROGRESS_MAX: number = 100
 })
 export class FileDropperComponent implements OnInit {
 
-  selectedFiles: FileList;
+  selectedFiles!: FileList;
   isHover: boolean = false;
   uploadInProgress: boolean = false;
   isReseting: boolean = false;
@@ -70,7 +70,8 @@ export class FileDropperComponent implements OnInit {
 
   @HostListener('dragover', ['$event'])
   onDragOver($event: any) {
-    event.preventDefault();
+    // event.preventDefault();
+    $event.preventDefault();
     this.isHover = true;
   }
 
@@ -85,7 +86,7 @@ export class FileDropperComponent implements OnInit {
     this.isReseting = false;
   }
 
-  autoResetDone($event) {
+  autoResetDone($event: any) {
     if ($event.toState == "finish") {
       this.forceReset();
     }

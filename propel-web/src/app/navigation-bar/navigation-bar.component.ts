@@ -20,7 +20,7 @@ export class NavigationBarComponent implements OnInit {
   constructor(private core: CoreService, private route: ActivatedRoute) {
   }
 
-  loading: boolean;
+  loading: boolean = false;
   searchTerm: string = "";
   _isLegacy: boolean = false;
 
@@ -289,7 +289,7 @@ export class NavigationBarComponent implements OnInit {
     this.core.navigation.toSandbox();
   }
 
-  doNotPropagate($event) {
+  doNotPropagate($event: any) {
     $event.stopPropagation();
   }
 

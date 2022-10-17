@@ -31,7 +31,7 @@ const TOKEN_EXPIRATION_TOLERANCE: number = 5;
 })
 export class RunnerService {
 
-  private _socket: WebsocketService<WebsocketMessage<ExecutionStats>>
+  private _socket!: WebsocketService<WebsocketMessage<ExecutionStats>>
 
   constructor(private security: SecurityService) {
 

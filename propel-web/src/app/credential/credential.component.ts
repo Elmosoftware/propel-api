@@ -1,5 +1,5 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { DataLossPreventionInterface } from 'src/core/data-loss-prevention-guard';
@@ -29,9 +29,9 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<Credential>;
   loaded: boolean = false;
-  reset: Subject<void>;
-  saved: Subject<void>;
-  secret: Secret<SecretValue> = null;
+  reset!: Subject<void>;
+  saved!: Subject<void>;
+  secret!: Secret<SecretValue>;
   secretIsValid: boolean = false;
   showInformativeFieldsAlert: boolean = true;
   showMaxFieldsReachedAlert: boolean = true;
@@ -42,8 +42,8 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
     get fieldsMaxCount() { return 5 }
   }
 
-  get fields(): FormArray {
-    return (this.fh.form.controls.fields as FormArray);
+  get fields(): UntypedFormArray {
+    return (this.fh.form.controls['fields'] as UntypedFormArray);
   }
 
   get isValid(): boolean {
@@ -52,19 +52,19 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
     //Creating the Form handler with the CredentialBase fields only:
-    this.fh = new FormHandler(DataEndpointActions.Credential, new FormGroup({
-      name: new FormControl("", [
+    this.fh = new FormHandler(DataEndpointActions.Credential, new UntypedFormGroup({
+      name: new UntypedFormControl("", [
         Validators.required,
         Validators.maxLength(this.validationParams.nameMaxLength),
         ValidatorsHelper.pattern(new RegExp("^[a-zA-Z0-9]+$", "g"),
           "The credential name can contain only letters and numbers, any other character is invalid.")
       ]),
-      description: new FormControl("", [
+      description: new UntypedFormControl("", [
         Validators.maxLength(this.validationParams.descriptionMaxLength)
       ]),
-      credentialType: new FormControl(DEFAULT_CREDENTIAL_TYPE),
-      secretId: new FormControl(""),
-      fields: new FormArray([], [
+      credentialType: new UntypedFormControl(DEFAULT_CREDENTIAL_TYPE),
+      secretId: new UntypedFormControl(""),
+      fields: new UntypedFormArray([], [
         ValidatorsHelper.maxItems(this.validationParams.fieldsMaxCount)])
     }));
 
@@ -94,11 +94,11 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
         this.core.navigation.getCurrentPageSuffix(), false)
 
       if (credentialType) {
-        this.fh.form.controls.credentialType.patchValue(String(credentialType));
+        this.fh.form.controls['credentialType'].patchValue(String(credentialType));
       }
     }
     else {
-      this.fh.form.controls._id.patchValue(String(id));
+      this.fh.form.controls['_id'].patchValue(String(id));
     }
 
     this.refreshData()
@@ -120,24 +120,23 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
   }
 
   async refreshData(): Promise<void> {
-    let cred: Credential;
+    let cred: Credential | undefined = undefined;
     let secret;
+    
+    this.loaded = false;
 
-    if (!this.fh.form.controls._id.value) {
+    if (!this.fh.form.controls['_id'].value) {
       this.newItem();
       return Promise.resolve();
     }
 
-    this.loaded = false;
-
     try {
-       cred = await this.core.data.getById(DataEndpointActions.Credential,
-        this.fh.form.controls._id.value, true) as Credential;
+      cred = await this.core.data.getById(DataEndpointActions.Credential,
+        this.fh.form.controls['_id'].value, true) as Credential;
 
       if (!cred) {
         this.core.toaster.showWarning("If you access directly with a link, maybe is broken. Go to the Browse page and try a search.", "Could not find the item")
         this.newItem();
-        this.loaded = true;
         return Promise.resolve();
       }
 
@@ -146,26 +145,25 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
       this.fh.form.updateValueAndValidity();
 
       secret = await this.core.data.getById(DataEndpointActions.Secret,
-        this.fh.form.controls.secretId.value, true)
+        this.fh.form.controls['secretId'].value, true)
 
       if (!secret) {
         //If the secret is missing for some reason, we must prepare the form to enter the secret 
         //part of the credential again:
         this.newItem(true);
-        this.loaded = true;
         this._missingSecretDialog()
         return Promise.resolve()
       }
 
       this.secret = (secret as Secret<SecretValue>);
       this.secretIsValid = true;
-      this.fh.form.controls.secretId.patchValue(this.secret._id);
+      this.fh.form.controls['secretId'].patchValue(this.secret._id);
       this.fh.form.updateValueAndValidity();
       this.loaded = true;
 
     } catch (error) {
       let cryptoError: boolean = false;
-      let e: PropelError = new PropelError(error);
+      let e: PropelError = new PropelError(error as Error);
 
       cryptoError = (e.errorCode.key == ErrorCodes.CryptoError.key);
 
@@ -195,13 +193,13 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
             }
             else { //If the user decide to enter the credential again.
               //We would like to do our best effort to delete the old secret first
-              this.core.data.delete(DataEndpointActions.Secret, this.fh.form.controls.secretId.value)
+              this.core.data.delete(DataEndpointActions.Secret, 
+                this.fh.form.controls['secretId'].value)
                 .catch(_ => { }) //Oops!, We give our best anyway!
 
               //Whatever the error is, we need to create a new secret in the form, (because the 
               //persisted one is gone):
               this.newItem(true);
-              this.loaded = true;
             }
           },
             _ => { });
@@ -215,7 +213,6 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
         }
         else if (!secret) {
           this.newItem(true);
-          this.loaded = true;
           this._missingSecretDialog()
           return Promise.resolve()
         }
@@ -228,6 +225,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
   newItem(secretOnly: boolean = false) {
     let cred: Credential = new Credential();
 
+    this.loaded = false;
     cred.credentialType = this.fh.value.credentialType
     this.secret = SecretFactory.createFromCredential(cred);
 
@@ -238,13 +236,15 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
     }
 
     //Ensuring we are going to create a new Secret:
-    this.fh.form.controls.secretId.patchValue(this.secret._id);
+    //Ensuring we are going to create a new Secret:
+    this.fh.form.controls['secretId'].patchValue(this.secret._id);
     this.fh.form.updateValueAndValidity();
+    this.loaded = true;
   }
 
   addField() {
 
-    this.fh.form.controls.fields.markAllAsTouched();
+    this.fh.form.controls['fields'].markAllAsTouched();
     this.core.dialog.showCustomFieldDialog(new ParameterValue())
       .subscribe((dlgResults: DialogResult<ParameterValue>) => {
 
@@ -271,14 +271,14 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
   }
 
   removeField(i: number) {
-    (this.fh.form.controls.fields as FormArray).removeAt(i);
-    this.fh.form.controls.fields.markAllAsTouched();
-    this.fh.form.controls.fields.markAsDirty();
+    (this.fh.form.controls['fields'] as UntypedFormArray).removeAt(i);
+    this.fh.form.controls['fields'].markAllAsTouched();
+    this.fh.form.controls['fields'].markAsDirty();
   }
 
   editField(i: number) {
 
-    this.fh.form.controls.fields.markAllAsTouched();
+    this.fh.form.controls['fields'].markAllAsTouched();
     this.core.dialog.showCustomFieldDialog(this._getCustomField(i))
       .subscribe((dlgResults: DialogResult<ParameterValue>) => {
 
@@ -333,7 +333,9 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
   save(): void {
     this.internalSave()
-    .catch(this.core.handleError)
+    .catch((error) => {
+      this.core.handleError(error)
+    })
   }
 
   private async internalSave(): Promise<void> {
@@ -345,9 +347,7 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
       secretId = await this.core.data.save(DataEndpointActions.Secret, this.secret)
 
       //Updating the secret id in the credential:
-      this.fh.form.controls.secretId.patchValue(secretId);
-      //Signaling the inner component to indicate the data was saved:
-      // this.saved.next();
+      this.fh.form.controls['secretId'].patchValue(secretId);
 
       //Now we save the credential:
       credentialId = await this.core.data.save(DataEndpointActions.Credential, this.fh.value)
@@ -380,7 +380,8 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
           .catch(_ => { }) //We did our best to delete it.
 
         //Removing the Id from the credential:
-        this.fh.form.controls.secretId.patchValue("");
+        //Removing the Id from the credential:
+        this.fh.form.controls['secretId'].patchValue("");
       }
 
       return Promise.reject(error)
@@ -406,23 +407,23 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
   private _createFieldsFromArray(fields: ParameterValue[], clearBeforeAdd: boolean = false): void {
 
     if (clearBeforeAdd) {
-      (this.fh.form.controls.fields as FormArray).clear();
+      (this.fh.form.controls['fields'] as UntypedFormArray).clear();
     }
 
     if (fields && fields.length > 0) {
       fields.forEach((field: ParameterValue) => {
         //Adding the controls to the array:
-        (this.fh.form.controls.fields as FormArray).push(new FormGroup({
-          name: new FormControl(field.name),
-          value: new FormControl(field.value),
-          nativeType: new FormControl(field.nativeType)
+        (this.fh.form.controls['fields'] as UntypedFormArray).push(new UntypedFormGroup({
+          name: new UntypedFormControl(field.name),
+          value: new UntypedFormControl(field.value),
+          nativeType: new UntypedFormControl(field.nativeType)
         }));
       })
     }
   }
 
   private _getCustomField(index: number): ParameterValue {
-    return ((this.fh.form.controls.fields as FormArray).controls[index].value as ParameterValue);
+    return ((this.fh.form.controls['fields'] as UntypedFormArray).controls[index].value as ParameterValue);
   }
 
   private _missingSecretDialog(): void {

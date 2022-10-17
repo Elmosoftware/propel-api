@@ -16,7 +16,7 @@ export class StandardDialogComponent implements OnInit {
   ngOnInit() {
   }
 
-  closeDlg(id): void {
+  closeDlg(id: number): void {
     this.dialogRef.close(new DialogResult<any>(id, null));
   }
 

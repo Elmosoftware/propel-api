@@ -13,6 +13,7 @@ import { FormHandler } from "../../core/form-handler";
 import { DataEndpointActions } from 'src/services/data.service';
 import { Credential } from "../../../../propel-shared/models/credential";
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 const FRIENDLY_NAME_MIN: number = 3;
 const FRIENDLY_NAME_MAX: number = 25;
@@ -25,11 +26,11 @@ const DESCRIPTION_MAX: number = 256;
 })
 export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
-  @ViewChild("invokeAs") invokeAs;
+  @ViewChild("invokeAs") invokeAs!: NgSelectComponent;
 
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<Target>
-  allWindowsCredentials: Credential[];
+  allWindowsCredentials!: Credential[];
   showAddNewButton: boolean = false;
   credentialIsDisabled: boolean = false;
 
@@ -99,13 +100,15 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
           });
 
           this.refreshData()
-          .catch(this.core.handleError)
+          .catch((error) => {
+            this.core.handleError(error)
+          })
         });
     });
   }
 
   async refreshData(): Promise<void> {
-    let id: string = this.route.snapshot.paramMap.get("id");
+    let id: string = this.route.snapshot.paramMap.get("id") ?? "";
 
     if (!id) {
       this.newItem();
@@ -163,7 +166,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     return (this.core.data.find(DataEndpointActions.Credential, qm) as unknown as PagedResponse<Credential>)
   }
 
-  credentialChanged($event) {
+  credentialChanged($event: any) {
     this.credentialIsDisabled = ($event && $event.isDisabled);
   }
 
@@ -204,7 +207,7 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
     let credId = (this.fh.value.invokeAs?._id) ? this.fh.value.invokeAs._id : this.fh.value.invokeAs;
 
     if (credId) {
-      let cred: Credential = this.getCredentialFromCache(String(credId))
+      let cred: Credential = this.getCredentialFromCache(String(credId))!
       this.invokeAs.select({ name: cred.name, value: cred });
 
       //@ts-ignore

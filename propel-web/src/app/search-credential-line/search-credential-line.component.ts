@@ -25,11 +25,11 @@ export enum TestStatus {
 })
 export class SearchCredentialLineComponent extends SearchLine implements OnInit {
 
-  @Input() model: Credential[];
+  @Input() override model!: Credential[];
 
-  @Input() term: string;
+  @Input() override term!: string;
 
-  @Output("dataChanged") dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output("dataChanged") override dataChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   testStatusEnum = TestStatus;
   credentialTypes = CredentialTypes;
@@ -71,9 +71,8 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
     let ret: string = "Credential type: ";
 
     if (Utils.testEnumKey(CredentialTypes, item.credentialType) ) {
-
       ret += String(Utils.getEnum(CredentialTypes)
-        .find((elem) => { return elem.key == item.credentialType })
+        .find((elem) => { return elem.key == item.credentialType })!
         .value)
     }
 
@@ -84,11 +83,11 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
 
     let ret: string = "Not tested";
 
-    if (item["testStatus"] == undefined) {
-      item["testStatus"] = TestStatus.NotTested;
+    if ((item as any)["testStatus"] == undefined) {
+      (item as any)["testStatus"] = TestStatus.NotTested;
     }
 
-    switch (item["testStatus"]) {
+    switch ((item as any)["testStatus"]) {
       case TestStatus.Ok:
         ret = "Credential is Ok!"
         break;
@@ -133,27 +132,27 @@ Also: This can cause to fail any script that is currently using the credential.`
   test(item: Credential) {
 
     //Adding the status to the credential:
-    if (item["testStatus"] == undefined) {
-      item["testStatus"] = TestStatus.NotTested
+    if ((item as any)["testStatus"] == undefined) {
+      (item as any)["testStatus"] = TestStatus.NotTested
     }
 
     //Fetching the Secret holding the Credential secrets:
     this.core.data.getById(DataEndpointActions.Secret, item.secretId, true)
-      .then((data: Secret<SecretValue>) => {
+      .then((data) => {
         if (!data) {
           //If the secret is missing:
-          item["testStatus"] = TestStatus.Error;
+          (item as any)["testStatus"] = TestStatus.Error;
           this.core.toaster.showError("There was an error testing the credential. Please edit the credential to see more details.",
             "Credential test error.");
         }
         else {
           //The secret is accessible:
-          item["testStatus"] = TestStatus.Ok;
+          (item as any)["testStatus"] = TestStatus.Ok;
           this.core.toaster.showSuccess(`Credential "${item.name}" is healthy!`, "Succesful Credential test")
         }
       },
         (error) => { //If There was an error loading the Secret part of the Credential:
-          item["testStatus"] = TestStatus.Error;
+          (item as any)["testStatus"] = TestStatus.Error;
           this.core.toaster.showError("There was an error testing the credential. Please edit the credential to see more details.",
             "Credential test error.");
         });

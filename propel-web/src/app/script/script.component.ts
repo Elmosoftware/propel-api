@@ -1,5 +1,5 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import 'prismjs';
@@ -40,23 +40,23 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
   private requestCount$: EventEmitter<number>;
   activeTab: Tabs = Tabs.Details;
   fh: FormHandler<Script>;
-  uploadProgress: number;
-  uploadEnabled: boolean;
-  completed: boolean;
-  invalidFileMessage: string;
+  uploadProgress: number = 0;
+  uploadEnabled: boolean = true ;
+  completed: boolean = false;
+  invalidFileMessage: string = "";
 
   set scriptCode(value: string) {
-    this.fh.form.controls.code.patchValue(value);
+    this.fh.form.controls['code'].patchValue(value);
   }
   get scriptCode(): string {
-    return this.fh.form.controls.code.value;
+    return this.fh.form.controls['code'].value;
   }
 
   set scriptParameters(value: ScriptParameter[]) {
-    this.fh.form.controls.parameters.patchValue(value);
+    this.fh.form.controls['parameters'].patchValue(value);
   }
   get scriptParameters(): ScriptParameter[] {
-    return this.fh.form.controls.parameters.value;
+    return this.fh.form.controls['parameters'].value;
   }
 
   get highlightedCode(): string {
@@ -66,20 +66,20 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
-    this.fh = new FormHandler(DataEndpointActions.Script, new FormGroup({
-      name: new FormControl("", [
+    this.fh = new FormHandler(DataEndpointActions.Script, new UntypedFormGroup({
+      name: new UntypedFormControl("", [
         Validators.required,
         Validators.minLength(NAME_MIN),
         Validators.maxLength(NAME_MAX)
       ]),
-      description: new FormControl("", [
+      description: new UntypedFormControl("", [
         Validators.maxLength(DESCRIPTION_MAX)
       ]),
-      isTargettingServers: new FormControl(""),
-      enabled: new FormControl(""),
-      code: new FormControl(""), //Didn't set this as required, because will be handled 
+      isTargettingServers: new UntypedFormControl(""),
+      enabled: new UntypedFormControl(""),
+      code: new UntypedFormControl(""), //Didn't set this as required, because will be handled 
       //in a separate tab.
-      parameters: new FormControl("")
+      parameters: new UntypedFormControl("")
     }));
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
@@ -99,7 +99,9 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData()
-      .catch(this.core.handleError)
+      .catch((error) => {
+        this.core.handleError(error)
+      })
   }
 
   resetForm() {
@@ -111,7 +113,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
   }
 
   async refreshData(): Promise<void> {
-    let id: string = this.route.snapshot.paramMap.get("id");
+    let id: string = this.route.snapshot.paramMap.get("id") ?? "";
 
     if (!id) {
       this.newItem();

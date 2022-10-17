@@ -8,7 +8,7 @@ import { ScriptParameter } from '../../../../propel-shared/models/script-paramet
 })
 export class ScriptParametersComponent implements OnInit {
 
-  @Input() parameters: ScriptParameter[];
+  @Input() parameters!: ScriptParameter[];
 
   constructor() { }
 

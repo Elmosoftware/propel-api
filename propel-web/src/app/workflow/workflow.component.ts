@@ -1,4 +1,4 @@
-import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, Validators, FormArray, UntypedFormArray } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Component, OnInit, EventEmitter } from '@angular/core';
@@ -17,6 +17,7 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { Target } from '../../../../propel-shared/models/target';
 import { DataEndpointActions } from 'src/services/data.service';
 import { JSType } from '../../../../propel-shared/core/type-definitions';
+import { Script } from '../../../../propel-shared/models/script';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -44,22 +45,30 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
    */
   compareFn: Function = compareEntities;
 
-  get steps(): FormArray {
-    return (this.fh.form.controls.steps as FormArray);
+  get steps(): UntypedFormArray {
+    return (this.fh.form.controls['steps'] as UntypedFormArray);
+  }
+
+  get name(): UntypedFormControl {
+    return (this.fh.form.controls['name'] as UntypedFormControl);
+  }
+
+  get description(): UntypedFormControl {
+    return (this.fh.form.controls['description'] as UntypedFormControl);
   }
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
-    this.fh = new FormHandler(DataEndpointActions.Workflow, new FormGroup({
-      name: new FormControl("", [
+    this.fh = new FormHandler(DataEndpointActions.Workflow, new UntypedFormGroup({
+      name: new UntypedFormControl("", [
         Validators.required,
         Validators.minLength(NAME_MIN),
         Validators.maxLength(NAME_MAX)
       ]),
-      description: new FormControl("", [
+      description: new UntypedFormControl("", [
         Validators.maxLength(DESCRIPTION_MAX)
       ]),
-      isQuickTask: new FormControl(""),
+      isQuickTask: new UntypedFormControl(""),
       steps: new FormArray([], [
         ValidatorsHelper.minItems(1),
         ValidatorsHelper.maxItems(STEPS_MAX)])
@@ -84,11 +93,13 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData()
-    .catch(this.core.handleError)
+    .catch((error) => {
+      this.core.handleError(error)
+    })
   }
 
   async refreshData(): Promise<void> {
-    let id: string = this.route.snapshot.paramMap.get("id");
+    let id: string = this.route.snapshot.paramMap.get("id") ?? "";
 
     if (!id) {
       this.newItem();
@@ -119,15 +130,15 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   extractScriptNameAndTargetFromStatus(status: WorkflowStepComponentStatus): void {
-    let step: WorkflowStep = status.step;
+    let step: WorkflowStep = status.step!;
     let scriptId: string = this.getEntityId(step.script);
 
     if (scriptId && !this.scriptNames.has(scriptId)) {
-      this.scriptNames.set(scriptId, status.scriptName)
+      this.scriptNames.set(scriptId, status.scriptName!)
     }
 
     if (step.targets && step.targets.length > 0) {
-      this.targetNames.set(step.targets.join(), status.targetNames);
+      this.targetNames.set(step.targets.join(), status.targetNames!);
     }
   }
 
@@ -151,7 +162,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
   addStep() {
 
-    this.fh.form.controls.steps.markAllAsTouched();
+    this.fh.form.controls['steps'].markAllAsTouched();
     this.core.dialog.showWorkflowStepDialog(new WorkflowStep())
       .subscribe((dlgResults: DialogResult<WorkflowStepComponentStatus>) => {
 
@@ -176,28 +187,28 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   createStepsFormArray(steps: WorkflowStep[], clearBeforeAdd: boolean = false): void {
 
     if (clearBeforeAdd) {
-      (this.fh.form.controls.steps as FormArray).clear();
+      (this.fh.form.controls['steps'] as UntypedFormArray).clear();
     }
 
     if (steps && steps.length > 0) {
       steps.forEach((step: WorkflowStep) => {
-        let valuesArray = new FormArray([]);
+        let valuesArray = new UntypedFormArray([]);
 
         step.values.forEach((pv: ParameterValue) => {
-          valuesArray.push(new FormGroup({
-            name: new FormControl(pv.name),
-            value: new FormControl(pv.value),
-            nativeType: new FormControl(pv.nativeType)
+          valuesArray.push(new UntypedFormGroup({
+            name: new UntypedFormControl(pv.name),
+            value: new UntypedFormControl(pv.value),
+            nativeType: new UntypedFormControl(pv.nativeType)
           }))
         });
 
         //Adding the controls to the array:
-        (this.fh.form.controls.steps as FormArray).push(new FormGroup({
-          name: new FormControl(step.name),
-          enabled: new FormControl(step.enabled),
-          abortOnError: new FormControl(step.abortOnError),
-          script: new FormControl(step.script),
-          targets: new FormControl(step.targets),
+        (this.fh.form.controls['steps'] as FormArray).push(new UntypedFormGroup({
+          name: new UntypedFormControl(step.name),
+          enabled: new UntypedFormControl(step.enabled),
+          abortOnError: new UntypedFormControl(step.abortOnError),
+          script: new UntypedFormControl(step.script),
+          targets: new UntypedFormControl(step.targets),
           values: valuesArray
         }));
       })
@@ -210,7 +221,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
   editStep(stepIndex: number) {
 
-    this.fh.form.controls.steps.markAllAsTouched();
+    this.fh.form.controls['steps'].markAllAsTouched();
     this.core.dialog.showWorkflowStepDialog(this.getStep(stepIndex))
       .subscribe((dlgResults: DialogResult<WorkflowStepComponentStatus>) => {
 
@@ -242,9 +253,9 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   removeStep(stepIndex: number) {
-    (this.fh.form.controls.steps as FormArray).removeAt(stepIndex);
-    this.fh.form.controls.steps.markAllAsTouched();
-    this.fh.form.controls.steps.markAsDirty();
+    (this.fh.form.controls['steps'] as UntypedFormArray).removeAt(stepIndex);
+    this.fh.form.controls['steps'].markAllAsTouched();
+    this.fh.form.controls['steps'].markAsDirty();
   }
 
   getEntityId(script: any): string {
@@ -261,7 +272,11 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   getStep(stepIndex: number): WorkflowStep {
-    return ((this.fh.form.controls.steps as FormArray).controls[stepIndex].value as WorkflowStep);
+    return ((this.fh.form.controls['steps'] as UntypedFormArray).controls[stepIndex].value as WorkflowStep);
+  }
+
+  getStepName(stepIndex: number): string {
+    return this.getStep(stepIndex).name
   }
 
   getScriptName(stepIndex: number): string {
@@ -270,7 +285,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
     let scriptId: string = this.getEntityId(step.script);
 
     if (this.scriptNames.has(scriptId)) {
-      ret = this.scriptNames.get(scriptId);
+      ret = this.scriptNames.get(scriptId)!;
     }
 
     return ret;
@@ -282,7 +297,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
     let targetIds: string = (step.targets && step.targets.length > 0) ?
       step.targets.map((t) => this.getEntityId(t)).join() : "";
     if (this.targetNames.has(targetIds)) {
-      ret = this.targetNames.get(targetIds).join(", ");
+      ret = this.targetNames.get(targetIds)!.join(", ");
     }
     else {
       ret = "None";
@@ -322,18 +337,18 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
 
     //We can reduce the payload by excluding the entire script object and the targets and 
     //sending only the ObjectId for each one of them:
-    let data: any = Object.assign({}, this.fh.value);
+    let data: Workflow = Object.assign({}, this.fh.value);
 
     if (data.steps) {
-      data.steps.forEach((step) => {
+      data.steps.forEach((step: WorkflowStep) => {
         if (step.script && step.script._id) {
-          step.script = step.script._id;
+          step.script = (step.script._id as unknown as Script);
         }
 
         if (step.targets) {
-          step.targets.forEach((target, i) => {
+          step.targets.forEach((target: Target, i) => {
             if (target && target._id) {
-              step.targets[i] = target._id;
+              step.targets[i] = (target._id  as unknown as Target);
             }
           });
         }
@@ -372,7 +387,8 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
   }
 
   drop(event: CdkDragDrop<string[]>) {
-    moveItemInArray((this.fh.form.controls.steps as FormArray).controls, event.previousIndex, event.currentIndex);
+    moveItemInArray((this.fh.form.controls['steps'] as UntypedFormArray).controls,
+      event.previousIndex, event.currentIndex);
   }
 
   dragStarted(event: any) {

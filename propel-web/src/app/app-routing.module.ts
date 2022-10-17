@@ -1,25 +1,25 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { SandboxComponent } from './app/sandbox/sandbox.component';
-import { HomeComponent } from './app/home/home.component';
-import { RunComponent } from './app/run/run.component';
-import { TargetComponent } from './app/target/target.component';
-import { DataLossPreventionGuard } from './core/data-loss-prevention-guard';
-import { ScriptComponent } from './app/script/script.component';
-import { QuickTaskComponent } from './app/quick-task/quick-task.component';
-import { WorkflowComponent } from './app/workflow/workflow.component';
-import { ResultsComponent } from './app/results/results.component';
-import { SearchComponent } from './app/search/search.component';
-import { HistoryComponent } from './app/history/history.component';
-import { environment } from './environments/environment';
-import { OfflineComponent } from './app/offline/offline.component';
-import { CredentialComponent } from './app/credential/credential.component';
-import { UserAccountComponent } from './app/user-account/user-account.component';
-import { LoginComponent } from './app/login/login.component';
-import { pages } from './services/app-pages.service';
-import { SecurityGuard } from './services/security-guard';
-import { UnauthorizedComponent } from './app/unauthorized/unauthorized.component';
+import { SandboxComponent } from './sandbox/sandbox.component';
+import { HomeComponent } from './home/home.component';
+import { RunComponent } from './run/run.component';
+import { TargetComponent } from './target/target.component';
+import { DataLossPreventionGuard } from '../core/data-loss-prevention-guard';
+import { ScriptComponent } from './script/script.component';
+import { QuickTaskComponent } from './quick-task/quick-task.component';
+import { WorkflowComponent } from './workflow/workflow.component';
+import { ResultsComponent } from './results/results.component';
+import { SearchComponent } from './search/search.component';
+import { HistoryComponent } from './history/history.component';
+import { environment } from '../environments/environment';
+import { OfflineComponent } from './offline/offline.component';
+import { CredentialComponent } from './credential/credential.component';
+import { UserAccountComponent } from './user-account/user-account.component';
+import { LoginComponent } from './login/login.component';
+import { pages } from '../services/app-pages.service';
+import { SecurityGuard } from '../services/security-guard';
+import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 
 const routes: Routes = [
   {
