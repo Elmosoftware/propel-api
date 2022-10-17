@@ -6,13 +6,14 @@
  * possible migration.
  */
 import { nanoid } from "nanoid";
-import * as moment from 'moment';
+import { DateTime } from "luxon";
 
 import { PropelError } from "../core/propel-error";
 
 const DEFAULT_ID_LENGTH: number = 14;
-const DEFAULT_DATE_FORMAT: string = "dddd, MMMM Do YYYY, h:mm:ss a [(]ZZ[)]";
-const DEFAULT_TIME_FORMAT: string = "HH:mm:ss";
+const DEFAULT_DATE_FORMAT: string = "cccc, LLLL d yyyy, h:mm:ss a (ZZ)";
+const DEFAULT_TIME_FORMAT: string = "hh:mm:ss";
+const DEFAULT_FRIENDLY_TIME_FORMAT: string = "h 'hours,' m 'minutes and' s 'seconds.'";
 
 /**
  * File System utilities.
@@ -62,8 +63,11 @@ export class SharedSystemHelper {
      * Like: "2 hours ago" or "In 1 week".
      * @param date Comparison date.
      */
-    static getFriendlyTimeFromNow(date: Date): string{
-        return moment.default(date).fromNow();
+    static getFriendlyTimeFromNow(date: Date | string): string{
+        let dt: DateTime = this.getDateTime(date)
+        
+        if (!dt.isValid) return "" 
+        else return dt.toRelative() ?? ""
     }
 
     /**
@@ -71,7 +75,7 @@ export class SharedSystemHelper {
      * @param date A Date object or a string compatible date.
      */
     static isValidDate(date: Date | string): boolean {
-        return moment.default(date).isValid();
+        return this.getDateTime(date).isValid;
     }
 
     /**
@@ -84,8 +88,10 @@ export class SharedSystemHelper {
      * is invalid.
      */
     static toISOFormat(date: Date | string): string {
-        if(!this.isValidDate(date)) return ""
-        else return moment.default(date).toISOString();
+        let dt: DateTime = this.getDateTime(date)
+        
+        if (!dt.isValid) return "" 
+        else return dt.toUTC().toISO({ includeOffset: true })
     }
 
     /**
@@ -94,17 +100,14 @@ export class SharedSystemHelper {
      * @param format Date format, if not supplied a default format will be used.
      */
     static formatDate(date: Date | string, format?: string): string {
-        let ret: string = "";
+        let dt: DateTime = this.getDateTime(date)
 
         if (!format) {
             format = DEFAULT_DATE_FORMAT;
         }
 
-        if (this.isValidDate(date)) {
-            ret = moment.default(date).format(format);
-        }
-
-        return ret;
+        if (!dt.isValid) return ""
+        else return dt.toFormat(format)
     }
 
     /**
@@ -114,24 +117,16 @@ export class SharedSystemHelper {
      * @param format Date format, if not supplied a default format will be used.
      */
     static getDuration(start: Date | string, end: Date | string, format?: string): string{
+        let dtStart: DateTime = this.getDateTime(start)
+        let dtEnd: DateTime = this.getDateTime(end)
 
-        let ret: string = "";
+        if(!dtStart.isValid || !dtEnd.isValid) return ""
 
         if (!format) {
             format = DEFAULT_TIME_FORMAT;
         }
 
-        if (this.isValidDate(start) && this.isValidDate(end)) {
-            let s = moment.default(start);
-            let e = moment.default(end);
-            let diff = e.diff(s, "milliseconds");
-            ret = moment.default()
-                .startOf('day')
-                .milliseconds(diff)
-                .format(format);
-        }
-
-        return ret;
+        return dtEnd.diff(dtStart).toFormat(format);
     }
 
     /**
@@ -140,27 +135,8 @@ export class SharedSystemHelper {
      * @param end A Date object or a string compatible date
      * @param format Date format, if not supplied a default format will be used.
      */
-    static getFriendlyDuration(start: Date | string, end: Date | string, format?: string): string{
-
-        let ret: string = "";
-        let splitDuration: string[] = [];
-
-        if (!format) {
-            format = DEFAULT_TIME_FORMAT;
-        }
-
-        splitDuration = this.getDuration(start, end, format)
-            .split(":");
-
-        if (splitDuration.length == 3) {
-            ret = moment.default.duration({
-                hours: Number(splitDuration[0]), 
-                minutes: Number(splitDuration[1]), 
-                seconds: Number(splitDuration[2])
-            }).humanize();
-        }
-
-        return ret;
+    static getFriendlyDuration(start: Date | string, end: Date | string): string{
+        return this.getDuration(start, end, DEFAULT_FRIENDLY_TIME_FORMAT);
     }
 
     /**
@@ -169,6 +145,21 @@ export class SharedSystemHelper {
      * @param date Date to wich we are add the minutes. If not specified, current date and time will be used.
      */
     static addMinutes(minutes: number, date = new Date()): Date {
-        return moment.default(date).add(minutes, "minutes").toDate();
+        return this.getDateTime(date)
+            .plus({ minutes: minutes })
+            .toJSDate()
+    }
+
+    private static getDateTime(d: Date | string): DateTime {
+        let ret: DateTime
+
+        if (typeof d == "string") {
+            ret = DateTime.fromISO(d)
+        }
+        else {
+            ret = DateTime.fromJSDate(d)
+        }
+        
+        return ret;
     }
 }
