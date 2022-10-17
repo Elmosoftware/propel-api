@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CoreService } from 'src/services/core.service';
 import { ConnectivityStatus } from 'src/services/connectivity.service';
-import { st } from 'stopword';
 
 @Component({
   selector: 'app-offline',

@@ -1,4 +1,5 @@
-import * as stemmer from 'stemmer';
+// import * as stemmer from 'stemmer';
+import { stemmer } from 'stemmer'
 import { removeStopwords } from 'stopword';
 
 import { SharedSystemHelper } from '../../../propel-shared/utils/shared-system-helper';
@@ -73,7 +74,7 @@ export class UIHelper {
             //Stemming words:
             ret = ret
                 .map((word) => {
-                    let stemmed = stemmer.default(word);
+                    let stemmed = stemmer(word);
                     //We will keep the stemmed version only if is varying in length.
                     return (stemmed.length != word.length) ? stemmed : word;
                 })

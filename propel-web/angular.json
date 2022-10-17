@@ -32,6 +32,9 @@
               "./node_modules/bootstrap/dist/js/bootstrap.js",
               "./node_modules/prismjs/prism.js"
             ],
+            "allowedCommonJsDependencies": [
+              "prismjs"
+            ],
             "vendorChunk": true,
             "extractLicenses": false,
             "buildOptimizer": false,
