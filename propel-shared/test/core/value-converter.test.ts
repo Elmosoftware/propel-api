@@ -162,30 +162,35 @@ describe("ParameterValueConverter Class - toJavascript()", () => {
         })
         test(`An invalid string date`, () => {
             pv.nativeType = JSType.Date
-            pv.value = "99/99/99"
+            pv.value = "2099-99-99"
             ParameterValueConverter.toJavascript(pv)
             expect(pv.value).toEqual(PowerShellLiterals.EmptyString);
         })
         test(`An invalid string date and time`, () => {
             pv.nativeType = JSType.Date
-            pv.value = "01/01/2023 99:67"
+            pv.value = "2023-01-01T99:67"
             ParameterValueConverter.toJavascript(pv)
             expect(pv.value).toEqual(PowerShellLiterals.EmptyString);
         })
         test(`A valid string date`, () => {
             pv.nativeType = JSType.Date
-            pv.value = "01/01/2023"
+            pv.value = "2023-01-01T00:00"
             ParameterValueConverter.toJavascript(pv)
             expect(pv.value).toEqual("2023-01-01T00:00");
         })
         test(`A valid string date and time`, () => {
             pv.nativeType = JSType.Date
-            pv.value = "01/01/2023 12:26"
+            pv.value = "2023-01-01T12:26"
             ParameterValueConverter.toJavascript(pv)
             expect(pv.value).toEqual("2023-01-01T12:26");
         })
+        test(`A valid string UTC date and time ISO format full`, () => {
+            pv.nativeType = JSType.Date
+            pv.value = "2022-10-18T20:22:09.201Z"
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual("2022-10-18T17:22");
+        })
     })
-    
 })
 
 describe("ParameterValueConverter Class - toPowerShell()", () => {
@@ -328,13 +333,13 @@ describe("ParameterValueConverter Class - toPowerShell()", () => {
         })
         test(`A valid string date`, () => {
             pv.nativeType = JSType.Date
-            pv.value = "01/01/2023"
+            pv.value = "2023-01-01"
             ParameterValueConverter.toPowerShell(pv)
             expect(pv.value).toEqual("2023-01-01T03:00:00.000Z");
         })
         test(`A valid string date and time`, () => {
             pv.nativeType = JSType.Date
-            pv.value = "01/01/2023 12:26"
+            pv.value = "2023-01-01T12:26"
             ParameterValueConverter.toPowerShell(pv)
             expect(pv.value).toEqual("2023-01-01T15:26:00.000Z");
         })

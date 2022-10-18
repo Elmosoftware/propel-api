@@ -3,7 +3,7 @@ import { SharedSystemHelper } from "../utils/shared-system-helper";
 import { PowerShellLiterals } from "./type-definitions";
 import { ValueConverterInterface } from "./value-converter-interface";
 
-const UI_INPUT_DATETIME_FORMAT: string = "YYYY-MM-DDTHH:mm"
+const UI_INPUT_DATETIME_FORMAT: string = "yyyy-MM-dd'T'HH:mm"
 export const PS_ARRAY_PREFIX = "@("
 export const PS_ARRAY_SUFFIX = ")"
 
