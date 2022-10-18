@@ -33,7 +33,8 @@
               "./node_modules/prismjs/prism.js"
             ],
             "allowedCommonJsDependencies": [
-              "prismjs"
+              "prismjs",
+              "stopword"
             ],
             "vendorChunk": true,
             "extractLicenses": false,
