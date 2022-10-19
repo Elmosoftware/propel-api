@@ -80,12 +80,14 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fh.form.disable({ emitEvent: false });
-        }
-        else {
-          this.fh.form.enable({ emitEvent: false });
+      .subscribe({
+        next: (count: number) => {
+          if (count > 0) {
+            this.fh.form.disable({ emitEvent: false });
+          }
+          else {
+            this.fh.form.enable({ emitEvent: false });
+          }
         }
       })
   }
@@ -106,23 +108,25 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
         this.refreshRoles()
         //if there is anything else to refresh, add it here...
       ])
-        .subscribe((results) => {
+        .subscribe({
+          next: (results) => {
 
-          //We are adding here a temporary field "disabled". This field 
-          //is required for the @NgSelect component to identify disabled items in the list and prevent 
-          //them to be selected:
+            //We are adding here a temporary field "disabled". This field 
+            //is required for the @NgSelect component to identify disabled items in the list and prevent 
+            //them to be selected:
 
-          //@ts-ignore
-          this.allRoles = results[0].map(item => {
             //@ts-ignore
-            item.disabled = false;
-            return item;
-          });
+            this.allRoles = results[0].map(item => {
+              //@ts-ignore
+              item.disabled = false;
+              return item;
+            });
 
-          this.refreshData()
-          .catch((error) => {
-            this.core.handleError(error)
-          })
+            this.refreshData()
+              .catch((error) => {
+                this.core.handleError(error)
+              })
+          }
         });
     });
   }

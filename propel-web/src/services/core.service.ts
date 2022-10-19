@@ -157,56 +157,60 @@ export class CoreService {
 
   private _init() {
     this.injErr.getErrorHandlerSubscription()
-      .subscribe((error: PropelError) => {
-        this.injConn.updateStatus(error);
+      .subscribe({
+        next: (error: PropelError) => {
+          this.injConn.updateStatus(error);
+        }
       });
 
     this.injConn.getConnectivityStatusChangeSubscription()
-      .subscribe((status: ConnectivityStatus) => {
+      .subscribe({
+        next: (status: ConnectivityStatus) => {
 
-        logger.logInfo(`Connectivity status change event have been triggered. Current status:
+          logger.logInfo(`Connectivity status change event have been triggered. Current status:
       - Network is ${(status.networkOn) ? "online" : "offline"}.
       - Propel API is ${(status.apiOn) ? "up and ready" : "down"}.
       Last error was: "${(status.lastError) ? status.lastError.message.substring(0, 100) : "No errors so far!"}".`)
 
-        if (status.networkOn && status.apiOn) {
-          if (status.lastError) {
-            //We show a toaster for the user indicating the error details:
-            this.injToast.showError(status.lastError);
-          }
+          if (status.networkOn && status.apiOn) {
+            if (status.lastError) {
+              //We show a toaster for the user indicating the error details:
+              this.injToast.showError(status.lastError);
+            }
 
-          if (!this.injSec.isUserLoggedIn) {
-            //If connectivity is restablished or the app is starting for the first time, we must try to 
-            //establish a user session with a refresh token or Legacy security, whatever is available.
-            //If legacy security is enabled for Propel, a new session will be created for an "unknown" user.
-            //This is strictly for backward compatibility.
-            //If a Refresh token is found, we will try to reconnect the user session by refreshing the 
-            //access token with a new one:
-            logger.logInfo(`Attempting to reconnect user session...`)
-            this.injSec.tryReconnectSession()
-              .then((message: string) => {
-                logger.logInfo(message);
-                this.injNav.toHome(true);
-              },
-                err => {
-                  let e: PropelError = new PropelError(err);
-                  logger.logError(err);
+            if (!this.injSec.isUserLoggedIn) {
+              //If connectivity is restablished or the app is starting for the first time, we must try to 
+              //establish a user session with a refresh token or Legacy security, whatever is available.
+              //If legacy security is enabled for Propel, a new session will be created for an "unknown" user.
+              //This is strictly for backward compatibility.
+              //If a Refresh token is found, we will try to reconnect the user session by refreshing the 
+              //access token with a new one:
+              logger.logInfo(`Attempting to reconnect user session...`)
+              this.injSec.tryReconnectSession()
+                .then((message: string) => {
+                  logger.logInfo(message);
+                  this.injNav.toHome(true);
+                },
+                  err => {
+                    let e: PropelError = new PropelError(err);
+                    logger.logError(err);
 
-                  if (e.userMessage) {
-                    this.injToast.showError(e);
-                  }
-                  else {
-                    this.injToast.showError("There was an unexpected error trying to reconnect your session. Please try to sign in again.", 
-                      "Not able to reconnect your session!")
-                  }
-                })
+                    if (e.userMessage) {
+                      this.injToast.showError(e);
+                    }
+                    else {
+                      this.injToast.showError("There was an unexpected error trying to reconnect your session. Please try to sign in again.",
+                        "Not able to reconnect your session!")
+                    }
+                  })
+            }
           }
-        }
-        else {
-          //Navigate to the offline page to show the connectivity issue details:
-          this.injZone.run(() => {
-            this.injNav.toOffline();
-          });
+          else {
+            //Navigate to the offline page to show the connectivity issue details:
+            this.injZone.run(() => {
+              this.injNav.toOffline();
+            });
+          }
         }
       })
   }

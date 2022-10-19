@@ -59,14 +59,17 @@ export class APIKeySecretComponent implements OnInit, FormSubcomponentInterface<
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fg.disable({ emitEvent: false });
-        }
-        else {
-          this.fg.enable({ emitEvent: false });
-        }
-      })
+      .subscribe(
+        {
+          next: (count: number) => {
+            if (count > 0) {
+              this.fg.disable({ emitEvent: false });
+            }
+            else {
+              this.fg.enable({ emitEvent: false });
+            }
+          }
+        })
   }
 
   ngOnInit(): void {
@@ -74,26 +77,33 @@ export class APIKeySecretComponent implements OnInit, FormSubcomponentInterface<
       this.previousValue = Object.assign({}, this.model);
       this.fg.patchValue(this.model);
 
-      this.fg.valueChanges.subscribe((secret) => {
-        this.subFormChange.emit(new FormSubcomponentEventData(secret, this.fg.valid));
-      })
+      this.fg.valueChanges.subscribe(
+        {
+          next: (secret) => {
+            this.subFormChange.emit(new FormSubcomponentEventData(secret, this.fg.valid));
+          }
+        })
     }
 
     if (this.reset) {
       this.reset
-        .subscribe(() => {
-          this.fg.patchValue(this.previousValue);
-          this.fg.markAsPristine();
-          this.fg.markAsUntouched();
+        .subscribe({
+          next: () => {
+            this.fg.patchValue(this.previousValue);
+            this.fg.markAsPristine();
+            this.fg.markAsUntouched();
+          }
         })
     }
 
     if (this.saved) {
       this.saved
-        .subscribe(() => {
-          this.previousValue = this.fg.value;
-          this.fg.markAsPristine();
-          this.fg.markAsUntouched();
+        .subscribe({
+          next: () => {
+            this.previousValue = this.fg.value;
+            this.fg.markAsPristine();
+            this.fg.markAsUntouched();
+          }
         })
     }
   }

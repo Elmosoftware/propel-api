@@ -59,12 +59,14 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fh.form.disable({ emitEvent: false });
-        }
-        else {
-          this.fh.form.enable({ emitEvent: false });
+      .subscribe({
+        next: (count: number) => {
+          if (count > 0) {
+            this.fh.form.disable({ emitEvent: false });
+          }
+          else {
+            this.fh.form.enable({ emitEvent: false });
+          }
         }
       })
   }
@@ -87,22 +89,24 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
         credentials: from(this.refreshCredentials())
         //if there is anything else to refresh, add it here...
       })
-        .subscribe((results) => {
+        .subscribe({
+          next: (results) => {
 
-          //We are adding here a temporary field "disabled". This field 
-          //is required for the @NgSelect component to identify disabled items in the list and prevent 
-          //them to be selected:
+            //We are adding here a temporary field "disabled". This field 
+            //is required for the @NgSelect component to identify disabled items in the list and prevent 
+            //them to be selected:
 
-          this.allWindowsCredentials = results.credentials.data.map(item => {
-            //@ts-ignore
-            item.disabled = false;
-            return item;
-          });
+            this.allWindowsCredentials = results.credentials.data.map(item => {
+              //@ts-ignore
+              item.disabled = false;
+              return item;
+            });
 
-          this.refreshData()
-          .catch((error) => {
-            this.core.handleError(error)
-          })
+            this.refreshData()
+              .catch((error) => {
+                this.core.handleError(error)
+              })
+          }
         });
     });
   }
@@ -145,10 +149,10 @@ export class TargetComponent implements OnInit, DataLossPreventionInterface {
         this.invokeAs.select({ name: c.name, value: c }); //Selecting the credential in the dropdown.
 
       }
-      
+
       this.fh.setValue(target)
       return Promise.resolve();
-    
+
     } catch (error) {
       return Promise.reject(error);
     }

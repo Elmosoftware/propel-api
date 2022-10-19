@@ -76,12 +76,14 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fh.form.disable({ emitEvent: false });
-        }
-        else {
-          this.fh.form.enable({ emitEvent: false });
+      .subscribe({
+        next: (count: number) => {
+          if (count > 0) {
+            this.fh.form.disable({ emitEvent: false });
+          }
+          else {
+            this.fh.form.enable({ emitEvent: false });
+          }
         }
       })
   }
@@ -93,9 +95,9 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData()
-    .catch((error) => {
-      this.core.handleError(error)
-    })
+      .catch((error) => {
+        this.core.handleError(error)
+      })
   }
 
   async refreshData(): Promise<void> {
@@ -164,24 +166,27 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
     this.fh.form.controls['steps'].markAllAsTouched();
     this.core.dialog.showWorkflowStepDialog(new WorkflowStep())
-      .subscribe((dlgResults: DialogResult<WorkflowStepComponentStatus>) => {
+      .subscribe({
+        next: (dlgResults: DialogResult<WorkflowStepComponentStatus>) => {
 
-        if (!dlgResults.isCancel) {
+          if (!dlgResults.isCancel) {
 
-          let status: WorkflowStepComponentStatus = dlgResults.value;
-          let step = status.step;
+            let status: WorkflowStepComponentStatus = dlgResults.value;
+            let step = status.step;
 
-          if (step) {
-            this.createStepsFormArray([step]);
-            this.extractScriptNameAndTargetFromStatus(status);
-            this.fh.form.updateValueAndValidity();
-            this.fh.form.markAsDirty();
+            if (step) {
+              this.createStepsFormArray([step]);
+              this.extractScriptNameAndTargetFromStatus(status);
+              this.fh.form.updateValueAndValidity();
+              this.fh.form.markAsDirty();
+            }
           }
-        }
-      },
-        err => {
+        },
+        error: (err) => {
           this.core.handleError(err)
-        });
+        }
+      }
+      );
   }
 
   createStepsFormArray(steps: WorkflowStep[], clearBeforeAdd: boolean = false): void {
@@ -223,33 +228,36 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
     this.fh.form.controls['steps'].markAllAsTouched();
     this.core.dialog.showWorkflowStepDialog(this.getStep(stepIndex))
-      .subscribe((dlgResults: DialogResult<WorkflowStepComponentStatus>) => {
+      .subscribe({
+        next: (dlgResults: DialogResult<WorkflowStepComponentStatus>) => {
 
-        if (!dlgResults.isCancel) {
+          if (!dlgResults.isCancel) {
 
-          let status: WorkflowStepComponentStatus = dlgResults.value;
-          let step = status.step;
+            let status: WorkflowStepComponentStatus = dlgResults.value;
+            let step = status.step;
 
-          if (step) {
-            /*Why we need to do this instead of a simple patch?:
-            This is to prevent the case where a parameter is removed from the script. If that's the case 
-            the parameter values collection will keep the removed parameter if we do a patch, because the 
-            item won't be removed from the FormArray. 
-            So to ensure this, we need to recreate the step in the Form.
-            */
-            let allSteps: WorkflowStep[] = this.fh.value.steps;
-            allSteps[stepIndex] = step;
-            this.createStepsFormArray(allSteps, true);
+            if (step) {
+              /*Why we need to do this instead of a simple patch?:
+              This is to prevent the case where a parameter is removed from the script. If that's the case 
+              the parameter values collection will keep the removed parameter if we do a patch, because the 
+              item won't be removed from the FormArray. 
+              So to ensure this, we need to recreate the step in the Form.
+              */
+              let allSteps: WorkflowStep[] = this.fh.value.steps;
+              allSteps[stepIndex] = step;
+              this.createStepsFormArray(allSteps, true);
 
-            this.extractScriptNameAndTargetFromStatus(status);
-            this.fh.form.updateValueAndValidity();
-            this.fh.form.markAsDirty();
+              this.extractScriptNameAndTargetFromStatus(status);
+              this.fh.form.updateValueAndValidity();
+              this.fh.form.markAsDirty();
+            }
           }
-        }
-      },
-        err => {
+        },
+        error: (err) => {
           this.core.handleError(err)
-        });
+        }
+      }
+      );
   }
 
   removeStep(stepIndex: number) {
@@ -348,7 +356,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
         if (step.targets) {
           step.targets.forEach((target: Target, i) => {
             if (target && target._id) {
-              step.targets[i] = (target._id  as unknown as Target);
+              step.targets[i] = (target._id as unknown as Target);
             }
           });
         }

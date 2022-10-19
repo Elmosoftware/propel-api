@@ -61,23 +61,26 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
       "Reset user password",
       `By resetting the user password, <i>${item.fullName}</i> will be forced to set a new password on next login. 
       <b>Are you ok to continue?</b>"<br>Please be aware that this operation can't be undone.`)
-    ).subscribe(async (result: DialogResult<any>) => {
+    ).subscribe({
+      next: async (result: DialogResult<any>) => {
 
-      if (!result.isCancel) {
-        this.core.security.resetPassword(item._id)
-          .then((result: UserRegistrationResponse) => {
-            this.core.toaster.showSuccess("Password reset finished successfully!");
-            (item as any).authCode = result.authCode;
-            // this.dataChanged.emit(true);
-          },
-            (error) => {
-              this.core.handleError(error)
-            });
-      }
-    },
-      (error) => {
+        if (!result.isCancel) {
+          this.core.security.resetPassword(item._id)
+            .then((result: UserRegistrationResponse) => {
+              this.core.toaster.showSuccess("Password reset finished successfully!");
+              (item as any).authCode = result.authCode;
+              // this.dataChanged.emit(true);
+            },
+              (error) => {
+                this.core.handleError(error)
+              });
+        }
+      },
+      error: (error) => {
         this.core.handleError(error)
-      });
+      }
+    }
+    );
   }
 
   getAuthCode(item: UserAccount): string {
@@ -104,28 +107,31 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
 
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(title, msg)
     )
-      .subscribe(async (result: DialogResult<any>) => {
+      .subscribe({
+        next: async (result: DialogResult<any>) => {
 
-        if (result.isCancel) return;
+          if (result.isCancel) return;
 
-        try {
-           if (locked) {
-            await this.core.security.unlockUser(item._id)
+          try {
+            if (locked) {
+              await this.core.security.unlockUser(item._id)
+            }
+            else {
+              await this.core.security.lockUser(item._id)
+            }
+
+            this.core.toaster.showSuccess(`User ${item.fullName} is now ${(locked) ? "locked" : "unlocked"} succesfully!`);
+            this.dataChanged.emit(true);
+
+          } catch (error) {
+            this.core.handleError(error)
           }
-          else {
-            await this.core.security.lockUser(item._id)
-          }
-
-          this.core.toaster.showSuccess(`User ${item.fullName} is now ${(locked) ? "locked" : "unlocked"} succesfully!`);
-          this.dataChanged.emit(true);
-
-        } catch (error) {
+        },
+        error: (error) => {
           this.core.handleError(error)
         }
-      },
-        (error) => {
-          this.core.handleError(error)
-        });
+      }
+      );
   }
 
   userIsAdmin(item: UserAccount): boolean {

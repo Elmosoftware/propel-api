@@ -48,18 +48,22 @@ export class HistoryComponent implements OnInit {
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fg.disable({ emitEvent: false });
-        }
-        else {
-          this.fg.enable({ emitEvent: false });
+      .subscribe({
+        next: (count: number) => {
+          if (count > 0) {
+            this.fg.disable({ emitEvent: false });
+          }
+          else {
+            this.fg.enable({ emitEvent: false });
+          }
         }
       })
-    
+
     this.fg.controls['interval'].valueChanges
-      .subscribe((val) => {
-        this.search();
+      .subscribe({
+        next: (val) => {
+          this.search();
+        }
       })
   }
 
@@ -112,8 +116,10 @@ export class HistoryComponent implements OnInit {
     this.onDataFeed = this.svcInfScroll.dataFeed;
 
     this.onDataFeed
-      .subscribe((ph: PagingHelper) => {
-        this.onDataFeedHandler(ph)
+      .subscribe({
+        next: (ph: PagingHelper) => {
+          this.onDataFeedHandler(ph)
+        }
       });
   }
 

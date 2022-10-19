@@ -36,7 +36,7 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
 
   constructor(private core: CoreService) {
     super()
-   }
+  }
 
   ngOnInit(): void {
   }
@@ -45,15 +45,15 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
     switch (item.credentialType) {
       case this.credentialTypes.Windows:
         this.core.navigation.toWindowsCredential(item._id)
-        break;    
+        break;
       case this.credentialTypes.AWS:
         this.core.navigation.toAWSCredential(item._id)
-        break;    
+        break;
       case this.credentialTypes.APIKey:
         this.core.navigation.toGenericAPIKeyCredential(item._id)
-        break;    
+        break;
       default:
-        throw new PropelError(`No navigation defined to edit Credentials of type "${item.credentialType}".` )
+        throw new PropelError(`No navigation defined to edit Credentials of type "${item.credentialType}".`)
     }
   }
 
@@ -61,8 +61,8 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
     let ret: string = "No defined fields.";
 
     if (item.fields.length > 0) {
-       ret = `${item.fields.length} field(s) defined.\r\n${UIHelper.getParameterValuesList(item.fields)}`;
-    }   
+      ret = `${item.fields.length} field(s) defined.\r\n${UIHelper.getParameterValuesList(item.fields)}`;
+    }
 
     return ret;
   }
@@ -70,7 +70,7 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
   getTooltipForCredentialType(item: Credential): string {
     let ret: string = "Credential type: ";
 
-    if (Utils.testEnumKey(CredentialTypes, item.credentialType) ) {
+    if (Utils.testEnumKey(CredentialTypes, item.credentialType)) {
       ret += String(Utils.getEnum(CredentialTypes)
         .find((elem) => { return elem.key == item.credentialType })!
         .value)
@@ -104,28 +104,31 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
       "Delete Credential Confirmation",
       `Are you sure you want to delete the credential named "<b>${item.name}</b>"? Please be aware that this operation can't be undone.
 Also: This can cause to fail any script that is currently using the credential.`)
-    ).subscribe((result: DialogResult<any>) => {
-      if (!result.isCancel) {
+    ).subscribe({
+      next: (result: DialogResult<any>) => {
+        if (!result.isCancel) {
 
-        //First we try to delete the Secret:
-        this.core.data.delete(DataEndpointActions.Secret, item.secretId)
-          .then(_ => {
-            //Old Secret was deleted!                      
-          }, _ => {
-            //We give our best!
-          })
+          //First we try to delete the Secret:
+          this.core.data.delete(DataEndpointActions.Secret, item.secretId)
+            .then(_ => {
+              //Old Secret was deleted!                      
+            }, _ => {
+              //We give our best!
+            })
 
-        //Now deleting the credential itself:
-        this.core.data.delete(DataEndpointActions.Credential, item._id)
-          .then(_ => {
-            this.core.toaster.showSuccess("The credential was deleted succesfully!");
-            this.dataChanged.emit(true);
-          }, (error) => {
-            this.core.handleError(error)
-          })
+          //Now deleting the credential itself:
+          this.core.data.delete(DataEndpointActions.Credential, item._id)
+            .then(_ => {
+              this.core.toaster.showSuccess("The credential was deleted succesfully!");
+              this.dataChanged.emit(true);
+            }, (error) => {
+              this.core.handleError(error)
+            })
+        }
+      },
+      error: err => {
+        this.core.handleError(err)
       }
-    }, err => {
-      this.core.handleError(err)
     });
   }
 

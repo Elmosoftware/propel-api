@@ -125,7 +125,7 @@ export class NavigationBarComponent implements OnInit {
   }
 
   get userName(): string {
-    let ret:string = "";
+    let ret: string = "";
 
     if (this.isUserLoggedIn && !this.isLegacySecurityEnabled) {
       ret = `${this.core.security.sessionData.userFullName}, (${this.core.security.sessionData.userName})`
@@ -135,7 +135,7 @@ export class NavigationBarComponent implements OnInit {
   }
 
   get userInitials(): string {
-    let ret:string = "";
+    let ret: string = "";
 
     if (this.userName) {
       ret = this.core.security.sessionData.userInitials;
@@ -180,16 +180,18 @@ export class NavigationBarComponent implements OnInit {
 
   ngOnInit(): void {
     this.core.navigation.getHttpRequestCountSubscription()
-      .subscribe((counter: number) => {
-        this.loading = counter > 0;
+      .subscribe({
+        next: (counter: number) => {
+          this.loading = counter > 0;
+        }
       })
-    
+
     this.core.security.getConfig()
-    .then((config: SecuritySharedConfiguration) => {
-      this._isLegacy = config.legacySecurity;
-    }, (err) => {
-      logger.logError(`Not able to get Security API configuration because of the following error: "${err.message}".`)
-    })
+      .then((config: SecuritySharedConfiguration) => {
+        this._isLegacy = config.legacySecurity;
+      }, (err) => {
+        logger.logError(`Not able to get Security API configuration because of the following error: "${err.message}".`)
+      })
 
   }
 
@@ -271,21 +273,24 @@ export class NavigationBarComponent implements OnInit {
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
       "Log off",
       `Are you sure you want to log off?`, "Yes, I want!", "No, I'll stay here a little longer")
-    ).subscribe((result: DialogResult<any>) => {
-      if (!result.isCancel) {
-        this.core.security.logOff()
-          .catch(_ => { }) //Not interested in report log off errors....
-          .finally(() => {
-            this.core.navigation.toHome(true);
-          })
+    ).subscribe({
+      next: (result: DialogResult<any>) => {
+        if (!result.isCancel) {
+          this.core.security.logOff()
+            .catch(_ => { }) //Not interested in report log off errors....
+            .finally(() => {
+              this.core.navigation.toHome(true);
+            })
+        }
+      },
+      error: err => {
+        this.core.handleError(err)
       }
-    }, err => {
-      this.core.handleError(err)
     });
   }
 
   goToSandbox() {
-    if(!this.isDevMode) return;
+    if (!this.isDevMode) return;
     this.core.navigation.toSandbox();
   }
 

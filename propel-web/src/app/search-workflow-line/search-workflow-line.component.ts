@@ -64,21 +64,24 @@ export class SearchWorkflowLineComponent extends SearchLine implements OnInit {
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
       "Delete Workflow Confirmation",
       `Are you sure you want to delete the workflow named "<b>${item.name}</b>"? Please be aware that this operation can't be undone.`)
-    ).subscribe((result: DialogResult<any>) => {
-      if (!result.isCancel) {
-        this.core.data.delete(DataEndpointActions.Workflow, item._id)
-          .then((id: string) => {
-            this.core.toaster.showSuccess("Workflow deleted succesfully!");
-            this.dataChanged.emit(true);
-          },
-            (error) => {
-              this.core.handleError(error)
-            })
-      }
-    },
-      (error) => {
+    ).subscribe({
+      next: (result: DialogResult<any>) => {
+        if (!result.isCancel) {
+          this.core.data.delete(DataEndpointActions.Workflow, item._id)
+            .then((id: string) => {
+              this.core.toaster.showSuccess("Workflow deleted succesfully!");
+              this.dataChanged.emit(true);
+            },
+              (error) => {
+                this.core.handleError(error)
+              })
+        }
+      },
+      error: (error) => {
         this.core.handleError(error)
-      });
+      }
+    }
+    );
   }
 
   run(id: string) {

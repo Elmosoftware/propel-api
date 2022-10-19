@@ -79,33 +79,39 @@ If there is a Workflow that already have it, the execution on this target will b
       "Delete Target Confirmation",
       `Are you sure you want to delete the target named "<b>${item.friendlyName}</b>"? Please be aware that this operation can't be undone.`)
     )
-      .subscribe((result: DialogResult<any>) => {
-        if (!result.isCancel) {
+      .subscribe({
+        next: (result: DialogResult<any>) => {
+          if (!result.isCancel) {
 
-          //Before to delete the Target, we need to disable it. In this way any existing workflow that 
-          //have it attached will prevent the execution:
-          item.enabled = false;
+            //Before to delete the Target, we need to disable it. In this way any existing workflow that 
+            //have it attached will prevent the execution:
+            item.enabled = false;
 
-          of(
-            from(this.core.data.save(DataEndpointActions.Target, item)),
-            from(this.core.data.delete(DataEndpointActions.Target, item._id))
-          )
-            .pipe(
-              concatAll()
+            of(
+              from(this.core.data.save(DataEndpointActions.Target, item)),
+              from(this.core.data.delete(DataEndpointActions.Target, item._id))
             )
-            .subscribe(
-              _ => { },
-              (error) => {
-                this.core.handleError(error)
-              },
-              () => {
-                this.core.toaster.showSuccess("Target deleted succesfully!");
-                this.dataChanged.emit(true);
-              })
-        }
-      },
-        (error) => {
+              .pipe(
+                concatAll()
+              )
+              .subscribe(
+                {
+                  next: _ => { },
+                  error: (error) => {
+                    this.core.handleError(error)
+                  },
+                  complete: () => {
+                    this.core.toaster.showSuccess("Target deleted succesfully!");
+                    this.dataChanged.emit(true);
+                  }
+                }
+              )
+          }
+        },
+        error: (error) => {
           this.core.handleError(error)
-        });
+        }
+      }
+      );
   }
 }

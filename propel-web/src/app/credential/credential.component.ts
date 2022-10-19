@@ -70,14 +70,18 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fh.form.disable({ emitEvent: false });
+      .subscribe(
+        {
+          next: (count: number) => {
+            if (count > 0) {
+              this.fh.form.disable({ emitEvent: false });
+            }
+            else {
+              this.fh.form.enable({ emitEvent: false });
+            }
+          }
         }
-        else {
-          this.fh.form.enable({ emitEvent: false });
-        }
-      })
+      )
   }
 
   ngOnInit(): void {
@@ -122,7 +126,7 @@ export class CredentialComponent implements OnInit, DataLossPreventionInterface 
   async refreshData(): Promise<void> {
     let cred: Credential | undefined = undefined;
     let secret;
-    
+
     this.loaded = false;
 
     if (!this.fh.form.controls['_id'].value) {
@@ -186,23 +190,27 @@ the credential that will be saved with current encryption keys.</li>
 <p class="mt-2">
 Just a final note: If this issue is not remediated, the scripts consuming this credentials are going to fail in any Quick Task or Workflow they take part.
 </p>`))
-          .subscribe((result: DialogResult<any>) => {
-            //If the user is cancelling, we will redirect to the Browse credentials page:
-            if (result.isCancel) {
-              this.core.navigation.toBrowseCredentials();
-            }
-            else { //If the user decide to enter the credential again.
-              //We would like to do our best effort to delete the old secret first
-              this.core.data.delete(DataEndpointActions.Secret, 
-                this.fh.form.controls['secretId'].value)
-                .catch(_ => { }) //Oops!, We give our best anyway!
+          .subscribe(
+            {
+              next: (result: DialogResult<any>) => {
+                //If the user is cancelling, we will redirect to the Browse credentials page:
+                if (result.isCancel) {
+                  this.core.navigation.toBrowseCredentials();
+                }
+                else { //If the user decide to enter the credential again.
+                  //We would like to do our best effort to delete the old secret first
+                  this.core.data.delete(DataEndpointActions.Secret,
+                    this.fh.form.controls['secretId'].value)
+                    .catch(_ => { }) //Oops!, We give our best anyway!
 
-              //Whatever the error is, we need to create a new secret in the form, (because the 
-              //persisted one is gone):
-              this.newItem(true);
+                  //Whatever the error is, we need to create a new secret in the form, (because the 
+                  //persisted one is gone):
+                  this.newItem(true);
+                }
+              },
+              error: _ => { }
             }
-          },
-            _ => { });
+          );
 
         return Promise.resolve();
       }
@@ -243,31 +251,34 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
   }
 
   addField() {
-
     this.fh.form.controls['fields'].markAllAsTouched();
     this.core.dialog.showCustomFieldDialog(new ParameterValue())
-      .subscribe((dlgResults: DialogResult<ParameterValue>) => {
+      .subscribe(
+        {
+          next: (dlgResults: DialogResult<ParameterValue>) => {
 
-        if (!dlgResults.isCancel) {
+            if (!dlgResults.isCancel) {
 
-          let pv: ParameterValue = dlgResults.value;
+              let pv: ParameterValue = dlgResults.value;
 
-          if (pv) {
-            //We need to ensure the field is unique:
-            if (this._fieldIsUnique(this.fh.value.fields, pv.name)) {
-              this._createFieldsFromArray([pv], false);
-              this.fh.form.updateValueAndValidity();
-              this.fh.form.markAsDirty();
+              if (pv) {
+                //We need to ensure the field is unique:
+                if (this._fieldIsUnique(this.fh.value.fields, pv.name)) {
+                  this._createFieldsFromArray([pv], false);
+                  this.fh.form.updateValueAndValidity();
+                  this.fh.form.markAsDirty();
+                }
+                else {
+                  this.core.toaster.showWarning("The field name supplied is already in use. Be aware that field names are case insensitive and must be unique.", "Duplicated field")
+                }
+              }
             }
-            else {
-              this.core.toaster.showWarning("The field name supplied is already in use. Be aware that field names are case insensitive and must be unique.", "Duplicated field")
-            }
+          },
+          error: (error) => {
+            this.core.handleError(error)
           }
         }
-      },
-        (error) => {
-          this.core.handleError(error)
-        });
+      );
   }
 
   removeField(i: number) {
@@ -280,31 +291,33 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
     this.fh.form.controls['fields'].markAllAsTouched();
     this.core.dialog.showCustomFieldDialog(this._getCustomField(i))
-      .subscribe((dlgResults: DialogResult<ParameterValue>) => {
+      .subscribe({
+        next: (dlgResults: DialogResult<ParameterValue>) => {
+          if (!dlgResults.isCancel) {
 
-        if (!dlgResults.isCancel) {
+            let pv: ParameterValue = dlgResults.value;
 
-          let pv: ParameterValue = dlgResults.value;
+            if (pv) {
+              let allFields: ParameterValue[] = this.fh.value.fields;
 
-          if (pv) {
-            let allFields: ParameterValue[] = this.fh.value.fields;
-
-            //We need to ensure the field keeps being unique:
-            if (this._fieldIsUnique(allFields, pv.name, i)) {
-              allFields[i] = pv;
-              this._createFieldsFromArray(allFields, true);
-              this.fh.form.updateValueAndValidity();
-              this.fh.form.markAsDirty();
-            }
-            else {
-              this.core.toaster.showWarning("The field name supplied is already in use. Be aware that field names are case insensitive and must be unique.", "Duplicated field")
+              //We need to ensure the field keeps being unique:
+              if (this._fieldIsUnique(allFields, pv.name, i)) {
+                allFields[i] = pv;
+                this._createFieldsFromArray(allFields, true);
+                this.fh.form.updateValueAndValidity();
+                this.fh.form.markAsDirty();
+              }
+              else {
+                this.core.toaster.showWarning("The field name supplied is already in use. Be aware that field names are case insensitive and must be unique.", "Duplicated field")
+              }
             }
           }
-        }
-      },
-        (error) => {
+        },
+        error: (error) => {
           this.core.handleError(error)
-        });
+        }
+      }
+      );
   }
 
   getResetObservable(): Observable<void> {
@@ -333,9 +346,9 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
   save(): void {
     this.internalSave()
-    .catch((error) => {
-      this.core.handleError(error)
-    })
+      .catch((error) => {
+        this.core.handleError(error)
+      })
   }
 
   private async internalSave(): Promise<void> {
@@ -428,11 +441,14 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
 
   private _missingSecretDialog(): void {
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Credential information is missing",
-          `The secret part of the credential is missing! This could happen as a result of a database 
+      `The secret part of the credential is missing! This could happen as a result of a database 
 migration or data corruption.
 <p class="mt-2 mb-0">To prevent dependent PowerShell scripts from failing, you must re-enter the 
 missing sensitive data in the form again.</p>`))
-          .subscribe(_ => { },
-            _ => { });
+      .subscribe({
+        next: _ => { },
+        error: _ => { }
+      }
+      );
   }
 }

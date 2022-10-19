@@ -46,7 +46,7 @@ export class ConnectivityService implements OnDestroy {
             if (this.statusNetOnlineSubscription$) {
                 this.statusNetOnlineSubscription$.unsubscribe();
             }
-            
+
             if (this.statusNetOfflineSubscription$) {
                 this.statusNetOfflineSubscription$.unsubscribe();
             }
@@ -65,14 +65,14 @@ export class ConnectivityService implements OnDestroy {
     async updateStatus(lastError?: PropelError): Promise<void> {
         let newStatus: ConnectivityStatus = new ConnectivityStatus();
         newStatus.lastError = lastError;
-        
+
         try {
             await this.svc.getStatus();
             newStatus.apiOn = true
         } catch (error) {
             newStatus.apiOn = false
         }
-        
+
         //We will fire the event only if there is a connectivity status change or there was an 
         //error that is requiring to check the connectivity status for proper logging:
         if (this.isStatusChanged(newStatus) || newStatus.lastError) {
@@ -80,31 +80,22 @@ export class ConnectivityService implements OnDestroy {
             this.onConnectivityStatusChange.emit(newStatus);
         }
     }
-    
+
     private initialize() {
-
-        // this.statusNetOnlineSubscription$ = fromEvent(window, "online");
-        // this.statusNetOfflineSubscription$ = fromEvent(window, "offline");
-
-        // this.statusNetOnlineSubscription$.subscribe(() => {
-        //     logger.logInfo("window.online event has been fired.");
-        //     this.updateStatus();
-        // });
-
-        // this.statusNetOfflineSubscription$.subscribe(() => {
-        //     logger.logWarn("window.OFFLINE event has been fired.");
-        //     this.updateStatus();
-        // });
         this.statusNetOnlineSubscription$ = fromEvent(window, "online")
-            .subscribe(() => {
-            logger.logInfo("window.online event has been fired.");
-            this.updateStatus();
-        });
+            .subscribe({
+                next: () => {
+                    logger.logInfo("window.online event has been fired.");
+                    this.updateStatus();
+                }
+            });
         this.statusNetOfflineSubscription$ = fromEvent(window, "offline")
-            .subscribe(() => {
-            logger.logWarn("window.OFFLINE event has been fired.");
-            this.updateStatus();
-        });
+            .subscribe({
+                next: () => {
+                    logger.logInfo("window.offline event has been fired.");
+                    this.updateStatus();
+                }
+            });
 
         this.updateStatus();
     }

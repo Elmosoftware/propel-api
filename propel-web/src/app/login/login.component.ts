@@ -82,12 +82,14 @@ export class LoginComponent implements OnInit {
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fg.disable({ emitEvent: false });
-        }
-        else {
-          this.fg.enable({ emitEvent: false });
+      .subscribe({
+        next: (count: number) => {
+          if (count > 0) {
+            this.fg.disable({ emitEvent: false });
+          }
+          else {
+            this.fg.enable({ emitEvent: false });
+          }
         }
       })
   }
@@ -247,9 +249,9 @@ export class LoginComponent implements OnInit {
     }
 
     this.execLogin(sr)
-    .catch((error) => {
-      this.core.handleError(error)
-    })
+      .catch((error) => {
+        this.core.handleError(error)
+      })
   }
 
   async execLogin(sr: SecurityRequest): Promise<void> {

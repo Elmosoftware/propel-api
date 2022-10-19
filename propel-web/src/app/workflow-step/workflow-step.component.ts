@@ -32,7 +32,7 @@ const NAME_MIN: number = 3;
 /**
  * Maximum step name length.
  */
- const NAME_MAX: number = 50;
+const NAME_MAX: number = 50;
 
 /**
  * TARGETS_MAX is the maximum amount of targets you can add to a step.
@@ -130,12 +130,14 @@ export class WorkflowStepComponent implements OnInit {
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fh.form.disable({ emitEvent: false });
-        }
-        else {
-          this.fh.form.enable({ emitEvent: false });
+      .subscribe({
+        next: (count: number) => {
+          if (count > 0) {
+            this.fh.form.disable({ emitEvent: false });
+          }
+          else {
+            this.fh.form.enable({ emitEvent: false });
+          }
         }
       })
 
@@ -147,34 +149,36 @@ export class WorkflowStepComponent implements OnInit {
         credentials: (this.refreshCredentials())
         //if there is anything else to refresh, add it here...
       })
-        .subscribe((results) => {
+        .subscribe({
+          next: (results) => {
 
-          //We are adding here a temporary field "disabled" for both, (Scripts and Targets), this field 
-          //is required for the @NgSelect component to identify disabled items in the list and prevent 
-          //them to be selected:
+            //We are adding here a temporary field "disabled" for both, (Scripts and Targets), this field 
+            //is required for the @NgSelect component to identify disabled items in the list and prevent 
+            //them to be selected:
 
-          //@ts-ignore
-          this.allScripts = results.scripts.data.map(item => {
             //@ts-ignore
-            item.disabled = !item.enabled;
-            return item;
-          });
+            this.allScripts = results.scripts.data.map(item => {
+              //@ts-ignore
+              item.disabled = !item.enabled;
+              return item;
+            });
 
-          //@ts-ignore
-          this.allTargets = results.targets.data.map(item => {
             //@ts-ignore
-            item.disabled = !item.enabled;
-            return item;
-          });
+            this.allTargets = results.targets.data.map(item => {
+              //@ts-ignore
+              item.disabled = !item.enabled;
+              return item;
+            });
 
-          //@ts-ignore
-          this.allCredentials = results.credentials.data.map(item => {
             //@ts-ignore
-            item.disabled = false;
-            return item;
-          });
+            this.allCredentials = results.credentials.data.map(item => {
+              //@ts-ignore
+              item.disabled = false;
+              return item;
+            });
 
-          this.setValue(this.step);
+            this.setValue(this.step);
+          }
         });
     });
   }
@@ -186,31 +190,34 @@ export class WorkflowStepComponent implements OnInit {
     })
 
     if (!select) return
-    
+
     //We are storing in the ngSelect "title" attricute the name of the parameter:
     let paramName: string | undefined = select.element.attributes.getNamedItem("title")?.value
     let param = this.tryGetParameter(paramName)
     let isNumberArray: boolean = false
     let dlgTitle: string = ""
-    
+
     if (param) {
       isNumberArray = (param.type == "System.Int32[]")
       dlgTitle = `Add a new ${(isNumberArray) ? "numeric" : "text"} value for $${param.name}`
     }
-    
-    select.close(); //Closing the ng-select before to show the dialog to avoid the dialog 
-      //displaying behing the select.
 
-    this.core.dialog.showCustomValueDialog({ typeIsString: !isNumberArray, title: dlgTitle})
-    .subscribe((result: DialogResult<CustomValueDialogData>) => {
-      if (!result.isCancel) {
-        select!.itemsList.addItem(result.value.value);
-        let item = select!.itemsList.findItem(result.value.value);
-        select!.select(item);
-      }
-    }, err => {
-      throw err
-    });
+    select.close(); //Closing the ng-select before to show the dialog to avoid the dialog 
+    //displaying behing the select.
+
+    this.core.dialog.showCustomValueDialog({ typeIsString: !isNumberArray, title: dlgTitle })
+      .subscribe({
+        next: (result: DialogResult<CustomValueDialogData>) => {
+          if (!result.isCancel) {
+            select!.itemsList.addItem(result.value.value);
+            let item = select!.itemsList.findItem(result.value.value);
+            select!.select(item);
+          }
+        },
+        error: (err) => {
+          throw err
+        }
+      });
   }
 
   refreshScripts(): Promise<PagedResponse<Script>> {
@@ -279,42 +286,44 @@ export class WorkflowStepComponent implements OnInit {
     this.scriptChanged(this.step.script);
 
     this.fh.form.statusChanges
-      .subscribe((value: string) => {
+      .subscribe({
+        next: (value: string) => {
 
-        let status: WorkflowStepComponentStatus;
-        let step = Object.assign({}, this.fh.value)
+          let status: WorkflowStepComponentStatus;
+          let step = Object.assign({}, this.fh.value)
 
-        //We need to convert back boolean values to PowerShell Booleans:
-        // this.convertParameterValuesFromJStoPS(step.values);
-        if (step.values && step.values.length > 0) {
-          step.values.forEach((pv) => {
-            //If is a propel parameter, we need to flaten the array of credential ids:
-            if (this.isPropelParameter(pv.name) && pv.value && Array.isArray(pv.value)) {
-              pv.value = pv.value.join(",")
-            }
-            else {
-              //For array types, sometimes ng-select returns the item object, instead of 
-              //only the value:
-              if (pv.nativeType == JSType.Array && Array.isArray(pv.value)) {
-                (pv.value as Array<any>) = (pv.value as Array<any>)
-                  .map((val) => {
-                    if (typeof val == "object" && val.value) return val.value
-                    else return val
-                  })
+          //We need to convert back boolean values to PowerShell Booleans:
+          // this.convertParameterValuesFromJStoPS(step.values);
+          if (step.values && step.values.length > 0) {
+            step.values.forEach((pv) => {
+              //If is a propel parameter, we need to flaten the array of credential ids:
+              if (this.isPropelParameter(pv.name) && pv.value && Array.isArray(pv.value)) {
+                pv.value = pv.value.join(",")
               }
+              else {
+                //For array types, sometimes ng-select returns the item object, instead of 
+                //only the value:
+                if (pv.nativeType == JSType.Array && Array.isArray(pv.value)) {
+                  (pv.value as Array<any>) = (pv.value as Array<any>)
+                    .map((val) => {
+                      if (typeof val == "object" && val.value) return val.value
+                      else return val
+                    })
+                }
 
-              ParameterValueConverter.toPowerShell(pv)
-            }
-          })
+                ParameterValueConverter.toPowerShell(pv)
+              }
+            })
+          }
+
+          status = new WorkflowStepComponentStatus(
+            Boolean(value.toLowerCase() == "valid"),
+            this.fh.form.dirty,
+            step,
+            (this.selectedScript) ? this.selectedScript.name : "",
+            this.getselectedTargetNames());
+          this.change.emit(status);
         }
-
-        status = new WorkflowStepComponentStatus(
-          Boolean(value.toLowerCase() == "valid"),
-          this.fh.form.dirty,
-          step,
-          (this.selectedScript) ? this.selectedScript.name : "",
-          this.getselectedTargetNames());
-        this.change.emit(status);
       })
 
     this.fh.setValue(value);
@@ -448,14 +457,14 @@ export class WorkflowStepComponent implements OnInit {
           // pv.value = (pv.value as unknown as Array<any>).map( value => String(value)) as unknown as string;
           this.validSets[p.name] = this.buildValidSet(
             ([...new Set<string>([...p.validValues])])
-            .sort());
-          
+              .sort());
+
           //We need to review now the parameter values and remove the ones that are not in 
           //the valid set:
           pv.value = (pv.value as unknown as Array<any>)
-            .filter((value:any) => {
+            .filter((value: any) => {
               return this.validSets[p.name]
-              .filter((validValue: any) => String(validValue.value) == String(value)).length > 0 
+                .filter((validValue: any) => String(validValue.value) == String(value)).length > 0
             }) as unknown as string;
         }
       }
@@ -479,7 +488,7 @@ export class WorkflowStepComponent implements OnInit {
       if (p.required) {
         vfns.push(Validators.required)
       }
-      else if(!p.canBeNull || !p.canBeEmpty) {
+      else if (!p.canBeNull || !p.canBeEmpty) {
         vfns.push(ValidatorsHelper.notNullOrEmpty())
       }
 
@@ -512,7 +521,7 @@ export class WorkflowStepComponent implements OnInit {
 
     return ret;
   }
-  
+
   getPlaceHolderText(nativeType: string) {
 
     let ret: string = ""
@@ -544,7 +553,7 @@ export class WorkflowStepComponent implements OnInit {
 
     let ret: ScriptParameter | undefined;
 
-    if(!paramName) return ret;
+    if (!paramName) return ret;
 
     if (this.selectedScript && this.selectedScript.parameters && this.selectedScript.parameters.length > 0) {
       ret = this.selectedScript.parameters.find((p: ScriptParameter) => {

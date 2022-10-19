@@ -34,7 +34,7 @@ export class RunComponent implements OnInit {
     let ret: ExecutionStats;
 
     if (this.hasMessages && this.model.length > 0 &&
-       this.model[this.model.length - 1].context !== undefined) {
+      this.model[this.model.length - 1].context !== undefined) {
       ret = this.model[this.model.length - 1].context!;
     }
     else {
@@ -88,15 +88,18 @@ export class RunComponent implements OnInit {
       this.pushMessageToUI(InvocationStatus.NotStarted, "Waiting for user confirmation...")
       this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
         "", `Please confirm workflow execution.`)
-      ).subscribe((result: DialogResult<any>) => {
-        if (result.isCancel) {
-          this.pushMessageToUI(InvocationStatus.UserActionCancel, "The execution was cancelled by the user.")
+      ).subscribe({
+        next: (result: DialogResult<any>) => {
+          if (result.isCancel) {
+            this.pushMessageToUI(InvocationStatus.UserActionCancel, "The execution was cancelled by the user.")
+          }
+          else {
+            this.startExecution();
+          }
+        },
+        error: err => {
+          this.core.handleError(err)
         }
-        else {
-          this.startExecution();
-        }
-      }, err => {
-        this.core.handleError(err)
       });
     }
     else {
@@ -115,19 +118,20 @@ export class RunComponent implements OnInit {
     this.core.navigation.replaceHistory(workflowId, { conf: "true" })
 
     this.core.runner.execute(workflowId)
-      .subscribe((msg: WebsocketMessage<ExecutionStats>) => {
-        this.model.push(msg);
-        this.scrollDown()
-      },
-        (err) => {
+      .subscribe({
+        next: (msg: WebsocketMessage<ExecutionStats>) => {
+          this.model.push(msg);
+          this.scrollDown()
+        },
+        error: (err) => {
           this.processError(err);
         },
-        () => {
+        complete: () => {
           this.workflowStatus = this.lastMessage?.context?.logStatus ?? "";
           this.scrollDown();
 
           let logId: string = this.lastMessage?.context?.logId ?? ""
-          
+
           if (logId) {
             this.core.toaster.showInformation("Showing results soon...", "Execution is done.")
             setTimeout(() => {
@@ -137,7 +141,9 @@ export class RunComponent implements OnInit {
           else { //If there is no logId, means something prevent the execution to complete:
             this.core.toaster.showError("There was an error preventing the execution to complete.")
           }
-        });
+        }
+      }
+      );
   }
 
   cancel(kill: boolean) {
@@ -181,7 +187,7 @@ Websockets Error code: ${(err && err.code) ? String(err.code) : "unknown"}.`
   }
 
   pushMessageToUI(status: InvocationStatus, title: string = "", message: string = "",): void {
-    let m: WebsocketMessage<ExecutionStats> = new WebsocketMessage(status, message, 
+    let m: WebsocketMessage<ExecutionStats> = new WebsocketMessage(status, message,
       new ExecutionStats());
 
     if (title) {

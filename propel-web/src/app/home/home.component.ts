@@ -28,34 +28,36 @@ export class HomeComponent implements OnInit, OnDestroy {
   securityEventSubscription$!: Subscription;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
-    
+
   }
-  
+
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
     this.refreshData()
-    .catch((error) => {
-      this.core.handleError(error)
-    })
-    
+      .catch((error) => {
+        this.core.handleError(error)
+      })
+
     this.securityEventSubscription$ = this.core.security.getSecurityEventSubscription()
-    .subscribe(async (event: SecurityEvent) => {
-      let action: string = "";
-      try {
-        if (event == SecurityEvent.Login) {
-          action = "Updated user stats in Home page."
-          this.userStats = await this.core.status.getUserStats();
+      .subscribe({
+        next: async (event: SecurityEvent) => {
+          let action: string = "";
+          try {
+            if (event == SecurityEvent.Login) {
+              action = "Updated user stats in Home page."
+              this.userStats = await this.core.status.getUserStats();
+            }
+            else {
+              action = "Clearing user stats in Home page."
+              this.userStats = undefined;
+            }
+          } catch (error) {
+            action = `None, Error received when trying to update user stats: "${String(error)}".`
+          }
+
+          logger.logInfo(`Received Security event "${(event == SecurityEvent.Login) ? "Login" : "Logoff"}". Action taken: ${action}`)
         }
-        else {
-          action = "Clearing user stats in Home page."
-          this.userStats = undefined;
-        }
-      } catch (error) {
-        action = `None, Error received when trying to update user stats: "${String(error)}".`
-      }
-      
-      logger.logInfo(`Received Security event "${(event == SecurityEvent.Login) ? "Login" : "Logoff"}". Action taken: ${action}`)
-    })
+      })
   }
 
   ngOnDestroy(): void {
@@ -151,14 +153,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   getFriendlyStartTime(startTime: Date | undefined): string {
-    if(!startTime) return ""
+    if (!startTime) return ""
     else return SharedSystemHelper.getFriendlyTimeFromNow(startTime);
   }
 
-  getShortErrorText(text: string) : string {
+  getShortErrorText(text: string): string {
     return UIHelper.getShortText(text, 0, 75);
   }
-  
+
   onSelectChart($event: any) {
     this.goToHistory();
   }

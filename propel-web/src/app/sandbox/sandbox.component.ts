@@ -34,23 +34,21 @@ export class SandboxComponent implements OnInit {
   }
 
   createNewItem() {
-    // alert("Create!");
-    // let newItem = "New One";
-    // this.MyNGSelectWithNew.itemsList.addItem(newItem);
-    // const item = this.MyNGSelectWithNew.itemsList.findItem(newItem)
-    // this.MyNGSelectWithNew.select(item);
-
     this.core.dialog.showCustomValueDialog()
-    .subscribe((result: DialogResult<CustomValueDialogData>) => {
-      if (!result.isCancel) {
-        this.MyNGSelectWithNew.itemsList.addItem(result.value.value);
-        let item = this.MyNGSelectWithNew.itemsList.findItem(result.value.value);
-        this.MyNGSelectWithNew.select(item);
-      }
-    }, err => {
-      throw err
-    });
-    
+      .subscribe(
+        {
+          next: (result: DialogResult<CustomValueDialogData>) => {
+            if (!result.isCancel) {
+              this.MyNGSelectWithNew.itemsList.addItem(result.value.value);
+              let item = this.MyNGSelectWithNew.itemsList.findItem(result.value.value);
+              this.MyNGSelectWithNew.select(item);
+            }
+          },
+          error: err => {
+            throw err
+          }
+        }
+      );
   }
 
   title = 'propel-web';
@@ -259,103 +257,6 @@ export class SandboxComponent implements OnInit {
     this.core.toaster.showSuccess("The operation was successfully finished!")
   }
 
-  testGetById() {
-    // let ret: Credential
-
-    // this.data.getById(DataEntity.Credential, "612300b0c8f78d6b5883b922")
-    //   .subscribe(
-    //     data => {
-    //       let x = data;
-    //     },
-    //     err => {
-    //       throw err
-    //     });
-
-    // return ret;
-  }
-
-  testFind() {
-    // let qm: QueryModifier = new QueryModifier();
-
-    // qm.populate = false
-
-
-    // this.data.find(DataEntity.Credential, qm)
-    //   .subscribe(
-    //     data => {
-    //       let x = data;
-    //     },
-    //     err => {
-    //       throw err
-    //     });
-    // qm.sortBy = "name";
-    // qm.populate = true;
-
-  }
-
-  testInsert() {
-
-    // let svi = new Secret()
-    // svi.value = new Object()
-    // svi.value.attr1 = "Hola"
-    // svi.value.attr2 = 67.678;
-
-    // this.data.save(DataEntity.Secret, svi)
-    //   .subscribe(
-    //     data => {
-    //       svi._id = data.data[0];
-
-    //       let c = new Credential();
-
-    //       c.name = "Test Cred 01"
-    //       c.description = "Description for credential"
-    //       c.secretId = svi._id;
-
-    //       this.data.save(DataEntity.Credential, c)
-    //         .subscribe(
-    //           data => {
-    //             let x = data;
-    //           },
-    //           err => {
-    //             throw err
-    //           });
-
-
-    //     },
-    //     err => {
-    //       throw err
-    //     });
-  }
-
-  testUpdate() {
-
-    // let u: User = new User();
-
-    // u._id = "5f18eee52dcf570b148586e8"
-    // u.name = "Bob the third UPDATED"
-
-    // this.data.save<User>(User, u)
-    //   .subscribe(
-    //     data => {
-    //       let x = data;
-    //     },
-    //     err => {
-    //       throw err
-    //     });
-  }
-
-  testDelete() {
-
-    // this.data.delete<User>(User, "5f18eee52dcf570b148586e8")
-    //   .subscribe(
-    //     data => {
-    //       let x = data;
-    //     },
-    //     err => {
-    //       throw err
-    //     });
-  }
-
   testTwoCallsforRefreshToken() {
 
     console.info(`%c SANDBOX -> Starting Call 1 for token refreshing.`, "color: gray; background-color: lightblue");
@@ -385,31 +286,46 @@ export class SandboxComponent implements OnInit {
       <p class="mt-2 mb-0">Recuerda que el mensaje de cambio de contraseña tiene un tiempo de validez, pasado el cual, el correo
        ya no será válido y deberás volver a iniciar el proceso.</p>`,
       "Si, deseo cambiar mi contraseña", "No, continuaré con la actual"))
-      .subscribe((result: DialogResult<any>) => {
-        alert(`Result is: "${JSON.stringify(result)}".`);
-      }, err => {
-        throw err
-      });
+      .subscribe(
+        {
+          next: (result: DialogResult<any>) => {
+            alert(`Result is: "${JSON.stringify(result)}".`);
+          },
+          error: (err) => {
+            throw err
+          }
+        }
+      );
   }
 
   showShortConfirmationDialog() {
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
       "Confirmation required",
       `Do you confirm the action?`)
-    ).subscribe((result: DialogResult<any>) => {
-      alert(`Result is: "${JSON.stringify(result)}".`);
-    }, err => {
-      throw err
-    });
+    ).subscribe(
+      {
+        next: (result: DialogResult<any>) => {
+          alert(`Result is: "${JSON.stringify(result)}".`);
+        },
+        error: (err) => {
+          throw err
+        }
+      }
+    );
   }
 
   showCustomValueDialog(initialValue?: string | number, isString?: boolean) {
     this.core.dialog.showCustomValueDialog({ value: initialValue, typeIsString: isString })
-    .subscribe((result: DialogResult<any>) => {
-      alert(`Result is: "${JSON.stringify(result)}".`);
-    }, err => {
-      throw err
-    });
+      .subscribe(
+        {
+          next: (result: DialogResult<any>) => {
+            alert(`Result is: "${JSON.stringify(result)}".`);
+          },
+          error: err => {
+            throw err
+          }
+        }
+      );
   }
 
   expandAll() {

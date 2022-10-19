@@ -42,7 +42,7 @@ export class NavigationService {
     }
 
     get previousPage(): NavigationHistoryEntry | undefined {
-        //Recal that last item in the History is the current page, not the previous one:
+        //Recall that last item in the History is the current page, not the previous one:
         return this._history[this._history.length - 2];
     }
 
@@ -50,9 +50,11 @@ export class NavigationService {
         this._currPageRXP = new RegExp("^/[A-Za-z-]*", "gi");
         logger.logInfo("Navigationservice instance created");
 
-        this.router.events.subscribe((event) => {
-            if (event instanceof NavigationEnd) {
-                this.addToHistory(event.urlAfterRedirects)
+        this.router.events.subscribe({
+            next: (event) => {
+                if (event instanceof NavigationEnd) {
+                    this.addToHistory(event.urlAfterRedirects)
+                }
             }
         })
     }
@@ -132,19 +134,19 @@ export class NavigationService {
      * Navigates to the previous page.
      */
     back(): void {
-        
+
         if (this._history.length > 1) {
             this._history.pop();
         }
-       
+
         this.to(this._history[this._history.length - 1]?.url)
     }
 
     replaceHistory(segments: string[] | string = "", queryParams: Params | null = null): void {
         let url: string = ""
         let entry: NavigationHistoryEntry;
-        
-        if(this._history.length == 0) return;
+
+        if (this._history.length == 0) return;
 
         entry = this._history[this._history.length - 1]
         entry.url = this.buildURL(this.currentPage, segments, queryParams);
@@ -153,18 +155,18 @@ export class NavigationService {
     buildURL(page: PageMetadata, segments: string[] | string = "", queryParams: Params | null = null): string {
 
         if (!page) throw new PropelError(`Expect the page metadata in the "buildURL" method but a falsy value was passed.`)
-    
+
         if (!segments) {
             segments = [];
         }
-        else if(!Array.isArray(segments)) {
+        else if (!Array.isArray(segments)) {
             segments = [String(segments)]
         }
 
         //Inserting the page as the first segment:
         segments = [page.name, ...segments]
 
-        if(queryParams) {
+        if (queryParams) {
             queryParams = { queryParams }
         }
         else {
@@ -197,9 +199,9 @@ export class NavigationService {
      * Navigate to Login page.
      */
     toLogin(referrerURL: string = ""): void {
-        let url: string = this.buildURL(this.pages.Login, "", 
+        let url: string = this.buildURL(this.pages.Login, "",
             { referrerURL: String(referrerURL) });
-        this.to(url)        
+        this.to(url)
     }
 
     /**
@@ -261,7 +263,7 @@ export class NavigationService {
      * @param browse Indicates if even no term is specified, we must show all items.
      */
     toBrowseWorkflows(term: string = "", browse: boolean = true): void {
-        let url: string = this.buildURL(this.pages.BrowseWorkflows, "", 
+        let url: string = this.buildURL(this.pages.BrowseWorkflows, "",
             { term: String(term), browse: (browse) ? "true" : "false" });
         this.to(url)
     }
@@ -270,7 +272,7 @@ export class NavigationService {
      * Navigate to search page but setting up to browse scripts.
      */
     toBrowseScripts(term: string = "", browse: boolean = true): void {
-        let url: string = this.buildURL(this.pages.BrowseScripts, "", 
+        let url: string = this.buildURL(this.pages.BrowseScripts, "",
             { term: String(term), browse: (browse) ? "true" : "false" });
         this.to(url)
     }
@@ -279,7 +281,7 @@ export class NavigationService {
      * Navigate to search page but setting up to browse targets.
      */
     toBrowseTargets(term: string = "", browse: boolean = true): void {
-        let url: string = this.buildURL(this.pages.BrowseTargets, "", 
+        let url: string = this.buildURL(this.pages.BrowseTargets, "",
             { term: String(term), browse: (browse) ? "true" : "false" });
         this.to(url)
     }
@@ -288,7 +290,7 @@ export class NavigationService {
      * Navigate to search page but setting up to browse credentials.
      */
     toBrowseCredentials(term: string = "", browse: boolean = true): void {
-        let url: string = this.buildURL(this.pages.BrowseCredentials, "", 
+        let url: string = this.buildURL(this.pages.BrowseCredentials, "",
             { term: String(term), browse: (browse) ? "true" : "false" });
         this.to(url)
     }
@@ -297,7 +299,7 @@ export class NavigationService {
      * Navigate to search page but setting up to browse user accounts.
      */
     toBrowseUserAccounts(term: string = "", browse: boolean = true): void {
-        let url: string = this.buildURL(this.pages.BrowseUserAccounts, "", 
+        let url: string = this.buildURL(this.pages.BrowseUserAccounts, "",
             { term: String(term), browse: (browse) ? "true" : "false" });
         this.to(url)
     }
@@ -317,7 +319,7 @@ export class NavigationService {
         let url: string = this.buildURL(this.pages.CredentialWindows, credentialId);
         this.to(url)
     }
-    
+
     /**
      * Navigate to Credential page and set the form to create a new AWS Credential.
      */
@@ -332,7 +334,7 @@ export class NavigationService {
     toGenericAPIKeyCredential(credentialId?: string) {
         let url: string = this.buildURL(this.pages.CredentialAPIKey, credentialId);
         this.to(url)
-    }    
+    }
 
     /**
      * Used by the system to navigate to the offline page if a network issue is detected.
@@ -376,18 +378,18 @@ export class NavigationService {
         m = this.getPageFromURL(url);
 
         if (m.name && !m.excludeFromHistory && !this.alreadyInHistory(url)) {
-            if(this._history.length == MAX_HISTORY_LENGTH) {
+            if (this._history.length == MAX_HISTORY_LENGTH) {
                 this._history.shift();
             }
             this._history.push({
                 url: url,
                 title: m.title
-            })            
+            })
         }
     }
 
     private alreadyInHistory(url: string): boolean {
-        if(this._history.length == 0) return false;
+        if (this._history.length == 0) return false;
         if (this._history[this._history.length - 1]?.url == url) return true
         return false
     }

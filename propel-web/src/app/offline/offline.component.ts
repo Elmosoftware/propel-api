@@ -17,8 +17,10 @@ export class OfflineComponent implements OnInit {
 
   ngOnInit(): void {
     this.core.connectivity.getConnectivityStatusChangeSubscription()
-      .subscribe((status: ConnectivityStatus) => {
-        this.evaluateStatus(status);
+      .subscribe({
+        next: (status: ConnectivityStatus) => {
+          this.evaluateStatus(status);
+        }
       })
   }
 
@@ -27,7 +29,7 @@ export class OfflineComponent implements OnInit {
     if (status) {
       this.status = status;
     }
-    
+
     if (!this.status) return;
 
     if (this.status.networkOn && this.status.apiOn) {

@@ -55,33 +55,38 @@ Is targetting: ${(item.isTargettingServers) ? "Servers, (like Web servers, Datab
     this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
       "Delete Script Confirmation",
       `Are you sure you want to delete the script named "<b>${item.name}</b>"? Please be aware that this operation can't be undone.`)
-    ).subscribe((result: DialogResult<any>) => {
-      if (!result.isCancel) {
+    ).subscribe({
+      next: (result: DialogResult<any>) => {
+        if (!result.isCancel) {
 
-        //Before to delete the Script, we need to disable it. In this way any existing workflow that 
-        //have it attached will prevent the execution:
-        item.enabled = false;
+          //Before to delete the Script, we need to disable it. In this way any existing workflow that 
+          //have it attached will prevent the execution:
+          item.enabled = false;
 
-        of(
-          from(this.core.data.save(DataEndpointActions.Script, item)),
-          from(this.core.data.delete(DataEndpointActions.Script, item._id))
-        )
-          .pipe(
-            concatAll()
+          of(
+            from(this.core.data.save(DataEndpointActions.Script, item)),
+            from(this.core.data.delete(DataEndpointActions.Script, item._id))
           )
-          .subscribe(
-            _ => { },
-            (error) => {
-              this.core.handleError(error)
-            },
-            () => {
-              this.core.toaster.showSuccess("Script deleted succesfully!");
-              this.dataChanged.emit(true);
-            })
-      }
-    },
-      err => {
+            .pipe(
+              concatAll()
+            )
+            .subscribe(
+              {
+                next: _ => { },
+                error: (error) => {
+                  this.core.handleError(error)
+                },
+                complete: () => {
+                  this.core.toaster.showSuccess("Script deleted succesfully!");
+                  this.dataChanged.emit(true);
+                }
+              }
+            )
+        }
+      },
+      error: (err) => {
         this.core.handleError(err)
-      });
+      }
+    });
   }
 }

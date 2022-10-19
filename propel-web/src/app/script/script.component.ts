@@ -41,7 +41,7 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
   activeTab: Tabs = Tabs.Details;
   fh: FormHandler<Script>;
   uploadProgress: number = 0;
-  uploadEnabled: boolean = true ;
+  uploadEnabled: boolean = true;
   completed: boolean = false;
   invalidFileMessage: string = "";
 
@@ -84,14 +84,16 @@ export class ScriptComponent implements OnInit, DataLossPreventionInterface {
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
     this.requestCount$
-      .subscribe((count: number) => {
-        if (count > 0) {
-          this.fh.form.disable({ emitEvent: false });
-          this.uploadEnabled = false;
-        }
-        else {
-          this.fh.form.enable({ emitEvent: false });
-          this.uploadEnabled = true;
+      .subscribe({
+        next: (count: number) => {
+          if (count > 0) {
+            this.fh.form.disable({ emitEvent: false });
+            this.uploadEnabled = false;
+          }
+          else {
+            this.fh.form.enable({ emitEvent: false });
+            this.uploadEnabled = true;
+          }
         }
       })
   }
