@@ -39,7 +39,7 @@ param (
     [double]$AdditionalTypesDouble = 1.1,
     
     [Parameter(HelpMessage='ADDITIONAL TYPES: DateTime')]
-    [DateTime]$AdditionalTypesDatetime = "1/1/2020",
+    [DateTime]$AdditionalTypesDatetime = "2020-01-01",
 
     [Parameter(HelpMessage='ADDITIONAL TYPES: String Array.')]
     [string[]]$AdditionalTypesStringArray = @("Hello", "World"),

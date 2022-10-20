@@ -40,7 +40,7 @@ export enum PowerShellLiterals {
     $null = "$null",
     $true = "$true",
     $false = "$false",
-    EmptyObject = "@{}",
     EmptyArray = "@()",
-    EmptyString = ""
+    EmptyString = "",
+    Zero = "0"
 }

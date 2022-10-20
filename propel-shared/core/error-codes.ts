@@ -55,8 +55,21 @@ export class ErrorCodes {
         return new Code("WRONG_PARAM_DATA",
             `The supplied value for at least one of the script parameters are inconsistent with his data type or the validation rules set in the parameter definition. This normally happen when a script is updated with breaking changes.
 Please check if the workflow need to be remediated in order to supply the right values.`,
-        `AT least one script parameter has set a wrong value for his type. 
+            `At least one script parameter has set a wrong value for his type. 
 This could happen when a script is updated with breaking changes. Please review and remediate the Workflow.`);
+    }
+
+    /**
+     * If one script has an invalid default valu set for some of the parameters, this will be the 
+     * returned error code.
+     */
+    static get InvalidDefaultParameterValue(): Code {
+        return new Code("INVALID_PARAM_DEFAULT",
+            `The value set as default in some of the script parameters is invalid.\r\n`,
+            `At least one script parameter has an invalid default value set. Please check the ` +
+            `values and ensure not having some of the following cases: A Boolean or Switch parameter ` +
+            `with invalid default values. A Datetime parameter with a default value that is not in ` +
+            `ISO-8601 format.`);
     }
 
     /**
@@ -115,7 +128,7 @@ Most likely cause, is you trying to fetch information encrypted with a different
     /**
      * Indicates that during the login process the user wasn't found in Propel database.
      */
-     static get LoginWrongPassword(): Code {
+    static get LoginWrongPassword(): Code {
         return new Code("LOGIN_WRONG_PASSWORD",
             `The user that try to login entered a wrong password.`,
             `The submitted password is wrong. In the case you forgot it, please contact any Propel administrator to reset it.`,
@@ -125,7 +138,7 @@ Most likely cause, is you trying to fetch information encrypted with a different
     /**
      * Indicates the supplied authentication doesn't have the required format.
      */
-     static get AuthCodeBadFormat(): Code {
+    static get AuthCodeBadFormat(): Code {
         return new Code("AUTH_CODE_FORMAT",
             `The supplied authentication code doesn't meet the defined format.`,
             `Seems like the provided authentication code is not with the right format. Please verify the supplied code.`,
@@ -135,7 +148,7 @@ Most likely cause, is you trying to fetch information encrypted with a different
     /**
      * Indicates the supplied authentication doesn't have the required format.
      */
-     static get PasswordBadFormat(): Code {
+    static get PasswordBadFormat(): Code {
         return new Code("PASSWORD_FORMAT",
             `The supplied password is not of the expected length.`,
             `The password you entered is too long or too short, please verify and try again.`,
@@ -145,7 +158,7 @@ Most likely cause, is you trying to fetch information encrypted with a different
     /**
      * Indicates the supplied authentication doesn't have the required format.
      */
-     static get UserImpersonation(): Code {
+    static get UserImpersonation(): Code {
         return new Code("USER_IMPERSONATION_NOT_ALLOWED",
             `User impersonation not allowed in Propel.`,
             `You are not running Propel with the same credentials that you use to log to this machine. Please start Propel using your own credentials.`,
@@ -155,7 +168,7 @@ Most likely cause, is you trying to fetch information encrypted with a different
     /**
      * Indicates the supplied access token is expired.
      */
-     static get TokenIsExpired(): Code {
+    static get TokenIsExpired(): Code {
         return new Code("TOKEN_EXPIRED",
             `The supplied access token is expired.`,
             `Your session has expired. In order to protect your account you will need to login again.`,
@@ -165,7 +178,7 @@ Most likely cause, is you trying to fetch information encrypted with a different
     /**
      * Indicates the supplied refresh token is missing or expired.
      */
-     static get RefreshTokenIsExpired(): Code {
+    static get RefreshTokenIsExpired(): Code {
         return new Code("REFRESH_TOKEN_EXPIRED",
             `The refresh token is missing or expired.`,
             `A long time without using Propel?, please login again to protect your account.`,

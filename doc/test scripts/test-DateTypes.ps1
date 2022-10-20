@@ -5,35 +5,35 @@
 
 #region Script Parameters
 param (
-    [Parameter(HelpMessage='Date without time in ISO-8601 format.')]
+    [Parameter(HelpMessage='Date without time.')]
     [datetime]$DateOnlyISO = "2022-09-12",
-    [Parameter(HelpMessage='Date without time in US locale format.')]
-    [datetime]$DateOnlyUS = "9/12/2022",
-    [Parameter(HelpMessage='Date with time in local timezone in ISO-8601 format.')]
+    [Parameter(HelpMessage='Date with time.')]
     [datetime]$DateAndTimeISO = "2022-09-12T13:41:23.456",
-    [Parameter(HelpMessage='Date with UTC time in ISO-8601 format.')]
+    [Parameter(HelpMessage='Date with UTC time.')]
     [datetime]$DateAndTimeISOUTC = "2022-09-12T13:41:23.456Z",
-    [Parameter(HelpMessage='Date with time in US locale format.')]
-    [datetime]$DateAndTimeUS = "9/12/2022 13:41:23.456",
+    [Parameter(HelpMessage='Date without default value.')]
+    [datetime]$DateAndTimeNoDefault,
     [Parameter(Mandatory=$true, HelpMessage='Required Date with no default value.')]
-    [datetime]$DateWithNoDefaultValue,
+    [datetime]$RequiredDateWithNoDefaultValue,
     [Parameter(Mandatory=$true, HelpMessage='Required Date with default value.')]
-    [datetime]$DateWithDefaultValue = "10/1/22"
+    [datetime]$RequiredDateWithDefaultValue = "2022-09-12T17:01"
 )
 #endregion
 
-Write-Host "Parameters values:`r`n==========================================="
+Write-Host "Parameter values:`r`n==========================================="
 "DateOnlyISO:"
 $DateOnlyISO
-"DateOnlyUS:"
-$DateOnlyUS
 "DateAndTimeISO:"
 $DateAndTimeISO
 "DateAndTimeISOUTC:"
 $DateAndTimeISOUTC
-"DateAndTimeUS:"
-$DateAndTimeUS
-"DateWithNoDefaultValue:"
-$DateWithNoDefaultValue
+"DateAndTimeNoDefault:"
+$DateAndTimeNoDefault
+"DateAndTimeNoDefault is null?:"
+$null -eq $DateAndTimeNoDefault
+"RequiredDateWithNoDefaultValue:"
+$RequiredDateWithNoDefaultValue
+"RequiredDateWithDefaultValue:"
+$RequiredDateWithDefaultValue
 
 Write-Host "`r`nDone!"

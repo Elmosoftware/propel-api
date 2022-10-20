@@ -5,10 +5,11 @@ import { SystemHelper } from "../util/system-helper";
 import { ScriptParameter } from "../../propel-shared/models/script-parameter";
 import { logger } from "./logger-service";
 import { Utils } from "../../propel-shared/utils/utils";
-import { TypeConverter } from "../../propel-shared/core/type-converter";
+import { ConvertibleType, TypeConverter } from "../../propel-shared/core/type-converter";
 import { PowerShellService } from "./powershell-service";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { PropelError } from "../../propel-shared/core/propel-error";
+import { JSType } from "../../propel-shared/core/type-definitions";
 
 /**
  * This class encapsulates all teh functionality related to Script parameter inference used in the API.
@@ -90,6 +91,7 @@ Error details: ${String(error)}`);
         params.forEach((param: any) => {
             if (!isNaN(param.Position) && param.Name) {
                 let sp = new ScriptParameter();
+                let type: ConvertibleType<JSType>;
 
                 sp.position = param.Position;
                 sp.name = param.Name;
@@ -102,9 +104,28 @@ Error details: ${String(error)}`);
                 sp.canBeEmpty = param.CanBeEmpty;
                 sp.isPropelParameter = false;
 
+                type = TypeConverter.getConvertibleJSType(sp.nativeType)
+
+                //If the parameter, (because of his type), can't accept empyy/null values, we will 
+                //enforce that in the UI:
+                if (!type.typeAcceptEmptyOrNull) {
+                    sp.canBeNull = false
+                    sp.canBeEmpty = false
+                }
+
                 if (param.DefaultValue !== null) {
-                    sp.hasDefault = true;
                     sp.defaultValue = param.DefaultValue;
+                    sp.hasDefault = true;
+
+                    //We must check one special condition: Some parameter types like 
+                    //Boolean or Datetime can't hold in powershell null values. So, if that's the case,
+                    //the script need to be modified:
+                    if (!type.typeAcceptEmptyOrNull && 
+                        type.converters.powershell.convert(sp.defaultValue) == type.emptyOrNull) {
+                        throw new PropelError(`Invalid [${sp.type}] parameter "${sp.name}". ` + 
+                        `The type can't hold null values and the conversion from the original value ` + 
+                        `can't be done. Original value is: ${JSON.stringify(param.DefaultValue)}.`, ErrorCodes.InvalidDefaultParameterValue);
+                    }
                 }
 
                 if (cfg.isPropelParam(sp.name)) {

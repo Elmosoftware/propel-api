@@ -39,10 +39,25 @@ describe("ParameterValueConverter Class - toJavascript()", () => {
     })
     
     describe("Object", () => {
-        test(`Any value`, () => {
+        test(`null value`, () => {
+            pv.value = null
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual("");
+        })
+        test(`undefined value`, () => {
+            pv.value = undefined
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual("");
+        })
+        test(`PowerSHell literal $null value`, () => {
             pv.value = PowerShellLiterals.$null
             ParameterValueConverter.toJavascript(pv)
-            expect(pv.value).toEqual(PowerShellLiterals.$null);
+            expect(pv.value).toEqual("");
+        })
+        test(`Any string value`, () => {
+            pv.value = "Hola!"
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual("Hola!");
         })
     })
     describe("Boolean", () => {
@@ -191,6 +206,62 @@ describe("ParameterValueConverter Class - toJavascript()", () => {
             expect(pv.value).toEqual("2022-10-18T17:22");
         })
     })
+    describe("Number", () => {
+        test(`An empty string`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = ""
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toBe(null);
+        })
+        test(`A null literal value`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = null
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toBe(null);
+        })
+        test(`An undefined literal value`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = undefined
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toBe(null);
+        })
+        test(`A non numeric value`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "Hola!"
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toBe(null);
+        })
+        test(`A valid positive numeric value`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = 23.456789
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual(23.456789)
+        })
+        test(`A valid negative numeric value`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = -243552
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual(-243552)
+        })
+        test(`A string numeric value`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "23"
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual(23)
+        })
+        test(`A string numeric value not trimmed`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "         -345  "
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual(-345)
+        })
+        test(`A string floating point numeric`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "  8745.3445  "
+            ParameterValueConverter.toJavascript(pv)
+            expect(pv.value).toEqual(8745.3445)
+        })
+    })
 })
 
 describe("ParameterValueConverter Class - toPowerShell()", () => {
@@ -210,10 +281,30 @@ describe("ParameterValueConverter Class - toPowerShell()", () => {
             ParameterValueConverter.toPowerShell(pv)
             expect(pv.value).toEqual(PowerShellLiterals.$null);
         })
-        test(`Powershell literal Empty object`, () => {
-            pv.value = PowerShellLiterals.EmptyObject
+        test(`undefined value`, () => {
+            pv.value = undefined
             ParameterValueConverter.toPowerShell(pv)
-            expect(pv.value).toEqual(PowerShellLiterals.EmptyObject);
+            expect(pv.value).toEqual(PowerShellLiterals.$null);
+        })
+        test(`Empty string value`, () => {
+            pv.value = ""
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual(PowerShellLiterals.$null);
+        })
+        test(`Powershell literal $null`, () => {
+            pv.value = PowerShellLiterals.$null
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual(PowerShellLiterals.$null);
+        })
+        test(`A numeric value`, () => {
+            pv.value = -100003.5647388
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("-100003.5647388");
+        })
+        test(`A String value`, () => {
+            pv.value = "Hola!"
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("Hola!");
         })
     })
     describe("Boolean", () => {
@@ -343,5 +434,80 @@ describe("ParameterValueConverter Class - toPowerShell()", () => {
             ParameterValueConverter.toPowerShell(pv)
             expect(pv.value).toEqual("2023-01-01T15:26:00.000Z");
         })
+    })
+    describe("Number", () => {
+        test(`An empty string`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = ""
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual(PowerShellLiterals.Zero);
+        })
+        test(`A non numeric value string`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "Hola!"
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual(PowerShellLiterals.Zero);
+        })
+        test(`A null value`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = null
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual(PowerShellLiterals.Zero);
+        })
+        test(`A undefined value`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = undefined
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual(PowerShellLiterals.Zero);
+        })
+        test(`A positive integer not trimmed`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "            345  "
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("345");
+        })
+        test(`A negative integer not trimmed`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "            -124  "
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("-124");
+        })
+        test(`A positive floating point not trimmed`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "            345.364535  "
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("345.364535");
+        })
+        test(`A negative floating point not trimmed`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "            -124345.364535  "
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("-124345.364535");
+        })
+        test(`A positive integer`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "345"
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("345");
+        })
+        test(`A negative integer`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "-124"
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("-124");
+        })
+        test(`A positive floating point`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "345.282909"
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("345.282909");
+        })
+        test(`A negative floating point`, () => {
+            pv.nativeType = JSType.Number
+            pv.value = "-124.675645"
+            ParameterValueConverter.toPowerShell(pv)
+            expect(pv.value).toEqual("-124.675645");
+        })
+        
     })
 })

@@ -10,13 +10,19 @@ export const PS_ARRAY_SUFFIX = ")"
 /**
  * A null formatter. It will do no transformation on the received value.
  */
-export class JavascriptAnyConverter implements ValueConverterInterface<any> {
+export class JavascriptAnyConverter implements ValueConverterInterface<string> {
 
     constructor() {
     }
 
-    convert(value: any): any {
-        return value;
+    convert(value: any): string {
+        let ret: string = ""
+
+        if (value && value !== PowerShellLiterals.$null) {
+            ret = String(value)
+        }
+
+        return ret;
     }
 }
 
@@ -30,7 +36,7 @@ export class PowerShellAnyConverter implements ValueConverterInterface<string> {
     }
 
     convert(value: any): any {
-        if (value == null || value == undefined || 
+        if (value == null || value == undefined || value == PowerShellLiterals.EmptyString ||
             value == PowerShellLiterals.$null) return PowerShellLiterals.$null;
         else return String(value);
     }
@@ -212,3 +218,48 @@ export class PowerShellDateConverter implements ValueConverterInterface<string> 
         return SharedSystemHelper.toISOFormat(String(value))
     }
 }
+
+/**
+ * Convert the supplied value to a nullable number.
+ * If the supplied value is null, undefined, an empty string or any other non
+ * numeric value, the returned value will be "null"
+ * Otherwise it will return the conversion to a numeric value.
+ */
+export class JavascriptNumberConverter implements ValueConverterInterface<number | null> {
+    
+    constructor() {
+    }
+
+    convert(value: any): number | null {
+        let ret: number | null = null;
+
+        if (!(value == null || value == undefined || 
+            value == PowerShellLiterals.EmptyString || isNaN(parseFloat(value)))) {
+            ret = parseFloat(value);
+        }
+
+        return ret;
+    }
+}
+
+/**
+ * Converts the supplied value to a PowerShell representation of a number.
+ * If the supplied value is not a numeric value or is a null value. the returned value 
+ * will be PowershellLiteral.Zero, ("0"). 
+ */
+export class PowerShellNumberConverter implements ValueConverterInterface<string> {
+    
+    constructor() {
+    }
+
+    convert(value: any): string {
+        let ret: string = PowerShellLiterals.Zero;
+
+        if (!isNaN(Number(value))) {
+            ret = Number(value).toString();
+        }
+
+        return ret;
+    }
+}
+

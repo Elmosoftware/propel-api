@@ -39,14 +39,22 @@ param (
 Write-Host "Parameters values:`r`n==========================================="
 "IntegerParam:"
 $IntegerParam
+"IntegerParam is null?:"
+$null -eq $IntegerParam
 "SwitchParam:"
 $SwitchParam
+"BooleanParam:"
+$BooleanParam
+"BooleanParam is null?:"
+$null -eq $BooleanParam
 "StringParam:"
 $StringParam
 "DoubleParam:"
 $DoubleParam
 "DatetimeParam:"
 $DatetimeParam
+"DatetimeParam is null?:"
+$null -eq $DatetimeParam
 "ArrayStringParam:"
 $ArrayStringParam
 "ArrayIntParam:"

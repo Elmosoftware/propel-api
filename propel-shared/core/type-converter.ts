@@ -3,19 +3,34 @@ import { JSType, PowerShellLiterals, PSType } from "./type-definitions";
 import { JavascriptArrayConverter, JavascriptBooleanConverter, 
     JavascriptDateConverter, JavascriptStringConverter, JavascriptAnyConverter, 
     PowerShellArrayConverter, PowerShellBooleanConverter, PowerShellDateConverter, 
-    PowerShellStringConverter, PowerShellAnyConverter} from "./converters";
+    PowerShellStringConverter, PowerShellAnyConverter, JavascriptNumberConverter, PowerShellNumberConverter} from "./converters";
 import { ValueConverterInterface } from "./value-converter-interface";
 
 /**
  * Abstract representation of a type including a set of converters.
  */
 export type ConvertibleType<T> = {
+    /**
+     * Reference type
+     */
     type: T,
+    /**
+     * List of value converters to the different platform/languages:
+     */
     converters: {
         javascript: ValueConverterInterface<any>
         powershell: ValueConverterInterface<any>
     },
-    emptyOrNull: string
+    /**
+     * This is the empty/null representation of the type in PowerShell.
+     */
+    emptyOrNull: string,
+    /**
+     * Boolean value that indicates if the type can accept empty or null values.
+     * This is to cover some specific cases,(like PowerShell Datetimes), that can't accept null
+     * ,($null), values in the argument list of a script invocation.
+     */
+    typeAcceptEmptyOrNull: boolean
 }
 
 /**
@@ -39,7 +54,8 @@ const ConvertibleJavascript: ConvertibleJavascriptType = {
             javascript: new JavascriptAnyConverter(),
             powershell: new PowerShellAnyConverter()
         },
-        emptyOrNull: PowerShellLiterals.$null
+        emptyOrNull: PowerShellLiterals.$null,
+        typeAcceptEmptyOrNull: true
     },
     [JSType.String]: {
         type: JSType.String,
@@ -47,15 +63,17 @@ const ConvertibleJavascript: ConvertibleJavascriptType = {
             javascript: new JavascriptStringConverter(),
             powershell: new PowerShellStringConverter()
         },
-        emptyOrNull: PowerShellLiterals.EmptyString
+        emptyOrNull: PowerShellLiterals.EmptyString,
+        typeAcceptEmptyOrNull: true
     },
     [JSType.Number]: {
         type: JSType.Number,
         converters: {
-            javascript: new JavascriptAnyConverter(),
-            powershell: new PowerShellAnyConverter()
+            javascript: new JavascriptNumberConverter(),
+            powershell: new PowerShellNumberConverter()
         },
-        emptyOrNull: PowerShellLiterals.$null
+        emptyOrNull: PowerShellLiterals.$null,
+        typeAcceptEmptyOrNull: true
     },
     [JSType.Boolean]: {
         type: JSType.Boolean,
@@ -63,7 +81,8 @@ const ConvertibleJavascript: ConvertibleJavascriptType = {
             javascript: new JavascriptBooleanConverter(),
             powershell: new PowerShellBooleanConverter()
         },
-        emptyOrNull: PowerShellLiterals.EmptyString
+        emptyOrNull: PowerShellLiterals.EmptyString,
+        typeAcceptEmptyOrNull: true
     },
     [JSType.Date]: {
         type: JSType.Date,
@@ -71,7 +90,8 @@ const ConvertibleJavascript: ConvertibleJavascriptType = {
             javascript: new JavascriptDateConverter(),
             powershell: new PowerShellDateConverter()
         }, 
-        emptyOrNull: PowerShellLiterals.EmptyString
+        emptyOrNull: PowerShellLiterals.EmptyString,
+        typeAcceptEmptyOrNull: false
     },
     [JSType.Array]: {
         type: JSType.Array,
@@ -79,7 +99,8 @@ const ConvertibleJavascript: ConvertibleJavascriptType = {
             javascript: new JavascriptArrayConverter(),
             powershell: new PowerShellArrayConverter()
         },
-        emptyOrNull: PowerShellLiterals.EmptyArray
+        emptyOrNull: PowerShellLiterals.EmptyArray,
+        typeAcceptEmptyOrNull: true
     }
 }
 
