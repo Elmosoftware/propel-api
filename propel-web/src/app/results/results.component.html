@@ -2,7 +2,7 @@
     <div *ngIf="log">
         <!-- Start Header -->
         <div class="row justify-content-between">
-            <div class="col-auto">
+            <div class="col">
                 <div class="row">
                     <div class="col-auto">
                         <app-status-icon size="big" [status]="log.status" class="mr-2"></app-status-icon>
@@ -19,42 +19,39 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12">
-                <div class="row justify-content-end">
-                    <div class="col-auto align-self-center">
-                        <button class="btn btn-primary" type="button" [disabled]="!log" (click)="runAgain()">Run again</button>
-                    </div>
-                </div>
-                <div class="row justify-content-end mt-4">
-                    <div class="col-auto">
-                        <button class="btn btn-primary button-icon-medium" type="button" (click)="expandAll()"
-                            [disabled]="!(collapseStatus == true || collapseStatus == null)">
-                            <i class="fas fa-angle-double-down" style="width: 16px;" matTooltip="Expand all"
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></i>
-                        </button>
-                        <button class="btn btn-primary button-icon-medium ml-1" type="button" (click)="collapseAll()"
-                            [disabled]="!(collapseStatus == false || collapseStatus == null)">
-                            <i class="fas fa-angle-double-up" style="width: 16px;" matTooltip="Collapse all"
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></i>
-                        </button>
-                        <button class="btn btn-primary button-icon-medium ml-1" type="button" (click)="groupbyStepAnTargetView()"
-                            [disabled]="showGrouped">
-                            <i class="far fa-object-group" style="width: 16px;" matTooltip="Show grouped by Step and Target."
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></i>
-                        </button>
-                        <button class="btn btn-primary button-icon-medium ml-1" type="button" (click)="groupbyStepView()"
-                            [disabled]="!showGrouped">
-                            <i class="far fa-object-ungroup" style="width: 16px;" matTooltip="Show grouped by Step only."
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></i>
-                        </button>
-                    </div>
-                </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col align-self-center">
+                <button class="btn btn-primary button-icon-medium" type="button" (click)="expandAll()"
+                    [disabled]="!(collapseStatus == true || collapseStatus == null)">
+                    <i class="fas fa-angle-double-down" style="width: 16px;" matTooltip="Expand all"
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></i>
+                </button>
+                <button class="btn btn-primary button-icon-medium ml-1" type="button" (click)="collapseAll()"
+                    [disabled]="!(collapseStatus == false || collapseStatus == null)">
+                    <i class="fas fa-angle-double-up" style="width: 16px;" matTooltip="Collapse all"
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></i>
+                </button>
+                <button class="btn btn-primary button-icon-medium ml-1" type="button"
+                    (click)="groupbyStepAnTargetView()" [disabled]="showGrouped">
+                    <i class="far fa-object-group" style="width: 16px;" matTooltip="Show grouped by Step and Target."
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></i>
+                </button>
+                <button class="btn btn-primary button-icon-medium ml-1" type="button" (click)="groupbyStepView()"
+                    [disabled]="!showGrouped">
+                    <i class="far fa-object-ungroup" style="width: 16px;" matTooltip="Show grouped by Step only."
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></i>
+                </button>
+            </div>
+            <div class="col-auto align-self-center">
+                <button class="btn btn-primary" type="button" [disabled]="!log" (click)="runAgain()">Run
+                    again</button>
             </div>
         </div>
         <hr class="mt-2">
         <!-- End Header -->
         <mat-accordion multi displayMode="default" togglePosition="before" #accordion>
-            <mat-expansion-panel *ngFor="let step of log.executionSteps; let i=index" 
+            <mat-expansion-panel *ngFor="let step of log.executionSteps; let i=index"
                 [expanded]="i == (log.executionSteps.length - 1)">
                 <mat-expansion-panel-header class="step-header">
                     <mat-panel-title class="align-items-baseline justify-content-between">
@@ -64,13 +61,13 @@
                             <span [ngClass]="{
                                 'item-disabled': !step.scriptEnabled 
                             }" class="icon-binoculars-after-mini" matTooltip="{{getStepDetails(i)}}"
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
-                            {{ getStepName(step.stepName) }}</span>
+                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                                {{ getStepName(step.stepName) }}</span>
                         </div>
                         <div *ngIf="step.startedAt" class="text-subtle">
                             <i class="fas fa-stopwatch"></i>
                             <span matTooltip="{{getDurationDetails(step, false)}}"
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
                                 {{getDurationDetails(step)}}</span>
                         </div>
                     </mat-panel-title>
@@ -91,12 +88,13 @@
                             <mat-expansion-panel-header class="target-header">
                                 <mat-panel-title class="align-items-baseline justify-content-between">
                                     <div>
-                                        <app-status-icon size="small" iconStyle="dark" [status]="target.status" class="mr-2">
+                                        <app-status-icon size="small" iconStyle="dark" [status]="target.status"
+                                            class="mr-2">
                                         </app-status-icon>
-                                        <span style="padding-top: 1px"  [ngClass]="{
-                                            'item-disabled': target.status == 'SKIPPED' }">{{target.name}}&nbsp;({{target.FQDN}})</span>
-                                        <i class="fas ml-2 text-mini" 
+                                        <span style="padding-top: 1px"
                                             [ngClass]="{
+                                            'item-disabled': target.status == 'SKIPPED' }">{{target.name}}&nbsp;({{target.FQDN}})</span>
+                                        <i class="fas ml-2 text-mini" [ngClass]="{
                                                 'fa-binoculars': target.status == 'SKIPPED' }"
                                             matTooltip="The target was disabled or deleted at the moment of the execution."
                                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
@@ -104,13 +102,14 @@
                                     <div *ngIf="target.startedAt" class="text-subtle">
                                         <i class="fas fa-stopwatch"></i>
                                         <span matTooltip="{{getDurationDetails(target, false)}}"
-                                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
                                             {{getDurationDetails(target)}}</span>
                                     </div>
                                 </mat-panel-title>
                             </mat-expansion-panel-header>
                             <div class="content-container">
-                                <i class="fas fa-th-list fa-2x pb-2" matTooltip="Below the data returned by the script invocation."
+                                <i class="fas fa-th-list fa-2x pb-2"
+                                    matTooltip="Below the data returned by the script invocation."
                                     matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                                 <div *ngIf="getResults(step, target).length == 0; else withResults">
                                     <div class="alert fade show alert-info mb-0" role="alert">
@@ -118,7 +117,8 @@
                                     </div>
                                 </div>
                                 <ng-template #withResults>
-                                    <app-dynamic-table [data]="getResults(step, target)" [show-filter]="getResults(step, target).length > 5">
+                                    <app-dynamic-table [data]="getResults(step, target)"
+                                        [show-filter]="getResults(step, target).length > 5">
                                     </app-dynamic-table>
                                 </ng-template>
                             </div>
@@ -127,8 +127,8 @@
                                     <i class="fas fa-bug fa-2x py-2"
                                         matTooltip="Below the errors returned by the script during the invocation."
                                         matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                                    <app-dynamic-table [data]="target.execErrors" [show-filter]="false" excluded-fields="stack"
-                                        class="errors-header"></app-dynamic-table>
+                                    <app-dynamic-table [data]="target.execErrors" [show-filter]="false"
+                                        excluded-fields="stack" class="errors-header"></app-dynamic-table>
                                 </div>
                             </div>
                         </mat-expansion-panel>
@@ -138,7 +138,8 @@
                 <!-- Ungrouped section starts -->
                 <ng-template #showContinuous>
                     <div class="content-container">
-                        <i class="fas fa-th-list fa-2x pb-2" matTooltip="Below the data returned by the script invocation in all the targets."
+                        <i class="fas fa-th-list fa-2x pb-2"
+                            matTooltip="Below the data returned by the script invocation in all the targets."
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
                         <div *ngIf="getResults(step).length == 0; else withContinuousResults">
                             <div class="alert fade show alert-info mb-0" role="alert">
@@ -155,8 +156,7 @@
                             <i class="fas fa-bug fa-2x py-2"
                                 matTooltip="Below the errors returned by any of the targets."
                                 matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                            <app-dynamic-table [data]="allErrors" [show-filter]="false" 
-                                [excluded-fields]="['stack']"
+                            <app-dynamic-table [data]="allErrors" [show-filter]="false" [excluded-fields]="['stack']"
                                 column-order="Target Name" class="errors-header"></app-dynamic-table>
                         </div>
                     </div>
