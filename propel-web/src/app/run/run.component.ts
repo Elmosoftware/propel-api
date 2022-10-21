@@ -33,15 +33,20 @@ export class RunComponent implements OnInit {
   get currentContext(): ExecutionStats {
     let ret: ExecutionStats;
 
-    if (this.hasMessages && this.model.length > 0 &&
-      this.model[this.model.length - 1].context !== undefined) {
+    if (this.hasMessages && this.model[this.model.length - 1].context !== undefined) {
       ret = this.model[this.model.length - 1].context!;
     }
     else {
       ret = new ExecutionStats();
     }
-
+    
     return ret;
+  }
+
+  get executionPercentage(): number {
+    if (this.currentContext.totalSteps == 0) return 0
+    if (this.currentContext.logId) return 100 //If we have a logId, means the execution is done!
+    return Math.trunc(Math.abs(((this.currentContext.currentStep - 1)/this.currentContext.totalSteps)*100))
   }
 
   get currentStepName(): string {
@@ -78,9 +83,6 @@ export class RunComponent implements OnInit {
     this.core.setPageTitle(this.route.snapshot.data);
     this.model = [];
 
-    // if (this.route.snapshot.queryParamMap.get("conf")) {
-    //   this.confirmationRequired = (this.route.snapshot.queryParamMap.get("conf").toLowerCase() == "true") ? true : false;
-    // }
     this.confirmationRequired = (this.route.snapshot.queryParamMap.get("conf") ?? "")
       .toLowerCase() == "true" ? true : false;
 

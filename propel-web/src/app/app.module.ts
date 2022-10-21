@@ -84,6 +84,7 @@ import { SecurityService } from '../services/security.service';
 import { AuthenticationCodeComponent } from './authentication-code/authentication-code.component';
 import { LoginComponent } from './login/login.component';
 import { SecurityGuard } from '../services/security-guard';
+import { CoolSpinerComponent } from './cool-spiner/cool-spiner.component';
 
 @NgModule({
     declarations: [
@@ -122,7 +123,8 @@ import { SecurityGuard } from '../services/security-guard';
         UserAccountComponent,
         SearchUserAccountLineComponent,
         AuthenticationCodeComponent,
-        LoginComponent
+        LoginComponent,
+        CoolSpinerComponent
     ],
     imports: [
         BrowserModule,

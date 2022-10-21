@@ -1,0 +1,35 @@
+.spinner-custom mat-progress-spinner:nth-child(1) {
+    position: relative !important;
+    left: -2px !important;
+}
+
+.spinner-custom mat-progress-spinner:nth-child(2) {
+    position: relative !important;
+    display:initial;
+    top: -56px !important;
+}
+
+.spinner-custom mat-progress-spinner:nth-child(1) > svg > circle {
+    animation-duration: 12000ms !important;
+    -webkit-animation-duration: 12000ms !important;
+}
+
+.spinner-custom mat-progress-spinner:nth-child(2) > svg > circle {
+    fill: var(--colors-disabled);
+}
+
+.spinner-custom {
+    max-height: 59px;
+    max-width: 59px;
+}
+
+.spinner-custom div {
+    position: relative;
+    top: -44px;
+    left: 2px;
+    max-width: 50px;
+    min-width: 50px;
+    font-weight: 500;
+    font-size: 1.25rem;
+    color: var(--colors-white);
+}

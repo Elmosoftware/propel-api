@@ -591,14 +591,18 @@
         <p class="my-3"><strong>
             <h5>Cool spinner with text:</h5>
           </strong></p>
-        <div class="spinner-custom">
-          <mat-progress-spinner [mode]="rangeMode" value="100" color="accent" diameter="84" strokeWidth="3">
-          </mat-progress-spinner>
-          <mat-progress-spinner mode="determinate" [value]="rangeValue" color="accent" diameter="80" strokeWidth="10">
-          </mat-progress-spinner>
-          <div class="text-center">{{rangeValue}}%</div>
+        <div class="container-fluid mt-2">
+          <div class="row mt-2">
+            <div class="d-flex">
+              <app-cool-spiner [percentage]="rangeValue"></app-cool-spiner>
+              <span class="title overflowEllipsis align-self-center ml-2">This is some text</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12 subtitle d-block d-md-none">some other text below</div>
+          </div>
         </div>
-        <input type="range" min=0 max=100 [(ngModel)]="rangeValue">
+        <input type="range" min=-20 max=120 [(ngModel)]="rangeValue">Value:{{rangeValue}}
       </div>
 
       <div>
@@ -741,8 +745,8 @@
             <label class="mr-2" for="multipleSelectWithNew">Multiple values allowing to add new ones</label>
             <ng-select [items]="sampleData.textList" [multiple]="true" labelForId="multipleSelectWithNew"
               [closeOnSelect]="false" [clearSearchOnAdd]="true" [searchable]="true" clearAllText="Clear"
-              [compareWith]="compareFn" placeholder="Select all the text" 
-              formControlName="textList" class="send-to-back" #MyNGSelectWithNew>
+              [compareWith]="compareFn" placeholder="Select all the text" formControlName="textList"
+              class="send-to-back" #MyNGSelectWithNew>
               <ng-template ng-footer-tmp>
                 <div class="cursor-pointer" (click)="createNewItem()">
                   <i class="fas fa-plus mr-2"></i>Add a new item

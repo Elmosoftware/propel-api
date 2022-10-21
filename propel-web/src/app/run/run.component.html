@@ -14,16 +14,22 @@
             </button>
         </div>
     </div>
-    <div *ngIf="currentContext.workflowName" class="row mt-2">
-        <div class="col-11">
-            <div class="row">
-                <div class="col-12">
-                    <app-status-icon size="big" [status]="workflowStatus" tooltipText="Workflow status"
-                    class="mr-2"></app-status-icon>
-                    <span class="title overflowEllipsis align-bottom">{{ currentContext.workflowName }}</span>
+    <div *ngIf="currentContext.workflowName" class="mt-2">
+        <div class="row">
+            <div class="d-flex">
+                <div *ngIf="executionPercentage > 0 else altIcon" class="d-flex">
+                    <app-cool-spiner [percentage]="executionPercentage" 
+                    class="align-self-center ml-2"></app-cool-spiner>
                 </div>
-                <div class="col-12 subtitle d-block d-md-none">{{ statusMessage }}</div>
+                <ng-template #altIcon>
+                    <app-status-icon size="big" [status]="workflowStatus" tooltipText="Workflow status"
+                    class="align-self-center ml-2"></app-status-icon>
+                </ng-template>
+                <span class="title overflowEllipsis align-self-center ml-2">{{ currentContext.workflowName }}</span>
             </div>
+        </div>
+        <div class="row">
+            <div class="col-12 subtitle d-block d-md-none">{{ statusMessage }}</div>
         </div>
     </div>
     <div class="row mt-2">
