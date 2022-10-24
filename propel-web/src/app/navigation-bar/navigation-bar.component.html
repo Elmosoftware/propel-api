@@ -110,7 +110,7 @@
           <span class="icon-users-mini menu-icon"></span>
           <span>Manage Users</span>
         </a>
-        <div *ngIf="!isLegacySecurityEnabled" (click)="doNotPropagate($event)">
+        <div *ngIf="!isUserLoggedIn && !isLegacySecurityEnabled" (click)="doNotPropagate($event)">
           <div class="dropdown-divider menu-divider-line"></div>
           <a class="dropdown-item" href="javascript:void(0)" (click)="goToLogin()">
             <span class="icon-login-mini menu-icon"></span>
