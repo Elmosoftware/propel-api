@@ -11,7 +11,7 @@
                     </button>
                     <button class="btn btn-danger button-icon-medium" type="button" (click)="remove(item)"
                         matTooltip="Delete this workflow. Watch out!, this operation can't be undone."
-                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -31,7 +31,7 @@
         <div class="d-flex justify-content-end">
             <span class="text-subtle description" [innerHtml]="getLastUpdate(item)"
             [matTooltip]="getLastUpdateTooltip(item)"
-            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
+            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="left"></span>
         </div>
     </li>
 </ul>

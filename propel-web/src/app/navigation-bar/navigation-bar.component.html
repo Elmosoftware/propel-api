@@ -1,7 +1,7 @@
 <nav *ngIf="showNavBar" class="navbar navbar-expand-md navbar-dark bg-dark">
   <div *ngIf="previousPage">
     <button type="button" class="btn btn-primary button-icon-medium back-button"
-      [matTooltip]="getPreviousPageTooltipMessage()" matTooltipPosition="right" 
+      [matTooltip]="getPreviousPageTooltipMessage()" matTooltipPosition="above" 
       matTooltipClass="tooltipsWithBreakLines"
       (click)="goBackInHistory()">
       <i class="fas fa-arrow-left"></i>
@@ -63,7 +63,7 @@
         id="dropdown02">
         <div *ngIf="isUserLoggedIn && !isLegacySecurityEnabled; else noUser" class="text-circle text-circle-mini user-initials"
         [matTooltip]="userName" matTooltipClass="tooltipsWithBreakLines"
-        matTooltipPosition="left">
+        matTooltipPosition="below">
           {{userInitials}}
         </div>
         <ng-template #noUser>

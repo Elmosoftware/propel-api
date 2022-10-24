@@ -42,14 +42,14 @@
                         class="btn button-icon-small icon-edit-subtle ml-2"
                         type="button" (click)="goToEditWorkflow(item.log.workflow._id)" 
                         [matTooltip]="getWorkflowNameTooltip(item)"
-                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
                     </button>
                 </div>
                 <div class="row">
                     <div class="col-auto text-subtle">
                         <div [matTooltip]="getTimeStampTooltip(item)" 
                             matTooltipClass="tooltipsWithBreakLines"
-                            matTooltipPosition="above" [innerHtml]="getTimeStamp(item)"></div>
+                            matTooltipPosition="right" [innerHtml]="getTimeStamp(item)"></div>
                     </div>
                     <div class="col-auto ml-auto text-subtle">
                         <div class="mx-2 d-inline" [matTooltip]="item.durationTooltip"

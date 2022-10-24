@@ -50,11 +50,17 @@
               (cdkDragReleased)="dragReleased($event)">
                 <td>
                     <div class="d-flex drag-drop-cursor">
-                        <div class="d-flex justify-content-center align-items-center mr-2" cdkDragHandle>
+                        <div class="d-flex justify-content-center align-items-center mr-2" 
+                        matTooltip="Click and drag to change the order of this step." 
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+                        cdkDragHandle>
                             <i class="fas fa-ellipsis-v"></i>
                             <i class="fas fa-ellipsis-v"></i>
                         </div>
-                        <button class="btn btn-primary button-icon-medium" type="button" (click)="removeStep(i)">
+                        <button class="btn btn-primary button-icon-medium" type="button" 
+                            matTooltip="Delete this step." 
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+                            (click)="removeStep(i)">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -63,7 +69,10 @@
                 <td>
                     <div class="form-group">
                         <div class="d-flex justify-content-center align-items-center">
-                            <div class="d-flex justify-content-center">
+                            <div class="d-flex justify-content-center" 
+                                matTooltip="If the step is disabled, it will not run 
+                                during Workflow execution."
+                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
                                 <mat-slide-toggle color="primary" formControlName="enabled">
                                 </mat-slide-toggle>
                             </div>
