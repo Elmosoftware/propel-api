@@ -35,12 +35,11 @@
             <table class="table">
             <thead>
               <tr>
-                <th scope="col" class="no-wrap-headers">&nbsp;</th>
-                <th scope="col" class="no-wrap-headers">#</th>
-                <th scope="col" class="no-wrap-headers">Enabled</th>
-                <th scope="col" class="no-wrap-headers">Name</th>
-                <th scope="col" class="no-wrap-headers">Details</th>
-                <th scope="col" class="no-wrap-headers">If Step fails&hellip;</th>
+                <th scope="col" class="no-wrap-headers text-center">&nbsp;</th>
+                <th scope="col" class="no-wrap-headers text-center">#</th>
+                <th scope="col" class="no-wrap-headers text-center">Enabled</th>
+                <th scope="col" class="no-wrap-headers text-center">Name</th>
+                <th scope="col" class="no-wrap-headers text-center">If Step fails&hellip;</th>
               </tr>
             </thead>
             <tbody formArrayName="steps" cdkDropList (cdkDropListDropped)="drop($event)"
@@ -68,20 +67,14 @@
                 <td>{{i + 1}}</td>
                 <td>
                     <div class="form-group">
-                        <div class="d-flex justify-content-center align-items-center">
-                            <div class="d-flex justify-content-center" 
-                                matTooltip="If the step is disabled, it will not run 
-                                during Workflow execution."
-                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
-                                <mat-slide-toggle color="primary" formControlName="enabled">
-                                </mat-slide-toggle>
-                            </div>
-                        </div>
+                        <mat-slide-toggle color="primary" formControlName="enabled" 
+                        matTooltip="If the step is disabled, it will be skipped during Workflow execution." 
+                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                        </mat-slide-toggle>
                     </div>
                 </td>
-                <td><a href="javascript:void(0)" (click)="editStep(i)">{{getStepName(i)}}</a></td>
-                <td>{{getStepDetails(i)}}&hellip;&nbsp;
-                    <i class="fas fa-binoculars" matTooltip="{{getStepDetails(i, true)}}" 
+                <td><a href="javascript:void(0)" (click)="editStep(i)" class="text-mini mr-2">
+                    {{getStepName(i)}}</a><i class="fas fa-binoculars" matTooltip="{{getStepDetails(i, true)}}" 
                     matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i></td>
                 <td>
                     <div class="form-group">
