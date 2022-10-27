@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "luxon": "^3.0.4",
-    "nanoid": "^3.3.2",
+    "short-unique-id": "^4.4.4",
     "tslib": "^2.3.1"
   }
 }

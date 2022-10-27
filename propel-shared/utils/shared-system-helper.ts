@@ -1,11 +1,4 @@
-/**
- * IMPORTANT:
- * ==========
- *      There is an open [nanoid issue](https://github.com/ai/nanoid/issues/365) that is 
- * preventing v4 or above to work on Node.JS. Take this in mind at the moment of think in a 
- * possible migration.
- */
-import { nanoid } from "nanoid";
+import ShortUniqueId from "short-unique-id";
 import { DateTime } from "luxon";
 
 import { PropelError } from "../core/propel-error";
@@ -27,7 +20,8 @@ export class SharedSystemHelper {
      * Returns a short and unique identifier.
      */
      static getUniqueId(length: number = DEFAULT_ID_LENGTH): string{
-        return nanoid(length);
+        let uid = new ShortUniqueId({ length: length})
+        return uid();
     }
 
     /**
