@@ -2,6 +2,7 @@
 
 # folder specifics
 !/installer/*.ps1
+!/cutover/*.*
 /shell
 
 # compiled output

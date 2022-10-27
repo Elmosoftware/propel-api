@@ -4,6 +4,7 @@ var db;
 var collection;
 var counter = 0;
 var sep = "\r\n\r\n" + "=".repeat(60);
+var patchResult = null
 
 try {
     print(`\r\nAuthenticating...`);
@@ -27,6 +28,7 @@ try {
     counter = 0;
 
     collection.find().forEach((doc) => {
+
         print(`Reviewing "${doc.name}", ("${doc._id.toString()}")`)
         let alreadyPatched = true;
 
@@ -36,7 +38,8 @@ try {
         }
 
         if (!alreadyPatched) {
-            collection.save(doc);
+            patchResult = collection.replaceOne({ _id: ObjectId(doc._id.toString()) }, doc)
+            console.log(JSON.stringify(patchResult))
             counter++;
             print(` -> Script category was removed.`)
         }
@@ -46,8 +49,8 @@ try {
     });
     print(`\r\n${counter} entries patched on collection "Scripts".\r\n`)
 
-//-----------------------------------------------------------------
-    
+    //-----------------------------------------------------------------
+
     print(`\r\nPatching Targets collection.\r\n`)
     collection = db.getCollection("Targets");
     counter = 0;
@@ -62,7 +65,8 @@ try {
         }
 
         if (!alreadyPatched) {
-            collection.save(doc);
+            patchResult = collection.replaceOne({ _id: ObjectId(doc._id.toString()) }, doc)
+            console.log(JSON.stringify(patchResult))
             counter++;
             print(` -> Target groups were removed.`)
         }
@@ -70,7 +74,7 @@ try {
             print(` -> No Target groups defined or no patching required.`)
         }
     });
-    print(`\r\n${counter} entries patched on collection "Scripts".\r\n`)
+    print(`\r\n${counter} entries patched on collection "Targets".\r\n`)
 
     //-----------------------------------------------------------------
 
@@ -88,7 +92,8 @@ try {
         }
 
         if (!alreadyPatched) {
-            collection.save(doc);
+            patchResult = collection.replaceOne({ _id: ObjectId(doc._id.toString()) }, doc)
+            console.log(JSON.stringify(patchResult))
             counter++;
             print(` -> Workflow category was removed.`)
         }

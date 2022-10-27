@@ -3,6 +3,7 @@ var del = require("del");
 var rename = require("gulp-rename");
 
 const API_FOLDER_NAME = "propel-api"
+const SHARED_FOLDER_NAME = "propel-shared"
 const API_PSSCRIPTS_FOLDER_NAME = "ps-scripts"
 const WEB_FOLDER_NAME = "propel-web"
 const SHELL_FOLDER_NAME = "propel-shell"
@@ -11,6 +12,7 @@ const DIST_FOLDER_NAME = "dist"
 var folders = {
     src: {
         api: `../${API_FOLDER_NAME}`,
+        shared: `../${SHARED_FOLDER_NAME}`,
         apiDist: `../${API_FOLDER_NAME}/dist`,
         apiPSScripts: `../${API_FOLDER_NAME}/${API_PSSCRIPTS_FOLDER_NAME}`,
         web: `../${WEB_FOLDER_NAME}`,
@@ -23,6 +25,7 @@ var folders = {
     dest: {
         dist: DIST_FOLDER_NAME,
         api: `${DIST_FOLDER_NAME}/${API_FOLDER_NAME}`,
+        shared: `${DIST_FOLDER_NAME}/${SHARED_FOLDER_NAME}`,
         apiPSScripts: `${DIST_FOLDER_NAME}/${API_FOLDER_NAME}/${API_PSSCRIPTS_FOLDER_NAME}`,
         web: `${DIST_FOLDER_NAME}/${WEB_FOLDER_NAME}`,
         shell: `${DIST_FOLDER_NAME}/${SHELL_FOLDER_NAME}`
@@ -57,6 +60,12 @@ gulp.task("copyPropelAPIPackageDefinitionFiles", function () {
     console.log(`Copying package definition files from "${folders.src.api}" to "${folders.dest.api}".`);
     return gulp.src(`${folders.src.api}/package*.*`)
         .pipe(gulp.dest(folders.dest.api));
+});
+
+gulp.task("copyPropelSharedPackageDefinitionFiles", function () {
+    console.log(`Copying package definition files from "${folders.src.shared}" to "${folders.dest.shared}".`);
+    return gulp.src(`${folders.src.shared}/package*.*`)
+        .pipe(gulp.dest(folders.dest.shared));
 });
 
 gulp.task("copyServiceInstallationScripts", function () {
@@ -97,6 +106,7 @@ gulp.task("productionBuild", gulp.series(
     "copyPropelAPIAdditionalFiles",
     "copyPropelAPIProdEnvFile",
     "copyPropelAPIPackageDefinitionFiles",
+    "copyPropelSharedPackageDefinitionFiles",
     "copyServiceInstallationScripts",
     "copyDBMigrationScripts",
     "copyInstallerScripts",

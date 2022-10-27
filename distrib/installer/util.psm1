@@ -6,6 +6,7 @@
 $cfg = [pscustomobject]@{ `
 	    "installationFolder" = "C:\Propel"; 
         "installerFolder" = (Get-Location).Path;
+        "SharedFolder" = "propel-shared";
         "APIFolder" = "propel-api";
         "APIConfigFile" = ".env";
         "shellFolder" = "propel-shell";
@@ -308,7 +309,7 @@ function ConfigurationOptions() {
 }
 Export-ModuleMember -Function "ConfigurationOptions"
 
-function InstallPackages() {
+function InstallAPIPackages() {
     
     $LASTEXITCODE = 0
 
@@ -331,7 +332,31 @@ function InstallPackages() {
 
     return $LASTEXITCODE
 }
-Export-ModuleMember -Function "InstallPackages"
+Export-ModuleMember -Function "InstallAPIPackages"
+function InstallSharedPackages() {
+    
+    $LASTEXITCODE = 0
+
+    try {
+        [console]::ForegroundColor = "DarkGray"  
+        #Changing working dir to the API folder:
+        Set-Location -Path ($cfg.installationFolder + "\" + $cfg.SharedFolder)
+        $LASTEXITCODE = (Start-Process -FilePath "npm"`
+            -Wait `
+            -NoNewWindow `
+            -PassThru `
+            -ArgumentList "install").ExitCode   
+        #Changing back to the installer folder:
+        Set-Location -Path $cfg.installerFolder
+        [console]::ForegroundColor = "White"
+    }
+    catch {
+        $LASTEXITCODE = 1
+    }
+
+    return $LASTEXITCODE
+}
+Export-ModuleMember -Function "InstallSharedPackages"
 
 function InstallShell() {
 
@@ -414,7 +439,7 @@ If you select "No" the installation process will be aborted.
         if($LASTEXITCODE -eq 0) {
             Util.Msg ("Executing """ + $_.Name + """ ... -> " + ($LASTEXITCODE).ToString()) 
             [console]::ForegroundColor = "DarkGray"    
-            $LASTEXITCODE = (Start-Process -FilePath "mongo" `
+            $LASTEXITCODE = (Start-Process -FilePath "mongosh" `
                 -Wait `
                 -NoNewWindow `
                 -ArgumentList $evalParam, $_.Name `

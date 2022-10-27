@@ -24,7 +24,7 @@ try {
             mongosh --eval "var adu='Admin user name here'; var adp='Admin password here';apu='Regular user name here'; var app='Regular user password here';" myscript.js
     */
     db.auth(adu, adp);
-    
+
     print(`\r\n===============================================`)
     print(`\r\n      DB Creation/Updates Script`)
     print(`\r\n===============================================`)
@@ -35,251 +35,299 @@ try {
      * ExecutionLog
      */
     collName = "ExecutionLogs"
-    print(`\n------------------------------------------------\nAdding collection "${collName}"`)
-    db.createCollection(collName);
 
-    print(`Creating indexes.`)
-    coll = db.getCollection(collName);
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
 
-    coll.createIndex({
-        _id: 1,
-        deletedOn: 1
-    }, {
-        name: "IU_EntityConstraint",
-        unique: true,
-        background: true
-    })
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
 
-    coll.createIndex({
-        startedAt: 1
-    }, {
-        name: "I_StartedAt",
-        background: true,
-        expireAfterSeconds: 2592000  //1 month
-    })
-    showIndexes(coll);
+        coll.createIndex({
+            _id: 1,
+            deletedOn: 1
+        }, {
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
+
+        coll.createIndex({
+            startedAt: 1
+        }, {
+            name: "I_StartedAt",
+            background: true,
+            expireAfterSeconds: 2592000  //1 month
+        })
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
 
     /**
      * Session
      */
     collName = "UserSessions"
-    print(`\n------------------------------------------------\nAdding collection "${collName}"`)
-    db.createCollection(collName);
 
-    print(`Creating indexes.`)
-    coll = db.getCollection(collName);
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
 
-    coll.createIndex({
-        _id: 1,
-        deletedOn: 1
-    }, {
-        name: "IU_EntityConstraint",
-        unique: true,
-        background: true
-    })
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
 
-    coll.createIndex({
-        sessionStartsAt: 1
-    }, {
-        name: "I_SessionStartsAt",
-        background: true,
-        expireAfterSeconds: 2592000  //1 month
-    })
-    showIndexes(coll);
+        coll.createIndex({
+            _id: 1,
+            deletedOn: 1
+        }, {
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
+
+        coll.createIndex({
+            sessionStartsAt: 1
+        }, {
+            name: "I_SessionStartsAt",
+            background: true,
+            expireAfterSeconds: 2592000  //1 month
+        })
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
 
     /**
      * Scripts
      */
     collName = "Scripts"
-    print(`\n------------------------------------------------\nAdding collection "${collName}"`)
-    db.createCollection(collName);
 
-    print(`Creating indexes.`)
-    coll = db.getCollection(collName);
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
 
-    coll.createIndex({
-        name: 1,
-        deletedOn: 1
-    }, {
-        name: "IU_EntityConstraint",
-        unique: true,
-        background: true
-    })
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
 
-    coll.createIndex(
-        {
-            name: "text",
-            description: "text"
+        coll.createIndex({
+            name: 1,
+            deletedOn: 1
         }, {
-        name: "TEXT_Name_Description",
-        weights: {
-            name: 3,
-            description: 1
-        }
-    });
-    showIndexes(coll);
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
+
+        coll.createIndex(
+            {
+                name: "text",
+                description: "text"
+            }, {
+            name: "TEXT_Name_Description",
+            weights: {
+                name: 3,
+                description: 1
+            }
+        });
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
 
     /**
      * Targets
      */
     collName = "Targets"
-    print(`\n------------------------------------------------\nAdding collection "${collName}"`)
-    db.createCollection(collName);
 
-    print(`Creating indexes.`)
-    coll = db.getCollection(collName);
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
 
-    coll.createIndex({
-        FQDN: 1,
-        deletedOn: 1
-    }, {
-        name: "IU_EntityConstraint",
-        unique: true,
-        background: true
-    })
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
 
-    coll.createIndex(
-        {
-            friendlyName: "text",
-            description: "text"
+        coll.createIndex({
+            FQDN: 1,
+            deletedOn: 1
         }, {
-        name: "TEXT_FriendlyName_Description",
-        weights: {
-            friendlyName: 3,
-            description: 1
-        }
-    });
-    showIndexes(coll);
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
+
+        coll.createIndex(
+            {
+                friendlyName: "text",
+                description: "text"
+            }, {
+            name: "TEXT_FriendlyName_Description",
+            weights: {
+                friendlyName: 3,
+                description: 1
+            }
+        });
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
 
     /**
      * Workflows
      */
     collName = "Workflows"
-    print(`\n------------------------------------------------\nAdding collection "${collName}"`)
-    db.createCollection(collName);
 
-    print(`Creating indexes.`)
-    coll = db.getCollection(collName);
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
 
-    coll.createIndex({
-        name: 1,
-        deletedOn: 1
-    }, {
-        name: "IU_EntityConstraint",
-        unique: true,
-        background: true
-    })
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
 
-    coll.createIndex(
-        {
-            name: "text",
-            description: "text"
+        coll.createIndex({
+            name: 1,
+            deletedOn: 1
         }, {
-        name: "TEXT_Name_Description",
-        weights: {
-            name: 3,
-            description: 1
-        }
-    });
-    showIndexes(coll);
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
+
+        coll.createIndex(
+            {
+                name: "text",
+                description: "text"
+            }, {
+            name: "TEXT_Name_Description",
+            weights: {
+                name: 3,
+                description: 1
+            }
+        });
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
 
     /**
      * UserAccounts
      */
     collName = "UserAccounts"
-    print(`\n------------------------------------------------\nAdding collection "${collName}"`)
-    db.createCollection(collName);
 
-    print(`Creating indexes.`)
-    coll = db.getCollection(collName);
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
 
-    coll.createIndex({
-        name: 1,
-        deletedOn: 1
-    }, {
-        name: "IU_EntityConstraint",
-        unique: true,
-        background: true
-    })
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
 
-    coll.createIndex(
-        {
-            fullName: "text",
-            name: "text",
-            email: "text"
+        coll.createIndex({
+            name: 1,
+            deletedOn: 1
         }, {
-        name: "TEXT_FullName_Name_Email",
-        weights: {
-            fullName: 3,
-            name: 2,
-            email: 1
-        }
-    });
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
 
-    coll.createIndex({
-        email: 1
-    }, {
-        name: "IU_Email",
-        unique: true,
-        background: true
-    })
-    
-    showIndexes(coll);
+        coll.createIndex(
+            {
+                fullName: "text",
+                name: "text",
+                email: "text"
+            }, {
+            name: "TEXT_FullName_Name_Email",
+            weights: {
+                fullName: 3,
+                name: 2,
+                email: 1
+            }
+        });
+
+        coll.createIndex({
+            email: 1
+        }, {
+            name: "IU_Email",
+            unique: true,
+            background: true
+        })
+
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
 
     /**
      * Credentials
      */
-     collName = "Credentials"
-     print(`\n------------------------------------------------\nAdding collection "${collName}"`)
-     db.createCollection(collName);
- 
-     print(`Creating indexes.`)
-     coll = db.getCollection(collName);
- 
-     coll.createIndex({
-         name: 1,
-         deletedOn: 1
-     }, {
-         name: "IU_EntityConstraint",
-         unique: true,
-         background: true
-     })
- 
-     coll.createIndex(
-         {
-             name: "text",
-             description: "text"             
-         }, {
-         name: "TEXT_Name_Description",
-         weights: {
-             name: 3,
-             description: 1
-         }
-     });
-     showIndexes(coll);
+    collName = "Credentials"
 
-     /**
-     * Secrets
-     */
-      collName = "Secrets"
-      print(`\n------------------------------------------------\nAdding collection "${collName}"`)
-      db.createCollection(collName);
-  
-      print(`Creating indexes.`)
-      coll = db.getCollection(collName);
-  
-      coll.createIndex({
-          _id: 1,
-          deletedOn: 1
-      }, {
-          name: "IU_EntityConstraint",
-          unique: true,
-          background: true
-      })
-      showIndexes(coll);
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
+
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
+
+        coll.createIndex({
+            name: 1,
+            deletedOn: 1
+        }, {
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
+
+        coll.createIndex(
+            {
+                name: "text",
+                description: "text"
+            }, {
+            name: "TEXT_Name_Description",
+            weights: {
+                name: 3,
+                description: 1
+            }
+        });
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
+    
+
+    /**
+    * Secrets
+    */
+    collName = "Secrets"
+
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
+
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
+
+        coll.createIndex({
+            _id: 1,
+            deletedOn: 1
+        }, {
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
 
     print(`\nScript have been finished.\n===============================================`)
-
 } catch (error) {
     print(`\r\nTHERE WAS AN ERROR: The Database migration process didn't finish successfully.\nError details:${error}\n`)
     throw error

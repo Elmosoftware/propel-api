@@ -40,8 +40,13 @@ if((Util.ConfigurationOptions) -ne 0) {
     Util.ExitByPressingKey "There was an error while configuring Propel. The process can not continue."
 }
 
-Util.Msg "Installing packages..."
-if((Util.InstallPackages) -ne 0) {
+Util.Msg "Installing API packages..."
+if((Util.InstallAPIPackages) -ne 0) {
+    Util.ExitByPressingKey "There was an error during packages installation. The process can not continue."
+}
+
+Util.Msg "Installing Shared packages..."
+if((Util.InstallSharedPackages) -ne 0) {
     Util.ExitByPressingKey "There was an error during packages installation. The process can not continue."
 }
 

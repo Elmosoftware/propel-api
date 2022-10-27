@@ -3,6 +3,7 @@
   "name": "propel-web",
   "version": "2.1.0",
   "description": "Propel Frontend",
+  "main": "main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -52,6 +53,7 @@
     "@types/stopword": "^2.0.0",
     "electron": "^10.4.7",
     "electron-builder": "^22.11.7",
+    "gulp": "^4.0.2",
     "jasmine-core": "~4.3.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",
