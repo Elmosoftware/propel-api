@@ -60,6 +60,32 @@ param (
 #endregion
 
 #region Private Methods
+
+function GetLongerText {
+    param (
+        [int32]$Index
+    )
+
+    [int32]$i = 0
+
+    if ($Index % 5 -eq 0) {
+        $i = 4
+    }
+    elseif ($Index % 4 -eq 0) {
+        $i = 3
+    }
+    elseif ($Index % 3 -eq 0) {
+        $i = 2
+    }
+    elseif ($Index % 2 -eq 0) {
+        $i = 1
+    }
+    else {
+        $i = 0
+    } 
+
+    return $longerText[$i]
+}
 	
 #endregion
 
@@ -75,10 +101,36 @@ param (
 
 $columnList = @( "Result Nbr", "Name", "Duration", "Longer Text", "Current Date", "This Machine", "Culture", "Date Time Format");
 
-$longerText = @"
+$longerText = @(
+#0
+@"
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam vitae tellus enim. 
+Donec sollicitudin, est eu posuere tempus, velit ipsum semper ligula, at gravida metus 
+metus non diam. 
+"@,  
+#1
+@"
+Aenean pellentesque, metus ac ultricies interdum, mi ligula venenatis neque, a eleifend mi 
+arcu ac turpis. Praesent rhoncus nibh ut sagittis finibus. Proin suscipit fermentum massa 
+quis bibendum.
+"@,
+#2
+@"
 Donec adipiscing tristique risus nec feugiat in fermentum posuere. Vulputate ut pharetra sit amet. 
 In hendrerit gravida rutrum quisque non tellus orci.
+"@,
+#3
+@"
+Praesent nulla sapien, molestie hendrerit pretium at, tempus eget ligula. Donec pellentesque, 
+lacus a iaculis ornare, eros eros varius metus, sed faucibus elit odio nec odio.
+"@,
+#4
+@"
+Morbi eget lorem tempus sem aliquam faucibus. Donec in lectus elit. Nunc posuere risus et 
+lectus gravida cursus. Vestibulum varius nisl vel mauris iaculis gravida. 
+Mauris eu mi consectetur, ullamcorper nisi et, ultrices augue.
 "@
+)
 
 if($ShowMessages -eq $true) {
     Write-Output "Starting script execution ..."
@@ -126,7 +178,7 @@ if($ResultType -eq "JSON") {
             "Result Nbr" = $i; 
             "Name" = "This is a name"; 
             "Duration" = $DurationSeconds; 
-            "Longer Text" = $longerText; 
+            "Longer Text" = GetLongerText -Index $i; 
             "Current Date" = (Get-Date).ToString(); 
             "This Machine" = $Env:ComputerName; 
             "Culture" = (Get-Culture).NativeName;
@@ -134,7 +186,7 @@ if($ResultType -eq "JSON") {
             })
     }
 
-    $columnList = ($columnList | Select -First $ColumnCount)
+    $columnList = ($columnList | Select-Object -First $ColumnCount)
 }
 else {
 
@@ -142,7 +194,7 @@ else {
         Write-Output "Adding TEXT results ..."
     }
 
-    $results = "This is a text result. plus a long text: $longerText"
+    $results = "This is a text result. plus a long text: " + $longerText[0]
 }
 
 Start-Sleep -Seconds $DurationSeconds
@@ -153,7 +205,7 @@ if($ResultType -eq "JSON") {
         Write-Output "Execution is done! Returning JSON results..."
     }
 
-    return $results | Select $columnList | ConvertTo-Json -Compress
+    return $results | Select-Object $columnList | ConvertTo-Json #-Compress
 }
 else {
 

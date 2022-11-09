@@ -714,7 +714,47 @@ class ParameterValueConverter {
 	}
 }
 
+===================================================================
+Regression Test:
+------------------
 
+Things to test in the pending areas
+
+- Credentials
+	- Create a credentials of each type in the User dropdown menu
+	- Browse the credentials
+	- Search the credentials
+	- Create a TestCredential script based on the current "Test-PropelCredentials" that shows 
+	the password too for testing purposes only.
+	- Select the credential in a Quick task that have selected a script with the $PropelCredentials 
+	parameter.
+
+- Workflows
+	- Create a workflow of 3 or more steps with different scripts.
+	- The the validations per each field
+	- Execute the workflow and check the results
+	- Disable first step and check the results
+	- Throw and error in 2nd step and check results
+	- Mark the 2nd step of the workflow to not abort if fails and check results.
+	- Change the steps order 2nd is now 1st, also remove the Throw error and check results.
+
+Changes on Scripts impacting Workflow execution.
+	Lets work now in the script for the 3rd step.
+	- Update the scrip to add and additional parameter with default value and run the workflow
+		The workflow must run successfully.
+	- Update the script in Propel removing the default value added in previous step and run the workflow
+		The workflow must fail.
+	- Fix the Workflow step by editing and adding the missing value and run again.
+		The workflow must run successfully again.
+	- Update the script in Propel removing the parameter added and run the script.
+		The workflow must fail.
+	- Delete the script and run the Workflow.
+		The workflow must fail saying the script doesn't exists.
+
+Other things to test:
+=========================
+Execution: Long duration, Heavy results (more than results quota), stop by Killing or in next step
+Script: Test the valid payloads (size and file types)
 
 
 

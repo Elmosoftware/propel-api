@@ -2,16 +2,9 @@
 #region Script Parameters
 #endregion
 
-#region External Modules
 <#
-    Recall that any module added here need to exist on remote server.
+    This is used for regression test.
 #>
-#endregion
-
-#region Private Methods
-
-#endregion
-
 
 $results = [pscustomobject]@{ `
 	    "User Domain" = $env:USERDOMAIN; `
