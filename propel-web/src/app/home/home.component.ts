@@ -10,6 +10,7 @@ import { GraphSeriesData } from '../../../../propel-shared/models/graph-series-d
 import { SecurityEvent } from 'src/services/security.service';
 import { Subscription } from 'rxjs';
 import { logger } from '../../../../propel-shared/services/logger-service';
+import { SecuritySharedConfiguration } from '../../../../propel-shared/core/security-shared-config';
 
 const TOP_RESULTS: number = 5;
 
@@ -45,7 +46,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           try {
             if (event == SecurityEvent.Login) {
               action = "Updated user stats in Home page."
-              this.userStats = await this.core.status.getUserStats();
+              this.userStats = await this.getUserStats();
             }
             else {
               action = "Clearing user stats in Home page."
@@ -128,6 +129,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.core.navigation.toGenericAPIKeyCredential();
   }
 
+  async getUserStats(): Promise<UsageStats | undefined>{
+
+    if (!this.core.security.isUserLoggedIn) return Promise.resolve(undefined);
+
+    let cfg: SecuritySharedConfiguration = await this.core.security.getConfig();
+
+    if (cfg.legacySecurity) return Promise.resolve(undefined);
+
+    return await this.core.status.getUserStats();
+  }
+
   async refreshData(): Promise<void> {
     try {
       this.loadingResults = true
@@ -135,7 +147,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       //If there is a user logged in and we don't get his stats yet:
       if (this.core.security.isUserLoggedIn && !this.userStats) {
-        this.userStats = await this.core.status.getUserStats();
+        this.userStats = await this.getUserStats();
       }
 
       this.loadingResults = false;
