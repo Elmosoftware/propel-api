@@ -75,13 +75,13 @@ export class SecurityService {
             ret.passwordMinLength = cfg.passwordMinLength;
             ret.passwordMaxLength = cfg.passwordMaxLength;
 
-            //////////////////////////////////////////////////
-            //DEBUG ONLY:
-            if (!cfg.isProduction) {
-                //Force legacy security for testing purposes:
-                ret.legacySecurity = true;
-            }
-            //////////////////////////////////////////////////
+            // //////////////////////////////////////////////////
+            // //DEBUG ONLY:
+            // if (!cfg.isProduction) {
+            //     //Force legacy security for testing purposes:
+            //     ret.legacySecurity = true;
+            // }
+            // //////////////////////////////////////////////////
         } catch (error) {
             return Promise.reject(error);
         }
