@@ -5,37 +5,22 @@
         <div class="capsule py-2 my-2 rounded cursor-pointer" matTooltip="Total amount of workflows created.
 Click here to browse them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"
             (click)="goToBrowseWorkflows()">
-            <i class="fas fa-list-ol mr-2"></i>{{stats.totalWorkflows}}
-            <button type="button" class="btn btn-primary button-circular-small button-circular-small-correction"
-                matTooltip="Create a new Workflow" matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
-                (click)="goToWorkflow()">
-                <i class="fas fa-plus"></i>
-            </button>
+            <i class="fas fa-tasks mr-2"></i>{{stats.totalWorkflows}}
         </div>
         <div class="capsule py-2 my-2 rounded cursor-pointer" matTooltip="Total amount of executions in the last month.
 Click here to check the execution history." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"
             (click)="goToHistory()">
-            <i class="fas fa-stopwatch mr-2"></i>{{stats.totalExecutions}}
+            <i class="fas fa-history mr-2"></i>{{stats.totalExecutions}}
         </div>
         <div class="capsule py-2 my-2 rounded cursor-pointer" matTooltip="Total of scripts already uploaded.
 Click here to take a look at them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"
             (click)="goToBrowseScripts()">
             <i class="fas fa-scroll mr-2"></i>{{stats.totalScripts}}
-            <button type="button" class="btn btn-primary button-circular-small button-circular-small-correction"
-                matTooltip="Add a new Script" matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
-                (click)="goToScript()">
-                <i class="fas fa-plus"></i>
-            </button>
         </div>
         <div class="capsule py-2 my-2 rounded cursor-pointer" matTooltip="Total number of targets registered.
 Click here to browse them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"
             (click)="goToBrowseTargets()">
-            <i class="fas fa-server mr-2"></i>{{stats.totalTargets}}
-            <button type="button" class="btn btn-primary button-circular-small button-circular-small-correction"
-                matTooltip="Register a new Target" matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
-                (click)="goToTarget()">
-                <i class="fas fa-plus"></i>
-            </button>
+            <i class="fas fa-hdd mr-2"></i>{{stats.totalTargets}}
         </div>
         <div class="capsule py-2 my-2 rounded cursor-pointer" matTooltip="Total number of credentials kept safe by Propel.
 Click here to browse them." (click)="goToBrowseCredentials()" matTooltipClass="tooltipsWithBreakLines"

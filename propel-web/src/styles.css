@@ -259,7 +259,7 @@ body{
 
 .icon-workflows::before {
     font-family: "Font Awesome 5 Free";
-    content: "\f0cb";
+    content: "\f0ae";
     font-weight: 900;
     font-size: 1rem;
 }
@@ -273,7 +273,7 @@ body{
 
 .icon-targets::before {
     font-family: "Font Awesome 5 Free";
-    content: "\f233";
+    content: "\f0a0";
     font-weight: 900;
     font-size: 1rem;
 }

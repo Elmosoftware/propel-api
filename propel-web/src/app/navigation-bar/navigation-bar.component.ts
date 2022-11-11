@@ -120,6 +120,12 @@ export class NavigationBarComponent implements OnInit {
     return this.core.security.isAccessGranted(this.core.navigation.pages.BrowseUserAccounts)
   }
 
+  get canAccessMoreItems(): boolean {
+    return this.canAccessTarget || this.canAccessScript || this.canAccessTarget 
+      || this.canAccessCredentials || this.canAccessUserAccount || this.canBrowseCredentials
+      || this.canBrowseUserAccounts
+  }
+
   get previousPage(): NavigationHistoryEntry | undefined {
     return this.core.navigation.previousPage;
   }
