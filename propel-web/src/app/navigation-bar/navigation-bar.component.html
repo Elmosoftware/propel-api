@@ -137,7 +137,7 @@
         </ng-template>
       </div>
       <div class="dropdown-menu dropdown-user" aria-labelledby="dropdown02">
-        <div *ngIf="!isUserLoggedIn && !isLegacySecurityEnabled" (click)="doNotPropagate($event)">
+        <div *ngIf="!isUserLoggedIn || (isUserLoggedIn && isLegacySecurityEnabled)" (click)="doNotPropagate($event)">
           <a class="dropdown-item" href="javascript:void(0)" (click)="goToLogin()">
             <span class="icon-login-mini menu-icon"></span>
             <span>Login</span>

@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { DialogResult } from 'src/core/dialog-result';
 import { environment } from 'src/environments/environment';
 
 import { CoreService } from 'src/services/core.service';
 import { NavigationHistoryEntry } from 'src/services/navigation.service';
+import { SecurityEvent } from 'src/services/security.service';
 import { SecuritySharedConfiguration } from '../../../../propel-shared/core/security-shared-config';
-import { CredentialTypes } from '../../../../propel-shared/models/credential-types';
 import { logger } from '../../../../propel-shared/services/logger-service';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
@@ -22,6 +23,7 @@ export class NavigationBarComponent implements OnInit {
 
   loading: boolean = false;
   searchTerm: string = "";
+  securityEventSubscription$!: Subscription;
   _isLegacy: boolean = false;
 
   get isBrowseWorkflowsPage(): boolean {
@@ -197,6 +199,19 @@ export class NavigationBarComponent implements OnInit {
         this._isLegacy = config.legacySecurity;
       }, (err) => {
         logger.logError(`Not able to get Security API configuration because of the following error: "${err.message}".`)
+      })
+    
+    //Need also to update the legacy indicator after each login:
+    this.securityEventSubscription$ = this.core.security.getSecurityEventSubscription()
+      .subscribe({
+        next: async (event: SecurityEvent) => {
+          try {
+            if (event == SecurityEvent.Login) {
+              this._isLegacy = (await this.core.security.getConfig()).legacySecurity;
+            }
+          } catch (error) {
+          }
+        }
       })
 
   }

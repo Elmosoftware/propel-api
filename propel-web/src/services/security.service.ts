@@ -228,16 +228,25 @@ export class SecurityService {
     /**
      * Tries to reconnect the user sessions. This usually involves the following:
      * 
+     *  -**If we are in Legacy security mode**: It will create a new access token for the "unknown" user.
+     * 
      *  -**If there is a refresh token**: It will try to refresh the session by returning a new 
      * access token for the user.
      * 
-     *  -**If we are in Legacy security mode**: It will create a new access token for the "unknown" user.
      * @returns A message indicating the status of the operation.
      */
     async tryReconnectSession(): Promise<string> {
         let config = await this.getConfig()
 
-        if (this._session.refreshToken) {
+        if (config.legacySecurity) {
+            try {
+                await this.login(new SecurityRequest());
+                return Promise.resolve("Legacy security is on. Login was successful.");
+            } catch (error: any) {
+                return Promise.reject(`There was an error trying to login with Legacy security: "${(error.message) ? error.message : JSON.stringify(error)}"`)
+            }
+        }
+        else if (this._session.refreshToken) {
             try {
                 await this.refreshAccessToken(new TokenRefreshRequest(this._session.refreshToken))
                 return Promise.resolve(`User session reconnected.`);
@@ -246,13 +255,6 @@ export class SecurityService {
                 return Promise.reject(error)
             }
         }
-        else if (config.legacySecurity)
-            try {
-                await this.login(new SecurityRequest());
-                return Promise.resolve("Legacy security is on. Login was successful.");
-            } catch (error: any) {
-                return Promise.reject(`There was an error trying to login with Legacy security: "${(error.message) ? error.message : JSON.stringify(error)}"`)
-            }
         else {
             return Promise.resolve("Legacy security is disabled and no refresh token was found. Session reconnection is not possible.");
         }
@@ -370,5 +372,16 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
                     this._securityEvent$.emit(SecurityEvent.Logoff);
                 })
             ));
+    }
+
+    /**
+     * Returns a boolean value that indicates if the security request is for a Login in 
+     * Legacy security mode, (no user data inside).
+     * @param req SecurityRequest to analyze
+     * @returns A boolean value that indicates if we are sending real user data or is just an 
+     * empty security request like used in Legacy Security mode.
+     */
+    private isLegacySecurityRequest(req: SecurityRequest): boolean {
+        return !req.userName && !req.password && !req.newPassword;
     }
 }

@@ -339,7 +339,12 @@ export class SecurityService {
 
         context.loginData.legacySecurity = config.legacySecurity;
 
-        if (context.loginData.legacySecurity) return Promise.resolve();
+        if (context.loginData.legacySecurity && !request.newPassword && 
+            !request.password && !request.userName) return Promise.resolve();
+
+        //If we are sending the User data, means that even when we maybe are in 
+        //Legacy security mode, this can be the first real user login!!!:
+        context.loginData.legacySecurity = false;
 
         if (!request?.userName || !request?.password) {
             throw new PropelError(`Bad format in the request body, we expect the user name and the user password. 
@@ -530,6 +535,7 @@ The one provided is ${(authCode) ? authCode.length.toString() + " char(s) long."
                 loginData.user!.lastLogin = new Date(); //Setting the first login date for the user... Hurray!!.
                 await context.saveUser(loginData.user!);
                 loginData.accessToken = context.createToken(loginData.user!, loginData.legacySecurity) //All ready to generate and return the token.
+                loginData.refreshToken = await context.createRefreshToken(loginData)
             }
             else {
                 throw new PropelError(`Wrong password supplied by ${loginData.user?.fullName} (${loginData.user?.name}), Login is denied.`,
