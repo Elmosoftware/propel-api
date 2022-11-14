@@ -205,7 +205,7 @@ if($ResultType -eq "JSON") {
         Write-Output "Execution is done! Returning JSON results..."
     }
 
-    return $results | Select-Object $columnList | ConvertTo-Json #-Compress
+    return $results | Select-Object $columnList | ConvertTo-Json -Compress
 }
 else {
 
