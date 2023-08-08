@@ -22,4 +22,12 @@
     "colorTabs.activityBarBackground": false,
     "colorTabs.titleLabel": true,
     "colorTabs.ignoreCase": true,
+    "workbench.colorCustomizations": {
+        "tab.activeBorder": "#a8c5f7",
+        "titleBar.activeBackground": "#a8c5f7",
+        "titleBar.activeForeground": "#000000",
+        "statusBar.background": "#a8c5f7",
+        "statusBar.foreground": "#000000"
+    },
+    "window.title": "~[Propel Web]~${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}",
 }
