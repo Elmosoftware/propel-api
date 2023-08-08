@@ -11,9 +11,6 @@
 *.log
 !/ps-scripts/*.ps1
 
-# temporal exclusion
-propel-frontend/
-
 # compiled output
 dist/**
 tmp/**
