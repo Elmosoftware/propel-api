@@ -99,10 +99,34 @@
             "command": "ng build --configuration production --base-href ./"
         },
         {
+            "label": "Copy Production Web build",
+            "group": "build",
+            "type": "gulp",
+            "task": "copyWebDist",
+            "problemMatcher": [],
+            "dependsOn": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/distrib"
+            }
+        },
+        {
+            "label": "Cleanup Electron Shell build",
+            "group": "build",
+            "type": "gulp",
+            "task": "cleanUpElectronShellBuild",
+            "problemMatcher": [],
+            "dependsOn": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/distrib"
+            }
+        },   
+        {
             "label": "Build PRODUCTION (Electron Shell Only)",
             "type": "shell",
             "options": {
-                "cwd": "${workspaceFolder}/propel-web"
+                "cwd": "${workspaceFolder}/propel-shell"
             },
             "command": "npm",
             "args": [
@@ -110,8 +134,11 @@
                 "electronBuild"
             ],
             "problemMatcher": [],
+            "dependsOrder": "sequence",
             "dependsOn": [
-                "Build PRODUCTION (WEB Only)"
+                "Build PRODUCTION (WEB Only)",
+                "Copy Production Web build",
+                "Cleanup Electron Shell build"
             ]
         },
         {

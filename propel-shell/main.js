@@ -25,7 +25,7 @@ function createPropelRuntimeInfo(cb) {
 
 function reload() {
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'dist/index.html'),
+    pathname: path.join(__dirname, 'web-dist/index.html'),
     protocol: 'file:',
     slashes: true
   }));
