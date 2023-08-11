@@ -175,6 +175,13 @@ class Config {
     }
 
     /**
+     * Boolean value indicating is the leagacy security feature is enabled in Propel.
+     */
+    public get isLegacySecurityEnabled() : boolean {
+        return (String(process.env.LEGACY_SECURITY).toLowerCase() == "on")
+    }
+    
+    /**
      * Length of the authorization codes generated for 
      * the users first time authentication or after a password reset.
      */

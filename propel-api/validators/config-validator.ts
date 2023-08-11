@@ -121,6 +121,13 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`TOKEN_EXPIRATION_MINUTES is not a number or is less than zero. Supplied value: "${process.env.TOKEN_EXPIRATION_MINUTES}".`);
         }
 
+        if (!process.env.LEGACY_SECURITY) {
+            super._addError("LEGACY_SECURITY is required.");
+        }
+        else if(!(String(process.env.LEGACY_SECURITY).toLowerCase() == "on" || String(process.env.LEGACY_SECURITY).toLowerCase() == "off")) {
+            super._addError(`LEGACY_SECURITY possible values are "On" or "Off".`);
+        }
+
         if (!process.env.AUTH_CODE_LENGTH) {
             super._addError("AUTH_CODE_LENGTH is required.");
         }
