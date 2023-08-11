@@ -22,7 +22,7 @@ function mockSecurityService(ss: SecurityService, options: any) {
         ret.passwordMaxLength = parseInt(process.env.PASSWORD_MAX_LENGTH!)
         ret.legacySecurity = options.legacySecurity
 
-        return Promise.resolve(ret);
+        return ret;
     }
 
     //@ts-ignore

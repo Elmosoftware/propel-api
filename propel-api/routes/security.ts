@@ -71,7 +71,7 @@ export class SecurityRoute implements Route {
             let ss: SecurityService = new SecurityService(token);
 
             try {
-                res.json(await ss.getSharedConfig());
+                res.json(ss.getSharedConfig());
             } catch (error) {
                 this.handleError(res, error); 
             }

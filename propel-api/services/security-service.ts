@@ -48,45 +48,15 @@ export class SecurityService {
      * Returns the shared security configuration.
      * @returns The shared configuration of the Security API.
      */
-    async getSharedConfig(): Promise<SecuritySharedConfiguration> {
-        let svc: DataService = db.getService("useraccount", this._token);
-        let qm = new QueryModifier();
-        let result: PagedResponse<UserAccount>;
+    getSharedConfig(): SecuritySharedConfiguration {
         let ret: SecuritySharedConfiguration = new SecuritySharedConfiguration();
 
-        qm.top = 1
-        qm.filterBy = {
-            $and:[
-                {
-                    role: UserAccountRoles.Administrator
-                }, 
-                {
-                    lastLogin: {
-                        $ne: null
-                    }
-                }
-            ]
-        }
+        ret.legacySecurity = cfg.isLegacySecurityEnabled;
+        ret.authCodeLength = cfg.authorizationCodeLength;
+        ret.passwordMinLength = cfg.passwordMinLength;
+        ret.passwordMaxLength = cfg.passwordMaxLength;
 
-        try {
-            result = await svc.find(qm) as PagedResponse<UserAccount>
-            ret.legacySecurity = result.count == 0
-            ret.authCodeLength = cfg.authorizationCodeLength;
-            ret.passwordMinLength = cfg.passwordMinLength;
-            ret.passwordMaxLength = cfg.passwordMaxLength;
-
-            // //////////////////////////////////////////////////
-            // //DEBUG ONLY:
-            // if (!cfg.isProduction) {
-            //     //Force legacy security for testing purposes:
-            //     ret.legacySecurity = true;
-            // }
-            // //////////////////////////////////////////////////
-        } catch (error) {
-            return Promise.reject(error);
-        }
-
-        return Promise.resolve(ret);
+        return ret;
     }
 
     /**
@@ -335,7 +305,7 @@ export class SecurityService {
     private async validateSecurityRequestFormat(context: SecurityService): Promise<void> {
 
         let request: SecurityRequest = context.loginData.request;
-        let config: SecuritySharedConfiguration = await context.getSharedConfig()
+        let config: SecuritySharedConfiguration = context.getSharedConfig()
 
         context.loginData.legacySecurity = config.legacySecurity;
 
