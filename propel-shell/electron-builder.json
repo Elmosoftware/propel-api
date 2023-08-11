@@ -8,7 +8,9 @@
         "preload.js",
         "util.js",
         "web-dist",
-        "!node_modules"
+        ".env",
+        "package.json",
+        "node_modules"
     ],
     "win": {
         "icon": "../propel-web/src/assets/img/logo2.png",

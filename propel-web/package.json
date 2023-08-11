@@ -7,11 +7,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "startElectron": "electron .",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test --watch=true",
-    "electronBuild": "electron-builder build"
+    "test": "ng test --watch=true"
   },
   "private": true,
   "dependencies": {

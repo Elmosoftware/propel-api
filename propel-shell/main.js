@@ -1,9 +1,10 @@
 const { app, shell, BrowserWindow, screen, Menu, dialog } = require("electron")
 const url = require("url");
 const path = require("path");
-const execFile = require('child_process').execFile;
-const util = require('./util');
+const execFile = require("child_process").execFile;
+const util = require("./util");
 const os = require("os");
+require('dotenv').config();
 
 let mainWindow;
 
@@ -19,6 +20,8 @@ function createPropelRuntimeInfo(cb) {
   execFile('qwinsta', ['/VM'], (err, stdout, stderr) => {
       process.PropelRuntimeInfo.error = err | stderr
       process.PropelRuntimeInfo.RDPUsers = util.processQWINSTAOutput(stdout);
+      process.PropelRuntimeInfo.runtimeToken = util.encrypt(process.PropelRuntimeInfo);
+
       cb();
   });
 }
@@ -196,6 +199,9 @@ function createWindow(data) {
 }
 
 function startApp() {
+  //Validating the configured encryption key:
+  util.validateEncryptionKey();
+
   //Creating the Propel runtime window, which includes the user that is running the 
   //app and also a list of RDP connected users.
   createPropelRuntimeInfo(() => {

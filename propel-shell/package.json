@@ -10,6 +10,10 @@
   },
   "author": "JC",
   "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv": "^8.6.0"
+  },
   "devDependencies": {
     "electron": "^10.4.7",
     "electron-builder": "^22.11.7",
