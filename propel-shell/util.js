@@ -49,12 +49,23 @@ function processQWINSTAOutput(stdOut) {
 /**
  * Validates the encryption key included in the configuration.
  */
-function validateEncryptionKey() {
+function validateConfig() {
+
   if (!process.env?.ENCRYPTION_KEY) {
     throw new Error("Propel Configuration is missing or incorrect. Variable ENCRYPTION_KEY must be present.")
   }
   else if (process.env.ENCRYPTION_KEY.length < 32) {
     throw new Error("Propel Configuration error. ENCRYPTION_KEY need to be at least 32 bytes long.")
+  }
+
+  if (!process.env?.RUNTIME_TOKEN_ALG) {
+    throw new Error("Propel Configuration is missing or incorrect. Variable RUNTIME_TOKEN_ALG must be present.")
+  }
+  if (!process.env?.RUNTIME_TOKEN_KEY_LENGTH) {
+    throw new Error("Propel Configuration is missing or incorrect. Variable RUNTIME_TOKEN_KEY_LENGTH must be present.")
+  }
+  if (!process.env?.RUNTIME_TOKEN_IV_LENGTH) {
+    throw new Error("Propel Configuration is missing or incorrect. Variable RUNTIME_TOKEN_IV_LENGTH must be present.")
   }
 }
 
@@ -62,11 +73,11 @@ function validateEncryptionKey() {
  * Return the encryption keys to use.
  * @returns An object with the key and initialization vector to be used in the encryption algorithm.
  */
-
 function getEncryptionKeys() {
   return {
-    key: process.env.ENCRYPTION_KEY.slice(0, 32),
-    iv: process.env.ENCRYPTION_KEY.slice(-16)
+    alg:  process.env.RUNTIME_TOKEN_ALG,
+    key: process.env.ENCRYPTION_KEY.slice(0, Number(process.env.RUNTIME_TOKEN_KEY_LENGTH)),
+    iv: process.env.ENCRYPTION_KEY.slice(-Number(process.env.RUNTIME_TOKEN_IV_LENGTH))
   }
 }
 
@@ -77,15 +88,22 @@ function getEncryptionKeys() {
  */
 function encrypt(message) {
 
-  let keys = getEncryptionKeys();
+  let RTKeys = getEncryptionKeys();
+  let cipher = crypto.createCipheriv(RTKeys.alg, RTKeys.key, RTKeys.iv);
 
   if (typeof message != "string") {
     message = JSON.stringify(message);
   }
 
-  let cipher = crypto.createCipheriv("aes-256-cbc", keys.key, keys.iv);
-
   return cipher.update(message, "utf-8", "hex") + cipher.final("hex");
 }
 
-module.exports = {processQWINSTAOutput, validateEncryptionKey, encrypt}
+/**
+ * If running 
+ * @returns Boolean value indicating if the app is packaged.
+ */
+function isPackagedApp() {
+  return __dirname.includes("app.asar");
+}
+
+module.exports = {processQWINSTAOutput, validateConfig, encrypt, isPackagedApp}

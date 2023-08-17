@@ -8,7 +8,7 @@
         "preload.js",
         "util.js",
         "web-dist",
-        ".env",
+        ".prod.env",
         "package.json",
         "node_modules"
     ],

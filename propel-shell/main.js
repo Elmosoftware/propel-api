@@ -4,7 +4,7 @@ const path = require("path");
 const execFile = require("child_process").execFile;
 const util = require("./util");
 const os = require("os");
-require('dotenv').config();
+const dotenv = require('dotenv');
 
 let mainWindow;
 
@@ -21,7 +21,6 @@ function createPropelRuntimeInfo(cb) {
       process.PropelRuntimeInfo.error = err | stderr
       process.PropelRuntimeInfo.RDPUsers = util.processQWINSTAOutput(stdout);
       process.PropelRuntimeInfo.runtimeToken = util.encrypt(process.PropelRuntimeInfo);
-
       cb();
   });
 }
@@ -199,8 +198,22 @@ function createWindow(data) {
 }
 
 function startApp() {
-  //Validating the configured encryption key:
-  util.validateEncryptionKey();
+  //Preparing the app configuration:
+  let cfgFile = ".env";
+
+  if (util.isPackagedApp()) {
+    cfgFile = ".prod.env"
+  }
+
+  let result = dotenv.config({ 
+    path: path.join(__dirname, cfgFile)
+  });
+  
+  if (result.error) {
+    throw new Error(`There was an error reading app configuration: ${String(result.error)}`);
+  }
+  
+  util.validateConfig();
 
   //Creating the Propel runtime window, which includes the user that is running the 
   //app and also a list of RDP connected users.
