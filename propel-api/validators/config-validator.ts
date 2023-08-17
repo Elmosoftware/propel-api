@@ -92,6 +92,27 @@ class ConfigValidator extends ValidatorBase {
         if (!process.env.ENCRYPTION_KEY || String(process.env.ENCRYPTION_KEY).length !== this.ENCRYPTION_KEY_LENGTH) {
             super._addError(`ENCRYPTION_KEY is required and need to be 64 characters length.`);
         }
+        else {
+            if (!process.env.RUNTIME_TOKEN_KEY_LENGTH) {
+                super._addError("RUNTIME_TOKEN_KEY_LENGTH is required.");
+            }
+            else if ((isNaN(Number(process.env.RUNTIME_TOKEN_KEY_LENGTH)) || Number(process.env.RUNTIME_TOKEN_KEY_LENGTH) <= 0 || Number(process.env.RUNTIME_TOKEN_KEY_LENGTH) > this.ENCRYPTION_KEY_LENGTH)) {
+                super._addError(`RUNTIME_TOKEN_KEY_LENGTH is not a number or is less than zero or greater than ${this.ENCRYPTION_KEY_LENGTH}. Supplied value: "${process.env.RUNTIME_TOKEN_KEY_LENGTH}".`);
+            }
+            else {
+                if (!process.env.RUNTIME_TOKEN_IV_LENGTH) {
+                    super._addError("RUNTIME_TOKEN_IV_LENGTH is required.");
+                }
+                else if ((isNaN(Number(process.env.RUNTIME_TOKEN_IV_LENGTH)) || Number(process.env.RUNTIME_TOKEN_IV_LENGTH) <= 0 || Number(process.env.RUNTIME_TOKEN_IV_LENGTH) > Number(process.env.RUNTIME_TOKEN_KEY_LENGTH))) {
+                    super._addError(`RUNTIME_TOKEN_IV_LENGTH is not a number or is less than zero or greater than the defined RUNTIME_TOKEN_KEY_LENGTH, (${process.env.RUNTIME_TOKEN_KEY_LENGTH} bytes). Supplied value: "${process.env.RUNTIME_TOKEN_IV_LENGTH}".`);
+                }
+            }
+        }
+
+        //ENCRYPTION_ALG can't be null:
+        if (!process.env.RUNTIME_TOKEN_ALG) {
+            super._addError(`RUNTIME_TOKEN_ALG is required.`);
+        }
 
         if (!process.env.EXECUTIONLOG_RETENTION_DAYS) {
             super._addError("EXECUTIONLOG_RETENTION_DAYS is required.");

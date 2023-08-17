@@ -5,6 +5,9 @@ function setAllValid() {
     process.env.PORT = "3000"
     process.env.DB_ENDPOINT = "mongodb://localhost:27017/propel-api"
     process.env.ENCRYPTION_KEY = "2129B972482115C8CEBEB4180F362D3BEEFAE97CE5D61F54F36D6628AE8745CC"
+    process.env.RUNTIME_TOKEN_ALG= "aes-256-cbc"
+    process.env.RUNTIME_TOKEN_KEY_LENGTH="32"
+    process.env.RUNTIME_TOKEN_IV_LENGTH="16"
     process.env.TOKEN_EXPIRATION_MINUTES = "60"
     process.env.LEGACY_SECURITY = "On"
     process.env.AUTH_CODE_LENGTH = "6"
@@ -241,6 +244,62 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`ENCRYPTION_KEY is required`);
+        cfgVal.reset();
+    })
+    test(`Missing RUNTIME_TOKEN_ALG value`, () => {
+        //@ts-ignore
+        process.env.RUNTIME_TOKEN_ALG = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`RUNTIME_TOKEN_ALG is required`);
+        cfgVal.reset();
+    })
+    test(`Missing RUNTIME_TOKEN_KEY_LENGTH value`, () => {
+        //@ts-ignore
+        process.env.RUNTIME_TOKEN_KEY_LENGTH = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`RUNTIME_TOKEN_KEY_LENGTH is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid RUNTIME_TOKEN_KEY_LENGTH value (less or equal than zero)`, () => {
+        //@ts-ignore
+        process.env.RUNTIME_TOKEN_KEY_LENGTH = "0"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`RUNTIME_TOKEN_KEY_LENGTH is not a number or is less than`);
+        cfgVal.reset();
+    })
+    test(`Invalid RUNTIME_TOKEN_IV_LENGTH value (less or equal than zero)`, () => {
+        //@ts-ignore
+        process.env.RUNTIME_TOKEN_IV_LENGTH = "-4"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`RUNTIME_TOKEN_IV_LENGTH is not a number or is less than`);
+        cfgVal.reset();
+    })
+    test(`Invalid RUNTIME_TOKEN_IV_LENGTH value (greater than RUNTIME_TOKEN_KEY_LENGTH)`, () => {
+        //@ts-ignore
+        process.env.RUNTIME_TOKEN_KEY_LENGTH = "32"
+        process.env.RUNTIME_TOKEN_IV_LENGTH = "33"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`RUNTIME_TOKEN_IV_LENGTH is not a number or is less than`);
         cfgVal.reset();
     })
     test(`Missing EXECUTIONLOG_RETENTION_DAYS value`, () => {
