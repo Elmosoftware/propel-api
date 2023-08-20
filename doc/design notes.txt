@@ -756,5 +756,47 @@ Other things to test:
 Execution: Long duration, Heavy results (more than results quota), stop by Killing or in next step
 Script: Test the valid payloads (size and file types)
 
+Propel v2.2 
+====================================================================
+Login simplification:
+
+For -> LegacySecurity=Off
+
+TryReconectSession (método actual):
+
+SI Hay refreshtoken
+	Intenta refrescar eltoken
+	SI lo refresca (porque el token es válido y aun no expiro)
+		obtiene el nuevo access token y el usuario ya esta logueado.
+	SINO
+		Hace un logoff
+	FINSI
+SINO
+	El usuario debe loguearse
+FINSI
+------------------------------------------------------------------
+TryReconectSession Nuevo método (Usando RuntimeToken):
+
+SI Hay refreshtoken
+	Intenta refrescar el token
+	SI lo refresca (porque el token es válido y aun no expiro)
+		obtiene el nuevo access token y el usuario ya esta logueado.
+	SINO
+		LoginConRuntimeToken
+	FINSI
+SINO
+	LoginConRuntimeToken
+FINSI
+
+FUNC LoginConRuntimeToken
+	Llama al método login con el runtimeToken.
+	SI el Login es exitoso
+			Obtiene el nuevo access token y el usuario ya esta logueado.
+		SINO 
+			Mensaje de error para el usuario indicandole que contacte a 
+			los admin para que lo den de alta, etc.
+		FINSI
+ENDFUNC
+
 
 

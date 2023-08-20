@@ -18,6 +18,12 @@ export class RuntimeInfo {
     RDPUsers: RDPUser[] = [];
 
     /**
+     * Runtime token including information regarding the user running the Propel desktop version.
+     * Used to simplify the login process.
+     */
+    runtimeToken: string = "";
+
+    /**
      * Any error found gathering of this info when the app starts.
      */
     error: string = "";

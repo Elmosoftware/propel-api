@@ -199,7 +199,7 @@ export class CoreService {
                       this.injToast.showError(e);
                     }
                     else {
-                      this.injToast.showError("There was an unexpected error trying to reconnect your session. Please try to sign in again.",
+                      this.injToast.showError("There was an unexpected error trying to login or reconnect your session. Please try reloading the app before to contact a Propel administrato..",
                         "Not able to reconnect your session!")
                     }
                   })

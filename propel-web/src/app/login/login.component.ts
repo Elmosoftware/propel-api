@@ -257,7 +257,8 @@ export class LoginComponent implements OnInit {
   async execLogin(sr: SecurityRequest): Promise<void> {
 
     try {
-      await this.core.security.login(sr);
+      //TODO: Removed temporarily until we remove all dead code for legacy login method.
+      // await this.core.security.login(sr);
 
       this.formFlow.message = MSG_LOGIN_SUCCESS;
       this.formFlow.messageIsError = false

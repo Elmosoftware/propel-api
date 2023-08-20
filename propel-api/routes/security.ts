@@ -5,7 +5,7 @@ import { INTERNAL_SERVER_ERROR, NO_CONTENT } from "http-status-codes";
 import { Route } from "../core/route";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityService } from "../services/security-service";
-import { SecurityRequest } from "../../propel-shared/core/security-request";
+import { UserLoginRequest } from "../../propel-shared/core/user-login-request";
 import { UserAccount } from "../../propel-shared/models/user-account";
 import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rule";
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
@@ -148,7 +148,7 @@ export class SecurityRoute implements Route {
         handler.post("/login", async (req, res) => {
             let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
             let ss: SecurityService = new SecurityService(token);
-            let request: SecurityRequest = req.body;
+            let request: UserLoginRequest = req.body;
 
             try {
                 res.json(await ss.handleUserLogin(request));
