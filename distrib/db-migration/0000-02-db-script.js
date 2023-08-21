@@ -1,8 +1,16 @@
 /**
  * ENSURE TO KEEP THIS FILE HERE for any Propel version.
  * 
- * This scritp creates important database artifacts, like collections, indexes, etc. if they 
+ * DESCRIPTION
+ * =============
+ * This script creates important database artifacts, like collections, indexes, etc. if they 
  * don't exists, also update them if neccesary. 
+ * 
+ * TO RUN THIS SCRIPT
+ * ===================
+ * In order to run this script open a OS console and type:
+ * 
+ *  mongosh --eval "var adu='Admin name here'; var adp='Admin password';apu='Regular user name'; var app='Regular user password';" 0000-02-db-script.js
  */
 
 const DB_NAME = "Propel"
@@ -19,11 +27,7 @@ function showIndexes(coll) {
 try {
     print(`\r\nAuthenticating...`);
     db = conn.getDB("admin");
-    /*
-        Variables "adu" and "adp", "apu", "app" must be passed with the "-- eval" parameter" like this:
-            mongosh --eval "var adu='Admin user name here'; var adp='Admin password here';apu='Regular user name here'; var app='Regular user password here';" myscript.js
-    */
-    db.auth(adu, adp);
+    db.auth(adu, adp); //<-- This variables are passed in the command line.
 
     print(`\r\n===============================================`)
     print(`\r\n      DB Creation/Updates Script`)
@@ -87,9 +91,9 @@ try {
         })
 
         coll.createIndex({
-            sessionStartsAt: 1
+            startedAt: 1
         }, {
-            name: "I_SessionStartsAt",
+            name: "I_StartedAt",
             background: true,
             expireAfterSeconds: 2592000  //1 month
         })
