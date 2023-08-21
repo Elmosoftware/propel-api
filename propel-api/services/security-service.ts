@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED, FORBIDDEN } from "http-status-codes";
 
 import { cfg } from "../core/config";
@@ -11,9 +10,7 @@ import { SecurityToken, TokenPayload } from "../../propel-shared/core/security-t
 import { UserRegistrationResponse } from "../../propel-shared/core/user-registration-response";
 import { DataService } from "../services/data-service";
 import { UserAccount } from "../../propel-shared/models/user-account";
-import { UserAccountSecret } from "../../propel-shared/models/user-account-secret";
 import { db } from "../core/database";
-import { Secret } from "../../propel-shared/models/secret";
 import { QueryModifier } from "../../propel-shared/core/query-modifier";
 import { Utils } from '../../propel-shared/utils/utils';
 import { ErrorCodes } from '../../propel-shared/core/error-codes';
@@ -24,7 +21,6 @@ import { allRoutes } from '../routes/all-routes';
 import { UserAccountRoles } from '../../propel-shared/models/user-account-roles';
 import { UserSession } from '../../propel-shared/models/user-session';
 import { PagedResponse } from '../../propel-shared/core/paged-response';
-import { SharedSystemHelper } from '../../propel-shared/utils/shared-system-helper';
 import { SystemHelper } from '../util/system-helper';
 import { RDPUser } from '../../propel-shared/core/rdp-user';
 
@@ -55,9 +51,6 @@ export class SecurityService {
         let ret: SecuritySharedConfiguration = new SecuritySharedConfiguration();
 
         ret.legacySecurity = cfg.isLegacySecurityEnabled;
-        ret.authCodeLength = cfg.authorizationCodeLength;
-        ret.passwordMinLength = cfg.passwordMinLength;
-        ret.passwordMaxLength = cfg.passwordMaxLength;
 
         return ret;
     }
@@ -75,19 +68,11 @@ export class SecurityService {
         if (!user._id) {
             //Enforcing the setup of some initial values for every new user:
             user.lastLogin = null;
-            user.lastPasswordChange = null;
             user.lockedSince = null;
-            user.mustReset = false;
-
-            //If is a new user we need to generate a secret with an authentication code:
-            authCode = this.createAuthCode();
-            user.secretId = await this.createNewSecret(authCode);
         }
 
         let ret: UserRegistrationResponse = new UserRegistrationResponse();
         ret.userId = await this.saveUser(user);
-        ret.secretId = user.secretId;
-        ret.authCode = authCode;
 
         return ret;
     }
@@ -230,32 +215,6 @@ export class SecurityService {
         return Promise.resolve(ret);
     }
 
-    /**
-     * Reset a user account password. If the user password is already flagged 
-     * for reset, there will be no action.
-     * @param nameOrId Name or ID of the user whose password willbe reset.
-     * @returns The user ID if the operation was successfully done. 
-     * If the user password is already flagged for reset, there willbe no action.
-     * @throws 
-     *  - **User doesn't exist** (**HTTP status 500** Internal Server error).
-     */
-    async resetUserPassword(nameOrId: string): Promise<UserRegistrationResponse> {
-
-        let user: UserAccount | undefined = await this.getUserByNameOrID(nameOrId);
-        let ret: UserRegistrationResponse = new UserRegistrationResponse();
-
-        this.throwIfNoUser(user, nameOrId, "The reset password process can't continue.");
-
-        user!.mustReset = true; //Flag the user for reset on next login
-        ret.authCode = this.createAuthCode(); //Getting an auth code, (the user must use on next login). 
-        //Creating the secret and associating it to the user:
-        user!.secretId = await this.createNewSecret(ret.authCode);
-        ret.secretId = user!.secretId
-        ret.userId = await this.saveUser(user!); //Saving the user.
-
-        return ret;
-    }
-
     async lockUser(nameOrId: string): Promise<void> {
         return this.internalLockOrUnlockUser(nameOrId, true)
     }
@@ -334,14 +293,6 @@ export class SecurityService {
         }
 
         return Promise.resolve();
-    }
-
-    private validatePassword(password: string): void {
-
-        if (!password || password.length < cfg.passwordMinLength || password.length > cfg.passwordMaxLength) {
-            throw new PropelError(`Password bad format. Allowed passwords must have at least ${cfg.passwordMinLength} characters and no more than ${cfg.passwordMaxLength}. The one provided have ${password.length}.`,
-                ErrorCodes.PasswordBadFormat, BAD_REQUEST.toString());
-        }
     }
 
     private async getAndVerifyUser(context: SecurityService): Promise<void> {
@@ -441,12 +392,6 @@ List of connected users in this machine are: ${loginData.runtimeInfo!.RDPUsers.m
         return Promise.resolve();
     }
 
-    private async createHash(password: string): Promise<string> {
-        const saltRounds = 10;
-        let salt = await bcrypt.genSalt(saltRounds);
-        return bcrypt.hash(password, salt);
-    }
-
     private createToken(user: UserAccount, isLegacySecurity: boolean): string {
         let dataPayload: SecurityToken;
         let options: any = {};
@@ -508,50 +453,6 @@ List of connected users in this machine are: ${loginData.runtimeInfo!.RDPUsers.m
         return ret;
     }
 
-    private async getUserSecret(secretId: string): Promise<Secret<UserAccountSecret> | undefined> {
-        let svc: DataService = db.getService("secret", this._token);
-        let result: PagedResponse<Secret<UserAccountSecret>>;
-        let qm = new QueryModifier();
-
-        qm.filterBy = { _id: secretId }
-
-        try {
-            result = await svc.find(qm) as PagedResponse<Secret<UserAccountSecret>>;
-        } catch (error) {
-            return Promise.reject(error);
-        }
-
-        return Promise.resolve(result.data[0]);
-    }
-
-    private async createNewSecret(passwordOrAuthCode: string): Promise<string> {
-
-        let secret = new Secret<UserAccountSecret>(UserAccountSecret)
-        secret.value.passwordHash = await this.createHash(passwordOrAuthCode);
-
-        //Now we must persist the secret and return the secret id:
-        return await this.saveUserSecret(secret);
-    }
-
-    private async saveUserSecret(secret: Secret<UserAccountSecret>): Promise<string> {
-        let svc: DataService = db.getService("secret", this._token);
-        let id: string;
-
-        try {
-            //If is a new secret:
-            if (!secret._id) {
-                id = await svc.add(secret);
-            }
-            else {
-                id = await svc.update(secret);
-            }
-        } catch (error) {
-            return Promise.reject(error);
-        }
-
-        return Promise.resolve(id);
-    }
-
     private async saveUser(user: UserAccount): Promise<string> {
         let svc: DataService = db.getService("useraccount", this._token);
         let id: string;
@@ -569,10 +470,6 @@ List of connected users in this machine are: ${loginData.runtimeInfo!.RDPUsers.m
         }
 
         return Promise.resolve(id);
-    }
-
-    private createAuthCode(): string {
-        return SharedSystemHelper.getUniqueId(cfg.authorizationCodeLength);
     }
 }
 

@@ -798,5 +798,15 @@ FUNC LoginConRuntimeToken
 		FINSI
 ENDFUNC
 
+============================================================================
+Changes to User model:
+
+Remove the following properties:
+secretId
+lastPasswordChange
+mustReset
+
+Dependencies to remove:
+bcrypt
 
 

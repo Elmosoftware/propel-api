@@ -24,27 +24,16 @@
                         <span class="flex-nowrap ml-1 text-muted text-mini text-mini-padding"
                             [innerHtml]="'(' + getText(item.name, false) + ')'"></span>
                     </div>
-                    <div *ngIf="getAuthCode(item)" class="d-flex flex-column mt-2 alert fade show alert-warning">
-                        <span>Share the following code with <strong>{{item.fullName}}</strong>. It will be requested on
-                            his next login:</span>
-                        <app-authentication-code class="mt-2" [code]="getAuthCode(item)"></app-authentication-code>
-                    </div>
                 </div>
                 
             </div>
             <div class="d-flex flex-column">
-                <button class="btn btn-primary ml-2 mb-1" type="button" (click)="resetPassword(item)"
-                    matTooltip="Resetting the password will force the user to change it on next login."
-                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="left">Reset</button>
                 <button class="btn btn-primary ml-2" type="button" (click)="toggleLockUser(item)"
                     matTooltip="By locking the user you prevent the user to login."
                     matTooltipClass="tooltipsWithBreakLines"
                     matTooltipPosition="left">{{getToggleLockUserButtonName(item)}}</button>
             </div>
         </div>
-        <!-- <div class="d-flex justify-content-start">
-            <span class="text-subtle description">{{getUserStats(item)}}</span>
-        </div> -->
         <div class="d-flex justify-content-end">
             <span class="text-subtle description" [innerHtml]="getLastUpdate(item)"
             [matTooltip]="getLastUpdateTooltip(item)"

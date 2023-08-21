@@ -33,14 +33,6 @@ export class SecurityRoute implements Route {
             text: `Registering/Update users is forbidden to regular or anonymous users.`
         },
         {
-            matchFragment: "/reset",
-            matchMethods: [],
-            preventDataActions: [],
-            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
-            preventLogic: RulePreventLogic.Or,
-            text: `Reset any user password is forbidden to regular or anonymous users.`
-        },
-        {
             matchFragment: "/lock",
             matchMethods: [],
             preventDataActions: [],
@@ -98,19 +90,6 @@ export class SecurityRoute implements Route {
 
             try {
                 res.json(await ss.registerOrUpdateUser(user));
-            } catch (error) {
-                this.handleError(res, error);
-            }
-        });
-
-        //User pasword reset:
-        handler.post("/reset/:id", async (req, res) => {
-            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
-            let ss: SecurityService = new SecurityService(token);
-            let id: string = req.params.id;
-
-            try {
-                res.json(await ss.resetUserPassword(id));
             } catch (error) {
                 this.handleError(res, error);
             }

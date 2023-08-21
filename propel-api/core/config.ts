@@ -198,28 +198,6 @@ class Config {
     }
     
     /**
-     * Length of the authorization codes generated for 
-     * the users first time authentication or after a password reset.
-     */
-     get authorizationCodeLength(): number {
-        return Number(process.env.AUTH_CODE_LENGTH);
-    }
-
-    /**
-     * User password minimum length allowed.
-     */
-     get passwordMinLength(): number {
-        return Number(process.env.PASSWORD_MIN_LENGTH);
-    }
-
-    /**
-     * User password maximum length allowed.
-     */
-     get passwordMaxLength(): number {
-        return Number(process.env.PASSWORD_MAX_LENGTH);
-    }
-
-    /**
      * 
      * @param paramName Parameter name to check.
      * @returns A boolean value indicating if the parameter has the samae name defined 

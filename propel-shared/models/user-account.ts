@@ -24,29 +24,14 @@ export class UserAccount extends AuditedEntity {
     public email: string = "";
 
     /**
-     * Propel Secret id. It will hold a document with a password hash.
-     */
-    public secretId: string = "";
-
-    /**
      * User role.
      */
     public role: UserAccountRoles = DEFAULT_USER_ROLE;
 
     /**
-     * Timestamp for the last time the user change his password.
-     */
-    public lastPasswordChange: Date | null = null;
-
-    /**
      * Timestamp for the last user login.
      */
     public lastLogin: Date | null = null;
-
-    /**
-     * Indicates if the user must reset his password on his next login.
-     */
-    public mustReset: boolean = false;
 
     /**
      * Indicates if the user can login or not.

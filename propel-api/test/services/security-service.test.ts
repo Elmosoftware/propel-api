@@ -1,7 +1,7 @@
 import { UserLoginRequest } from "../../../propel-shared/core/user-login-request";
 import { UserAccountRoles } from "../../../propel-shared/models/user-account-roles";
 import { SecurityService } from "../../services/security-service";
-import { cfg, LogLevel } from "../../core/config";
+import { LogLevel } from "../../core/config";
 import { SecuritySharedConfiguration } from "../../../propel-shared/core/security-shared-config";
 import { UserLoginResponse } from "../../../propel-shared/core/user-login-response";
 import { RuntimeInfo } from "../../../propel-shared/core/runtime-info";
@@ -10,7 +10,7 @@ import { RDPUser } from "../../../propel-shared/core/rdp-user";
 let ss: SecurityService;
 
 function mockSecurityService(ss: SecurityService, options: { 
-    user:any, userSecret: any, legacySecurity: boolean, 
+    user:any, legacySecurity: boolean, 
     forceWrongUserName: boolean, doNotMockdecryptRuntimeInfo: boolean}) {
 
     //@ts-ignore
@@ -21,9 +21,6 @@ function mockSecurityService(ss: SecurityService, options: {
 
         let ret = new SecuritySharedConfiguration()
 
-        ret.authCodeLength = parseInt(process.env.AUTH_CODE_LENGTH!)
-        ret.passwordMinLength = parseInt(process.env.PASSWORD_MIN_LENGTH!)
-        ret.passwordMaxLength = parseInt(process.env.PASSWORD_MAX_LENGTH!)
         ret.legacySecurity = (process.env.LEGACY_SECURITY == "On")
 
         return ret;
@@ -67,44 +64,12 @@ function mockSecurityService(ss: SecurityService, options: {
     }
 
     //@ts-ignore
-    ss.getUserSecret = (secretId) => {
-        //@ts-ignore
-        return Promise.resolve(ss.testOptions.userSecret);
-    }
-
-    //@ts-ignore
-    ss.saveUserSecret = (secret) => {
-        //@ts-ignore
-        ss.testOptions.userSecret.value.passwordHash = secret.value.passwordHash;
-        //@ts-ignore
-        return Promise.resolve(ss.testOptions.userSecret._id);
-    }
-
-    //@ts-ignore
-    ss.createHash = (password: string) => {
-        //For simplicity we will return the password itself, we are not 
-        //trying here to test neither JWT or bcrypt:
-        return Promise.resolve(password);
-    }
-
-    //@ts-ignore
-    ss.verifyHash = (password: string, hash: string) => {
-        //to simplify things we are just going to compare the hash with 
-        //the password, in not the intention here to test bcrypt!!!
-        return Promise.resolve(password == hash);
-    }
-
-    //@ts-ignore
     ss.createRefreshToken = (loginData: any): Promise<string> => {
         return Promise.resolve("000000010000000000100001");
     }
-
 }
 
 function setEnVars() {
-    process.env.AUTH_CODE_LENGTH = "6"
-    process.env.PASSWORD_MIN_LENGTH = "8"
-    process.env.PASSWORD_MAX_LENGTH = "20"
     process.env.LEGACY_SECURITY = "Off"
 }
 
@@ -122,7 +87,6 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
         mockSecurityService(ss, {
             user: {
                 _id: "000000010000000000100001",
-                secretId: "2",
                 name: "john.doe",
                 fullName: "John Doe",
                 initials: "JD",
@@ -130,13 +94,6 @@ describe("SecurityService Class - handleUserLogin() - Regular Login", () => {
                 role: UserAccountRoles.User,
                 lockedSince: null,
                 lastLogin: new Date()
-            },
-            userSecret: {
-                _id: "000000010000000000100001",
-                value: {
-                    passwordHash: "12345678" //Recall this will be actually the 
-                    //user password for this test.
-                }
             },
             legacySecurity: false,
             forceWrongUserName: false,
@@ -214,7 +171,6 @@ describe("SecurityService Class - handleUserLogin() - Runtime Token decryption",
         mockSecurityService(ss, {
             user: {
                 _id: "000000010000000000100001",
-                secretId: "2",
                 name: "john.doe",
                 fullName: "John Doe",
                 initials: "JD",
@@ -222,13 +178,6 @@ describe("SecurityService Class - handleUserLogin() - Runtime Token decryption",
                 role: UserAccountRoles.User,
                 lockedSince: null,
                 lastLogin: new Date()
-            },
-            userSecret: {
-                _id: "000000010000000000100001",
-                value: {
-                    passwordHash: "12345678" //Recall this will be actually the 
-                    //user password for this test.
-                }
             },
             legacySecurity: false,
             forceWrongUserName: false,

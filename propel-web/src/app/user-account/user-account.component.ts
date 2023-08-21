@@ -28,7 +28,6 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
   fh: FormHandler<UserAccount>;
   allRoles: any[] = [];
   loaded: boolean = false;
-  authCode: string = "";
   lastUserLogin: Date | null = null;
 
   //Form validation constant parameters:
@@ -71,10 +70,7 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
       role: new UntypedFormControl("", [
         Validators.required
       ]),
-      secretId: new UntypedFormControl(""),
-      lastPasswordChange: new UntypedFormControl(""),
       lastLogin: new UntypedFormControl(""),
-      mustReset: new UntypedFormControl(""),
       lockedSince: new UntypedFormControl(""),
     }));
 
@@ -223,11 +219,9 @@ export class UserAccountComponent implements OnInit, DataLossPreventionInterface
         this.core.toaster.showSuccess("Changes have been saved succesfully.");
 
         this.fh.setId(response.userId);
-        this.fh.form.controls['secretId'].patchValue(response.secretId);
         this.setFormValue(this.fh.value);
         this.fh.form.markAsPristine();
         this.fh.form.markAsUntouched();
-        this.authCode = response.authCode //If is a new user an auth code will be generated.
 
         //Replacing in the navigation history the URL so when the user navigate back 
         //and if we are creating an item it will edit the created item instead of showing 

@@ -121,9 +121,8 @@
         </button>
       </div>
     </div>
-    <div class="nav-item dropdown nav-menu">
-      <div class="nav-link dropdown-toggle no-wrap-links menu-item icon-white" data-toggle="dropdown" href="#"
-        aria-expanded="true" id="dropdown02">
+    <div class="nav-item nav-menu">
+      <div class="nav-link no-wrap-links menu-item icon-white" href="#" aria-expanded="true">
         <div *ngIf="isUserLoggedIn && !isLegacySecurityEnabled; else noUser"
           class="text-circle text-circle-mini user-initials" [matTooltip]="userName"
           matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below">
@@ -135,19 +134,6 @@
             'icon-legacy-security': isUserLoggedIn && isLegacySecurityEnabled
         }"></span>
         </ng-template>
-      </div>
-      <div class="dropdown-menu dropdown-user" aria-labelledby="dropdown02">
-        <div *ngIf="!isUserLoggedIn || (isUserLoggedIn && isLegacySecurityEnabled)" (click)="doNotPropagate($event)">
-          <a class="dropdown-item" href="javascript:void(0)" (click)="goToLogin()">
-            <span class="icon-login-mini menu-icon"></span>
-            <span>Login</span>
-          </a>
-        </div>
-        <a *ngIf="isUserLoggedIn && !isLegacySecurityEnabled" class="dropdown-item" href="javascript:void(0)"
-          (click)="goToLogoff()">
-          <span class="icon-logoff-mini menu-icon"></span>
-          <span>Log off</span>
-        </a>
       </div>
     </div>
   </div>

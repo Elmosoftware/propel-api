@@ -196,15 +196,6 @@ export class NavigationService {
     }
 
     /**
-     * Navigate to Login page.
-     */
-    toLogin(referrerURL: string = ""): void {
-        let url: string = this.buildURL(this.pages.Login, "",
-            { referrerURL: String(referrerURL) });
-        this.to(url)
-    }
-
-    /**
      * Navigate to Run page.
      * @param workflowId Workflow to run
      */
