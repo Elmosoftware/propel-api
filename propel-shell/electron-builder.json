@@ -1,29 +1,31 @@
 {
     "productName": "Propel",
     "directories": {
-        "output": "../distrib/shell"
+        "output": "shell-dist"
     },
     "files": [
         "main.js",
         "preload.js",
         "util.js",
-        "dist",
-        "!node_modules"
+        "web-dist",
+        ".prod.env",
+        "package.json",
+        "node_modules"
     ],
     "win": {
-        "icon": "./src/assets/img/logo2.png",
+        "icon": "../propel-web/src/assets/img/logo2.png",
         "target": [
             "NSIS"
         ]
     },
     "mac": {
-        "icon": "./src/assets/img/",
+        "icon": "../propel-web/src/assets/img/logo2.png",
         "target": [
             "dmg"
         ]
     },
     "linux": {
-        "icon": "./src/assets/img/",
+        "icon": "../propel-web/src/assets/img/logo2.png",
         "target": [
             "AppImage"
         ]

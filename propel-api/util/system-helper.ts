@@ -1,8 +1,10 @@
+import * as crypto from "crypto";
 import { appendFile, close, unlink } from "fs";
 import { file } from "tmp";
 import { exec } from "child_process";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { Utils } from "../../propel-shared/utils/utils";
+import { RuntimeTokenKeys } from "../../propel-shared/core/runtime-token-keys";
 
 /**
  * File System utilities.
@@ -129,6 +131,12 @@ export class SystemHelper {
         }
   
         return Buffer.from(base64String, "base64").toString("utf8");
+    }
+
+    static decrypt(message: string, rtk: RuntimeTokenKeys): string {
+        let dec = crypto.createDecipheriv(rtk.alg, rtk.key, rtk.iv);
+        return dec.update(message, "hex" as crypto.HexBase64BinaryEncoding, 
+            "utf-8" as crypto.Utf8AsciiBinaryEncoding) + dec.final("utf8");
     }
 
     /**

@@ -110,8 +110,8 @@ Most likely cause, is you trying to fetch information encrypted with a different
      */
     static get LoginWrongUser(): Code {
         return new Code("LOGIN_WRONG_USER",
-            `The user that try to login is not granted in Propel.`,
-            `You have no permission to access this application yet. Please feel free to contact any Propel administrator about.`,
+            `The user trying to access is not a Propel registered user.`,
+            `You don't have permission to access this app yet, feel free to contact any Propel admin to get access.`,
             false);
     }
 
@@ -160,7 +160,7 @@ Most likely cause, is you trying to fetch information encrypted with a different
      */
     static get UserImpersonation(): Code {
         return new Code("USER_IMPERSONATION_NOT_ALLOWED",
-            `User impersonation not allowed in Propel.`,
+            `User impersonation is not allowed in Propel.`,
             `You are not running Propel with the same credentials that you use to log to this machine. Please start Propel using your own credentials.`,
             false);
     }

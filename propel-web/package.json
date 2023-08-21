@@ -1,17 +1,15 @@
 {
   "productName": "Propel",
   "name": "propel-web",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Propel Frontend",
   "main": "main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "startElectron": "electron .",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test --watch=true",
-    "electronBuild": "electron-builder build"
+    "test": "ng test --watch=true"
   },
   "private": true,
   "dependencies": {

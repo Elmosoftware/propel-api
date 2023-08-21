@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 
 import { ObjectPoolOptions } from "../core/object-pool-options";
-import { SystemHelper } from "../util/system-helper";
+import { RuntimeTokenKeys } from "../../propel-shared/core/runtime-token-keys";
 
 export enum LogLevel {
     Error = "ERROR",
@@ -15,6 +15,7 @@ export enum LogLevel {
 class Config {
 
     private _key: string = "";
+    private _rtkeys: RuntimeTokenKeys | undefined;
 
     constructor() {
         dotenv.config();
@@ -139,10 +140,25 @@ class Config {
      */
     get encryptionKey(): string {
         if (!this._key) {
-            this._key = SystemHelper.decodeBase64(String(process.env.ENCRYPTION_KEY));
+            this._key = String(process.env.ENCRYPTION_KEY);
         }
         
         return this._key; 
+    }
+
+    /**
+     * Return a RyuntimeTokenKeys object with all the information to operate with the runtime token.
+     */
+    get runtimeTokenKeys(): RuntimeTokenKeys {
+        if (!this._rtkeys) {
+            this._rtkeys = {
+                alg: String(process.env.RUNTIME_TOKEN_ALG),
+                key: this.encryptionKey.slice(0, Number(process.env.RUNTIME_TOKEN_KEY_LENGTH)),
+                iv: this.encryptionKey.slice(-Number(process.env.RUNTIME_TOKEN_IV_LENGTH))
+            }
+        }
+        
+        return this._rtkeys;
     }
 
     /**
@@ -175,27 +191,12 @@ class Config {
     }
 
     /**
-     * Length of the authorization codes generated for 
-     * the users first time authentication or after a password reset.
+     * Boolean value indicating is the leagacy security feature is enabled in Propel.
      */
-     get authorizationCodeLength(): number {
-        return Number(process.env.AUTH_CODE_LENGTH);
+    public get isLegacySecurityEnabled() : boolean {
+        return (String(process.env.LEGACY_SECURITY).toLowerCase() == "on")
     }
-
-    /**
-     * User password minimum length allowed.
-     */
-     get passwordMinLength(): number {
-        return Number(process.env.PASSWORD_MIN_LENGTH);
-    }
-
-    /**
-     * User password maximum length allowed.
-     */
-     get passwordMaxLength(): number {
-        return Number(process.env.PASSWORD_MAX_LENGTH);
-    }
-
+    
     /**
      * 
      * @param paramName Parameter name to check.

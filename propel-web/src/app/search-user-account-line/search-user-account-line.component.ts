@@ -3,7 +3,6 @@ import { DialogResult } from 'src/core/dialog-result';
 import { SearchLine } from 'src/core/search-line';
 import { CoreService } from 'src/services/core.service';
 import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
-import { UserRegistrationResponse } from '../../../../propel-shared/core/user-registration-response';
 import { UserAccount } from '../../../../propel-shared/models/user-account';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
@@ -33,15 +32,12 @@ export class SearchUserAccountLineComponent extends SearchLine implements OnInit
 
   getTooltipMessage(user: UserAccount): string {
     let lastUpdated: string = (user.lastUpdateOn) ? SharedSystemHelper.formatDate(user.lastUpdateOn) : "never"
-    let lastPasswordChange: string = (user.lastPasswordChange) ? SharedSystemHelper.formatDate(user.lastPasswordChange) : "never"
     let lastLogin: string = (user.lastLogin) ? SharedSystemHelper.formatDate(user.lastLogin) : "never"
 
     let ret: string = `User stats:
 Added on: ${SharedSystemHelper.formatDate(user.createdOn!)}
 Last updated on: ${lastUpdated}
-Last password change: ${lastPasswordChange}
-Last login on: ${lastLogin}
-User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
+Last login on: ${lastLogin}`
 
     return ret;
   }
@@ -54,38 +50,6 @@ User must reset password on next login: ${(user.mustReset) ? "Yes" : "No"}`
     }
 
     return ret;
-  }
-
-  resetPassword(item: UserAccount): void {
-    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
-      "Reset user password",
-      `By resetting the user password, <i>${item.fullName}</i> will be forced to set a new password on next login. 
-      <b>Are you ok to continue?</b>"<br>Please be aware that this operation can't be undone.`)
-    ).subscribe({
-      next: async (result: DialogResult<any>) => {
-
-        if (!result.isCancel) {
-          this.core.security.resetPassword(item._id)
-            .then((result: UserRegistrationResponse) => {
-              this.core.toaster.showSuccess("Password reset finished successfully!");
-              (item as any).authCode = result.authCode;
-              // this.dataChanged.emit(true);
-            },
-              (error) => {
-                this.core.handleError(error)
-              });
-        }
-      },
-      error: (error) => {
-        this.core.handleError(error)
-      }
-    }
-    );
-  }
-
-  getAuthCode(item: UserAccount): string {
-    if ((item as any).authCode) return (item as any).authCode;
-    else return ""
   }
 
   toggleLockUser(item: UserAccount): void {

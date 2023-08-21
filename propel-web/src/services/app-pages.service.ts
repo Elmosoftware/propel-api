@@ -231,17 +231,6 @@ export class AppPages {
         },
         excludeFromHistory: false
     }
-    Login: PageMetadata = {
-        title: "Login",
-        name: "login",
-        showNavBar: false,
-        showSearchBox: true,
-        security : {
-          restricted: false, 
-          adminOnly:  false, 
-        },
-        excludeFromHistory: true
-    }
 
     constructor() {    
         logger.logInfo("ApplicationPages instance created");

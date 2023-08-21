@@ -26,36 +26,6 @@ export class SessionService {
         this.fetchRuntimeInfo();
         this.fetchRefreshToken();
 
-        // //////////////////////////////////////////////////////////////////////////
-        // if (environment.production == false) {
-        //     //DEBUG ONLY:
-        //     //  For debugging purposes only and to emulate a defined user in a dev env:
-        //     //  Comment below lines if you would like to login specifying a runtime info like the 
-        //     //  one created by Electron start scripts when the app starts in prod:
-
-        //     let x = new RuntimeInfo();
-        //     //If you want to login as an Administrator, comment out below lines:
-        //     //----------------------------------------------------------------------
-        //     x.userName = "test.admin.1";
-        //     //To auto login keep the below line commented out, (ensure the password is right).
-        //     // (x as any).password = "testadminone" 
-            
-        //     //If you would like to login as a regular user, comment out below lines:
-        //     //----------------------------------------------------------------------
-        //     // x.userName = "test.regular.1";
-        //     // //To auto login keep the below line commented out, (ensure the password is right).
-        //     // (x as any).password = "testregularone" 
-            
-        //     //If you would like to test the "User impersonation forbiddeb error, comment below line:
-        //     x.RDPUsers.push(new RDPUser(x.userName, "Active")) 
-
-        //     x.RDPUsers.push(new RDPUser("user.1", "Active"))
-        //     x.RDPUsers.push(new RDPUser("user.2", "Disconected"))
-        //     this._runtimeInfo = x;
-        //     logger.logInfo(`DEBUG - Connected as "${this._runtimeInfo.userName}"${((x as any).password) ? " with AUTO-LOGIN" : ""}.`);
-        // }   
-        // //////////////////////////////////////////////////////////////////////////
-
         if (this.runtimeInfo) {
             logger.logInfo(`Connected as "${this._runtimeInfo.userName}".`);
         }
@@ -145,6 +115,17 @@ The payload in the provided JWT token can't be parsed as JSON. Payload content i
             } catch (error) {
                 logger.logError(`There was an error retrieving runtime info from session storage: "${String(error)}".`)
             }
+            finally {
+                sessionStorage.removeItem(RUNTIME_INFO_KEY);
+            }
+        }
+        //@ts-ignore
+        else if (environment.production == false && environment.mocks) {
+            //@ts-ignore
+            this._runtimeInfo = environment.mocks.runtimeInfo[environment.mocks.activeMocks.runtimeInfo];
+        }
+        else {
+            logger.logError(new PropelError(`${RUNTIME_INFO_KEY} is not present in session storage, is not possible to authenticate the user.`));
         }
     }
 

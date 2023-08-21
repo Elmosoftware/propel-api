@@ -134,29 +134,14 @@ class Schemas {
                         isRequired: true,
                         isUnique: true
                     }),
-                new SchemaField("secretId", `User secret.`,
-                    {
-                        type: String,
-                        isRequired: false
-                    }),
                 new SchemaField("role", `User role.`,
                     {
                         type: String,
                         isRequired: true
                     }),
-                new SchemaField("lastPasswordChange", `Timestamp (UTC) for the last time the user changes his password.`,
-                    {
-                        type: Date,
-                        isRequired: false
-                    }),
                 new SchemaField("lastLogin", `Timestamp (UTC) for the last user login.`,
                     {
                         type: Date,
-                        isRequired: false
-                    }),
-                new SchemaField("mustReset", `Boolean value indicating if the user must reset his password on the next login.`,
-                    {
-                        type: Boolean,
                         isRequired: false
                     }),
                 new SchemaField("lockedSince", `Timestamp (UTC) indicating the date the user was locked.`,

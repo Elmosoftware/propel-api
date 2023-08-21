@@ -5,7 +5,7 @@ import { INTERNAL_SERVER_ERROR, NO_CONTENT } from "http-status-codes";
 import { Route } from "../core/route";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { SecurityService } from "../services/security-service";
-import { SecurityRequest } from "../../propel-shared/core/security-request";
+import { UserLoginRequest } from "../../propel-shared/core/user-login-request";
 import { UserAccount } from "../../propel-shared/models/user-account";
 import { AuthStatus, RulePreventLogic, SecurityRule } from "../core/security-rule";
 import { UserAccountRoles } from "../../propel-shared/models/user-account-roles";
@@ -31,14 +31,6 @@ export class SecurityRoute implements Route {
             preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
             preventLogic: RulePreventLogic.Or,
             text: `Registering/Update users is forbidden to regular or anonymous users.`
-        },
-        {
-            matchFragment: "/reset",
-            matchMethods: [],
-            preventDataActions: [],
-            preventRoles: [AuthStatus.Anonymous, UserAccountRoles.User],
-            preventLogic: RulePreventLogic.Or,
-            text: `Reset any user password is forbidden to regular or anonymous users.`
         },
         {
             matchFragment: "/lock",
@@ -71,7 +63,7 @@ export class SecurityRoute implements Route {
             let ss: SecurityService = new SecurityService(token);
 
             try {
-                res.json(await ss.getSharedConfig());
+                res.json(ss.getSharedConfig());
             } catch (error) {
                 this.handleError(res, error); 
             }
@@ -98,19 +90,6 @@ export class SecurityRoute implements Route {
 
             try {
                 res.json(await ss.registerOrUpdateUser(user));
-            } catch (error) {
-                this.handleError(res, error);
-            }
-        });
-
-        //User pasword reset:
-        handler.post("/reset/:id", async (req, res) => {
-            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
-            let ss: SecurityService = new SecurityService(token);
-            let id: string = req.params.id;
-
-            try {
-                res.json(await ss.resetUserPassword(id));
             } catch (error) {
                 this.handleError(res, error);
             }
@@ -148,7 +127,7 @@ export class SecurityRoute implements Route {
         handler.post("/login", async (req, res) => {
             let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
             let ss: SecurityService = new SecurityService(token);
-            let request: SecurityRequest = req.body;
+            let request: UserLoginRequest = req.body;
 
             try {
                 res.json(await ss.handleUserLogin(request));

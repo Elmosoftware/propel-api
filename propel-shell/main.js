@@ -1,9 +1,10 @@
 const { app, shell, BrowserWindow, screen, Menu, dialog } = require("electron")
 const url = require("url");
 const path = require("path");
-const execFile = require('child_process').execFile;
-const util = require('./util');
+const execFile = require("child_process").execFile;
+const util = require("./util");
 const os = require("os");
+const dotenv = require('dotenv');
 
 let mainWindow;
 
@@ -19,13 +20,14 @@ function createPropelRuntimeInfo(cb) {
   execFile('qwinsta', ['/VM'], (err, stdout, stderr) => {
       process.PropelRuntimeInfo.error = err | stderr
       process.PropelRuntimeInfo.RDPUsers = util.processQWINSTAOutput(stdout);
+      process.PropelRuntimeInfo.runtimeToken = util.encrypt(process.PropelRuntimeInfo);
       cb();
   });
 }
 
 function reload() {
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'dist/index.html'),
+    pathname: path.join(__dirname, 'web-dist/index.html'),
     protocol: 'file:',
     slashes: true
   }));
@@ -196,6 +198,23 @@ function createWindow(data) {
 }
 
 function startApp() {
+  //Preparing the app configuration:
+  let cfgFile = ".env";
+
+  if (util.isPackagedApp()) {
+    cfgFile = ".prod.env"
+  }
+
+  let result = dotenv.config({ 
+    path: path.join(__dirname, cfgFile)
+  });
+  
+  if (result.error) {
+    throw new Error(`There was an error reading app configuration: ${String(result.error)}`);
+  }
+  
+  util.validateConfig();
+
   //Creating the Propel runtime window, which includes the user that is running the 
   //app and also a list of RDP connected users.
   createPropelRuntimeInfo(() => {

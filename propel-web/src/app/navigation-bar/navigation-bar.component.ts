@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { DialogResult } from 'src/core/dialog-result';
 import { environment } from 'src/environments/environment';
 
 import { CoreService } from 'src/services/core.service';
@@ -9,7 +8,6 @@ import { NavigationHistoryEntry } from 'src/services/navigation.service';
 import { SecurityEvent } from 'src/services/security.service';
 import { SecuritySharedConfiguration } from '../../../../propel-shared/core/security-shared-config';
 import { logger } from '../../../../propel-shared/services/logger-service';
-import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -284,30 +282,6 @@ export class NavigationBarComponent implements OnInit {
 
   goToUserAccount() {
     this.core.navigation.toUserAccount();
-  }
-
-  goToLogin() {
-    this.core.navigation.toLogin();
-  }
-
-  goToLogoff() {
-    this.core.dialog.showConfirmDialog(new StandardDialogConfiguration(
-      "Log off",
-      `Are you sure you want to log off?`, "Yes, I want!", "No, I'll stay here a little longer")
-    ).subscribe({
-      next: (result: DialogResult<any>) => {
-        if (!result.isCancel) {
-          this.core.security.logOff()
-            .catch(_ => { }) //Not interested in report log off errors....
-            .finally(() => {
-              this.core.navigation.toHome(true);
-            })
-        }
-      },
-      error: err => {
-        this.core.handleError(err)
-      }
-    });
   }
 
   goToSandbox() {

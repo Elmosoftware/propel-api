@@ -16,8 +16,9 @@ var folders = {
         apiDist: `../${API_FOLDER_NAME}/dist`,
         apiPSScripts: `../${API_FOLDER_NAME}/${API_PSSCRIPTS_FOLDER_NAME}`,
         web: `../${WEB_FOLDER_NAME}`,
-        webDist: `../${WEB_FOLDER_NAME}/dist`,
-        shell: `./shell`,
+        webDist: `../${WEB_FOLDER_NAME}/web-dist`,
+        shellDist: `../${SHELL_FOLDER_NAME}/shell-dist`,
+        shellWebDist: `../${SHELL_FOLDER_NAME}/web-dist`,
         svcInst: `./svc-installation`,
         dbMigration: `./db-migration`,
         installer: `./installer`
@@ -31,6 +32,17 @@ var folders = {
         shell: `${DIST_FOLDER_NAME}/${SHELL_FOLDER_NAME}`
     }    
 }
+
+gulp.task("cleanUpPropelShellWebDist", function () {
+    console.log(`Removing all files in "${folders.src.shellDist}" folder.`);
+    return del([folders.src.shellWebDist], {force:true});
+});
+
+gulp.task("copyPropelWebDist", function () {
+    console.log(`Copying to "${folders.src.shellWebDist}" folder the last Web build from "${folders.src.webDist}".`);
+    return gulp.src(`${folders.src.webDist}/**/*.*`)
+        .pipe(gulp.dest(folders.src.shellWebDist));
+});
 
 gulp.task("dropDistFolder", function () {
     console.log(`Removing "${folders.dest.dist}" folder.`);
@@ -86,20 +98,24 @@ gulp.task("copyInstallerScripts", function () {
         .pipe(gulp.dest(folders.dest.dist));
 });
 
-gulp.task("copyPropelWebBuild", function () {
-    console.log(`Copying last Web build from "${folders.src.webDist}" to "${folders.dest.web}".`);
-    return gulp.src(`${folders.src.webDist}/**/*.*`)
-        .pipe(gulp.dest(folders.dest.web));
+gulp.task("cleanUpElectronShellBuild", function () {
+    console.log(`Removing all files in "${folders.src.shellDist}" folder.`);
+    return del([folders.src.shellDist], {force:true});
 });
 
 gulp.task("copyElectronShellBuild", function () {
-    console.log(`Copying last build of Electron Shell for Propel from "${folders.src.shell}" to "${folders.dest.shell}".`);
-    return gulp.src(`${folders.src.shell}/Propel*.exe`)
+    console.log(`Copying last build of Electron Shell for Propel from "${folders.src.shellDist}" to "${folders.dest.shell}".`);
+    return gulp.src(`${folders.src.shellDist}/Propel*.exe`)
         .pipe(rename("/setup.exe"))
         .pipe(gulp.dest(folders.dest.shell));
 });
 
-//Summarizing task:
+//Summarizing tasks:
+gulp.task("copyWebDist", gulp.series(
+    "cleanUpPropelShellWebDist",
+    "copyPropelWebDist"
+));
+
 gulp.task("productionBuild", gulp.series(
     "dropDistFolder",
     "copyPropelAPIBuild",
@@ -110,7 +126,6 @@ gulp.task("productionBuild", gulp.series(
     "copyServiceInstallationScripts",
     "copyDBMigrationScripts",
     "copyInstallerScripts",
-    "copyPropelWebBuild",
     "copyElectronShellBuild"
 ));
 

@@ -16,7 +16,6 @@ import { environment } from '../environments/environment';
 import { OfflineComponent } from './offline/offline.component';
 import { CredentialComponent } from './credential/credential.component';
 import { UserAccountComponent } from './user-account/user-account.component';
-import { LoginComponent } from './login/login.component';
 import { pages } from '../services/app-pages.service';
 import { SecurityGuard } from '../services/security-guard';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
@@ -32,14 +31,6 @@ const routes: Routes = [
     component: HomeComponent,
     data: {
       title: pages.Home.title
-    },
-    canActivate: [SecurityGuard]
-  },
-  {
-    path: pages.Login.name,
-    component: LoginComponent,
-    data: {
-      title: pages.Login.title
     },
     canActivate: [SecurityGuard]
   },

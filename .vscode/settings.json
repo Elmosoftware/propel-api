@@ -29,5 +29,5 @@
         "statusBar.background": "#a8c5f7",
         "statusBar.foreground": "#000000"
     },
-    "window.title": "~[Propel Web]~${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}",
+    "window.title": "~[Propel Web]~${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${separator}${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}",
 }

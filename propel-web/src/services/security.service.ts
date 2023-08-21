@@ -6,15 +6,13 @@ import { UserLoginResponse } from '../../../propel-shared/core/user-login-respon
 import { UserAccount } from '../../../propel-shared/models/user-account';
 import { UserAccountRolesUtil } from '../../../propel-shared/models/user-account-roles';
 import { UserRegistrationResponse } from '../../../propel-shared/core/user-registration-response';
-import { SecurityRequest } from '../../../propel-shared/core/security-request';
+import { UserLoginRequest } from '../../../propel-shared/core/user-login-request';
 import { TokenRefreshRequest } from '../../../propel-shared/core/token-refresh-request';
 import { SecurityToken } from '../../../propel-shared/core/security-token';
 import { SecuritySharedConfiguration } from '../../../propel-shared/core/security-shared-config';
 import { lastValueFrom, of, throwError } from 'rxjs';
 import { logger } from '../../../propel-shared/services/logger-service';
 import { environment as env } from 'src/environments/environment';
-import { RDPUser } from '../../../propel-shared/core/rdp-user';
-import { ErrorCodes } from '../../../propel-shared/core/error-codes';
 import { PageMetadata } from './app-pages.service';
 import { SessionService } from './session.service';
 import { PropelError } from '../../../propel-shared/core/propel-error';
@@ -240,7 +238,7 @@ export class SecurityService {
 
         if (config.legacySecurity) {
             try {
-                await this.login(new SecurityRequest());
+                await this.login(new UserLoginRequest());
                 return Promise.resolve("Legacy security is on. Login was successful.");
             } catch (error: any) {
                 return Promise.reject(`There was an error trying to login with Legacy security: "${(error.message) ? error.message : JSON.stringify(error)}"`)
@@ -252,11 +250,25 @@ export class SecurityService {
                 return Promise.resolve(`User session reconnected.`);
             } catch (error) {
                 await this.logOff()
+                //If the refresh token expired, we try now to start a new session using the Runtime info:
+                try {
+                    await this.login(new UserLoginRequest(this.runtimeInfo.runtimeToken))
+                    return Promise.resolve(`Refresh token expired. A new user session was created using runtime info.`);
+                } catch (error) {
+                    return Promise.reject(error)
+                }
+            }
+        }
+        else if (this._session.runtimeInfo) {
+            try {
+                await this.login(new UserLoginRequest(this.runtimeInfo.runtimeToken))
+                return Promise.resolve(`User "${this.runtimeInfo.userName} just logged in.`);
+            } catch (error) {
                 return Promise.reject(error)
             }
         }
         else {
-            return Promise.resolve("Legacy security is disabled and no refresh token was found. Session reconnection is not possible.");
+            return Promise.resolve("Legacy security is disabled and no refresh or runtime token was found. Session reconnection/initiation is not possible.");
         }
     }
 
@@ -265,35 +277,11 @@ export class SecurityService {
      * @param request SecurityRequest including all the infoneded for the user login process.
      * @returns A JWT token.
      */
-    async login(request: SecurityRequest): Promise<UserLoginResponse> {
+    async login(request: UserLoginRequest): Promise<UserLoginResponse> {
         let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
             [SecurityEndpoint, SecurityEndpointActions.Login]);
-        let ri: RuntimeInfo = this._session.runtimeInfo;
-
-        let config = await this.getConfig()
-
-        if (!config.legacySecurity) {
-            if (ri && ri.userName && ri.RDPUsers.length !== 0) {
-                //@ts-ignore   TODO: Fix warning: "Not all code paths return a value."
-                let user = ri.RDPUsers.find((u: RDPUser) => {
-                    if (u.userName == request.userName) {
-                        return u;
-                    }
-                })
-
-                //If the login user is not one in the list of the connected RDP users:
-                if (!user) {
-                    //More details in the console:
-                    logger.logError(`${ErrorCodes.UserImpersonation.key} error was raised. Details are:
-Propel is running with the user "${request.userName}" credentials.
-List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u.userName).join(", ")}`)
-
-                    return Promise.reject(new PropelError("Impersonation is not allowed in Propel",
-                        ErrorCodes.UserImpersonation));
-                }
-            }
-        }
-
+            
+            
         return lastValueFrom(this.http.post<UserLoginResponse>(url, request,
             {
                 headers: HttpHelper.buildHeaders(Headers.ContentTypeJson, Headers.XPropelNoAuth)
@@ -372,16 +360,5 @@ List of connected users in this machine are: ${ri.RDPUsers.map((u: RDPUser) => u
                     this._securityEvent$.emit(SecurityEvent.Logoff);
                 })
             ));
-    }
-
-    /**
-     * Returns a boolean value that indicates if the security request is for a Login in 
-     * Legacy security mode, (no user data inside).
-     * @param req SecurityRequest to analyze
-     * @returns A boolean value that indicates if we are sending real user data or is just an 
-     * empty security request like used in Legacy Security mode.
-     */
-    private isLegacySecurityRequest(req: SecurityRequest): boolean {
-        return !req.userName && !req.password && !req.newPassword;
     }
 }

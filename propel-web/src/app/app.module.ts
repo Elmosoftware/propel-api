@@ -81,8 +81,6 @@ import { APIKeySecretComponent } from './credential/apikey-secret/apikey-secret.
 import { UserAccountComponent } from './user-account/user-account.component';
 import { SearchUserAccountLineComponent } from './search-user-account-line/search-user-account-line.component';
 import { SecurityService } from '../services/security.service';
-import { AuthenticationCodeComponent } from './authentication-code/authentication-code.component';
-import { LoginComponent } from './login/login.component';
 import { SecurityGuard } from '../services/security-guard';
 import { CoolSpinerComponent } from './cool-spiner/cool-spiner.component';
 
@@ -122,8 +120,6 @@ import { CoolSpinerComponent } from './cool-spiner/cool-spiner.component';
         APIKeySecretComponent,
         UserAccountComponent,
         SearchUserAccountLineComponent,
-        AuthenticationCodeComponent,
-        LoginComponent,
         CoolSpinerComponent
     ],
     imports: [

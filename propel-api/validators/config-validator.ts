@@ -10,16 +10,12 @@ class ConfigValidator extends ValidatorBase {
     private readonly MIN_PORT: number;
     private readonly MAX_PORT: number;
     private readonly ENCRYPTION_KEY_LENGTH: number;
-    private readonly MAX_AUTH_CODE_LENGTH: number;
-    private readonly MAX_PASSWORD_LENGTH: number;
 
     constructor() {
         super();
         this.MIN_PORT = 1024;
         this.MAX_PORT = 49151;
         this.ENCRYPTION_KEY_LENGTH = 64
-        this.MAX_AUTH_CODE_LENGTH = 255;
-        this.MAX_PASSWORD_LENGTH = 255;
     }
 
     /**
@@ -92,6 +88,26 @@ class ConfigValidator extends ValidatorBase {
         if (!process.env.ENCRYPTION_KEY || String(process.env.ENCRYPTION_KEY).length !== this.ENCRYPTION_KEY_LENGTH) {
             super._addError(`ENCRYPTION_KEY is required and need to be 64 characters length.`);
         }
+        else {
+            if (!process.env.RUNTIME_TOKEN_KEY_LENGTH) {
+                super._addError("RUNTIME_TOKEN_KEY_LENGTH is required.");
+            }
+            else if ((isNaN(Number(process.env.RUNTIME_TOKEN_KEY_LENGTH)) || Number(process.env.RUNTIME_TOKEN_KEY_LENGTH) <= 0 || Number(process.env.RUNTIME_TOKEN_KEY_LENGTH) > this.ENCRYPTION_KEY_LENGTH)) {
+                super._addError(`RUNTIME_TOKEN_KEY_LENGTH is not a number or is less than zero or greater than ${this.ENCRYPTION_KEY_LENGTH}. Supplied value: "${process.env.RUNTIME_TOKEN_KEY_LENGTH}".`);
+            }
+            else {
+                if (!process.env.RUNTIME_TOKEN_IV_LENGTH) {
+                    super._addError("RUNTIME_TOKEN_IV_LENGTH is required.");
+                }
+                else if ((isNaN(Number(process.env.RUNTIME_TOKEN_IV_LENGTH)) || Number(process.env.RUNTIME_TOKEN_IV_LENGTH) <= 0 || Number(process.env.RUNTIME_TOKEN_IV_LENGTH) > Number(process.env.RUNTIME_TOKEN_KEY_LENGTH))) {
+                    super._addError(`RUNTIME_TOKEN_IV_LENGTH is not a number or is less than zero or greater than the defined RUNTIME_TOKEN_KEY_LENGTH, (${process.env.RUNTIME_TOKEN_KEY_LENGTH} bytes). Supplied value: "${process.env.RUNTIME_TOKEN_IV_LENGTH}".`);
+                }
+            }
+        }
+
+        if (!process.env.RUNTIME_TOKEN_ALG) {
+            super._addError(`RUNTIME_TOKEN_ALG is required.`);
+        }
 
         if (!process.env.EXECUTIONLOG_RETENTION_DAYS) {
             super._addError("EXECUTIONLOG_RETENTION_DAYS is required.");
@@ -121,28 +137,11 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`TOKEN_EXPIRATION_MINUTES is not a number or is less than zero. Supplied value: "${process.env.TOKEN_EXPIRATION_MINUTES}".`);
         }
 
-        if (!process.env.AUTH_CODE_LENGTH) {
-            super._addError("AUTH_CODE_LENGTH is required.");
+        if (!process.env.LEGACY_SECURITY) {
+            super._addError("LEGACY_SECURITY is required.");
         }
-        else if(isNaN(parseInt(String(process.env.AUTH_CODE_LENGTH))) || Number(process.env.AUTH_CODE_LENGTH) <= 0|| Number(process.env.AUTH_CODE_LENGTH) > this.MAX_AUTH_CODE_LENGTH) {
-            super._addError(`AUTH_CODE_LENGTH is not a number or it has a value less than zero or greater than ${this.MAX_AUTH_CODE_LENGTH} characters. Supplied value: "${process.env.AUTH_CODE_LENGTH}".`);
-        }
-
-        if (!process.env.PASSWORD_MIN_LENGTH) {
-            super._addError("PASSWORD_MIN_LENGTH is required.");
-        }
-        else if(isNaN(parseInt(String(process.env.PASSWORD_MIN_LENGTH))) || Number(process.env.PASSWORD_MIN_LENGTH) <= 0|| Number(process.env.PASSWORD_MIN_LENGTH) > this.MAX_PASSWORD_LENGTH) {
-            super._addError(`PASSWORD_MIN_LENGTH is not a number or it has a value less than zero or greater than ${this.MAX_PASSWORD_LENGTH} characters. Supplied value: "${process.env.PASSWORD_MIN_LENGTH}".`);
-        }
-
-        if (!process.env.PASSWORD_MAX_LENGTH) {
-            super._addError("PASSWORD_MAX_LENGTH is required.");
-        }
-        else if(isNaN(parseInt(String(process.env.PASSWORD_MAX_LENGTH))) || Number(process.env.PASSWORD_MAX_LENGTH) <= 0 || Number(process.env.PASSWORD_MAX_LENGTH) > this.MAX_PASSWORD_LENGTH) {
-            super._addError(`PASSWORD_MAX_LENGTH is not a number or it has a value less than zero or greater than ${this.MAX_PASSWORD_LENGTH} characters. Supplied value: "${process.env.PASSWORD_MAX_LENGTH}".`);
-        }
-        else if(parseInt(String(process.env.PASSWORD_MAX_LENGTH)) < Number(String(process.env.PASSWORD_MIN_LENGTH))) {
-            super._addError(`PASSWORD_MAX_LENGTH is not a number or it has a value less than zero or greater than ${this.MAX_PASSWORD_LENGTH} characters. Supplied value: "${process.env.PASSWORD_MAX_LENGTH}".`);
+        else if(!(String(process.env.LEGACY_SECURITY).toLowerCase() == "on" || String(process.env.LEGACY_SECURITY).toLowerCase() == "off")) {
+            super._addError(`LEGACY_SECURITY possible values are "On" or "Off".`);
         }
 
         return this;
