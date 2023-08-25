@@ -50,10 +50,11 @@ db.start() //Database setup.
                     logger.logInfo(`Propel started successfully with "${cfg.environment}" environment configuration.`);
                 }
 
-                logger.logDebug(`Executing on folder: "${__dirname}".
+                console.log(`Executing on folder: "${__dirname}".
 Executing script: "${__filename}".
 Server is ready and listening on port: ${cfg.port}.
-\r\nPropel started on "${cfg.environment}" environment.\r\n`);
+Propel started on "${cfg.environment}" environment.
+Powered by Node.js ${process.version}(${process.arch}) on platform ${process.platform}.`);
             })
         .catch((err:any) => {
             closeHandler(err)
