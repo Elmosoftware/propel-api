@@ -85,6 +85,14 @@ export class MongooseSchemaAdapter {
 
         //If there is at least one field that need to be encrypted:
         if (encryptedfields.length > 0) {
+            /**
+             * For some reason with Mongoose ver 7.5, typescript is giving the following error:
+             * error TS2345: Argument of type '{ fields: string[]; secret: string; }' is not 
+             * assignable to parameter of type 'undefined'.
+             * Even when in Mongoose this param is defined as "Object" See:
+             * https://mongoosejs.com/docs/api/schema.html#Schema.prototype.plugin()
+            */  
+            //@ts-ignore
             ret.plugin(fieldEncryption, { fields: encryptedfields, secret: cfg.encryptionKey });
         }
 
