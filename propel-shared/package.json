@@ -14,13 +14,13 @@
   "devDependencies": {
     "@types/jest": "^25.2.3",
     "@types/luxon": "^3.0.2",
-    "@types/node": "^14.17.18",
+    "@types/node": "^14.18.56",
     "jest": "^26.6.3",
     "typescript": "^3.9.10"
   },
   "dependencies": {
-    "luxon": "^3.0.4",
+    "luxon": "^3.4.2",
     "short-unique-id": "^4.4.4",
-    "tslib": "^2.3.1"
+    "tslib": "^2.6.2"
   }
 }

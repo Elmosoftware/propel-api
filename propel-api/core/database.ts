@@ -13,10 +13,8 @@ import { SecurityToken } from "../../propel-shared/core/security-token";
 
 const mongooseOptions: any = {
     useNewUrlParser: true, //(node:61064) DeprecationWarning: current URL string parser is deprecated.
-    useCreateIndex: true, //(node:61064) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
-    //After migration to v5.7.7 we are adding the following to avoid other deprecation warnings 
-    //as stated in https://mongoosejs.com/docs/deprecations.html:
-    useFindAndModify: false,
+    // useCreateIndex: true, //Not supported anymore in Mongoose v7
+    // useFindAndModify: false,//Not supported anymore in Mongoose v7
     useUnifiedTopology: true,
     autoCreate: false, //Recall to create the collections manually!
     autoIndex: false //and indexes too :-)
@@ -74,7 +72,6 @@ class Database {
         }
 
         logger.logInfo("Establishing database conection...");
-        //@ts-ignore  The connect method is returning a promise, but seems Typescript didn't like it  :-(
         return mongoose.connect(cfg.databaseEndpoint, mongooseOptions);
     }
 

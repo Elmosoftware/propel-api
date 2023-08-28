@@ -33,8 +33,8 @@ export class DataService {
      * Return a new Entity Object ID
      */
     static getNewobjectId(id?: string) {
-        if(id) return mongoose.Types.ObjectId(id);
-        else return mongoose.Types.ObjectId();
+        if (id) return new mongoose.Types.ObjectId(id);
+        else return new mongoose.Types.ObjectId();
     }
 
     /**
@@ -94,16 +94,15 @@ export class DataService {
             obj = this._model.model.hydrate(document);
             obj.isNew = true;
 
-            obj.save((err: any, data: any) => {
-                if (err) {
-                    if (this.isDupKeyError(err)) {
-                        err = new PropelError(err, ErrorCodes.DuplicatedItem)
-                    }
-                    reject(err);
+            obj.save()
+            .then((data:any) => {
+                resolve(data._id);
+            })
+            .catch((err:any)=>{
+                if (this.isDupKeyError(err)) {
+                    err = new PropelError(err, ErrorCodes.DuplicatedItem)
                 }
-                else {
-                    resolve(data._id);
-                }
+                reject(err);
             })
         })
     }
@@ -131,25 +130,28 @@ export class DataService {
             }
             else {
                 this._setAuditData(false, document);
-                this._model.model.updateOne({ _id: document._id }, document, null, (err: any, data: any) => {
-                    if (err) {
+
+                this._model.model.updateOne({ _id: document._id }, document, null)
+                    .exec()
+                    .then((results: mongoose.UpdateWriteOpResult) => {
+                        if (this.isVoidWrite(results)) {
+                            let err = new PropelError(`The last UPDATE operation affects no documents. Please verify: \r\n
+    - If The document you try to update no longer exists.
+    - If you have been granted with the necessary permissions.`,
+                                ErrorCodes.VoidUpdate
+                            );
+                            reject(err);
+                        }
+                        else {
+                            resolve(document._id);
+                        }
+                    })
+                    .catch((err) => {
                         if (this.isDupKeyError(err)) {
                             err = new PropelError(err, ErrorCodes.DuplicatedItem)
                         }
                         reject(err);
-                    }
-                    else if (this.isVoidWrite(data)) {
-                        let err = new PropelError(`The last UPDATE operation affects no documents. Please verify: \r\n
-                    - If The document you try to update no longer exists.
-                    - If you have been granted with the necessary permissions.`,
-                            ErrorCodes.VoidUpdate
-                        );
-                        reject(err);
-                    }
-                    else {
-                        resolve(document._id);
-                    }
-                })
+                    })
             }
         })
     }
@@ -227,11 +229,8 @@ Those fields are for internal use only and must not take part on user queries.`)
                 //If results are paginated:
                 if (qm.isPaginated) {
                     //We need to return first the total amount of documents for the specified filter:
-                    countQuery.exec((err: any, count: number) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        else {
+                    countQuery.exec()
+                        .then((count: number) => {
                             //If documents total amount is 0, there is no reason to continue:
                             if (count > 0) {
                                 this._runFetchQuery(query, resolve, reject, count)
@@ -239,8 +238,10 @@ Those fields are for internal use only and must not take part on user queries.`)
                             else {
                                 resolve(new PagedResponse<Entity>());
                             }
-                        }
-                    });
+                        })
+                        .catch((err: any) => {
+                            reject(err)
+                        })
                 }
                 else {
                     this._runFetchQuery(query, resolve, reject)
@@ -274,21 +275,22 @@ Those fields are for internal use only and must not take part on user queries.`)
                         deletedOn: new Date(),
                         deletedBy: (this._token) ? this._token.userName : ""
                     }
-                }, null,
-                    (err: any, data: any) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        else if (this.isVoidWrite(data)) {
+                }, null)
+                    .exec()
+                    .then((results: mongoose.UpdateWriteOpResult) => {
+                        if (this.isVoidWrite(results)) {
                             //The attempt to soft delete a non existent document by Id is not reported as error by Mongoose:
                             let err = new PropelError(`The last DELETE operation affects no documents. This can be caused by the following issues: \r\n
-                    - The document you tried to delete no longer exists.
-                    - You are not been granted with the necessary permissions.`, ErrorCodes.VoidDelete);
+    - The document you tried to delete no longer exists.
+    - You are not been granted with the necessary permissions.`, ErrorCodes.VoidDelete);
                             reject(err);
                         }
                         else {
                             resolve(id);
                         }
+                    })
+                    .catch((err) => {
+                        reject(err);
                     })
             }
         })
@@ -339,18 +341,18 @@ Those fields are for internal use only and must not take part on user queries.`)
      * @param {number} totalCount Total amounts of documents in the collection.
      */
     private _runFetchQuery(query: any, cbResolve: Function, cbReject: Function, totalCount?: number) {
-        query.exec((err: any, data: any) => {
+        query.exec()
+        .then((data: any) => {
+            cbResolve(new PagedResponse<Entity>(this._postProcessData(data), totalCount));
+        })
+        .catch((err:any) => {
             if (err) {
                 if (this.isEncryptionError(err)) {
                     err = new PropelError(err, ErrorCodes.CryptoError);
                 }
-
                 cbReject(err);
             }
-            else {
-                cbResolve(new PagedResponse<Entity>(this._postProcessData(data), totalCount));
-            }
-        });
+        })
     }
 
     /**
@@ -383,7 +385,7 @@ Those fields are for internal use only and must not take part on user queries.`)
                     }
                 })
             }
-        }       
+        }
 
         return data;
     }
@@ -399,11 +401,12 @@ Those fields are for internal use only and must not take part on user queries.`)
     /**
     * Returns a boolean value indicating if the last write operation in the database was not hitting 
     * any documents. This mean that no document was updated or deleted.
-    * @param {any} insertOneWriteOpResultObject Error to evaluate
+    * @param {mongoose.UpdateWriteOpResult} UpdateWriteOpResult 
+    * (More info here: https://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#~updateWriteOpResult)
     */
-    private isVoidWrite(insertOneWriteOpResultObject: any) {
-        return (insertOneWriteOpResultObject && insertOneWriteOpResultObject.n != undefined &&
-            insertOneWriteOpResultObject.n == 0)
+    private isVoidWrite(UpdateWriteOpResult: mongoose.UpdateWriteOpResult) {
+        return (UpdateWriteOpResult && UpdateWriteOpResult.modifiedCount != undefined &&
+            UpdateWriteOpResult.modifiedCount == 0)
     }
 
     /**
