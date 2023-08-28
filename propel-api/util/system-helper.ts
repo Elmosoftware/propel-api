@@ -135,8 +135,7 @@ export class SystemHelper {
 
     static decrypt(message: string, rtk: RuntimeTokenKeys): string {
         let dec = crypto.createDecipheriv(rtk.alg, rtk.key, rtk.iv);
-        return dec.update(message, "hex" as crypto.HexBase64BinaryEncoding, 
-            "utf-8" as crypto.Utf8AsciiBinaryEncoding) + dec.final("utf8");
+        return dec.update(message, "hex", "utf-8") + dec.final("utf8");
     }
 
     /**
