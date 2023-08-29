@@ -81,7 +81,7 @@ return [pscustomobject]@{ ScriptDesc = "SingleOptionalUntypedParam"} | ConvertTo
     [string]$TestParam7StringWithValidateScriptAndHelpMessage,
 
     [Parameter(HelpMessage='This is the TestParam8 with a help message.')]
-    [DateTime]$TestParam8DateTimeWithHelpMessage = [DateTime]::Now,
+    [DateTime]$TestParam8DateTimeWithHelpMessage,
 
     [Parameter(HelpMessage='This is the TestParam9 with a help message.')]
     [ValidateLength(2,10)]
@@ -340,9 +340,9 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[7].nativeType).toEqual(JSType.Date);
                 expect(params[7].required).toEqual(false);
                 expect(params[7].validValues.length).toEqual(0);
-                expect(params[7].canBeNull).toEqual(true);
-                expect(params[7].canBeEmpty).toEqual(true);
-                expect(params[7].defaultValue).toEqual("[DateTime]::Now");
+                expect(params[7].canBeNull).toEqual(false);
+                expect(params[7].canBeEmpty).toEqual(false);
+                expect(params[7].defaultValue).toEqual("");
 
                 //Parameter #9: TestParam9WIthValidateLength:
                 expect(params[8].name).toEqual("TestParam9WIthValidateLength");
