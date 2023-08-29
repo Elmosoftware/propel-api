@@ -1,11 +1,10 @@
-//@ts-ignore
-import { processQWINSTAOutput } from "../util"
+const util = require("../util");
 
 describe("Electron Support files", () => {
     describe("Util.processQWINSTAOutput", () => {
         it("Empty string", () => {
             let stdOut = ``
-            let ret = processQWINSTAOutput(stdOut);
+            let ret = util.processQWINSTAOutput(stdOut);
 
             expect(ret.length).toEqual(0);
         });
@@ -13,7 +12,7 @@ describe("Electron Support files", () => {
             let stdOut =
                 "   #  SESSIONNAME       USER NAME        SESSION ID   STATE    HOST NAME \r\n" +
                 "   0  Services                                    0   Disc               \r\n"
-            let ret = processQWINSTAOutput(stdOut);
+            let ret = util.processQWINSTAOutput(stdOut);
 
             expect(ret.length).toEqual(0);
         });
@@ -22,7 +21,7 @@ describe("Electron Support files", () => {
                 "   #  SESSIONNAME       USER NAME        SESSION ID   STATE    HOST NAME \r\n" +
                 "   0  Services                                    0   Disc               \r\n" +
                 "   1                    test.user1                1   Active             \r\n"
-            let ret = processQWINSTAOutput(stdOut);
+            let ret = util.processQWINSTAOutput(stdOut);
 
             expect(ret.length).toEqual(1);
             expect(ret[0].userName).toEqual("test.user1");
@@ -34,7 +33,7 @@ describe("Electron Support files", () => {
                 "   0  Services                                    0   Disc               \r\n" +
                 "   1                    test.user1                1   Active             \r\n" +
                 "   2                    test.user2                2   Disc               \r\n"
-            let ret = processQWINSTAOutput(stdOut);
+            let ret = util.processQWINSTAOutput(stdOut);
 
             expect(ret.length).toEqual(2);
             expect(ret[0].userName).toEqual("test.user1");
