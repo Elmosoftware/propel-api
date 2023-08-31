@@ -58,6 +58,20 @@
             "problemMatcher": []
         },
         {
+            "label": "Test Shell",
+            "type": "shell",
+            "dependsOn": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/propel-shell/"
+            },
+            "command": "npm",
+            "args": [
+                "test"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "Run API",
             "type": "shell",
             "dependsOn": [

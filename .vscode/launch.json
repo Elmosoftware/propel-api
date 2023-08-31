@@ -45,6 +45,20 @@
       },
       "cwd": "${workspaceFolder}/propel-shared",
       "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug SHELL Test current file", //Allows to debug the file that is opened in the editor.
+      "program": "${workspaceFolder}/propel-shell/node_modules/jest/bin/jest.js",
+      "windows": {
+        "args": [
+          "--testPathPattern=./test/${fileBasenameNoExtension}.*",
+          "--runInBand"   
+        ],
+      },
+      "cwd": "${workspaceFolder}/propel-shell",
+      "console": "integratedTerminal"
     }
   ]
 }
