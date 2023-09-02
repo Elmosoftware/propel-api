@@ -16,6 +16,9 @@ export class WorkflowStepDialogComponent implements OnInit {
   step: WorkflowStep;
 
   get title(): string {
+    if (this.step && this.step.name) {
+      return this.step.name
+    }
     return "New Step"
   }
 
