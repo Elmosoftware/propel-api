@@ -203,7 +203,8 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
           valuesArray.push(new UntypedFormGroup({
             name: new UntypedFormControl(pv.name),
             value: new UntypedFormControl(pv.value),
-            nativeType: new UntypedFormControl(pv.nativeType)
+            nativeType: new UntypedFormControl(pv.nativeType),
+            isRuntimeParameter: new UntypedFormControl(pv.isRuntimeParameter)
           }))
         });
 

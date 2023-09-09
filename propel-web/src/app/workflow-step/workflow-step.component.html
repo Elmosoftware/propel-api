@@ -70,28 +70,43 @@
             <label class="mb-2"><strong>Parameter values:</strong></label>
             <div *ngIf="selectedScript.parameters && selectedScript.parameters.length > 0; else noParams">
                 <div formArrayName="values" *ngFor="let child of parameterValues.controls; let i=index">
-                    <label [ngClass]="{
-                        'data-required': isParamRequired(child.controls.name.value)
-                    }" >${{child.controls.name.value}}</label>
-                    <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
                     <ng-container [formGroupName]="i">
+                        <div class="form-group">
+                            <div class="d-flex justify-content-between">
+                                <label [ngClass]="{
+                                    'data-required': isParamRequired(child.controls.name.value)
+                                    }">${{child.controls.name.value}}</label>
+                                <div *ngIf="!isQuickTask" class="d-flex" [matTooltip]="getRuntimeParameterTooltip()"
+                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"> 
+                                    <div class="mr-2 icon-runtime-param-on-mini"
+                                       [ngClass]="{
+                                            'icon-runtime-param-off': !child.controls.isRuntimeParameter.value
+                                        }"></div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" [id]="'isRuntimeParameter'+i"
+                                            formControlName="isRuntimeParameter">
+                                        <label class="custom-control-label" [for]="'isRuntimeParameter'+i"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
+                        </div>
+                    
                         <!-- Propel custom parameters requires specific treatment -->
                         <div *ngIf="isPropelParameter(child.controls.name.value); else otherParameterTypes" class="form-group">
                             <ng-select #credentials [items]="allCredentials" [multiple]="true" [closeOnSelect]="false"
-                                [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name"
-                                clearAllText="Clear" [compareWith]="compareFn"
-                                placeholder="Select the credentials you will need in the script."
+                                [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name" clearAllText="Clear"
+                                [compareWith]="compareFn" placeholder="Select the credentials you will need in the script."
                                 formControlName="value">
                                 <ng-template ng-label-tmp let-item="item">
                                     <span class="ng-value-custom-icon" (click)="dropCredentialItem(item)">×</span>
-                                    <span class="ml-1 menu-icon"
-                                        [ngClass]="{
-                                            'icon-credential-windows': getCredentialType(item.name) == credentialTypes.Windows,
-                                            'icon-credential-aws': getCredentialType(item.name) == credentialTypes.AWS,
-                                            'icon-credential-apikey': getCredentialType(item.name) == credentialTypes.APIKey
-                                        }"></span>
+                                    <span class="ml-1 menu-icon" [ngClass]="{
+                                                                'icon-credential-windows': getCredentialType(item.name) == credentialTypes.Windows,
+                                                                'icon-credential-aws': getCredentialType(item.name) == credentialTypes.AWS,
+                                                                'icon-credential-apikey': getCredentialType(item.name) == credentialTypes.APIKey
+                                                            }"></span>
                                     <span class="ng-value-label" [ngClass]="{
-                                                'item-disabled': false }">{{item.name}}</span>
+                                                                    'item-disabled': false }">{{item.name}}</span>
                                 </ng-template>
                             </ng-select>
                         </div>
@@ -101,15 +116,11 @@
                                 <div *ngSwitchCase="'Array'" class="form-group">
                                     <div class="d-flex">
                                         <!-- "id" and "title" will be used internally to locate 
-                                            the component and parameter to add new items. -->
-                                        <ng-select #ngSelectArrays
-                                            [id]="i" [title]="child.controls.name.value" 
-                                            [items]="getValidSet(child.controls.name.value)" 
-                                            [multiple]="true"
-                                            [closeOnSelect]="false" [clearSearchOnAdd]="true" 
-                                            [searchable]="false" clearAllText="Clear"
-                                            [compareWith]="compareFn" placeholder="Select all the text" 
-                                            formControlName="value" class="w-100">
+                                                                the component and parameter to add new items. -->
+                                        <ng-select #ngSelectArrays [id]="i" [title]="child.controls.name.value"
+                                            [items]="getValidSet(child.controls.name.value)" [multiple]="true" [closeOnSelect]="false"
+                                            [clearSearchOnAdd]="true" [searchable]="false" clearAllText="Clear" [compareWith]="compareFn"
+                                            placeholder="Select all the text" formControlName="value" class="w-100">
                                             <ng-template *ngIf="!hasValidSet(child.controls.name.value)" ng-footer-tmp>
                                                 <div class="cursor-pointer" (click)="addNewValue(i)">
                                                     <i class="fas fa-plus mr-2"></i>Add a new value
@@ -128,27 +139,27 @@
                                 </div>
                                 <div *ngSwitchCase="'Date'" class="form-group">
                                     <div class="d-flex justify-content-center">
-                                        <input type="datetime-local" class="form-control" 
-                                        formControlName="value">
+                                        <input type="datetime-local" class="form-control" formControlName="value">
                                     </div>
                                 </div>
                                 <div *ngSwitchDefault class="form-group">
                                     <div *ngIf="!hasValidSet(child.controls.name.value); else withValidSet">
                                         <input type="text" class="form-control" formControlName="value"
                                             [placeholder]="getPlaceHolderText(child.controls.nativeType.value)">
-                                        <div *ngIf="nativeTypeIsLiteral(child.controls.nativeType.value)" class="param-literal">This value will be trated as literal when passing to the script, so be careful...</div>
+                                        <div *ngIf="nativeTypeIsLiteral(child.controls.nativeType.value)" class="param-literal">This value
+                                            will be trated as literal when passing to the script, so be careful...</div>
                                     </div>
                                     <ng-template #withValidSet>
-                                        <ng-select [items]="getValidSet(child.controls.name.value)" [multiple]="false"
-                                            bindValue="value" bindLabel="label" [closeOnSelect]="true"
-                                            [clearSearchOnAdd]="true" [searchable]="true" clearAllText="Clear"
+                                        <ng-select [items]="getValidSet(child.controls.name.value)" [multiple]="false" bindValue="value"
+                                            bindLabel="label" [closeOnSelect]="true" [clearSearchOnAdd]="true" [searchable]="true"
+                                            clearAllText="Clear"
                                             placeholder="This parameter has a valid set of values defined. Please select one from this list."
                                             formControlName="value">
                                         </ng-select>
                                     </ng-template>
                                     <!-- DEBUG -->
                                     <!-- <small class="form-text text-muted">Current control status:
-                {{ sampleFormOrControlStatus(child.controls.value) }}</small> -->
+                                    {{ sampleFormOrControlStatus(child.controls.value) }}</small> -->
                                     <!-- DEBUG -->
                                 </div>
                             </div>
@@ -162,12 +173,8 @@
                 <div class="ml-2">The script has no parameters defined.</div>
             </ng-template>
         </div>
-
-
         <!-- <pre>Is a quick task: {{ isQuickTask }}</pre>
         <pre>Is Form Valid: {{ fh.form.valid }}</pre>
         <pre>{{fh.form.value | json }}</pre> -->
-
-
     </form>
 </div>

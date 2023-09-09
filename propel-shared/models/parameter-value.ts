@@ -20,6 +20,11 @@ export class ParameterValue {
      */
     public nativeType: string = "";
 
+    /**
+     * Indicates if the user will be able to set or update the value right before to run the workflow.
+     */
+    public isRuntimeParameter: boolean = false;
+
     constructor() {
     }
 }

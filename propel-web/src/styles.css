@@ -318,6 +318,17 @@ body{
     font-size: .7rem;
 }
 
+.icon-runtime-param-on-mini::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f591";
+    font-weight: 900;
+    font-size: .8rem;
+}
+
+.icon-runtime-param-off {
+    transform: rotate(40deg);
+}
+
 /* 
   FORMS
   ==========================================================

@@ -702,6 +702,15 @@
               {{ sampleFormOrControlStatus(this.sampleForm.controls['name']) }}</small>
           </div>
           <div class="form-group">
+            <div class="d-flex justify-content-between">
+              <label>This is the label</label>
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" formControlName="enabled2" class="custom-control-input" id="customCheck2">
+                <label class="custom-control-label" for="customCheck2">Check this custom checkbox</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
             <label class="data-required mr-2">Disabled</label>
             <mat-slide-toggle color="primary" id="enabled" formControlName="enabled">
             </mat-slide-toggle>
