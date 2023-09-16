@@ -329,6 +329,22 @@ body{
     transform: rotate(40deg);
 }
 
+.icon-data-invalid::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f057";
+    font-weight: 400;
+    font-size: 1rem;
+    color: var(--colors-danger);
+}
+
+.icon-data-valid::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f058";
+    font-weight: 400;
+    font-size: 1rem;
+    color: var(--colors-white); 
+}
+
 /* 
   FORMS
   ==========================================================
