@@ -5,6 +5,7 @@ import { ExecutionStep } from "../models/execution-step";
  */
 export enum InvocationStatus {
     NotStarted = "NOTSTARTED",
+    Editing = "EDITING",
     Preparing = "PREPARING",
     Running = "RUNNING",
     Stopping = "STOPPING",
@@ -12,6 +13,7 @@ export enum InvocationStatus {
     Failed = "FAILED",
     Disposed = "DISPOSED",
     Finished = "FINISHED",
+    ServiceData = "SERVICEDATA",
     UserActionCancel = "CANCEL",
     UserActionKill = "KILL"
 }
@@ -76,6 +78,11 @@ export class ExecutionStats {
       * Execution log Status. This will be included only when the invocation status is "Finished".
       */
      public logStatus: string = "";
+
+     /**
+      * Indicates if a execution is in progress.
+      */
+     public isRunning: boolean = false;
 
     constructor() {
     }

@@ -56,6 +56,14 @@ const TARGETS_MAX: number = 20;
  */
 const CREDENTIALS_MAX: number = 5;
 
+/**
+ * All posible status values for a script invocation.
+ */
+export enum EditModes {
+  Normal = "normal",
+  Runtime = "runtime"
+}
+
 @Component({
   selector: 'app-workflow-step',
   templateUrl: './workflow-step.component.html',
@@ -75,6 +83,12 @@ export class WorkflowStepComponent implements OnInit {
    * either for a quieck task or not.
    */
   @Input("step") step!: WorkflowStep;
+
+  /**
+   * The workflow step to edit. If no value provided a new Workflow step will be created 
+   * either for a quieck task or not.
+   */
+  @Input("edit-mode") editMode: EditModes = EditModes.Normal;
 
   /**
    * Change event, will be throw every time the form suffer any change.
@@ -384,6 +398,11 @@ export class WorkflowStepComponent implements OnInit {
     this.credentials.clearItem(item);
   }
 
+  showParameter(pv: ParameterValue): boolean {
+    if(this.editMode == EditModes.Runtime) return pv.isRuntimeParameter;
+    return true;
+  }
+
   getRuntimeParameterTooltip() {
     return `If checked, allows the user to set or modify the value at the time of executing the workflow.\r\nOtherwise the workflow will run always with the value set here.`
   }
@@ -517,29 +536,6 @@ export class WorkflowStepComponent implements OnInit {
         }
       }
 
-      // //Assigning the validators based on the parameter type and if it is required or not:
-      // switch (p.nativeType) {
-      //   case JSType.Number:
-      //     vfns.push(ValidatorsHelper.anyNumber());
-      //     break;
-      //   case JSType.Date:
-      //     vfns.push(ValidatorsHelper.anyDate());
-      //     break;
-      //   default:
-      //     break;
-      // }
-
-      // if (p.isPropelParameter) {
-      //   vfns.push(ValidatorsHelper.maxItems(CREDENTIALS_MAX));
-      // }
-
-      // if (p.required && !pv.isRuntimeParameter) {
-      //   vfns.push(Validators.required)
-      // }
-      // else if ((!p.canBeNull || !p.canBeEmpty) && !pv.isRuntimeParameter) {
-      //   vfns.push(this.notNullOrEmptyValidator)
-      // }
-
       //Adding the controls to the array:
       fg = new UntypedFormGroup({
         name: new UntypedFormControl(pv.name),
@@ -588,27 +584,6 @@ export class WorkflowStepComponent implements OnInit {
       ctrlValue.clearValidators();
       ctrlValue.addValidators(this.getValidators(parameterName, isRuntimeParameter));
       ctrlValue.updateValueAndValidity();
-
-      // //If "Runtime parameter" is checked:
-      // if (isRuntimeParameter) {
-      //   ctrlValue.removeValidators(Validators.required) //The method do nothing if the validator doesn't exists.
-      //   ctrlValue.removeValidators(this.notNullOrEmptyValidator) //(ValidatorsHelper.notNullOrEmpty)
-      //   ctrlValue.updateValueAndValidity();
-      // }
-      // else {
-      //   //Here we need to evaluate what kind of validator, (if any), we need to add:
-      //   let param: ScriptParameter | undefined = this.tryGetParameter((ctrl.value as ParameterValue).name)
-
-      //   if (param) {
-      //     if (param.required) {
-      //       ctrlValue.addValidators(Validators.required)
-      //     }
-      //     else if (!param.canBeNull || !param.canBeEmpty) {
-      //       ctrlValue.addValidators(this.notNullOrEmptyValidator)
-      //     }
-      //     ctrlValue.updateValueAndValidity();
-      //   }
-      // }
     });
   }
 

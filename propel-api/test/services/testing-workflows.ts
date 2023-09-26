@@ -262,11 +262,60 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S1EnabledNoParamNoTargetNoThrow(): Workflow{
+    get ScriptWithMultipleParametersTargetFastTwoResultsNoThrow(): Script {
+        let ret: Script = new Script();
+        let sp1 = new ScriptParameter();
+        let sp2 = new ScriptParameter();
+        let sp3 = new ScriptParameter();
+
+        sp1.name = "NumericParam"
+        sp1.nativeType = JSType.Number
+        sp1.required = true
+        sp1.type = PSType.Int32
+        sp1.canBeEmpty = false
+        sp1.canBeNull = false
+        sp1.isPropelParameter = false
+        sp1.hasDefault = true
+        sp1.defaultValue = "12"
+
+        sp2.name = "StringParam"
+        sp2.nativeType = JSType.String
+        sp2.required = false
+        sp2.type = PSType.String
+        sp2.canBeEmpty = true
+        sp2.canBeNull = true
+        sp2.isPropelParameter = false
+        sp2.hasDefault = false
+
+        sp3.name = "PropelCredentials"
+        sp3.nativeType = JSType.Object
+        sp3.required = false
+        sp3.type = PSType.Object
+        sp3.canBeEmpty = true
+        sp3.canBeNull = true
+        sp3.isPropelParameter = true
+        sp3.hasDefault = false
+
+        ret.name = "WithMultipleParametersTargetFastTwoResultsNoThrow"
+        ret.description = "Script with a Numeric required parameter, a String parameter and a Propelcredentials parameter, targetting servers, fast execution and returning 2 results. No throwing error."
+        ret.isTargettingServers = true;
+        ret.parameters = [sp1, sp2, sp3];
+        ret.code = this._getEncodedScriptCode(ret.name, `param (
+            [Parameter(Mandatory=$true)]
+            [ValidateNotNullOrEmpty()]
+            [int]$NumericParam = 12,
+            [string]$StringParam,
+            $PropelCredentials
+)`, "FAST", 2, false)
+
+        return ret;
+    }
+
+    get Workflow_S1EnabledNoParamNoTargetNoThrow(): Workflow{
         let ret: Workflow = new Workflow();
 
         ret._id = "000000010000000000100001"
-        ret.name = "Worflow_S1NoParamNoTargetNoThrow"
+        ret.name = "Workflow_S1EnabledNoParamNoTargetNoThrow"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetUltraFastThreeResultsNoThrow."
 
         let step1: WorkflowStep = new WorkflowStep();
@@ -282,11 +331,11 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S1EnabledNoParamNoTargetNoThrowMediumDuration(): Workflow{
+    get Workflow_S1EnabledNoParamNoTargetNoThrowMediumDuration(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret._id = "000000010000000000100001"
-        ret.name = "Worflow_S1EnabledNoParamNoTargetNoThrowMediumDuration"
+        ret._id = "000000010000000000100002"
+        ret.name = "Workflow_S1EnabledNoParamNoTargetNoThrowMediumDuration"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetMediumThreeResultsNoThrow."
 
         let step1: WorkflowStep = new WorkflowStep();
@@ -302,11 +351,11 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S1EnabledNoParamNoTargetThrow(): Workflow{
+    get Workflow_S1EnabledNoParamNoTargetThrow(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret._id = "000000010000000000100001"
-        ret.name = "Test Worflow with a single step NoParams No Target throwing error"
+        ret._id = "000000010000000000100003"
+        ret.name = "Workflow_S1EnabledNoParamNoTargetThrow"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetUltraFastThreeResultsThrow."
 
         let step1: WorkflowStep = new WorkflowStep();
@@ -322,11 +371,11 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S2Enabled(): Workflow{
+    get Workflow_S2Enabled(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret._id = "000000010000000000100001"
-        ret.name = "Worflow_S2Enabled"
+        ret._id = "000000010000000000100004"
+        ret.name = "Workflow_S2Enabled"
         ret.description = "Workflow with Step 1:ScriptNoParamsTargetUltraFastTwoResultsNoThrow, Step2: ScriptNoParamsNoTargetUltraFastThreeResultsNoThrow."
 
         let step: WorkflowStep = new WorkflowStep();
@@ -352,11 +401,11 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S2EnabledThrow(): Workflow{
+    get Workflow_S2EnabledThrow(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret._id = "000000010000000000100001"
-        ret.name = "Worflow_S2EnabledThrow"
+        ret._id = "000000010000000000100005"
+        ret.name = "Workflow_S2EnabledThrow"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetUltraFastThreeResultsThrow, Step 2: ScriptNoParamsNoTargetUltraFastThreeResultsNoThrow."
 
         let step: WorkflowStep = new WorkflowStep();
@@ -382,11 +431,11 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S2EnabledTargetDisabled(): Workflow{
+    get Workflow_S2EnabledTargetDisabled(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret._id = "000000010000000000100001"
-        ret.name = "Worflow_S2EnabledTargetDisabled"
+        ret._id = "000000010000000000100006"
+        ret.name = "Workflow_S2EnabledTargetDisabled"
         ret.description = "Workflow with Step 1:ScriptNoParamsTargetUltraFastTwoResultsNoThrow, Step 2:ScriptNoParamsTargetUltraFastTwoResultsNoThrow."
 
         let step: WorkflowStep = new WorkflowStep();
@@ -412,11 +461,11 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S2EnabledTargetDisabledFast(): Workflow{
+    get Workflow_S2EnabledTargetDisabledFast(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret._id = "000000010000000000100001"
-        ret.name = "Worflow_S2EnabledTargetEnabledFast"
+        ret._id = "000000010000000000100007"
+        ret.name = "Workflow_S2EnabledTargetDisabledFast"
         ret.description = "Workflow with Step 1:ScriptNoParamsTargetFastTwoResultsNoThrow, Step 2:ScriptNoParamsTargetUltraFastTwoResultsNoThrow."
 
         let step: WorkflowStep = new WorkflowStep();
@@ -442,11 +491,11 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S2EnabledNoParamNoTargetNoThrowMediumDuration(): Workflow{
+    get Workflow_S2EnabledNoParamNoTargetNoThrowMediumDuration(): Workflow{
         let ret: Workflow = new Workflow();
 
-        ret._id = "000000010000000000100001"
-        ret.name = "Test Worflow with 2 steps enaled NoParams NoTargets No Errors Medium Duration"
+        ret._id = "000000010000000000100008"
+        ret.name = "Workflow_S2EnabledNoParamNoTargetNoThrowMediumDuration"
         ret.description = "Workflow with Step 1:ScriptNoParamsNoTargetMediumThreeResultsNoThrow and Step 2: ."
 
         let step1: WorkflowStep = new WorkflowStep();
@@ -472,11 +521,11 @@ export class TestingWorkflows {
         return ret;
     }
 
-    get Worflow_S1Enabled2TargetsEnabledWithCredFast(): Workflow{
+    get Workflow_S1Enabled2TargetsEnabledWithCredFast(): Workflow{
         let ret: Workflow = new Workflow();
         
-        ret._id = "000000010000000000100001"
-        ret.name = "Worflow_S1EnabledTargetEnabledWithCredFast"
+        ret._id = "000000010000000000100009"
+        ret.name = "Workflow_S1Enabled2TargetsEnabledWithCredFast"
         ret.description = "Workflow with Step 1:ScriptNoParamsTargetFastTwoResultsNoThrow:ScriptNoParamsTargetUltraFastTwoResultsNoThrow."
 
         let pv = new ParameterValue();
@@ -495,6 +544,120 @@ export class TestingWorkflows {
         ret.steps.push(step);
         
         return ret;
+    }
+
+    get Workflow_S3EnabledWithParamsAndRuntimeParamsWithTargetNoThrowFastDuration(): Workflow{
+        let ret: Workflow = new Workflow();
+
+        ret._id = "000000010000000000100010"
+        ret.name = "Workflow_S3EnabledWithParamsAndRuntimeParamsWithTargetNoThrowFastDuration"
+        ret.description = "Workflow with 3 steps including runtime parameters."
+
+        //Creating STEP 1: Script without parameters
+        //-------------------------------------------
+        let step1: WorkflowStep = new WorkflowStep();
+        step1.name = "Step 1: This step has no parameters"
+        step1.abortOnError = true;
+        step1.enabled = true
+        step1.script = this.ScriptNoParamsNoTargetUltraFastThreeResultsNoThrow;
+        step1.targets = []
+        step1.values = []
+
+        ret.steps.push(step1);
+
+        //Creating STEP 2: Script with 3 parameters, 2 of them marked as Runtime Parameters:
+        //----------------------------------------------------------------------------------
+        let step2: WorkflowStep = new WorkflowStep();
+        step2.name = "Step 2: This step has 2 runtime parameters."
+        step2.abortOnError = true;
+        step2.enabled = true
+        step2.script = this.ScriptWithMultipleParametersTargetFastTwoResultsNoThrow;
+        step2.targets = [this.Target01Enabled]
+
+        let step2pv1 = new ParameterValue();
+        step2pv1.name = "NumericParam"
+        step2pv1.value = "1" //We emulate a change of the value from 12 (the default) to 1 by the user 
+        //that creates the Workflow. Anyway, and because this is a Runtime Parameter, this value can 
+        //change again right before to run the Workflow.
+        step2pv1.nativeType = JSType.Number
+        step2pv1.isRuntimeParameter = true
+
+        let step2pv2 = new ParameterValue();
+        step2pv2.name = "StringParam"
+        step2pv2.value = ""
+        step2pv2.nativeType = JSType.String
+        step2pv2.isRuntimeParameter = true
+
+        let step2pv3 = new ParameterValue();
+        step2pv3.name = "PropelCredentials"
+        step2pv3.value = this.CredentialWindows01._id
+        step2pv3.nativeType = JSType.Object
+        step2pv3.isRuntimeParameter = false
+
+        step2.values = [step2pv1, step2pv2, step2pv3]
+
+        ret.steps.push(step2);
+
+        //Creating STEP 3: Script with 3 parameters, none of them marked as Runtime Parameters:
+        //-------------------------------------------------------------------------------------
+        let step3: WorkflowStep = new WorkflowStep();
+        step3.name = "Step 3: This step has no runtime parameters."
+        step3.abortOnError = true;
+        step3.enabled = true
+        step3.script = this.ScriptWithMultipleParametersTargetFastTwoResultsNoThrow;
+        step3.targets = [this.Target01Enabled]
+
+        let step3pv1 = new ParameterValue();
+        step3pv1.name = "NumericParam"
+        step3pv1.value = "2"
+        step3pv1.nativeType = JSType.Number
+        step3pv1.isRuntimeParameter = false
+
+        let step3pv2 = new ParameterValue();
+        step3pv2.name = "StringParam"
+        step3pv2.value = "String value"
+        step3pv2.nativeType = JSType.String
+        step3pv2.isRuntimeParameter = false
+
+        let step3pv3 = new ParameterValue();
+        step3pv3.name = "PropelCredentials"
+        step3pv3.value = this.CredentialWindows01._id
+        step3pv3.nativeType = JSType.Object
+        step3pv3.isRuntimeParameter = false
+
+        step3.values = [step3pv1, step3pv2, step3pv3]
+
+        ret.steps.push(step3);
+
+        return ret;
+    }
+
+    getWorkflowById(id: string): Workflow | undefined {
+
+        switch (id) {
+            case "000000010000000000100001":
+                return this.Workflow_S1EnabledNoParamNoTargetNoThrow
+            case "000000010000000000100002": 
+                return this.Workflow_S1EnabledNoParamNoTargetNoThrowMediumDuration
+            case "000000010000000000100003":
+                return this.Workflow_S1EnabledNoParamNoTargetThrow
+            case "000000010000000000100004":
+                return this.Workflow_S2Enabled
+            case "000000010000000000100005":
+                return this.Workflow_S2EnabledThrow
+            case "000000010000000000100006":
+                return this.Workflow_S2EnabledTargetDisabled
+            case "000000010000000000100007":
+                return this.Workflow_S2EnabledTargetDisabledFast
+            case "000000010000000000100008":
+                return this.Workflow_S2EnabledNoParamNoTargetNoThrowMediumDuration
+            case "000000010000000000100009":
+                return this.Workflow_S1Enabled2TargetsEnabledWithCredFast
+            case "000000010000000000100010":
+                return this.Workflow_S3EnabledWithParamsAndRuntimeParamsWithTargetNoThrowFastDuration
+            default:
+                return undefined;
+        }
     }
 
     private _getEncodedScriptCode(scriptName: string, paramsDef: string, durationType: string, 

@@ -25,6 +25,9 @@ import { SecurityToken } from "../../propel-shared/core/security-token";
 import { UserAccount } from "../../propel-shared/models/user-account";
 import { TypeConverter } from "../../propel-shared/core/type-converter";
 import { JSType, PowerShellLiterals } from "../../propel-shared/core/type-definitions";
+import { QueryModifier } from "../../propel-shared/core/query-modifier";
+import { PagedResponse } from "../../propel-shared/core/paged-response";
+import { RunnerServiceData } from "../../propel-shared/core/runner-service-data";
 
 /**
  * This class responsibility is everything related to run a specified workflow and 
@@ -41,6 +44,7 @@ export class Runner {
     private _currentInvocations: PowerShellService[];
     private _stats!: ExecutionStats;
     private _credentialCache: CredentialCache;
+    private _serviceData: RunnerServiceData
 
     constructor() {
         this._scriptVal = new ScriptValidator();
@@ -51,6 +55,7 @@ export class Runner {
         this._abortedExecution = false;
         this._currentInvocations = [];
         this._credentialCache = new CredentialCache();
+        this._serviceData = new RunnerServiceData()
     }
 
     /**
@@ -79,16 +84,52 @@ export class Runner {
      * @param workflow The workflow to execute.
      * @param subscriptionCallback A callback function to get any realtime message during the execution.
      */
-    async execute(workflow: Workflow, token: SecurityToken, subscriptionCallback?: Function): Promise<WebsocketMessage<ExecutionStats>> {
+    async execute(data: any, token: SecurityToken, subscriptionCallback?: Function): Promise<WebsocketMessage<ExecutionStats>> {
 
         let abort: boolean = false;
         let resultsMessage: WebsocketMessage<ExecutionStats>;
         this._cb = subscriptionCallback;
         this._cancelledExecution = false;
         this._abortedExecution = false;
+        let workflow: Workflow | undefined
 
         //Creating stats:
         this._stats = new ExecutionStats();
+        this._stats.isRunning = true;
+
+        //Checking service data validity:
+        logger.logDebug(`Validating service data...`);
+        this._serviceData.hydrate(data);
+
+        logger.logDebug(`Preparing for execution...`);
+        workflow = await this.getWorkflow(this._serviceData.workflowId, token);
+
+        //If the Workflow is missing/deleted, we are not able to proceed.
+        if (!workflow) {
+            this._stats.logId = "";
+            this._stats.logStatus = ExecutionStatus.Faulty;
+            this._stats.isRunning = false;
+            throw new PropelError("The workflow does not exists. Please verify if it was deleted before retrying.");
+        }       
+
+        logger.logInfo(`Starting execution of Workflow "${workflow.name}" with id: "${workflow._id}".`)
+
+        logger.logDebug(`Merging the provided runtime parameters in the Workflow.\r\n Values provided:
+${JSON.stringify(this._serviceData)}`);
+        
+        try {
+            this._mergeRuntimeParameters(workflow, this._serviceData)
+        } catch (error) {
+            let e = new PropelError(error as Error)
+            this._stats.logId = "";
+            this._stats.logStatus = ExecutionStatus.Faulty;
+            this._stats.isRunning = false;
+
+            throw new PropelError(`There was an error checking the runtime parameters.\r\n` +
+                `This error could be related to some of the values set by the user just before to run ` +
+                `the Workflow. Please verify the details before to retry. Following the error details: ` + 
+                e.message);
+        }
 
         try {
             await this._credentialCache.build(workflow, token)
@@ -96,9 +137,10 @@ export class Runner {
             let e = new PropelError(error as Error)
             this._stats.logId = "";
             this._stats.logStatus =ExecutionStatus.Faulty;
+            this._stats.isRunning = false;
 
             throw new PropelError(`There was an error during the preparation.\r\n` + 
-                `If this error is related to the credentials assigned to one specific target or the ` + 
+                `This error is related to the credentials assigned to one specific target or the ` + 
                 `credentials set to one or more Propel parameters in any of the scripts, please verify them ` +
                 `before to retry. Following the error details: ` + e.message);
         }
@@ -199,6 +241,7 @@ export class Runner {
 
         this._execLog.status = this._summaryStatus(this._execLog.executionSteps);
         this._execLog.endedAt = new Date();
+        this._stats.isRunning = false;
 
         try {
             this._stats.logStatus = this._execLog.status;
@@ -226,6 +269,22 @@ export class Runner {
     async saveExecutionLog(log: ExecutionLog, token: SecurityToken): Promise<string> {
         let svc: DataService = db.getService("ExecutionLog", token);
         return svc.add(log);
+    }
+
+    async getWorkflow(id: string, token: SecurityToken): Promise<Workflow | undefined> {
+        let svc: DataService = db.getService("workflow", token);
+        let result: PagedResponse<Workflow>;
+        let qm = new QueryModifier();
+
+        qm.filterBy = { _id: id };
+
+        try {
+            result = await svc.find(qm) as PagedResponse<Workflow>;
+        } catch (error) {
+            return Promise.reject(error)
+        }
+
+        return Promise.resolve(result.data[0]);
     }
 
     /**
@@ -262,6 +321,22 @@ export class Runner {
             msg.context = this._stats;
             this._cb(msg);
         }
+    }
+
+    private _mergeRuntimeParameters(workflow: Workflow, data: RunnerServiceData) {
+
+        workflow.steps.map((step: WorkflowStep, stepIndex: number) => {
+            step.values
+            .filter((pv: ParameterValue) => pv.isRuntimeParameter)
+            .map((pv: ParameterValue) => {
+                let rp: ParameterValue | undefined = data.getParameter(stepIndex, pv.name)
+
+                if(!rp) throw new PropelError(`There was an error merging the Workflow runtime parameters. 
+No value was supplied for the runtime parameter "${pv.name}" of the step "${step.name}".`);
+                
+                pv.value = rp.value
+            })
+        })
     }
 
     private _preprocessScriptCode(encodedScriptCode: string): string {

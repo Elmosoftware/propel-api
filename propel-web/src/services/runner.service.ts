@@ -8,6 +8,7 @@ import { SecurityService } from './security.service';
 import { HttpHelper, Protocol } from 'src/util/http-helper';
 import { TokenRefreshRequest } from '../../../propel-shared/core/token-refresh-request';
 import { logger } from '../../../propel-shared/services/logger-service';
+import { RunnerServiceData } from '../../../propel-shared/core/runner-service-data';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 
 export const RunEndpoint: string = "run"
@@ -39,14 +40,14 @@ export class RunnerService {
 
   /**
    * Execute the specified workflow.
-   * @param workflowId Workflow ID
+   * @param data RunnerServiceData instance with all the required information to run the Workflow/Quick Task.
    */
-  execute(workflowId: string): Observable<WebsocketMessage<ExecutionStats>> {
+  execute(data: RunnerServiceData): Observable<WebsocketMessage<ExecutionStats>> {
 
     let rem: number = this.security.sessionData.remainingLifetimePercentage
 
     if (rem > TOKEN_EXPIRATION_TOLERANCE) {
-      return this.createSocket(workflowId);
+      return this.createSocket(data);
     }
     else {
       logger.logWarn(`Remaining seconds for token expiration is below threshold of ${TOKEN_EXPIRATION_TOLERANCE}%, (${parseFloat(String(rem)).toFixed(2)}%, estimated in ${parseFloat(String(this.security.sessionData.expiringInSeconds/1000)).toFixed(2)}min).
@@ -57,7 +58,7 @@ export class RunnerService {
             return throwError(err)
           }),
           switchMap(() => {
-            return this.createSocket(workflowId)
+            return this.createSocket(data)
           })
         )
     }
@@ -79,9 +80,19 @@ export class RunnerService {
     }
   }
 
-  private createSocket(workflowId: string): Observable<WebsocketMessage<ExecutionStats>> {
+  sendServiceData(data:RunnerServiceData):void {
+    let m: WebsocketMessage<ExecutionStats>;
+    
+    if (this._socket && data) {
+      m = new WebsocketMessage(InvocationStatus.ServiceData, JSON.stringify(data), new ExecutionStats());
+      this._socket.send(m);
+    }
+  }
+
+  private createSocket(data: RunnerServiceData): Observable<WebsocketMessage<ExecutionStats>> {
     let url: string;
     let query: URLSearchParams = new URLSearchParams();
+    let ret: Observable<WebsocketMessage<ExecutionStats>>;
 
     //Appending the access token in the querystring, sadly the only way we can 
     //send auth data using Websockets:
@@ -89,10 +100,15 @@ export class RunnerService {
       query.append(ACCESS_TOKEN_QUERYSTRING_KEY, `${BEARER_PREFIX}${this.security.sessionData.accessToken}`);
     }
 
-    url = HttpHelper.buildURL(Protocol.WebSocket, env.api.baseURL,
-      [RunEndpoint, workflowId], query);
+    url = HttpHelper.buildURL(Protocol.WebSocket, env.api.baseURL, RunEndpoint, query);
     this._socket = new WebsocketService<any>(url);
+    ret = this._socket.connect();
 
-    return this._socket.connect();
+    //Sending the execution parameters as soon as the connection is established:
+    setTimeout(() => {
+      this.sendServiceData(data);
+    });
+
+    return ret;
   }
 }

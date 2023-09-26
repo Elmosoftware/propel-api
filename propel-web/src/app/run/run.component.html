@@ -1,13 +1,12 @@
 <div class="container-fluid mt-2">
-    <div *ngIf="workflowStatus == 'RUNNING' && currentContext.currentStep" 
+    <div *ngIf="workflowStatus == 'RUNNING' && currentContext.currentStep"
         class="d-flex align-items-start flex-column mt-2">
         <div class="d-flex justify-content-center">
-            <button type="button" class="btn btn-primary" [disabled]="cancelling || aborting" 
-                (click)="cancel(false)">
+            <button type="button" class="btn btn-primary" [disabled]="cancelling || aborting" (click)="cancel(false)">
                 {{(cancelling)? "Cancellation in progress..." : "Cancel"}}
                 <div *ngIf="!cancelling" class="text-subtle">Prevent next steps to start.</div>
             </button>
-            <button type="button" class="btn btn-danger ml-2" [disabled]="cancelling || aborting" 
+            <button type="button" class="btn btn-danger ml-2" [disabled]="cancelling || aborting"
                 (click)="cancel(true)">
                 {{(aborting)? "Aborting execution ..." : "Kill it!"}}
                 <div *ngIf="!aborting" class="text-subtle">Stop the execution immediately.</div>
@@ -18,12 +17,12 @@
         <div class="row">
             <div class="d-flex">
                 <div *ngIf="executionPercentage > 0 else altIcon" class="d-flex">
-                    <app-cool-spiner [percentage]="executionPercentage" 
-                    class="align-self-center ml-2"></app-cool-spiner>
+                    <app-cool-spiner [percentage]="executionPercentage"
+                        class="align-self-center ml-2"></app-cool-spiner>
                 </div>
                 <ng-template #altIcon>
                     <app-status-icon size="big" [status]="workflowStatus" tooltipText="Workflow status"
-                    class="align-self-center ml-2"></app-status-icon>
+                        class="align-self-center ml-2"></app-status-icon>
                 </ng-template>
                 <span class="title overflowEllipsis align-self-center ml-2">{{ currentContext.workflowName }}</span>
             </div>
@@ -36,13 +35,13 @@
         <div *ngIf="currentContext.currentStep" class="col-3 d-none d-md-block">
             <ul class="list-group">
                 <li *ngFor="let step of currentContext.steps" class="list-group-item simpleList">
-                    <app-status-icon size="small" [status]="step.status" 
-                    tooltipText="Step status" tooltipPosition="right" class="mr-1"></app-status-icon>
+                    <app-status-icon size="small" [status]="step.status" tooltipText="Step status"
+                        tooltipPosition="right" class="mr-1"></app-status-icon>
                     {{ (step) ? step.stepName : "" }}
                 </li>
             </ul>
         </div>
-        <div *ngIf="hasMessages" [ngClass]="{
+        <div *ngIf="hasMessages && workflowStatus !== 'NOTSTARTED' && workflowStatus !== 'EDITING'" [ngClass]="{
             'col-md-9': currentContext.currentStep > 0,
             'col-md-12': currentContext.currentStep == 0
         }" class=" col-sm-12">
@@ -50,5 +49,51 @@
                 <app-console-line *ngFor="let message of model" [model]="message"></app-console-line>
             </div>
         </div>
+    </div>
+    <div *ngIf="workflowStatus == 'EDITING'" class="d-flex flex-column justify-content-center mt-2">
+        <div class="subtitle">Please edit the values below and click on the run button when ready.</div>
+        <mat-accordion *ngFor="let step of workflow.steps; let i=index" multi displayMode="default"
+            togglePosition="before" class="mt-2" #accordion>
+            <mat-expansion-panel *ngIf="stepHasRuntimeParameters(step)" expanded="true">
+                <mat-expansion-panel-header class="step-header">
+                    <mat-panel-title class="align-items-baseline justify-content-between">
+                        <div>
+                            {{step.name}}
+                        </div>
+                        <div class="text-subtle">
+                            <span [ngClass]="{
+                                'icon-data-invalid': !isStepValid(i),
+                                'icon-data-valid': isStepValid(i)
+                            }" [matTooltip]="isStepValidTooltipText(i)"
+                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"></span>
+                        </div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="content-container">
+                    <app-workflow-step [quick-task]="false" (change)="stepChange($event, i)" [step]="step"
+                        edit-mode="runtime"></app-workflow-step>
+                </div>
+            </mat-expansion-panel>
+        </mat-accordion>
+        <div class="mt-3 mb-3">
+            <div class="d-flex justify-content-around">
+                <button class="btn btn-primary ml-2" type="button" 
+                    (click)="cancelEditing()">Cancel</button>
+                <button class="btn btn-primary ml-2" type="button" [disabled]="!areAllStepsValid()"
+                    (click)="runWorkflow()">Run</button>
+            </div>
+        </div>
+
+        <!-- Here:
+        iterate the workflow steps adding a collapsible title like in Execution logs
+        inside instantiate a workflow-step-component with a new attribute runtimeParametersOnly to edit
+        only the parameterValues with "isruntimeParameter == true".
+
+        Collect the status of all the components. When all of them are valid the "Run" button must be enabled.
+        
+
+        Other things: Create an icon for InvocationStatus.Editing!!!
+
+        -->
     </div>
 </div>

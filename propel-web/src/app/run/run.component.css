@@ -15,3 +15,13 @@
     background-color: transparent;
 }
 
+.content-container {
+    overflow: auto;
+}
+
+.step-header {
+    background-color: var(--colors-highlight);
+    height: 47px !important
+}
+
+

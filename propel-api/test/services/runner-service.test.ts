@@ -10,6 +10,11 @@ import { Credential } from "../../../propel-shared/models/credential";
 import { LogLevel } from "../../core/config";
 import { SecurityToken } from "../../../propel-shared/core/security-token";
 import { DataService } from "../../services/data-service";
+import { RunnerServiceData } from "../../../propel-shared/core/runner-service-data";
+import { Workflow } from "../../../propel-shared/models/workflow";
+import { RuntimeParameters } from "../../../propel-shared/models/runtime-parameters";
+import { ParameterValue } from "../../../propel-shared/models/parameter-value";
+import { JSType } from "../../../propel-shared/core/type-definitions";
 
 let runner: Runner;
 
@@ -32,6 +37,11 @@ describe("Runner Class - execute()", () => {
         //You can comment the line if you wouldlike to see extra details.
         
         runner = new Runner();
+
+        runner.getWorkflow = (id: string, token: SecurityToken): Promise<Workflow | undefined> => {
+            return Promise.resolve(testingWorkflows.getWorkflowById(id));
+        }    
+
         runner.saveExecutionLog = (log: ExecutionLog) => {
             return Promise.resolve("newid");
         }
@@ -67,9 +77,10 @@ describe("Runner Class - execute()", () => {
 
     test(`Single step Workflow`, (done) => {
 
-        let w = testingWorkflows.Worflow_S1EnabledNoParamNoTargetNoThrow;
+        let w = testingWorkflows.Workflow_S1EnabledNoParamNoTargetNoThrow;
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
 
-        runner.execute(w, st)
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(String(runner.executionLog?.user)).toEqual(st.userId);
@@ -93,14 +104,16 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 15000);
     test(`Single step Workflow with Throwing error script`, (done) => {
 
-        let w = testingWorkflows.Worflow_S1EnabledNoParamNoTargetThrow;
+        let w = testingWorkflows.Workflow_S1EnabledNoParamNoTargetThrow;
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
 
-        runner.execute(w, st)
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Faulty);
@@ -124,14 +137,16 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 15000);
     test(`Double step Workflow`, (done) => {
 
-        let w = testingWorkflows.Worflow_S2Enabled;
+        let w = testingWorkflows.Workflow_S2Enabled;
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
 
-        runner.execute(w, st)
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
@@ -166,14 +181,16 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 15000);
     test(`Double step Workflow, first step throw and abort`, (done) => {
 
-        let w = testingWorkflows.Worflow_S2EnabledThrow;
+        let w = testingWorkflows.Workflow_S2EnabledThrow;
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
 
-        runner.execute(w, st)
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Aborted);
@@ -203,13 +220,16 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 15000);
     test(`Double step Workflow, first step ok!, second step with single disabled target`, (done) => {
 
-        let w = testingWorkflows.Worflow_S2EnabledTargetDisabled;
-        runner.execute(w, st)
+        let w = testingWorkflows.Workflow_S2EnabledTargetDisabled;
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
+
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
@@ -241,20 +261,22 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 15000);
     test(`User cancellation test`, (done) => {
 
-        let w = testingWorkflows.Worflow_S2EnabledTargetDisabledFast;
+        let w = testingWorkflows.Workflow_S2EnabledTargetDisabledFast;
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
 
         setTimeout(() => {
-            //1st step will take 3s to complete, so we will sed the cancel signal 1s after 
+            //1st step will take 3s to complete, so we will send the cancel signal 1s after 
             //the execution started:
             runner.cancelExecution();
         }, 1000);
 
-        runner.execute(w, st)
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.CancelledByUser);
@@ -284,19 +306,21 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 15000);
     test(`User Killing execution test`, (done) => {
 
-        let w = testingWorkflows.Worflow_S2EnabledTargetDisabledFast;
+        let w = testingWorkflows.Workflow_S2EnabledTargetDisabledFast;
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
 
         setTimeout(() => {
             //We will kill the execution after two seconds.
             runner.cancelExecution(true);
         }, 2000);
 
-        runner.execute(w, st)
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.CancelledByUser);
@@ -326,15 +350,17 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 15000);
 
     test(`Workflow with $PropelCredentials Parameter, 1 single credential`, (done) => {
 
-        let w = testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast //With Credentials!
+        let w = testingWorkflows.Workflow_S1Enabled2TargetsEnabledWithCredFast //With Credentials!
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
 
-        runner.execute(w, st)
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
@@ -348,18 +374,20 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
             })
 
     }, 15000);
 
     test(`Workflow with $PropelCredentials Parameter, 2 credentials`, (done) => {
 
-        let w = testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast //With Credentials!
+        let w = testingWorkflows.Workflow_S1Enabled2TargetsEnabledWithCredFast //With Credentials!
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
 
         //Adding an extra credential in the $PropelCredentials parameter value:
         w.steps[0].values[0].value += `, ${testingWorkflows.CredentialWindows03._id}`
 
-        runner.execute(w, st)
+        runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
                 if (msg.context?.logId) {
                     expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
@@ -373,6 +401,94 @@ describe("Runner Class - execute()", () => {
             .catch((err) => {
                 //IMPORTANT: Is not expected an error in this call!!!!
                 expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
+            })
+
+    }, 15000);
+
+    test(`Workflow with Runtime Parameters - Sending the right runtime parameters.`, (done) => {
+
+        let w = testingWorkflows.Workflow_S3EnabledWithParamsAndRuntimeParamsWithTargetNoThrowFastDuration
+        //For this Workflow, the second step has 1st and 2nd parameters marked as runtime parameters:
+        let rp1 = new RuntimeParameters()
+        rp1.stepIndex = 1
+
+        let rp1pv1 = new ParameterValue();
+        rp1pv1.name = "NumericParam"
+        rp1pv1.value = "100"
+        rp1pv1.nativeType = JSType.Number
+        rp1pv1.isRuntimeParameter = true
+
+        let rp1pv2 = new ParameterValue();
+        rp1pv2.name = "StringParam"
+        rp1pv2.value = "Runtime value"
+        rp1pv2.nativeType = JSType.String
+        rp1pv2.isRuntimeParameter = true
+
+        rp1.values = [rp1pv1, rp1pv2]
+
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [rp1])
+
+        runner.execute(data, st)
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                if (msg.context?.logId) {
+                    expect(runner.executionLog?.status).toEqual(ExecutionStatus.Success);
+                    expect(runner.executionLog?.startedAt).not.toBe(null);
+                    expect(runner.executionLog?.endedAt).not.toBe(null);
+                    expect(runner.executionLog?.executionSteps.length).toEqual(w.steps.length);
+
+                    //1st Step:
+                    expect(runner.executionLog?.executionSteps[0].execError).toBe(null);
+                    expect(runner.executionLog?.executionSteps[0].status).toEqual(ExecutionStatus.Success);
+                    expect(runner.executionLog?.executionSteps[0].targets.length).toEqual(1); //Localhost!
+                    expect(runner.executionLog?.executionSteps[0].targets[0].execErrors.length).toEqual(0);
+                    expect(runner.executionLog?.executionSteps[0].targets[0].execResults.length).toBeGreaterThan(0);
+                    expect(runner.executionLog?.executionSteps[0].targets[0].status).toEqual(ExecutionStatus.Success);
+                    
+                    //2nd Step:
+                    expect(runner.executionLog?.executionSteps[1].execError).toBe(null);
+                    expect(runner.executionLog?.executionSteps[1].status).toEqual(ExecutionStatus.Success);
+                    expect(runner.executionLog?.executionSteps[1].targets.length).toEqual(1); 
+                    expect(runner.executionLog?.executionSteps[1].targets[0].execErrors.length).toEqual(0);
+                    expect(runner.executionLog?.executionSteps[1].targets[0].execResults.length).toBeGreaterThan(0);
+                    expect(runner.executionLog?.executionSteps[1].targets[0].status).toEqual(ExecutionStatus.Success);
+
+                    //3rd Step:
+                    expect(runner.executionLog?.executionSteps[2].execError).toBe(null);
+                    expect(runner.executionLog?.executionSteps[2].status).toEqual(ExecutionStatus.Success);
+                    expect(runner.executionLog?.executionSteps[2].targets.length).toEqual(1); 
+                    expect(runner.executionLog?.executionSteps[2].targets[0].execErrors.length).toEqual(0);
+                    expect(runner.executionLog?.executionSteps[2].targets[0].execResults.length).toBeGreaterThan(0);
+                    expect(runner.executionLog?.executionSteps[2].targets[0].status).toEqual(ExecutionStatus.Success);
+                }
+                else {
+                    expect(msg.context?.logId).not.toBe(null);
+                }
+
+                done();
+            })
+            .catch((err) => {
+                //IMPORTANT: Is not expected an error in this call!!!!
+                expect(err).toEqual("Is not expected an error in this call!!!!")
+                done();
+            })
+
+    }, 15000);
+
+    test(`Workflow with Runtime Parameters - Sending no runtime parameters.`, (done) => {
+
+        let w = testingWorkflows.Workflow_S3EnabledWithParamsAndRuntimeParamsWithTargetNoThrowFastDuration
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
+
+        runner.execute(data, st)
+            .then((msg: WebsocketMessage<ExecutionStats>) => {
+                expect(msg.context?.logId).toEqual("Don't expect this call!")
+                done();
+            })
+            .catch((err) => {
+                //Workflow must abort if at least one runtime parametrr is missing:
+                expect(err.message).toContain("There was an error checking the runtime parameters.")
+                done();
             })
 
     }, 15000);
