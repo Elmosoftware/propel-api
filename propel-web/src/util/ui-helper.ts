@@ -44,15 +44,20 @@ export class UIHelper {
      * Return a userfriendly list of parameter values.
      * @param values parameter values.
      */
-    static getParameterValuesList(values: ParameterValue[]): string {
+    static getParameterValuesList(values: ParameterValue[], includeRuntimeIndicator: boolean = false): string {
         let ret: string = "None";
 
         if (values && values.length > 0) {
             ret = values.map((pv: ParameterValue) => {
+                let runtimeInd = "";
                 let quotes: string = (pv.nativeType == "String") ? `"` : "";
-                return `${pv.name} = ${quotes}${pv.value}${quotes}`;
+
+                if (includeRuntimeIndicator && pv.isRuntimeParameter) {
+                    runtimeInd = " (runtime)"
+                }
+                return `${pv.name} = ${quotes}${pv.value}${quotes}${runtimeInd}`;
             })
-                .join();
+                .join("\r\n");
         }
 
         return ret;
