@@ -57,6 +57,9 @@ export class StatusIconComponent implements OnInit {
       case "NOTSTARTED":
         ret = "Not started yet."
         break;
+      case "EDITING":
+        ret = "Editing runtime parameters."
+        break;
       case "FAULTY":
       case "FAILED":
         ret = "One or more errors occurred."

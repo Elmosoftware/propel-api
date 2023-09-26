@@ -205,13 +205,7 @@ export class ExecutionLogExtended {
     this.startDateFriendly = SharedSystemHelper.getFriendlyTimeFromNow(log.startedAt);
     
     this.workflowName = log.workflow.name;
-    if (log.workflow.isQuickTask) {
-      this.workflowNameTooltip = `Script: ${log.workflow.steps[0].script.name}
-Parameters:\r\n${UIHelper.getParameterValuesList(log.workflow.steps[0].values)}`
-    }
-    else {
-      this.workflowNameTooltip = `${log.workflow.name}:\r\n${(log.workflow.description) ? log.workflow.description : "No description available."}`;
-    }
+    this.workflowNameTooltip = `${log.workflow.name}:\r\n${(log.workflow.description) ? log.workflow.description : "No description available."}`;
     
     this.duration = SharedSystemHelper.getDuration(log.startedAt, log.endedAt);
     this.durationTooltip = `Start at: ${SharedSystemHelper.formatDate(log.startedAt)}

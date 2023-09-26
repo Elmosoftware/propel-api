@@ -9,7 +9,8 @@
     'fa-check-circle icon-success': status == 'SUCCESS',
     'fa-ban': (status == 'ABORTED' || status == 'CANCELLED'),
     'fa-share': status == 'SKIPPED',
+    'fa-highlighter': status == 'EDITING',
     'dark-style': iconStyle == 'dark',
     'dark-style-spin': iconStyle == 'dark' && status == 'RUNNING',
-    'dark-style-light': iconStyle == 'dark' && (status == 'ABORTED' || status == 'CANCELLED' || status == 'SKIPPED')
+    'dark-style-light': iconStyle == 'dark' && (status == 'ABORTED' || status == 'CANCELLED' || status == 'SKIPPED' || status == 'EDITING')
 }"></i>

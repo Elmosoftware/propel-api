@@ -69,7 +69,7 @@ function getTestCredentialCache(credentialsToRemove: number = 0, secretsToRemove
 function getTestWorkflow(propelCredentials: Credential[], totalTargets: number = 2,
     targetsWithCredentials: number = 2): Workflow {
 
-    let ret = Object.assign({}, testingWorkflows.Worflow_S1Enabled2TargetsEnabledWithCredFast); //This 
+    let ret = Object.assign({}, testingWorkflows.Workflow_S1Enabled2TargetsEnabledWithCredFast); //This 
     //workflow already have defined a $PropelCredentials parameter.
     let pv = new ParameterValue();
     let propelCredentialsValue: string = ""

@@ -1,82 +1,106 @@
 <div class="form-container mt-2">
     <form [formGroup]="fh.form">
-        <div *ngIf="!isQuickTask; else QuickTask" class="form-group">
-            <label for="name" class="data-required">Name</label>
-            <input type="text" class="form-control" id="name" aria-describedby="name" placeholder="Enter the step name."
-                formControlName="name" required>
-            <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
-            <!-- DEBUG -->
-            <!-- <small class="form-text text-muted">Current control status:
-                {{ sampleFormOrControlStatus(fh.form.controls.name) }}</small> -->
-            <!-- DEBUG -->
-        </div>
-        <ng-template #QuickTask>
-            <div class="subtitle my-2">{{ getFriendlyQuickTaskName(fh.form.controls.name.value) }}</div>
-        </ng-template>
-        <div class="form-group">
-            <label class="data-required mr-2" for="script">Script to execute</label>
-            <ng-select #script [items]="allScripts" [multiple]="false" labelForId="script" [closeOnSelect]="true"
-                [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name" clearAllText="Clear"
-                [compareWith]="compareFn" (change)="scriptChanged($event)"
-                placeholder="Select the script you want to execute." formControlName="script">
-            </ng-select>
-            <app-validation-message [control]="fh.form.controls['script']">
-            </app-validation-message>
-            <div *ngIf="fh.form.value.script && fh.form.value.script.enabled == false">
-                <div class="alert fade show alert-warning alert-dismissible my-2" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                    <strong>The selected script is disabled.</strong> This means that this Workflow step is going to be
-                    skipped on the next execution.
-                    <br>
-                    In order to avoid this, please enable the script or select a different one.
-                </div>
+        <div *ngIf="editMode !== 'runtime'">
+            <div *ngIf="!isQuickTask; else QuickTask" class="form-group">
+                <label for="name" class="data-required">Name</label>
+                <input type="text" class="form-control" id="name" aria-describedby="name"
+                    placeholder="Enter the step name." formControlName="name" required>
+                <app-validation-message [control]="fh.form.controls.name"></app-validation-message>
+                <!-- DEBUG -->
+                <!-- <small class="form-text text-muted">Current control status:
+                        {{ sampleFormOrControlStatus(fh.form.controls.name) }}</small> -->
+                <!-- DEBUG -->
             </div>
-            <!-- DEBUG -->
-            <!-- <small class="form-text text-muted">Current control status:
-                {{ sampleFormOrControlStatus(fh.form.controls.script) }}</small> -->
-            <!-- DEBUG -->
-        </div>
-        <div class="form-group">
-            <label class="mr-2" for="targets">Targets</label>
-            <ng-select #targets [items]="allTargets" [multiple]="true" labelForId="targets" [closeOnSelect]="false"
-                [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="friendlyName"
-                clearAllText="Clear" [compareWith]="compareFn" placeholder="Select all the targets you want to hit."
-                formControlName="targets">
-                <!-- NGSelect does not allow disabled items to be removed from the selection list. In order to 
-                    do that we must use a template and handle ourselves the item removal -->
-                <ng-template ng-label-tmp let-item="item">
-                    <span class="ng-value-custom-icon" (click)="dropTargetItem(item)">×</span>
-                    <span class="ng-value-label" [ngClass]="{
-                        'item-disabled': !item.enabled }">{{item.friendlyName}}</span>
-                </ng-template>
-            </ng-select>
-            <!-- DEBUG -->
-            <!-- <small class="form-text text-muted">Current control status:
-                {{ sampleFormOrControlStatus(fh.form.controls.targets) }}</small> -->
-            <!-- DEBUG -->
-            <app-validation-message [control]="fh.form.controls['targets']">
-            </app-validation-message>
-        </div>
-        <div *ngIf="selectedScript">
+            <ng-template #QuickTask>
+                <div class="subtitle my-2">{{ getFriendlyQuickTaskName(fh.form.controls.name.value) }}</div>
+            </ng-template>
             <div class="form-group">
-                <hr class="my-4">
+                <label class="data-required mr-2" for="script">Script to execute</label>
+                <ng-select #script [items]="allScripts" [multiple]="false" labelForId="script" [closeOnSelect]="true"
+                    [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name" clearAllText="Clear"
+                    [compareWith]="compareFn" (change)="scriptChanged($event)"
+                    placeholder="Select the script you want to execute." formControlName="script">
+                </ng-select>
+                <app-validation-message [control]="fh.form.controls['script']">
+                </app-validation-message>
+                <div *ngIf="fh.form.value.script && fh.form.value.script.enabled == false">
+                    <div class="alert fade show alert-warning alert-dismissible my-2" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                        <strong>The selected script is disabled.</strong> This means that this Workflow step is going to
+                        be
+                        skipped on the next execution.
+                        <br>
+                        In order to avoid this, please enable the script or select a different one.
+                    </div>
+                </div>
+                <!-- DEBUG -->
+                <!-- <small class="form-text text-muted">Current control status:
+                {{ sampleFormOrControlStatus(fh.form.controls.script) }}</small> -->
+                <!-- DEBUG -->
             </div>
-            <!-- 
-                Starting here the script parameters 
-                ========================================================
-            -->
-            <label class="mb-2"><strong>Parameter values:</strong></label>
+            <div class="form-group">
+                <label class="mr-2" for="targets">Targets</label>
+                <ng-select #targets [items]="allTargets" [multiple]="true" labelForId="targets" [closeOnSelect]="false"
+                    [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="friendlyName"
+                    clearAllText="Clear" [compareWith]="compareFn" placeholder="Select all the targets you want to hit."
+                    formControlName="targets">
+                    <!-- NGSelect does not allow disabled items to be removed from the selection list. In order to 
+                    do that we must use a template and handle ourselves the item removal -->
+                    <ng-template ng-label-tmp let-item="item">
+                        <span class="ng-value-custom-icon" (click)="dropTargetItem(item)">×</span>
+                        <span class="ng-value-label" [ngClass]="{
+                        'item-disabled': !item.enabled }">{{item.friendlyName}}</span>
+                    </ng-template>
+                </ng-select>
+                <!-- DEBUG -->
+                <!-- <small class="form-text text-muted">Current control status:
+                {{ sampleFormOrControlStatus(fh.form.controls.targets) }}</small> -->
+                <!-- DEBUG -->
+                <app-validation-message [control]="fh.form.controls['targets']">
+                </app-validation-message>
+            </div>
+        </div>
+        
+        
+        <!-- 
+            Starting here the script parameters 
+            ========================================================
+        -->
+        <div *ngIf="selectedScript">
+            <div *ngIf="editMode !== 'runtime'">
+                <div class="form-group">
+                    <hr class="my-4">
+                </div>
+                <label class="mb-2"><strong>Parameter values:</strong></label>
+            </div>
             <div *ngIf="selectedScript.parameters && selectedScript.parameters.length > 0; else noParams">
                 <div formArrayName="values" *ngFor="let child of parameterValues.controls; let i=index">
-                    <label [ngClass]="{
-                        'data-required': isParamRequired(child.controls.name.value)
-                    }" >${{child.controls.name.value}}</label>
-                    <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
-                    <ng-container [formGroupName]="i">
+                    <ng-container *ngIf="showParameter(child.value)" [formGroupName]="i">
+                        <div class="form-group">
+                            <div class="d-flex justify-content-between">
+                                <label [ngClass]="{
+                                    'data-required': isParamRequired(child.controls.name.value)
+                                    }">${{child.controls.name.value}}</label>
+                                <div *ngIf="!isQuickTask && editMode !== 'runtime'" class="d-flex" [matTooltip]="getRuntimeParameterTooltip()"
+                                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                                    <div class="mr-2 icon-runtime-param-on-mini" [ngClass]="{
+                                            'icon-runtime-param-off': !child.controls.isRuntimeParameter.value
+                                        }"></div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input"
+                                            [id]="'isRuntimeParameter'+i" formControlName="isRuntimeParameter">
+                                        <label class="custom-control-label" [for]="'isRuntimeParameter'+i"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="param-description">{{getParamDescription(child.controls.name.value)}}</div>
+                        </div>
+
                         <!-- Propel custom parameters requires specific treatment -->
-                        <div *ngIf="isPropelParameter(child.controls.name.value); else otherParameterTypes" class="form-group">
+                        <div *ngIf="isPropelParameter(child.controls.name.value); else otherParameterTypes"
+                            class="form-group">
                             <ng-select #credentials [items]="allCredentials" [multiple]="true" [closeOnSelect]="false"
                                 [clearSearchOnAdd]="true" [searchable]="true" bindValue="_id" bindLabel="name"
                                 clearAllText="Clear" [compareWith]="compareFn"
@@ -84,14 +108,13 @@
                                 formControlName="value">
                                 <ng-template ng-label-tmp let-item="item">
                                     <span class="ng-value-custom-icon" (click)="dropCredentialItem(item)">×</span>
-                                    <span class="ml-1 menu-icon"
-                                        [ngClass]="{
-                                            'icon-credential-windows': getCredentialType(item.name) == credentialTypes.Windows,
-                                            'icon-credential-aws': getCredentialType(item.name) == credentialTypes.AWS,
-                                            'icon-credential-apikey': getCredentialType(item.name) == credentialTypes.APIKey
-                                        }"></span>
+                                    <span class="ml-1 menu-icon" [ngClass]="{
+                                                                'icon-credential-windows': getCredentialType(item.name) == credentialTypes.Windows,
+                                                                'icon-credential-aws': getCredentialType(item.name) == credentialTypes.AWS,
+                                                                'icon-credential-apikey': getCredentialType(item.name) == credentialTypes.APIKey
+                                                            }"></span>
                                     <span class="ng-value-label" [ngClass]="{
-                                                'item-disabled': false }">{{item.name}}</span>
+                                                                    'item-disabled': false }">{{item.name}}</span>
                                 </ng-template>
                             </ng-select>
                         </div>
@@ -101,15 +124,12 @@
                                 <div *ngSwitchCase="'Array'" class="form-group">
                                     <div class="d-flex">
                                         <!-- "id" and "title" will be used internally to locate 
-                                            the component and parameter to add new items. -->
-                                        <ng-select #ngSelectArrays
-                                            [id]="i" [title]="child.controls.name.value" 
-                                            [items]="getValidSet(child.controls.name.value)" 
-                                            [multiple]="true"
-                                            [closeOnSelect]="false" [clearSearchOnAdd]="true" 
-                                            [searchable]="false" clearAllText="Clear"
-                                            [compareWith]="compareFn" placeholder="Select all the text" 
-                                            formControlName="value" class="w-100">
+                                                                the component and parameter to add new items. -->
+                                        <ng-select #ngSelectArrays [id]="i" [title]="child.controls.name.value"
+                                            [items]="getValidSet(child.controls.name.value)" [multiple]="true"
+                                            [closeOnSelect]="false" [clearSearchOnAdd]="true" [searchable]="false"
+                                            clearAllText="Clear" [compareWith]="compareFn"
+                                            placeholder="Select all the text" formControlName="value" class="w-100">
                                             <ng-template *ngIf="!hasValidSet(child.controls.name.value)" ng-footer-tmp>
                                                 <div class="cursor-pointer" (click)="addNewValue(i)">
                                                     <i class="fas fa-plus mr-2"></i>Add a new value
@@ -128,15 +148,16 @@
                                 </div>
                                 <div *ngSwitchCase="'Date'" class="form-group">
                                     <div class="d-flex justify-content-center">
-                                        <input type="datetime-local" class="form-control" 
-                                        formControlName="value">
+                                        <input type="datetime-local" class="form-control" formControlName="value">
                                     </div>
                                 </div>
                                 <div *ngSwitchDefault class="form-group">
                                     <div *ngIf="!hasValidSet(child.controls.name.value); else withValidSet">
                                         <input type="text" class="form-control" formControlName="value"
                                             [placeholder]="getPlaceHolderText(child.controls.nativeType.value)">
-                                        <div *ngIf="nativeTypeIsLiteral(child.controls.nativeType.value)" class="param-literal">This value will be trated as literal when passing to the script, so be careful...</div>
+                                        <div *ngIf="nativeTypeIsLiteral(child.controls.nativeType.value)"
+                                            class="param-literal">This value
+                                            will be trated as literal when passing to the script, so be careful...</div>
                                     </div>
                                     <ng-template #withValidSet>
                                         <ng-select [items]="getValidSet(child.controls.name.value)" [multiple]="false"
@@ -148,7 +169,7 @@
                                     </ng-template>
                                     <!-- DEBUG -->
                                     <!-- <small class="form-text text-muted">Current control status:
-                {{ sampleFormOrControlStatus(child.controls.value) }}</small> -->
+                                    {{ sampleFormOrControlStatus(child.controls.value) }}</small> -->
                                     <!-- DEBUG -->
                                 </div>
                             </div>
@@ -162,12 +183,8 @@
                 <div class="ml-2">The script has no parameters defined.</div>
             </ng-template>
         </div>
-
-
         <!-- <pre>Is a quick task: {{ isQuickTask }}</pre>
         <pre>Is Form Valid: {{ fh.form.valid }}</pre>
         <pre>{{fh.form.value | json }}</pre> -->
-
-
     </form>
 </div>

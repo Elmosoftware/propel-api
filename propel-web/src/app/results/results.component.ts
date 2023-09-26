@@ -202,7 +202,7 @@ Total duration: ${SharedSystemHelper.getDuration(this.log.startedAt, this.log.en
 
       ret = `Script: "${step.scriptName}" ${(!step.scriptEnabled) ? "(The script was disabled or deleted at the moment of the execution)" : ""}.
 Targets: ${UIHelper.getTargetList(step)}.
-Parameters: ${UIHelper.getParameterValuesList(step.values)}.`
+Parameters: ${UIHelper.getParameterValuesList(step.values, true)}.`
     }
 
     return ret;

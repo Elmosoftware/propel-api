@@ -505,6 +505,11 @@ class Schemas {
                     {
                         type: String,
                         isRequired: true
+                    }),
+                new SchemaField("isRuntimeParameter", `Indicates if the user will be able to set or update the value right before to run the workflow.`,
+                    {
+                        type: Boolean,
+                        isRequired: true
                     })
             ])
             .setDescription("Represent the value assigned to one script parameter for a specific task or workflow step")

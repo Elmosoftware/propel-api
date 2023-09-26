@@ -11,6 +11,7 @@
 <button type="button" pageScroll href="#Dialogs" class="btn btn-primary m-2">Dialogs</button>
 <button type="button" pageScroll href="#ProgressBar" class="btn btn-primary m-2">ProgressBar</button>
 <button type="button" pageScroll href="#PropelIcons" class="btn btn-primary m-2">Propel Icons</button>
+<button type="button" pageScroll href="#PropelIconClasses" class="btn btn-primary m-2">Propel Icon Classes</button>
 <button type="button" pageScroll href="#ReactiveFormsSample" class="btn btn-primary m-2">Reactive forms</button>
 <button type="button" pageScroll href="#MaterialAccordion" class="btn btn-primary m-2">Accordion</button>
 <button type="button" pageScroll href="#MaterialTable" class="btn btn-primary m-2">Table</button>
@@ -672,9 +673,73 @@
               <app-status-icon size="small" iconStyle="dark" status="RUNNING"></app-status-icon>
             </div>
           </li>
+          <li class="list-group-item">EDITING:
+            <app-status-icon size="small" status="EDITING"></app-status-icon>
+            <app-status-icon size="big" status="EDITING"></app-status-icon>
+            <div class="d-flex justify-content-center align-items-center"
+              style="background-color: black; height:30px; width:30px;">
+              <app-status-icon size="small" iconStyle="dark" status="EDITING"></app-status-icon>
+            </div>
+          </li>
         </ul>
       </div>
 
+      <div>
+        <!-- PROPEL ICON CLASSES-->
+        <p>
+          <a id="PropelIconClasses"></a><button type="button" pageScroll href="#Top" class="btn btn-primary mt-2">Back
+            to
+            top!</button><strong>
+            <h2>Propel Icon Classes:</h2>
+          </strong>
+        </p>
+        <hr>
+        <ul class="list-group">
+          <li class="list-group-item">
+            <div class="d-flex justify-content-start">
+              <div class="icon-binoculars-after-mini m-2">icon-binoculars-after-mini</div>
+              <div class="icon-user m-2">icon-user</div>
+              <div class="icon-user-mini m-2">icon-user-mini</div>
+              <div class="icon-users m-2">icon-users</div>
+              <div class="icon-users-mini m-2">icon-users-mini</div>
+            </div>
+          </li>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-start">
+              <div class="icon-user-admin m-2">icon-user-admin</div>
+              <div class="icon-user-admin-mini m-2">icon-user-admin-mini</div>
+              <div class="icon-user-locked m-2">icon-user-locked</div>
+              <div class="icon-login-mini m-2">icon-login-mini</div>
+              <div class="icon-logoff-mini m-2">icon-logoff-mini</div>
+            </div>
+          </li>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-start">
+              <div class="icon-workflows m-2">icon-workflows</div>
+              <div class="icon-scripts m-2">icon-scripts</div>
+              <div class="icon-targets m-2">icon-targets</div>
+              <div class="icon-credentials m-2">icon-credentials</div>
+              <div class="icon-credential-windows m-2">icon-credential-windows</div>
+            </div>
+          </li>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-start">
+              <div class="icon-credential-aws m-2">icon-credential-aws</div>
+              <div class="icon-credential-apikey m-2">icon-credential-apikey</div>
+              <div class="icon-edit-mini m-2">icon-edit-mini</div>
+              <div class="icon-edit-subtle m-2">icon-edit-subtle</div>
+              <div class="icon-runtime-param-on-mini m-2">icon-runtime-param-on-mini</div>
+            </div>
+          </li>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-start">
+              <div class="icon-runtime-param-on-mini icon-runtime-param-off m-2"></div><span>icon-runtime-param-on-mini icon-runtime-param-off</span>
+              <div class="icon-data-invalid m-2">icon-data-invalid</div>
+              <div class="icon-data-valid m-2">icon-data-valid</div>
+            </div>
+          </li>
+        </ul> 
+      </div>
       <div>
         <!-- REACTIVE FORMS SAMPLE -->
         <p>
@@ -700,6 +765,15 @@
               getErrorText(this.sampleForm.controls['name']) }}</small>
             <small class="form-text text-muted">Current control status:
               {{ sampleFormOrControlStatus(this.sampleForm.controls['name']) }}</small>
+          </div>
+          <div class="form-group">
+            <div class="d-flex justify-content-between">
+              <label>This is the label</label>
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" formControlName="enabled2" class="custom-control-input" id="customCheck2">
+                <label class="custom-control-label" for="customCheck2">Check this custom checkbox</label>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label class="data-required mr-2">Disabled</label>

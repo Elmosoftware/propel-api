@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, EventEmitter, ViewChild, Output, ViewChildren, QueryList } from '@angular/core';
-import { Validators, ValidatorFn, UntypedFormArray, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { Validators, ValidatorFn, UntypedFormArray, UntypedFormControl, UntypedFormGroup, AbstractControl } from '@angular/forms';
 import { forkJoin, from } from "rxjs";
 import { NgSelectComponent } from '@ng-select/ng-select';
 
@@ -12,7 +12,6 @@ import { ValidatorsHelper } from 'src/core/validators-helper';
 import { CoreService } from 'src/services/core.service';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { ScriptParameter } from '../../../../propel-shared/models/script-parameter';
-import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 import { DataEndpointActions } from 'src/services/data.service';
 import { ParameterValueConverter } from "../../../../propel-shared/core/value-converter";
@@ -57,6 +56,14 @@ const TARGETS_MAX: number = 20;
  */
 const CREDENTIALS_MAX: number = 5;
 
+/**
+ * All posible status values for a script invocation.
+ */
+export enum EditModes {
+  Normal = "normal",
+  Runtime = "runtime"
+}
+
 @Component({
   selector: 'app-workflow-step',
   templateUrl: './workflow-step.component.html',
@@ -76,6 +83,12 @@ export class WorkflowStepComponent implements OnInit {
    * either for a quieck task or not.
    */
   @Input("step") step!: WorkflowStep;
+
+  /**
+   * The workflow step to edit. If no value provided a new Workflow step will be created 
+   * either for a quieck task or not.
+   */
+  @Input("edit-mode") editMode: EditModes = EditModes.Normal;
 
   /**
    * Change event, will be throw every time the form suffer any change.
@@ -385,6 +398,60 @@ export class WorkflowStepComponent implements OnInit {
     this.credentials.clearItem(item);
   }
 
+  showParameter(pv: ParameterValue): boolean {
+    if(this.editMode == EditModes.Runtime) return pv.isRuntimeParameter;
+    return true;
+  }
+
+  getRuntimeParameterTooltip() {
+    return `If checked, allows the user to set or modify the value at the time of executing the workflow.\r\nOtherwise the workflow will run always with the value set here.`
+  }
+
+  /**
+   * Return all the Validators for the specified parameter.
+   * @param param ScriptParameter or parameter name 
+   * @param isRuntimeParameter Boolean value indicating if the parameter value will be requested on runtime.
+   * @returns ALl the validators for the control.
+   */
+  private getValidators(param: ScriptParameter | string, isRuntimeParameter: boolean): ValidatorFn[] {
+    let p: ScriptParameter
+    let ret: ValidatorFn[] = []; 
+
+    if (typeof param == "string") {
+      p = this.tryGetParameter(param)!
+    }
+    else {
+      p = param
+    }
+
+    //Assigning the validators based on the parameter type:
+    switch (p.nativeType) {
+      case JSType.Number:
+        ret.push(ValidatorsHelper.anyNumber());
+        break;
+      case JSType.Date:
+        ret.push(ValidatorsHelper.anyDate());
+        break;
+      default:
+        break;
+    }
+
+    //A $PropelParameter must have a limit on the amount of credentials:
+    if (p.isPropelParameter) {
+      ret.push(ValidatorsHelper.maxItems(CREDENTIALS_MAX));
+    }
+
+    //Paramaters that are required or can't be null or empty must be validated too:
+    if (p.required && !isRuntimeParameter) {
+      ret.push(Validators.required)
+    }
+    else if ((!p.canBeNull || !p.canBeEmpty) && !isRuntimeParameter) {
+      ret.push(ValidatorsHelper.notNullOrEmpty())
+    }
+
+    return ret;
+  }
+
   private initializeParameters() {
 
     let newValues: ParameterValue[] = [];
@@ -403,7 +470,7 @@ export class WorkflowStepComponent implements OnInit {
     this.selectedScript.parameters.forEach((p: ScriptParameter) => {
 
       let pv: ParameterValue | undefined = undefined;
-      let vfns: ValidatorFn[] = [];
+      // let vfns: ValidatorFn[] = [];
       let fg: UntypedFormGroup;
 
       //First we pair the parameters in the selected scrip with the values, (if any), already
@@ -469,42 +536,55 @@ export class WorkflowStepComponent implements OnInit {
         }
       }
 
-      //Assigning the validators based on the parameter type and if it is required or not:
-      switch (p.nativeType) {
-        case JSType.Number:
-          vfns.push(ValidatorsHelper.anyNumber());
-          break;
-        case JSType.Date:
-          vfns.push(ValidatorsHelper.anyDate());
-          break;
-        default:
-          break;
-      }
-
-      if (p.isPropelParameter) {
-        vfns.push(ValidatorsHelper.maxItems(CREDENTIALS_MAX));
-      }
-
-      if (p.required) {
-        vfns.push(Validators.required)
-      }
-      else if (!p.canBeNull || !p.canBeEmpty) {
-        vfns.push(ValidatorsHelper.notNullOrEmpty())
-      }
-
       //Adding the controls to the array:
       fg = new UntypedFormGroup({
         name: new UntypedFormControl(pv.name),
-        value: new UntypedFormControl(pv.value, vfns),
-        nativeType: new UntypedFormControl(pv.nativeType)
+        // value: new UntypedFormControl(pv.value, vfns),
+        value: new UntypedFormControl(pv.value, this.getValidators(p, pv.isRuntimeParameter)),
+        nativeType: new UntypedFormControl(pv.nativeType),
+        isRuntimeParameter: new UntypedFormControl(pv.isRuntimeParameter)
       });
 
+      //Subscribing to the isRuntimeParameter checkbox changes so we can update affected 
+      //controls validators accordingly:
+      fg.get("isRuntimeParameter")!.valueChanges.subscribe(
+        {
+          next: () => {
+            this.onIsRuntimeParameterChange()
+          } 
+        }
+      );
+    
       (this.fh.form.controls['values'] as UntypedFormArray).push(fg);
-
       newValues.push(pv);
     })
 
     this.step.values = newValues;
+  }
+
+  /**
+   * Evaluates each ParameterValue control and updates his validators if the "isRuntimeParameter"
+   * checkbox changed.
+   * If the checkbox is checked, the Parameter required and/or Parameter not Null or empty validators
+   * need to be removed, because the value for the control is going to be set at runtime.
+   * @param parameterValueControls All the ParameterValues controls for the selected Script.
+   */
+  private onIsRuntimeParameterChange(): void {
+    
+    let parameterValueControls = (this.fh.form.get('values') as UntypedFormArray).controls
+    
+    if (!parameterValueControls || parameterValueControls.length == 0) return;
+
+    //Sadly we dónt know exactly which control fire the event, so we need to review all:
+    parameterValueControls.forEach(ctrl => {
+      let isRuntimeParameter = ctrl.get("isRuntimeParameter")!.value
+      let ctrlValue = ctrl.get("value")!
+      let parameterName = (ctrl.value as ParameterValue).name
+
+      ctrlValue.clearValidators();
+      ctrlValue.addValidators(this.getValidators(parameterName, isRuntimeParameter));
+      ctrlValue.updateValueAndValidity();
+    });
   }
 
   nativeTypeIsLiteral(nativeType: string) {
