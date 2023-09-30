@@ -310,7 +310,7 @@ export class WorkflowStepComponent implements OnInit {
           if (step.values && step.values.length > 0) {
             step.values.forEach((pv) => {
               //If is a propel parameter, we need to flaten the array of credential ids:
-              if (this.isPropelParameter(pv.name) && pv.value && Array.isArray(pv.value)) {
+              if (this.isPropelParameter(pv.name)) {
                 pv.value = pv.value.join(",")
               }
               else {
@@ -323,9 +323,9 @@ export class WorkflowStepComponent implements OnInit {
                       else return val
                     })
                 }
-
-                ParameterValueConverter.toPowerShell(pv)
               }
+
+              ParameterValueConverter.toPowerShell(pv)
             })
           }
 
@@ -497,15 +497,18 @@ export class WorkflowStepComponent implements OnInit {
         pv.value = (p.hasDefault) ? p.defaultValue : "";
       }
 
+      //Converting the Powershell value representation to a Javascript native value:
+      ParameterValueConverter.toJavascript(pv)
+      
       if (p.isPropelParameter) {
-        //For the form edition, we need to convert the string value of the propel parameter in a string array:
+        //For the form edition, we need to convert the string value of the propel 
+        //parameter in a string array:
         if (pv.value) {
           pv.value = pv.value.split(",")
         }
-      }
-      else {
-        //Converting the Powershell value representation to a Javascript native value:
-        ParameterValueConverter.toJavascript(pv)
+        else {
+          pv.value = []
+        }
       }
 
       //If the parameter has a valid set defined, we need to add it to our valid sets object:
