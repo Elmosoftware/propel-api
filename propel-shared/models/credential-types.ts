@@ -4,7 +4,8 @@
 export enum CredentialTypes {
     Windows = "Windows",
     AWS = "AWS",
-    APIKey = "APIKey"
+    APIKey = "APIKey",
+    Database = "Database"
 }
 
 /**

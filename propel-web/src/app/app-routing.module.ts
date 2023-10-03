@@ -232,6 +232,24 @@ const routes: Routes = [
     canActivate: [SecurityGuard]
   },
   {
+    path: pages.CredentialDatabase.name,
+    component: CredentialComponent,
+    data: {
+      title: `New ${pages.CredentialDatabase.title}`
+    },
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
+  },
+  {
+    path: `${pages.CredentialDatabase.name}/:id`,
+    component: CredentialComponent,
+    data: {
+      title: `Editing ${pages.CredentialDatabase.title}`
+    },
+    canDeactivate: [DataLossPreventionGuard],
+    canActivate: [SecurityGuard]
+  },
+  {
     path: pages.UserAccount.name,
     component: UserAccountComponent,
     data: {

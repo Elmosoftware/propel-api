@@ -328,6 +328,14 @@ export class NavigationService {
     }
 
     /**
+     * Navigate to Credential page and set the form to create a new Database Credential.
+     */
+    toDatabaseCredential(credentialId?: string) {
+        let url: string = this.buildURL(this.pages.CredentialDatabase, credentialId);
+        this.to(url)
+    }
+
+    /**
      * Used by the system to navigate to the offline page if a network issue is detected.
      */
     toOffline(): void {

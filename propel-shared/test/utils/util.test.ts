@@ -1,5 +1,6 @@
 import { Credential } from "../../models/credential";
 import { CredentialTypes } from "../../models/credential-types";
+import { DatabaseSecret } from "../../models/database-secret";
 import { GenericAPIKeySecret } from "../../models/generic-apikey-secret";
 import { ParameterValue } from "../../models/parameter-value";
 import { Secret, SecretFactory } from "../../models/secret";
@@ -676,7 +677,7 @@ describe("Utils Class - toPowerShellCustomObject", () => {
         expect(actual)
             .toEqual(expected);
     })
-    test(`Generick API Key to PSCustomObject`, () => {
+    test(`Generic API Key Credential to PSCustomObject`, () => {
         //Credential fields:
         let f1: ParameterValue = new ParameterValue();
         f1.name = "Field1";
@@ -707,6 +708,44 @@ describe("Utils Class - toPowerShellCustomObject", () => {
   };
   AppId = "myAppId";
   APIKey = "secretAPIKey";
+};`)
+            .replace(/(\r\n|\n|\r)/gm, "")
+            .replace(/\s+/g, "");
+
+        expect(actual)
+            .toEqual(expected);
+    })
+    test(`Database Credential to PSCustomObject`, () => {
+        //Credential fields:
+        let f1: ParameterValue = new ParameterValue();
+        f1.name = "Field1";
+        f1.value = "Field1Value"
+        let f2: ParameterValue = new ParameterValue();
+        f2.name = "Field2";
+        f2.value = "Field2Value"
+        //Creating the credential:
+        let cred: Credential = new Credential();
+        cred.name = "TestCred";
+        cred.credentialType = CredentialTypes.Database;
+        cred.fields.push(f1);
+        cred.fields.push(f2);
+        //Creating the Secret:
+        let secret = (SecretFactory.createFromCredential(cred) as Secret<DatabaseSecret>);
+        secret.value.user = "myUser";
+        secret.value.password = "myPassword";
+
+        let actual = Utils.credentialToPowerShellCustomObject(cred, secret)
+            .replace(/(\r\n|\n|\r)/gm, "") //Removing any break lines
+            .replace(/\s+/g, ""); //Removing spaces.
+        let expected = (`[pscustomobject]@{
+  Name = "TestCred";
+  Type = "Database";
+  Fields = [pscustomobject]@{
+      Field1 = "Field1Value";
+      Field2 = "Field2Value";
+  };
+  User = "myUser";
+  Password = "myPassword";
 };`)
             .replace(/(\r\n|\n|\r)/gm, "")
             .replace(/\s+/g, "");

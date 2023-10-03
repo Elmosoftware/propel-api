@@ -104,6 +104,10 @@ export class NavigationBarComponent implements OnInit {
     return this.core.security.isAccessGranted(this.core.navigation.pages.CredentialAPIKey)
   }
 
+  get canAccessCredentialDatabase(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.CredentialDatabase)
+  }
+
   get canAccessCredentials(): boolean {
     return this.canAccessCredentialWindows || this.canAccessCredentialAWS || this.canAccessCredentialAPIKey;
   }
@@ -278,6 +282,10 @@ export class NavigationBarComponent implements OnInit {
 
   goToCredentialGenericAPIKey() {
     this.core.navigation.toGenericAPIKeyCredential();
+  }
+
+  goToCredentialDatabase() {
+    this.core.navigation.toDatabaseCredential();
   }
 
   goToUserAccount() {

@@ -429,7 +429,8 @@ Just a final note: If this issue is not remediated, the scripts consuming this c
         (this.fh.form.controls['fields'] as UntypedFormArray).push(new UntypedFormGroup({
           name: new UntypedFormControl(field.name),
           value: new UntypedFormControl(field.value),
-          nativeType: new UntypedFormControl(field.nativeType)
+          nativeType: new UntypedFormControl(field.nativeType),
+          isRuntimeParameter: new UntypedFormControl(field.isRuntimeParameter)
         }));
       })
     }

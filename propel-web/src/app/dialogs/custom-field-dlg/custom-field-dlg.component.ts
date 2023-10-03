@@ -38,7 +38,8 @@ export class CustomFieldDialogComponent implements OnInit {
           Validators.required,
           Validators.maxLength(VALUE_MAX)
         ]),
-        nativeType: new FormControl(DEFAULT_NATIVETYPE)
+        nativeType: new FormControl(DEFAULT_NATIVETYPE),
+        isRuntimeParameter: new FormControl(false)
       });
 
       if (config) {

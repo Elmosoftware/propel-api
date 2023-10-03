@@ -220,6 +220,17 @@ export class AppPages {
         },
         excludeFromHistory: false
     }
+    CredentialDatabase: PageMetadata = {
+        title: "Database Credential",
+        name: "credential-database",
+        showNavBar: true,
+        showSearchBox: true,
+        security : {
+          restricted: true, 
+          adminOnly:  true, 
+        },
+        excludeFromHistory: false
+    }
     UserAccount: PageMetadata = {
         title: "User Account",
         name: "useraccount",

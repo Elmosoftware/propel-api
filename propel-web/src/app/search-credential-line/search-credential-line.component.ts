@@ -52,6 +52,9 @@ export class SearchCredentialLineComponent extends SearchLine implements OnInit 
       case this.credentialTypes.APIKey:
         this.core.navigation.toGenericAPIKeyCredential(item._id)
         break;
+      case this.credentialTypes.Database:
+        this.core.navigation.toDatabaseCredential(item._id)
+        break;
       default:
         throw new PropelError(`No navigation defined to edit Credentials of type "${item.credentialType}".`)
     }

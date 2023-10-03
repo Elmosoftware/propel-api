@@ -304,6 +304,13 @@ body{
     font-size: 1rem;
 }
 
+.icon-credential-database::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f1c0";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
 .icon-edit-mini::before {
     font-family: "Font Awesome 5 Free";
     content: "\f044";

@@ -83,6 +83,7 @@ import { SearchUserAccountLineComponent } from './search-user-account-line/searc
 import { SecurityService } from '../services/security.service';
 import { SecurityGuard } from '../services/security-guard';
 import { CoolSpinerComponent } from './cool-spiner/cool-spiner.component';
+import { DatabaseSecretComponent } from './credential/database-secret/database-secret.component';
 
 @NgModule({
     declarations: [
@@ -120,7 +121,8 @@ import { CoolSpinerComponent } from './cool-spiner/cool-spiner.component';
         APIKeySecretComponent,
         UserAccountComponent,
         SearchUserAccountLineComponent,
-        CoolSpinerComponent
+        CoolSpinerComponent,
+        DatabaseSecretComponent
     ],
     imports: [
         BrowserModule,

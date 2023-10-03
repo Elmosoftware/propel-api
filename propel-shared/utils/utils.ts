@@ -1,5 +1,4 @@
 import { Credential } from "../models/credential";
-import { ParameterValue } from "../models/parameter-value";
 import { CredentialTypes } from "../models/credential-types";
 import { Secret } from "../models/secret";
 import { SecretValue } from "../models/secret-value";
@@ -7,7 +6,7 @@ import { PropelError } from "../core/propel-error";
 import { WindowsSecret } from "../models/windows-secret";
 import { AWSSecret } from "../models/aws-secret";
 import { GenericAPIKeySecret } from "../models/generic-apikey-secret";
-import { SharedSystemHelper } from "./shared-system-helper";
+import { DatabaseSecret } from "../models/database-secret";
 
 export const POWERSHELL_NULL_LITERAL = "$null"
 export const MILLISECONDS_DAY: number = 1000 * 60 * 60 * 24;
@@ -514,6 +513,11 @@ ${this.tabs(1)}SecretKey = "${this.backtickDoubleQuotes(AWSSecretValue?.secretKe
                 let APIKeySecretValue: GenericAPIKeySecret = (secret.value as GenericAPIKeySecret)
                 ret += `${this.tabs(1)}AppId = "${this.backtickDoubleQuotes(APIKeySecretValue?.appId)}";
 ${this.tabs(1)}APIKey = "${this.backtickDoubleQuotes(APIKeySecretValue?.apiKey)}";`
+                break;
+            case CredentialTypes.Database:
+                let DatabaseSecretValue: DatabaseSecret = (secret.value as DatabaseSecret)
+                ret += `${this.tabs(1)}User = "${this.backtickDoubleQuotes(DatabaseSecretValue?.user)}";
+${this.tabs(1)}Password = "${this.backtickDoubleQuotes(DatabaseSecretValue?.password)}";`
                 break;
             default:
                 throw new PropelError(`The specified credential type is not defined. Credential type: "${credential.credentialType}"`);

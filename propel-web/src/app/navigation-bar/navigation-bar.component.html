@@ -81,6 +81,11 @@
             <span class="icon-credential-apikey menu-icon"></span>
             <span>New Generic API Key Credential</span>
           </a>
+          <a *ngIf="canAccessCredentialDatabase" class="dropdown-item" href="javascript:void(0)"
+            (click)="goToCredentialDatabase()">
+            <span class="icon-credential-database menu-icon"></span>
+            <span>New Database Credential</span>
+          </a>
           <div *ngIf="canAccessUserAccount" (click)="doNotPropagate($event)">
             <div class="dropdown-divider menu-divider-line"></div>
           </div>
