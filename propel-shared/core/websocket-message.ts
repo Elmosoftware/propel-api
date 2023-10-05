@@ -14,8 +14,8 @@ export enum InvocationStatus {
     Disposed = "DISPOSED",
     Finished = "FINISHED",
     ServiceData = "SERVICEDATA",
-    UserActionCancel = "CANCEL",
-    UserActionKill = "KILL"
+    UserActionCancel = "CANCELLED",
+    UserActionKill = "KILLED"
 }
 
 /**
