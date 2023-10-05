@@ -15,6 +15,11 @@ import { SecretValue } from "./secret-value";
      */
     password: string = "";
 
+    /**
+     * Database connection string
+     */
+    connectionString: string = "";
+
     constructor() {
         super();
     }

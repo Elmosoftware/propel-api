@@ -733,6 +733,7 @@ describe("Utils Class - toPowerShellCustomObject", () => {
         let secret = (SecretFactory.createFromCredential(cred) as Secret<DatabaseSecret>);
         secret.value.user = "myUser";
         secret.value.password = "myPassword";
+        secret.value.connectionString = "my connection string";
 
         let actual = Utils.credentialToPowerShellCustomObject(cred, secret)
             .replace(/(\r\n|\n|\r)/gm, "") //Removing any break lines
@@ -746,6 +747,7 @@ describe("Utils Class - toPowerShellCustomObject", () => {
   };
   User = "myUser";
   Password = "myPassword";
+  ConnectionString = "my connection string";
 };`)
             .replace(/(\r\n|\n|\r)/gm, "")
             .replace(/\s+/g, "");

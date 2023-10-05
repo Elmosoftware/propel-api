@@ -1,4 +1,4 @@
-import { ValidatorFn, AbstractControl, UntypedFormGroup, UntypedFormArray } from '@angular/forms';
+import { ValidatorFn, AbstractControl, UntypedFormGroup, UntypedFormArray, FormGroup } from '@angular/forms';
 import { SharedSystemHelper } from '../../../propel-shared/utils/shared-system-helper';
 
 import { UIHelper } from 'src/util/ui-helper';
@@ -6,6 +6,12 @@ import { Utils } from '../../../propel-shared/utils/utils';
 
 const DEFAULT_PATTERN_MESSAGE: string = "The entered value is not valid."
 const DEFAULT_CONFIRMATION_FIELDS_EQUALITY_MESSAGE: string = "Both values must match."
+
+export type CrossFieldCustomValidatorResults = {
+  crossFieldCustomValidator: {
+    message: string
+  }
+};
 
 /**
  * Reactive Froms validation helper.
@@ -236,6 +242,60 @@ export class ValidatorsHelper {
   }
 
   /**
+   * This Validator is designed to be specified at Formgroup level, (not at control level). 
+   * It will provide a list of fields and values and allows to evaluate the validness of the 
+   * current control values.
+   * @param evaluationFunction The custom evalueation function to use for the validation. 
+   * This function must return a CrossFieldCustomValidatorResults with the error details or null 
+   * in the case the evaluation is succesful.
+   * @param setErrorsOn This parameter must contain the list of fields in which errors will be set.
+   * @returns A map of Validation errors or null otherwise. 
+   */
+  static crossFieldCustomValidator(
+      evaluationFunction: (values:{ [key: string]: any }) => CrossFieldCustomValidatorResults | null,
+      setErrorsOn: string[]): ValidatorFn {
+
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      let ret: CrossFieldCustomValidatorResults | null = null;
+      // let isFormGroup: boolean = ((control as FormGroup).controls !== undefined)
+      let valueKeys: any = control.value
+
+      ret =  evaluationFunction(valueKeys)
+
+      if (!setErrorsOn || !Array.isArray(setErrorsOn) || setErrorsOn.length == 0) {
+        setErrorsOn = Object.getOwnPropertyNames(valueKeys);
+      }
+
+      if (ret) {
+        setErrorsOn.forEach((controlName) => {
+          let ctrl = (control as FormGroup).get(controlName)!
+          if (ctrl.errors) {
+            ctrl.errors!["crossFieldCustomValidator"] = ret?.crossFieldCustomValidator
+          }
+          else {
+            ctrl.setErrors(ret)
+          }
+        })
+      }
+      else {
+        setErrorsOn.forEach((controlName) => {
+          let ctrl = (control as FormGroup).get(controlName)!
+
+          if (ctrl.hasError("crossFieldCustomValidator")) {
+            delete ctrl.errors!["crossFieldCustomValidator"]
+          }
+
+          if (ctrl.errors && Object.keys(ctrl.errors!).length == 0) {
+            ctrl.setErrors(null)
+          }
+        })
+      }
+
+      return ret;
+    };
+  }
+
+  /**
    * Returns the validation error text for the supplied control.
    * Thi methis returns an empty string if "control" is a null reference or is not invalid.
    * @param control Control
@@ -310,6 +370,9 @@ export class ValidatorsHelper {
     }
     else if(control.errors['notNullOrEmpty'] && control.touched) {
       ret = `A not null or empty value is required for this field.`
+    }
+    else if(control.errors['crossFieldCustomValidator'] && control.touched) {
+      ret = control.errors['crossFieldCustomValidator'].message
     }
 
     return ret;

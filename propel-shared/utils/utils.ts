@@ -517,7 +517,8 @@ ${this.tabs(1)}APIKey = "${this.backtickDoubleQuotes(APIKeySecretValue?.apiKey)}
             case CredentialTypes.Database:
                 let DatabaseSecretValue: DatabaseSecret = (secret.value as DatabaseSecret)
                 ret += `${this.tabs(1)}User = "${this.backtickDoubleQuotes(DatabaseSecretValue?.user)}";
-${this.tabs(1)}Password = "${this.backtickDoubleQuotes(DatabaseSecretValue?.password)}";`
+${this.tabs(1)}Password = "${this.backtickDoubleQuotes(DatabaseSecretValue?.password)}";
+${this.tabs(1)}ConnectionString = "${this.backtickDoubleQuotes(DatabaseSecretValue?.connectionString)}";`
                 break;
             default:
                 throw new PropelError(`The specified credential type is not defined. Credential type: "${credential.credentialType}"`);

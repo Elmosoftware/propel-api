@@ -4,9 +4,11 @@ import { Observable } from 'rxjs';
 import { FormSubcomponentInterface, FormSubcomponentEventData } from 'src/core/form-subcomponent';
 import { CoreService } from 'src/services/core.service';
 import { DatabaseSecret } from '../../../../../propel-shared/models/database-secret';
+import { CrossFieldCustomValidatorResults, ValidatorsHelper } from 'src/core/validators-helper';
 
 const USERNAME_MAX: number = 255;
 const PASSWORD_MAX: number = 255;
+const CONNECTIONSTRING_MAX: number = 1024; //https://learn.microsoft.com/en-us/dotnet/api/system.data.odbc.odbcconnection.connectionstring?view=dotnet-plat-ext-7.0
 
 @Component({
   selector: 'app-database-secret',
@@ -47,13 +49,16 @@ export class DatabaseSecretComponent implements OnInit, FormSubcomponentInterfac
 
     this.fg = new FormGroup({
       user: new FormControl("", [
-        Validators.required,
         Validators.maxLength(USERNAME_MAX)
       ]),
       password: new FormControl("", [
-        Validators.required,
         Validators.maxLength(PASSWORD_MAX)
+      ]),
+      connectionString: new FormControl("", [
+        Validators.maxLength(CONNECTIONSTRING_MAX)
       ])
+    }, {
+      validators: ValidatorsHelper.crossFieldCustomValidator(this.validateAllFields, ["password", "connectionString"])
     });
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
@@ -68,6 +73,22 @@ export class DatabaseSecretComponent implements OnInit, FormSubcomponentInterfac
           }
         }
       })
+  }
+
+  validateAllFields(values: { [key: string]: any }): CrossFieldCustomValidatorResults | null {
+    let userAndPassInValid: boolean = (values["user"] == "" || values["password"] == "")
+    let connStringInvalid: boolean = (values["connectionString"] == "")
+
+    if (userAndPassInValid && connStringInvalid) {
+      return {
+        crossFieldCustomValidator: {
+          message: "You can specify the User and Password or the connection string. But at " + 
+          "least one of those groups need to be fulfilled."
+        }
+      }
+    }
+
+    return null;
   }
 
   ngOnInit(): void {

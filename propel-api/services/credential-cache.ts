@@ -138,7 +138,11 @@ export class CredentialCache {
             this._cache.set(credential._id.toString(), new CredentialCacheItem(credential, secret));
 
             Object.getOwnPropertyNames(secret.value).forEach((key: string) => {
-                this._secretStrings.push((secret.value as any)[key]);
+                //Filtering out any "blank" property in the secret we are adding them to the list 
+                //of "secret" words:
+                if ((secret.value as any)[key]) {
+                    this._secretStrings.push((secret.value as any)[key]);
+                }
             });
         })
     }
