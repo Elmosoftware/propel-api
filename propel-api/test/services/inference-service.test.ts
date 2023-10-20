@@ -92,7 +92,10 @@ return [pscustomobject]@{ ScriptDesc = "SingleOptionalUntypedParam"} | ConvertTo
     [int]$TestParam10WIthValidateRange = 5,
 
     [Parameter(HelpMessage='This is the TestParam11 with default.')]
-    [array]$TestParam11WIthArray = @("One", "Two")
+    [array]$TestParam11WIthArray = @("One", "Two"),
+
+    [Parameter(HelpMessage='This is the TestParam12 without default.')]
+    [pscustomobject]$TestPSCustomObject
 )
 return [pscustomobject]@{ ScriptDesc = "SingleOptionalUntypedParam"} | ConvertTo-Json -Compress
 `
@@ -248,7 +251,7 @@ describe("InferenceService Class - infer()", () => {
         
             infer.infer(testScripts.Combo)
             .then((params: ScriptParameter[]) => {
-                expect(params.length).toEqual(11);
+                expect(params.length).toEqual(12);
 
                 //Parameter #1: TestParam1StringWithValidSet:
                 expect(params[0].position).toEqual(0);
@@ -375,6 +378,16 @@ describe("InferenceService Class - infer()", () => {
                 expect(params[10].canBeNull).toEqual(true);
                 expect(params[10].canBeEmpty).toEqual(true);
                 expect(params[10].defaultValue).toEqual(`@("One", "Two")`);
+
+                //Parameter #12: TestPSCustomObject:
+                expect(params[11].name).toEqual("TestPSCustomObject");
+                expect(params[11].description).toEqual("This is the TestParam12 without default.");
+                expect(params[11].type).toEqual(PSType.PSCustomObject);
+                expect(params[11].nativeType).toEqual(JSType.Object);
+                expect(params[11].required).toEqual(false);
+                expect(params[11].validValues.length).toEqual(0);
+                expect(params[11].canBeNull).toEqual(true);
+                expect(params[11].canBeEmpty).toEqual(true);
 
                 done();
             })  

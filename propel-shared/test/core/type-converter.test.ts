@@ -67,4 +67,7 @@ describe("TypeConverter Class - Valid Parameters", () => {
     test(`Array type conversion`, () => {
         expect(TypeConverter.fromPowerShellType(PSType.Array)).toEqual(JSType.Array);
     })
+    test(`PSCustomObject type conversion`, () => {
+        expect(TypeConverter.fromPowerShellType(PSType.PSCustomObject)).toEqual(JSType.Object);
+    })
 })

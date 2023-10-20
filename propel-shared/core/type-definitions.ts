@@ -15,6 +15,7 @@
  */
 export enum PSType {
     Object = "System.Object",
+    PSCustomObject = "System.Management.Automation.PSObject",
     String = "System.String",
     Char = "System.Char",
     Byte = "System.Byte",
