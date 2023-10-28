@@ -51,7 +51,6 @@ Distribution
 
 npm install -g node-windows
 
-2nd - Move to the propel-api dir and run
 	npm link node-windows
 
 
@@ -81,7 +80,6 @@ If theuser sent a quoted string:
 like ""my quoted string""
 
 1st we remove quotes: "my quoted string"
-2nd search exact matches using: 
 
 .find({$or: [
                 { "field1": new RegExp("my quoted string", "gi")},
@@ -451,7 +449,6 @@ AWSCredential inherits CredentialSecret {
 }
 
 ---------------------------------------------------------------------------------
-2nd approach:
 
 Credentialbase {
 	name,
@@ -734,9 +731,6 @@ Things to test in the pending areas
 	- The the validations per each field
 	- Execute the workflow and check the results
 	- Disable first step and check the results
-	- Throw and error in 2nd step and check results
-	- Mark the 2nd step of the workflow to not abort if fails and check results.
-	- Change the steps order 2nd is now 1st, also remove the Throw error and check results.
 
 Changes on Scripts impacting Workflow execution.
 	Lets work now in the script for the 3rd step.
@@ -808,5 +802,178 @@ mustReset
 
 Dependencies to remove:
 bcrypt
+
+
+==============================================================================
+Provide the chance to edit HashTable parameter values as a collection of Key-Values, 
+(Dictionary) when editing/creating Workflows/Quick Tasks:
+
+Satrt reading: 
+https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-pscustomobject?view=powershell-7.3
+
+
+Sample Hashtable:
+------------------
+$ht = @{Attr1=1; Attr2="Two"}
+Displaying:
+Name                           Value
+----                           -----
+Attr2                          Two
+Attr1                          1
+$ht.GetType().Fullname --> System.Collections.Hashtable
+
+Sample PSCustomObject:
+----------------------
+$psobj = [pscustomobject]@{Attr1=1; Attr2="Two"}
+Displaying:
+Attr1 Attr2
+----- -----
+    1 Two
+$psobj.GetType().Fullname --> System.Management.Automation.PSCustomObject
+
+PS Types in Propel (impacted ones):
+-----------------------------------
+
+export enum PSType {
+    Object = "System.Object",
+    Hashtable = "System.Collections.Hashtable",
+}
+
+Validations:
+-------------
+  1 - Duplicates not allowed:
+  PS C:\> $psobj2 = @{Attr1=1; Attr1="gdfg"}
+		At line:1 char:22
+		+ $psobj2 = @{Attr1=1; Attr1="gdfg"}
+		+                      ~~~~~
+		Duplicate keys 'Attr1' are not allowed in hash literals.
+    		+ CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    		+ FullyQualifiedErrorId : DuplicateKeyInHashLiteral
+  
+PS Value types:
+===============
+
+Powershell literals: https://renenyffenegger.ch/notes/Windows/PowerShell/language/lexical-structure/token/literal/index
+Powershell lexical structure: https://learn.microsoft.com/en-us/powershell/scripting/lang-spec/chapter-02?view=powershell-7.3#2322-automatic-variables
+CodeMirror Powershell: https://web.sjrstate.edu/i/libraries/codemirror/5.16/mode/powershell/index.html
+PowerShell AUtomatic variables: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_automatic_variables?view=powershell-7.3
+Using PSCustomObject in PowerShell: https://powershellisfun.com/2023/03/13/using-pscustomobject-in-powershell/
+
+Boolean and Switch: represented by the automatic variables $false and $true}
+
+Character: String literals
+----------------------------------
+   Single quote: ' 
+   Double Quotes: "
+   Here strings: @" or @'
+
+Escaped chars:
+`0  Null
+`a  Alert bell/beep
+`b  Backspace
+`e  Escape (added in PowerShell 6)
+`f  Form feed (use with printer output)
+`n  New line
+`r  Carriage return
+`r`n  Carriage return + New line
+`t  Horizontal tab
+`u{x} An escape sequence of Unicode  (added in PowerShell 6)
+`v  Vertical tab (use with printer output)
+
+Numeric Literals:
+-------------------------- 
+Starting with -[0-9] or +[0-9] or [0-9]
+
+Also, can end with multipliers like:
+kb	Kilobyte
+mb	Megabyte
+gb	Gigabyte
+tb	Terabyte
+pb	Petabyte
+
+Hexadecimal numbers start with 0x
+
+Parser example: https://www.sysadmins.lv/blog-en/simple-json-lexical-parser-in-powershell-academic-version.aspx
+
+HOW TO PROCEED:
+===============
+We need to:
+	- Be able to convert a set of Javascript key values to a PowerShell Hashtable or PSCustomObject.
+	- Parse a serialized PSCustomObject in order to convert to a set of JS key values.
+
+interface: PowerShellParser
+constructor: (string)
+methods:
+	fromString(code: string): void
+	fromValueCollection(values: ParameterValue[]): void
+	toValueCollection(): ParameterValue[]
+	toString(): string
+
+class PSHashTableParser
+
+
+--------------------------------------------
+Convert from PSCustomObject or HashTable:
+
+Steps:
+	1st
+	===
+		If the lowercase string starts with "[pscustomobject]" is a PSCustomObject, otherwise could
+		be a HashTable.
+		We remove the "[pscustomobject]" from the string.
+		if next 2 chars are "@{" and last char is "}" we can remove them and start parsing, otherwise 
+		is an error.
+	2nd
+	===
+		After removing those 3 strings we must replace any "\r\n" and ";" by a new line and 
+		split by lines, like this:
+			mydata.replace(/\r\n/gi,"\n").replace(/;/gi, "\n").split("\n")
+	3th
+	===
+		For each line we must split by "=", after that we can have:
+
+		Case 1: We have 2 or more items:
+		================================
+			Analyzing 1st item: 
+			-------------------
+				Start and end with " or ' --> Is a Key
+				Starts with _ or [A-Z-az] --> is a key.
+				Starts with any other char --> Is the continuation of previous value or 
+					an error if there is not a previous item.
+				Is an empty string? --> Then is invalid
+			Analyzing 2nd item:
+			------------------- 
+				Starts with a string literal ' or " --> Is a String or date Value (Can continue in next line)
+				Is the here string literal @" --> Is a string value (Will start on next line)
+				Starts with -[0-9] or +[0-9] or [0-9] --> Is a numeric value (Can't continue on next line)
+				Starts with @( --> Is an array (must continue in next line if we don find 
+					the ) at the end of the line.
+				Starts with @{ --> Is a nested HashTable or PSCustomObject (must continue in next line if we don find 
+					the } at the end of the line.
+				Starts with [ --> Is a type constraint, like "[string]", we must exclude it entirely or 
+					used to identify the value type. Once excluded, the value must be reevalueated by the 
+					preceding rules.
+				Starts with $ is a variable or automatic variable, (must be treated as literal), at least
+					is $true, $false or $null, if thats the case they need to be converted as required.
+				Starts with any other character --> Need to be considered a literal, (expression, command, etc)
+				
+		Case 2: We have one single item:
+		================================
+			Analyzing 1st item: 
+			-------------------
+				Is an empty string --> Must be discarded, (just an extra line).
+				Is not an empty string --> The literal must be added to the previous 
+					value, if there is no previous value is an error.
+
+===================================================================
+
+
+EXPECTED
+[pscustomobject]@{\n        Tenth_1 = 12\n        Tenth_2 = @{\n            "aqua" = "Water"\n Ext = "Other"\n            Noxtro = @"\nNow a here string\nwith 2 lines.\n"@\n        Cond = if(3 -eq 3) {\n            $var3 = "var3"\n            "Is 3!!"\n        }\n        else {\n            "No es"\n        }\n    }\n}
+
+ACTUAL:
+[pscustomobject]@{\n        Tenth_1 = 12\n        Tenth_2 = @{\n            "aqua" = "Water"\n Ext = "Other"\n            Noxtro = @"\nNow a here string\nwith 2 lines.\n"@\n        Cond = if(3 -eq 3) {\n            $var3 = "var3"\n            "Is 3!!"\n        }\n        else {\n            "No es"\n        }\n    }\n}\n'
+
+
 
 

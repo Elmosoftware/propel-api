@@ -382,7 +382,7 @@ describe("InferenceService Class - infer()", () => {
                 //Parameter #12: TestPSCustomObject:
                 expect(params[11].name).toEqual("TestPSCustomObject");
                 expect(params[11].description).toEqual("This is the TestParam12 without default.");
-                expect(params[11].type).toEqual(PSType.PSCustomObject);
+                expect(params[11].type).toEqual(PSType.PSObject);
                 expect(params[11].nativeType).toEqual(JSType.Object);
                 expect(params[11].required).toEqual(false);
                 expect(params[11].validValues.length).toEqual(0);

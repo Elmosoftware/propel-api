@@ -122,7 +122,8 @@ const ConvertiblePowerShell: ConvertiblePowerShellType  = {
     [PSType.Object]: ConvertibleJavascript.Object,
     [PSType.XML]: ConvertibleJavascript.Object,
     [PSType.Hashtable]: ConvertibleJavascript.Object,
-    [PSType.PSCustomObject]: ConvertibleJavascript.Object
+    [PSType.PSCustomObject]: ConvertibleJavascript.Object,
+    [PSType.PSObject]: ConvertibleJavascript.Object
 }
 
 /**
