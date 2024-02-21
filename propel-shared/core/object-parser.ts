@@ -2,7 +2,7 @@ import { ParameterValue } from "../models/parameter-value";
 import { Utils } from "../utils/utils";
 import { PowerShellParser } from "./powershell-parser-interface";
 import { PropelError } from "./propel-error";
-import { PSType } from "./type-definitions";
+import { PSType, JSType } from "./type-definitions";
 
 /**
  * Special characters in the parsing process.
@@ -189,7 +189,7 @@ export class ObjectParser implements PowerShellParser {
 
             this._code += Utils.addQuotes(pv.name) + char.equal 
 
-            if (pv.nativeType == PSType.String) {
+            if (pv.nativeType == JSType.String) {
                 this._code += char.doubleQuote + pv.value + char.doubleQuote
             }
             else {
@@ -243,7 +243,7 @@ export class ObjectParser implements PowerShellParser {
     private _setIfString(value: string, pv: ParameterValue): void {
         let isString: boolean = false
 
-        if (pv.nativeType && pv.nativeType != PSType.String) return;
+        if (pv.nativeType && pv.nativeType != JSType.String) return;
 
         //Checking if is a String literal:
         if (!pv.value && this._hasStringLiteralStart(value)) {
@@ -251,12 +251,12 @@ export class ObjectParser implements PowerShellParser {
             isString = true
         }
         // if (!pv.value && this._hasStringLiteralEnd(value)) {
-        if ((isString || pv.nativeType == PSType.String) && this._hasStringLiteralEnd(value)) {
+        if ((isString || pv.nativeType == JSType.String) && this._hasStringLiteralEnd(value)) {
             value = value.trim().substring(0, value.trim().length - 1)
         }
 
-        if (isString || pv.nativeType == PSType.String) {
-            pv.nativeType = PSType.String
+        if (isString || pv.nativeType == JSType.String) {
+            pv.nativeType = JSType.String
 
             if (!pv.value) {
                 pv.value = value
@@ -284,15 +284,15 @@ export class ObjectParser implements PowerShellParser {
         */
         if (value.trim().match(/^([0-9]+|-[0-9]|\+[0-9])/)) {
             pv.value = value.trim()
-            pv.nativeType = PSType.Decimal
+            pv.nativeType = JSType.Number
         }
     }
 
     private _setIfObject(value: string, pv: ParameterValue): void {
 
-        if (pv.nativeType && pv.nativeType != PSType.Object) return;
+        if (pv.nativeType && pv.nativeType != JSType.Object) return;
 
-        pv.nativeType = PSType.Object
+        pv.nativeType = JSType.Object
 
         if (!pv.value) {
             pv.value = value.trim()

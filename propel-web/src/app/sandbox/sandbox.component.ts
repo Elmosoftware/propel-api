@@ -16,6 +16,7 @@ import { NgSelectComponent } from '@ng-select/ng-select';
 import { QueryModifier } from '../../../../propel-shared/core/query-modifier';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 import { CustomValueDialogData } from '../dialogs/custom-value-dlg/custom-value-dlg.component';
+import { ParameterValue } from '../../../../propel-shared/models/parameter-value';
 
 @Component({
   selector: 'app-root',
@@ -105,6 +106,8 @@ export class SandboxComponent implements OnInit {
 
   testWithData: boolean = false;
 
+  customObjectItems: ParameterValue[] = []
+
   sampleData: SampleData = new SampleData();
   sampleForm: FormGroup = new FormGroup({
     name: new FormControl("", [
@@ -127,8 +130,13 @@ export class SandboxComponent implements OnInit {
     textList: new FormControl(this.sampleData.textList),
     password: new FormControl("", [
       Validators.required
-    ])
+    ]),
+    customObject: new FormControl("")
   })
+
+  objectChanged($event: ParameterValue[]) {
+    this.customObjectItems = $event
+  }
 
   sampleFormSubmit() {
     console.log("Sample form Submitted!!!")

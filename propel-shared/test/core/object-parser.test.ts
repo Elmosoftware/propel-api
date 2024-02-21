@@ -1,5 +1,5 @@
 import { ObjectParser } from "../../core/object-parser";
-import { PSType } from "../../core/type-definitions";
+import { PSType, JSType } from "../../core/type-definitions";
 import { TestObjectParserCases } from "../test-object-parser-cases";
 
 describe("ObjectParser Class - fromString()", () => {
@@ -143,7 +143,7 @@ describe("ObjectParser Class - fromString()", () => {
     expect(parser.type).toEqual(PSType.Hashtable)
     expect(parser.values.length).toEqual(1)
     expect(parser.values[0].name).toEqual("First")
-    expect(parser.values[0].nativeType).toEqual(PSType.String)
+    expect(parser.values[0].nativeType).toEqual(JSType.String)
     expect(parser.values[0].value).toEqual("First Item as string")
   })
 
@@ -153,7 +153,7 @@ describe("ObjectParser Class - fromString()", () => {
     expect(parser.type).toEqual(PSType.Hashtable)
     expect(parser.values.length).toEqual(1)
     expect(parser.values[0].name).toEqual("First")
-    expect(parser.values[0].nativeType).toEqual(PSType.String)
+    expect(parser.values[0].nativeType).toEqual(JSType.String)
     expect(parser.values[0].value).toEqual("First Item as string")
   })
 
@@ -163,7 +163,7 @@ describe("ObjectParser Class - fromString()", () => {
     expect(parser.type).toEqual(PSType.PSCustomObject)
     expect(parser.values.length).toEqual(1)
     expect(parser.values[0].name).toEqual("First Numeric")
-    expect(parser.values[0].nativeType).toEqual(PSType.Decimal)
+    expect(parser.values[0].nativeType).toEqual(JSType.Number)
     expect(parser.values[0].value).toEqual("12345.67")
   })
 
@@ -173,10 +173,10 @@ describe("ObjectParser Class - fromString()", () => {
     expect(parser.type).toEqual(PSType.Hashtable)
     expect(parser.values.length).toEqual(2)
     expect(parser.values[0].name).toEqual("First Boolean")
-    expect(parser.values[0].nativeType).toEqual(PSType.Object)
+    expect(parser.values[0].nativeType).toEqual(JSType.Object)
     expect(parser.values[0].value).toEqual("$true")
     expect(parser.values[1].name).toEqual("_Second")
-    expect(parser.values[1].nativeType).toEqual(PSType.String)
+    expect(parser.values[1].nativeType).toEqual(JSType.String)
     expect(parser.values[1].value).toEqual("String with\nBreakline")
   })
 
@@ -186,10 +186,10 @@ describe("ObjectParser Class - fromString()", () => {
     expect(parser.type).toEqual(PSType.Hashtable)
     expect(parser.values.length).toEqual(2)
     expect(parser.values[0].name).toEqual("First Boolean")
-    expect(parser.values[0].nativeType).toEqual(PSType.Object)
+    expect(parser.values[0].nativeType).toEqual(JSType.Object)
     expect(parser.values[0].value).toEqual("$true")
     expect(parser.values[1].name).toEqual("_Second")
-    expect(parser.values[1].nativeType).toEqual(PSType.String)
+    expect(parser.values[1].nativeType).toEqual(JSType.String)
     expect(parser.values[1].value).toEqual("String with\nBreakline")
   })
 
@@ -200,43 +200,43 @@ describe("ObjectParser Class - fromString()", () => {
     expect(parser.values.length).toEqual(10)
     //1st Parameter:
     expect(parser.values[0].name).toEqual("_First")
-    expect(parser.values[0].nativeType).toEqual(PSType.Object)
+    expect(parser.values[0].nativeType).toEqual(JSType.Object)
     expect(parser.values[0].value).toEqual("(Get-Date)")
     //2nd Parameter:
     expect(parser.values[1].name).toEqual("Second")
-    expect(parser.values[1].nativeType).toEqual(PSType.String)
+    expect(parser.values[1].nativeType).toEqual(JSType.String)
     expect(parser.values[1].value).toEqual("`a")
     //3rd Parameter:
     expect(parser.values[2].name).toEqual("Third")
-    expect(parser.values[2].nativeType).toEqual(PSType.Object)
+    expect(parser.values[2].nativeType).toEqual(JSType.Object)
     expect(parser.values[2].value).toEqual("$wer")
     //4th Parameter:
     expect(parser.values[3].name).toEqual("Fourth")
-    expect(parser.values[3].nativeType).toEqual(PSType.Object)
+    expect(parser.values[3].nativeType).toEqual(JSType.Object)
     expect(parser.values[3].value).toEqual("[int]1")
     //5th Parameter:
     expect(parser.values[4].name).toEqual("Fifth")
-    expect(parser.values[4].nativeType).toEqual(PSType.Decimal)
+    expect(parser.values[4].nativeType).toEqual(JSType.Number)
     expect(parser.values[4].value).toEqual("-234.45")
     //6th Parameter:
     expect(parser.values[5].name).toEqual("Sixth")
-    expect(parser.values[5].nativeType).toEqual(PSType.Object)
+    expect(parser.values[5].nativeType).toEqual(JSType.Object)
     expect(parser.values[5].value).toEqual(`if(2 -eq 2) {\n$var = "var"\n"Es 2 igual a dos"\n}\nelse {\n"No es"\n}`)
     //7th Parameter:
     expect(parser.values[6].name).toEqual("Seventh")
-    expect(parser.values[6].nativeType).toEqual(PSType.String)
+    expect(parser.values[6].nativeType).toEqual(JSType.String)
     expect(parser.values[6].value).toEqual("Last\nValue")
     //8th Parameter:
     expect(parser.values[7].name).toEqual("Eighth")
-    expect(parser.values[7].nativeType).toEqual(PSType.Object)
+    expect(parser.values[7].nativeType).toEqual(JSType.Object)
     expect(parser.values[7].value).toEqual("@\"\nThis= is a here string.\n\"@")
     //9th Parameter:
     expect(parser.values[8].name).toEqual("Nineth")
-    expect(parser.values[8].nativeType).toEqual(PSType.Object)
+    expect(parser.values[8].nativeType).toEqual(JSType.Object)
     expect(parser.values[8].value).toEqual("@(1,\n2,\n3)")
     //10th Parameter:
     expect(parser.values[9].name).toEqual("Tenth")
-    expect(parser.values[9].nativeType).toEqual(PSType.Object)
+    expect(parser.values[9].nativeType).toEqual(JSType.Object)
     expect(parser.values[9].value).toEqual(`[pscustomobject]@{\nTenth_1 = 12\nTenth_2 = @{\n"aqua" = "Water"\nExt = "Other"\nNoxtro = @"\nNow a here string\nwith 2 lines.\n"@\nCond = if(3 -eq 3) {\n$var3 = "var3"\n"Is 3!!"\n}\nelse {\n"No es"\n}\n}\n}`)
   })
 
@@ -247,35 +247,35 @@ describe("ObjectParser Class - fromString()", () => {
     expect(parser.values.length).toEqual(8)
     //1st Parameter:
     expect(parser.values[0].name).toEqual("_First")
-    expect(parser.values[0].nativeType).toEqual(PSType.Object)
+    expect(parser.values[0].nativeType).toEqual(JSType.Object)
     expect(parser.values[0].value).toEqual("(Get-Date)")
     //2nd Parameter:
     expect(parser.values[1].name).toEqual("Second")
-    expect(parser.values[1].nativeType).toEqual(PSType.String)
+    expect(parser.values[1].nativeType).toEqual(JSType.String)
     expect(parser.values[1].value).toEqual("`a")
     //3rd Parameter:
     expect(parser.values[2].name).toEqual("Third")
-    expect(parser.values[2].nativeType).toEqual(PSType.Object)
+    expect(parser.values[2].nativeType).toEqual(JSType.Object)
     expect(parser.values[2].value).toEqual("$wer")
     //4th Parameter:
     expect(parser.values[3].name).toEqual("Fourth")
-    expect(parser.values[3].nativeType).toEqual(PSType.Object)
+    expect(parser.values[3].nativeType).toEqual(JSType.Object)
     expect(parser.values[3].value).toEqual("[int]1")
     //5th Parameter:
     expect(parser.values[4].name).toEqual("Fifth")
-    expect(parser.values[4].nativeType).toEqual(PSType.Decimal)
+    expect(parser.values[4].nativeType).toEqual(JSType.Number)
     expect(parser.values[4].value).toEqual("-234.45")
     //6th Parameter:
     expect(parser.values[5].name).toEqual("Sixth")
-    expect(parser.values[5].nativeType).toEqual(PSType.Object)
+    expect(parser.values[5].nativeType).toEqual(JSType.Object)
     expect(parser.values[5].value).toEqual(`if(2 -eq 2) {$var = "var"\n"Es 2 igual a dos"} else {"No es"}`)
     //7th Parameter:
     expect(parser.values[6].name).toEqual("Seventh")
-    expect(parser.values[6].nativeType).toEqual(PSType.String)
+    expect(parser.values[6].nativeType).toEqual(JSType.String)
     expect(parser.values[6].value).toEqual("Last\nValue")
     //8th Parameter:
     expect(parser.values[7].name).toEqual("Eighth")
-    expect(parser.values[7].nativeType).toEqual(PSType.Object)
+    expect(parser.values[7].nativeType).toEqual(JSType.Object)
     expect(parser.values[7].value).toEqual(`[pscustomobject]@{Tenth_1 = 12\nTenth_2 = @{"aqua" = "Water"\nExt = "Other"}}`)
   })
 

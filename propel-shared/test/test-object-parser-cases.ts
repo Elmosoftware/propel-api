@@ -218,19 +218,19 @@ with 2 lines.
             {
                 name: "First",
                 value: "String value",
-                nativeType: "System.String",
+                nativeType: "String",
                 isRuntimeParameter: false
             },
             {
                 name: "Second item",
                 value: "$null",
-                nativeType: "System.Object",
+                nativeType: "Object",
                 isRuntimeParameter: false
             },
             {
                 name: "Third an last item",
                 value: "0x34b6d6",
-                nativeType: "System.Decimal",
+                nativeType: "Number",
                 isRuntimeParameter: false
             }
         ]
@@ -241,61 +241,61 @@ with 2 lines.
             {
                 name: "_First",
                 value: "(Get-Date)",
-                nativeType: "System.Object",
+                nativeType: "Object",
                 isRuntimeParameter: false
             },
             {
                 name: "Second",
                 value: "`a",
-                nativeType: "System.String",
+                nativeType: "String",
                 isRuntimeParameter: false
             },
             {
                 name: "Third",
                 value: "$wer",
-                nativeType: "System.Object",
+                nativeType: "Object",
                 isRuntimeParameter: false
             },
             {
                 name: "Fourth",
                 value: "[int]1",
-                nativeType: "System.Object",
+                nativeType: "Object",
                 isRuntimeParameter: false
             },
             {
                 name: "Fifth",
                 value: "-234.45",
-                nativeType: "System.Decimal",
+                nativeType: "Number",
                 isRuntimeParameter: false
             },
             {
                 name: "Sixth",
                 value: "if(2 -eq 2) {\n$var = \"var\"\n\"Es 2 igual a dos\"\n}\nelse {\n\"No es\"\n}",
-                nativeType: "System.Object",
+                nativeType: "Object",
                 isRuntimeParameter: false
             },
             {
                 name: "Seventh",
                 value: "Last\nValue",
-                nativeType: "System.String",
+                nativeType: "String",
                 isRuntimeParameter: false
             },
             {
                 name: "Eighth",
                 value: "@\"\nThis= is a here string.\n\"@",
-                nativeType: "System.Object",
+                nativeType: "Object",
                 isRuntimeParameter: false
             },
             {
                 name: "Nineth",
                 value: "@(1,\n2,\n3)",
-                nativeType: "System.Object",
+                nativeType: "Object",
                 isRuntimeParameter: false
             },
             {
                 name: "Tenth",
                 value: "[pscustomobject]@{\nTenth_1 = 12\nTenth_2 = @{\n\"aqua\" = \"Water\"\nExt = \"Other\"\nNoxtro = @\"\nNow a here string\nwith 2 lines.\n\"@\nCond = if(3 -eq 3) {\n$var3 = \"var3\"\n\"Is 3!!\"\n}\nelse {\n\"No es\"\n}\n}\n}",
-                nativeType: "System.Object",
+                nativeType: "Object",
                 isRuntimeParameter: false
             }
         ]

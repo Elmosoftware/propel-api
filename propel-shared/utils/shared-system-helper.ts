@@ -73,6 +73,16 @@ export class SharedSystemHelper {
     }
 
     /**
+     * Evaluates the providade value and returns true if is a valid numeric value.
+     * @param n Number or String to validate
+     * @returns A boolean value indicating if the supplied value can be considered as a literal number.
+     */
+    static isValidNumber(n: number | string): boolean {
+        if(typeof n == "number") return true;
+        return n.trim() !== "" && !isNaN(Number(n))
+    }
+
+    /**
      * If the date is valid, this is going to return the [ISO-8601 date representation](https://www.iso.org/iso-8601-date-and-time-format.html).
      * This full representation of a date has the following format:
      * @example

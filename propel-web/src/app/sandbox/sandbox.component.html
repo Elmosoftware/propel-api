@@ -845,10 +845,20 @@
               </button>
             </div>
           </div>
+          <div class="form-group">
+            <label for="customObject" class="data-required">Custom object</label>
+            <app-object-editor [values]="customObjectItems" (change)="objectChanged($event)"></app-object-editor>
+            <div class="form-inline">
+              <input type="text" class="form-control" id="customObject"
+                aria-describedby="customObject" placeholder="This is a literal object, please edit it carefully" 
+                formControlName="customObject">
+            </div>
+          </div>
           <button class="btn btn-primary" type="submit" [disabled]="!sampleForm.valid">Save</button>
           <br>
           <span>Current form status: {{ sampleFormOrControlStatus(sampleForm) }}</span><br>
-          <span>Current form value: {{ sampleForm.value | json }}</span>
+          <span>Current form value: {{ sampleForm.value | json }}</span><br>
+          <span>Values edited are: {{ customObjectItems | json }}</span>
         </form>
       </div>
 

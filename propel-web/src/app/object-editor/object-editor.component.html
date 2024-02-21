@@ -1,0 +1,45 @@
+<div class="form-container mt-2">
+    <form [formGroup]="fg">
+        <div class="form-group">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="no-wrap-headers">&nbsp;</th>
+                        <th scope="col" class="no-wrap-headers">Property</th>
+                        <th scope="col" class="no-wrap-headers">Value</th>
+                        <th scope="col" class="no-wrap-headers">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody formArrayName="items">
+                    <tr [formGroupName]="i" *ngFor="let item of items; let i = index">
+                        <td>
+                            <div class="d-flex">
+                                <button class="btn btn-primary button-icon-medium" type="button"
+                                    (click)="removeField(i)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td><a href="javascript:void(0)" (click)="editItem(i)">{{item.controls.name.value}}</a>
+                        </td>
+                        <td>{{item.controls.value.value}}<span class="ml-1 text-subtle">({{item.controls.nativeType.value}})</span></td>
+                        <td>
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" 
+                                [checked]="getIsLiteralFlag(i)"
+                                (click)="isLiteralFlagChanged(i)" 
+                                [id]="'isLiteral'+i" name="isLiteral" />
+                                <label class="custom-control-label" [for]="'isLiteral'+i">As Object literal</label>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-primary button-icon-medium" type="button"
+                (click)="addItem()">ADD ONe!!!
+                <!-- <i class="fas fa-trash-alt"></i> -->
+        </button>
+        </div>
+        <!-- <span>List of Values: {{ items | json }}</span><br> -->
+    </form>
+</div>
