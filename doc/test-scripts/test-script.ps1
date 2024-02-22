@@ -32,8 +32,14 @@ param (
     [Parameter(HelpMessage='ADDITIONAL TYPES: String.')]
     [string]$AdditionalTypesString = "Hello World!",
 
+    [Parameter(HelpMessage='ADDITIONAL TYPES: String with empty default value.')]
+    [string]$AdditionalTypesStringWithEmptyDefault = "",
+
     [Parameter(HelpMessage='ADDITIONAL TYPES: String quoted.')]
     [string]$AdditionalTypesStringQuoted = """Hello World!""",
+
+    [Parameter(HelpMessage='ADDITIONAL TYPES: String null.')]
+    [string]$AdditionalTypesStringNull = $null,
     
     [Parameter(HelpMessage='ADDITIONAL TYPES: Double.')]
     [double]$AdditionalTypesDouble = 1.1,
