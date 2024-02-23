@@ -140,6 +140,7 @@ th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
   font-size: 15px;
   font-weight: 500; 
   background-color: var(--colors-primary);
+  color: var(--colors-white);
   border-radius: initial !important;
 }
 
@@ -1238,13 +1239,19 @@ th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
   border-top-color: rgba(18, 52, 65, 0.12); }
 
 .mat-expansion-panel .mat-expansion-panel-header.cdk-keyboard-focused:not([aria-disabled='true']), .mat-expansion-panel .mat-expansion-panel-header.cdk-program-focused:not([aria-disabled='true']), .mat-expansion-panel:not(.mat-expanded) .mat-expansion-panel-header:hover:not([aria-disabled='true']) {
-  background: var(--colors-primary);
+  background: var(--colors-dark-border); 
 }
 
 @media (hover: none) {
   .mat-expansion-panel:not(.mat-expanded):not([aria-disabled='true'])
 .mat-expansion-panel-header:hover {
-    background: white; } }
+    background: var(--colors-dark-border); 
+  } 
+}
+
+.mat-expansion-panel:not(.mat-expanded) .mat-expansion-panel-header:not([aria-disabled=true]):hover {
+  background: var(--colors-dark-border) !important;
+}
 
 .mat-expansion-panel-header-title {
   color: var(--colors-white);

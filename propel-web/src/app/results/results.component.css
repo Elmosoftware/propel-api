@@ -10,12 +10,10 @@
 }
 
 .step-header {
-    background-color: var(--colors-highlight);
-    height: 47px !important
+    height: 47px !important 
 }
 
 .target-header {
-    background-color: var(--colors-dark-highlight);
     height: 36px !important
 }
 
