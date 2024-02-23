@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { PageMetadata } from './app-pages.service';
 import { CoreService } from "./core.service";
 
 @Injectable()
-export class SecurityGuard implements CanActivate {
+export class SecurityGuard  {
 
     constructor(private core: CoreService) {
     }
