@@ -34,7 +34,9 @@
             ],
             "allowedCommonJsDependencies": [
               "prismjs",
-              "stopword"
+              "stopword",
+              "short-unique-id",
+              "rfdc"
             ],
             "vendorChunk": true,
             "extractLicenses": false,
