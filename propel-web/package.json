@@ -45,7 +45,7 @@
     "@types/d3": "^7.4.0",
     "@types/jasmine": "~4.0.0",
     "@types/jasminewd2": "^2.0.10",
-    "@types/node": "^18.11.9",
+    "@types/node": "^20.10.0",
     "@types/prismjs": "^1.26.0",
     "@types/shortid": "0.0.29",
     "@types/stemmer": "^1.0.2",
