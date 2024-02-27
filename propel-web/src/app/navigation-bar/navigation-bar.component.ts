@@ -137,8 +137,13 @@ export class NavigationBarComponent implements OnInit {
   get userName(): string {
     let ret: string = "";
 
-    if (this.isUserLoggedIn && !this.isLegacySecurityEnabled) {
-      ret = `${this.core.security.sessionData.userFullName}, (${this.core.security.sessionData.userName})`
+    if (this.isUserLoggedIn) {
+      if (this.isLegacySecurityEnabled) {
+        ret = this.core.security.sessionData.userName
+      }
+      else {
+        ret = `${this.core.security.sessionData.userFullName}, (${this.core.security.sessionData.userName})`
+      }
     }
 
     return ret;
@@ -304,6 +309,11 @@ export class NavigationBarComponent implements OnInit {
   getPreviousPageTooltipMessage(): string {
     if (!this.previousPage) return "";
     else return `Back to ${this.previousPage.title}`;
+  }
+
+  getNoUserTooltip(): string {
+    if(this.isLegacySecurityEnabled) return this.userName
+    else return "No user is logged in, contact Propel administrators to be granted if needed."
   }
 
   goBackInHistory(): void {
