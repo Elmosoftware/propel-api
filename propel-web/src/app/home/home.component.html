@@ -76,7 +76,7 @@ Click here to browse them." (click)="goToBrowseCredentials()" matTooltipClass="t
                     </li>
                     <li class="mt-2">
                         <button type="button" class="btn btn-lg btn-block btn-primary card-text">
-                            Credentials
+                            <div>Credentials</div>
                             <button type="button" class="btn btn-secondary mx-1 icon-credential-windows"
                                 matTooltip="Create a new windows credential." matTooltipClass="tooltipsWithBreakLines"
                                 matTooltipPosition="below" (click)="goToCredentialWin()"></button>
@@ -87,6 +87,10 @@ Click here to browse them." (click)="goToBrowseCredentials()" matTooltipClass="t
                                 matTooltip="Create a new Generic API Key credential."
                                 matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"
                                 (click)="goToCredentialGenericAPIKey()"></button>
+                            <button type="button" class="btn btn-secondary mx-1 icon-credential-database"
+                                matTooltip="Create a new Database credential."
+                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"
+                                (click)="goToCredentialDatabase()"></button>
                         </button>
                     </li>
                 </ul>

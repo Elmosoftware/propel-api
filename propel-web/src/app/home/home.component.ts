@@ -129,6 +129,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.core.navigation.toGenericAPIKeyCredential();
   }
 
+  goToCredentialDatabase() {
+    this.core.navigation.toDatabaseCredential();
+  }
+
   async getUserStats(): Promise<UsageStats | undefined>{
 
     if (!this.core.security.isUserLoggedIn) return Promise.resolve(undefined);
