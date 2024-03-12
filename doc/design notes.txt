@@ -809,4 +809,42 @@ mustReset
 Dependencies to remove:
 bcrypt
 
+===============================================================================
+Simplified login - What to test:
+====================================
 
+Basic testing:
+- Add modify and lock users.
+-----------------------------------
+Folders and files:
+	- simplified-login  (requires electron)
+		
+
+
+Advanced testing:
+1 - Try to login with not existent user
+2 - Create the user as admin
+3 - Login and verify all is accesible
+4 - After login you are not able to change user id
+5 - Change user role to "regular"
+6 - Login and verify the correct options only are available.
+7 - Go to users and lock the user
+8 - Reload the page and verify you can't login
+
+ Prereq:
+	Modify \propel-api\.env file by setting teh variable LEGACY_SECURITY=on
+	Start API using VS Code task "Run API"
+	Build latest changes by running VS Code task "Build PRODUCTION (Electron Shell Only)"
+	In a terminal window change working dir to "\propel-shell" and run in the command line "npm run startElectron" to open Propel inside an unpackaged Electron app.
+FAIL TO LOGIN BECAUSE THE USER DOESNT EXISTS
+ Go tu users an ensure your user is not in the list
+ Stop the api, change the .env file configuration as LEGACY_SECURITY=off and restart the API
+ Click Propel "View" menu and select the option reload
+ You must see an error toast that user doesn't exists
+ Create your user that is testing as administrator 
+ After save, try to modify the name, (you must be able)
+
+
+
+
+T

@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Observable } from 'rxjs';
-import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from "@angular/router";
+import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from "@angular/router";
 
 /**
  * This interface must be implemented by the components that want to have the *"DatalosPreventionGuard"* guard in his route.
@@ -13,7 +13,7 @@ export interface DataLossPreventionInterface {
  * This guard prevent deactivating the route of any component that implements *"DatalosPreventionInterface"*.
  */
 @Injectable()
-export class DataLossPreventionGuard implements CanDeactivate<DataLossPreventionInterface>{
+export class DataLossPreventionGuard {
 
     /**
      * Flag that allows to temporarily deactivate the guard to allow a navigation even 

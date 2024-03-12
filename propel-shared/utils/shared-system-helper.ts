@@ -85,7 +85,7 @@ export class SharedSystemHelper {
         let dt: DateTime = this.getDateTime(date)
         
         if (!dt.isValid) return "" 
-        else return dt.toUTC().toISO({ includeOffset: true })
+        else return dt.toUTC().toISO({ includeOffset: true })!
     }
 
     /**

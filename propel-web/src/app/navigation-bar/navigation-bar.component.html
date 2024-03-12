@@ -134,10 +134,11 @@
           {{userInitials}}
         </div>
         <ng-template #noUser>
-          <span class="icon-user-mini menu-icon" [ngClass]="{
+          <div class="icon-user-mini menu-icon" [ngClass]="{
             'icon-white': !isUserLoggedIn, 
             'icon-legacy-security': isUserLoggedIn && isLegacySecurityEnabled
-        }"></span>
+          }" [matTooltip]="getNoUserTooltip()"
+          matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"></div>
         </ng-template>
       </div>
     </div>
