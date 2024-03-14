@@ -43,6 +43,7 @@ export class DatabaseSecretComponent implements OnInit, FormSubcomponentInterfac
   private requestCount$: EventEmitter<number>;
   fg: FormGroup;
   viewPassword: boolean = false;
+  viewConnectionString: boolean = false;
   previousValue!: DatabaseSecret;
 
   constructor(private core: CoreService) {
@@ -128,5 +129,9 @@ export class DatabaseSecretComponent implements OnInit, FormSubcomponentInterfac
 
   toggleViewPassword() {
     this.viewPassword = !this.viewPassword;
+  }
+
+  toggleViewConnectionString() {
+    this.viewConnectionString = !this.viewConnectionString;
   }
 }
