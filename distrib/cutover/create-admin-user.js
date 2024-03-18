@@ -23,6 +23,10 @@ db.createUser(
                 role: "userAdminAnyDatabase",
                 db: "admin"
             },
+            {
+                role : "dbAdminAnyDatabase",
+                db : "admin"
+            },
             "readWriteAnyDatabase"
         ]
     }
