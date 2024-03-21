@@ -14,7 +14,7 @@ param(
 )
 
 $MongoShell = "C:\Program Files\MongoDB\Server\7.0\bin\mongosh.exe"
-$MongoToolsFolder = "C:\Program Files\MongoDB\Tools\100.8.0\bin"
+$MongoToolsFolder = "C:\Program Files\MongoDB\Tools\100.8.0\bin\"
 $ImportExec = "mongoimport"
 $ExportExec = "mongoexport"
 
