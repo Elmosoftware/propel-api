@@ -10,19 +10,22 @@ import { UserLoginRequest } from '../../../propel-shared/core/user-login-request
 import { TokenRefreshRequest } from '../../../propel-shared/core/token-refresh-request';
 import { SecurityToken } from '../../../propel-shared/core/security-token';
 import { SecuritySharedConfiguration } from '../../../propel-shared/core/security-shared-config';
-import { lastValueFrom, of, throwError } from 'rxjs';
+import { lastValueFrom, of, throwError, fromEvent } from 'rxjs';
 import { logger } from '../../../propel-shared/services/logger-service';
-import { environment as env } from 'src/environments/environment';
+import { environment as env, environment } from 'src/environments/environment';
 import { PageMetadata } from './app-pages.service';
-import { SessionService } from './session.service';
 import { PropelError } from '../../../propel-shared/core/propel-error';
 import { Headers, HttpHelper } from 'src/util/http-helper';
+import { SharedSystemHelper } from '../../../propel-shared/utils/shared-system-helper';
+import { Utils } from '../../../propel-shared/utils/utils';
 
 /**
  * This header indicates that no Authorization data is needed to be sent for the request.
  */
 export const X_HEADER_NOAUTH = "x-propel-noauth"
 export const SecurityEndpoint: string = "security";
+export const RUNTIME_INFO_KEY: string = "PropelRuntimeInfo"
+export const REFRESH_TOKEN_KEY: string = "PropelRefreshToken"
 
 export const enum SecurityEndpointActions {
     SaveUser = "save",
@@ -48,40 +51,83 @@ export const enum SecurityEvent {
 })
 export class SecurityService {
 
-    private _session: SessionService;
     private _securityEvent$: EventEmitter<SecurityEvent> = new EventEmitter<SecurityEvent>();
+    private _securityToken?: SecurityToken;
+    private _refreshToken: string = "";
+    private _runtimeInfo!: RuntimeInfo;
 
     constructor(private http: HttpClient) {
         logger.logInfo("SecurityService instance created");
-        this._session = new SessionService();
+        this._initialize();
     }
 
     /**
      * Returns a boolean value indicating if there is a user already sign in.
      */
     get isUserLoggedIn(): boolean {
-        return this._session.isUserLoggedIn;
+        return Boolean(this._securityToken);
     }
 
     /**
      * Returns all the session details including information about the user, token expiration, etc.
      */
     get sessionData(): SecurityToken {
-        return this._session.sessionData;
+        return this._securityToken!; //TODO: Need to fix in the future, this can actually be undefined.
     }
 
     /**
      * Returns the refresh token for the user session.
      */
     get refreshToken(): string {
-        return this._session.refreshToken;
+        if (!this._refreshToken) {
+            this.fetchRefreshToken();
+        }
+
+        return this._refreshToken;
+    }
+
+    /**
+     * If the user already start session in this device, we are trying here to grab 
+     * the refresh token from the local storage.
+     */
+    private fetchRefreshToken(): void {
+        let refreshToken: string = localStorage.getItem(REFRESH_TOKEN_KEY) ?? "";
+
+        if (refreshToken) {
+            this._refreshToken = refreshToken;
+        }
     }
 
     /**
      * User that starts the propel app. (Only when running from Electron).
      */
     get runtimeInfo(): RuntimeInfo {
-        return this._session.runtimeInfo;
+        if (!this._runtimeInfo) {
+            this.fetchRuntimeInfo();
+        }
+
+        return this._runtimeInfo;
+    }
+
+    /**
+     * Caching the runtime info gathered by Electron when the app starts:
+     */
+    private fetchRuntimeInfo(): void {
+        let runtimeInfo: string = sessionStorage.getItem(RUNTIME_INFO_KEY) ?? "";
+
+        if (runtimeInfo) {
+            try {
+                this._runtimeInfo = JSON.parse(runtimeInfo);
+            } catch (error) {
+                logger.logError(`There was an error retrieving runtime info from session storage: "${String(error)}".`)
+            }
+            finally {
+                sessionStorage.removeItem(RUNTIME_INFO_KEY);
+            }
+        }
+        else {
+            logger.logError(new PropelError(`${RUNTIME_INFO_KEY} is not present in session storage, is not possible to authenticate the user.`));
+        }
     }
 
     /**
@@ -116,12 +162,12 @@ export class SecurityService {
         if (!page.security.restricted) return true; //Page has no restrictions to access.
 
         //If authentication is required:
-        if (page.security.restricted && !this._session.isUserLoggedIn) {
+        if (page.security.restricted && !this.isUserLoggedIn) {
             ret = false;
         }
 
-        if (page.security.restricted && this._session.isUserLoggedIn) {
-            if (page.security.adminOnly && !this._session.sessionData.roleIsAdmin) {
+        if (page.security.restricted && this.isUserLoggedIn) {
+            if (page.security.adminOnly && !this.sessionData.roleIsAdmin) {
                 ret = false;
             }
             else {
@@ -159,20 +205,6 @@ export class SecurityService {
             [SecurityEndpoint, SecurityEndpointActions.UnlockUser, userId]);
 
         return lastValueFrom(this.http.post<void>(url, null, {
-            headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
-        }));
-    }
-
-    /**
-     * Reset the user password so a new one will be requested during the next login.
-     * @param userId User identifier
-     * @returns The same user ID if the reset was successful.
-     */
-    async resetPassword(userId: string): Promise<UserRegistrationResponse> {
-        let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
-            [SecurityEndpoint, SecurityEndpointActions.ResetUserPassword, userId]);
-
-        return lastValueFrom(this.http.post<UserRegistrationResponse>(url, null, {
             headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
         }));
     }
@@ -234,6 +266,8 @@ export class SecurityService {
      * @returns A message indicating the status of the operation.
      */
     async tryReconnectSession(): Promise<string> {
+        if(this.isUserLoggedIn) return Promise.resolve("User session already established.");
+
         let config = await this.getConfig()
 
         if (config.legacySecurity) {
@@ -244,12 +278,16 @@ export class SecurityService {
                 return Promise.reject(`There was an error trying to login with Legacy security: "${(error.message) ? error.message : JSON.stringify(error)}"`)
             }
         }
-        else if (this._session.refreshToken) {
+        else if (this.refreshToken) {
             try {
-                await this.refreshAccessToken(new TokenRefreshRequest(this._session.refreshToken))
+                await this.refreshAccessToken(new TokenRefreshRequest(this.refreshToken))
                 return Promise.resolve(`User session reconnected.`);
             } catch (error) {
-                await this.logOff()
+                // try {
+                //     await this.logOff()
+                // } catch (e) {
+                //     //We just did our best effort!
+                // }
                 //If the refresh token expired, we try now to start a new session using the Runtime info:
                 try {
                     await this.login(new UserLoginRequest(this.runtimeInfo.runtimeToken))
@@ -259,7 +297,7 @@ export class SecurityService {
                 }
             }
         }
-        else if (this._session.runtimeInfo) {
+        else if (this.runtimeInfo) {
             try {
                 await this.login(new UserLoginRequest(this.runtimeInfo.runtimeToken))
                 return Promise.resolve(`User "${this.runtimeInfo.userName} just logged in.`);
@@ -288,14 +326,58 @@ export class SecurityService {
             })
             .pipe(
                 map((results: UserLoginResponse) => {
-                    this._session.setSessionData(results);
+                    this.setSessionData(results);
                     this._securityEvent$.emit(SecurityEvent.Login);
                     return results;
                 }),
                 tap(_ => {
-                    logger.logInfo(`User ${this._session.sessionData.userFullName} (${this._session.sessionData.userName}) just login. Access expiring by "${(this.sessionData.expiresAt ? this.sessionData.expiresAt.toLocaleString() : "not defined")}".`)
+                    logger.logInfo(`User ${this.sessionData.userFullName} (${this.sessionData.userName}) just login. Access expiring by "${(this.sessionData.expiresAt ? this.sessionData.expiresAt.toLocaleString() : "not defined")}".`)
                 })
             ));
+    }
+
+    setSessionData(loginResponse: UserLoginResponse): void {
+        let accessTokenSections: string[] = loginResponse.accessToken.split(".")
+        let accessTokenPayload: any;
+
+        if (accessTokenSections.length !== 3) throw new PropelError(`Invalid token. 
+The provided JWT token is not properly formatted. We expect Header, Payload and Signature sections and we get ${accessTokenSections.length} sections.`);
+
+        accessTokenPayload = SharedSystemHelper.decodeBase64(accessTokenSections[1]);
+
+        if (!Utils.isValidJSON(accessTokenPayload)) {
+            throw new PropelError(`Invalid token payload. 
+The payload in the provided JWT token can't be parsed as JSON. Payload content is: ${accessTokenPayload} sections.`);
+        }
+        
+        this._securityToken = new SecurityToken();
+        this._securityToken.hydrateFromTokenPayload(JSON.parse(accessTokenPayload));
+        this._securityToken.accessToken = loginResponse.accessToken;  
+        
+        this.saveRefreshToken(loginResponse.refreshToken);
+    }
+    
+    /**
+     * Remove any active session data.
+     */
+    removeSessionData() {
+        this._securityToken = undefined;
+        this.removeRefreshToken();   
+    }
+
+    private saveRefreshToken(refreshToken: string): void {
+        if(!refreshToken){
+            this.removeRefreshToken()
+        }
+        else {
+            this._refreshToken = refreshToken;
+            localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+        }
+    }
+
+    private removeRefreshToken(): void {
+        this._refreshToken = ""
+        localStorage.removeItem(REFRESH_TOKEN_KEY)
     }
 
     /**
@@ -320,7 +402,7 @@ export class SecurityService {
                     return throwError(err)
                 }),
                 map((results: UserLoginResponse) => {
-                    this._session.setSessionData(results);
+                    this.setSessionData(results);
                     this._securityEvent$.emit(SecurityEvent.Login);
                     return results;
                 }),
@@ -348,7 +430,7 @@ export class SecurityService {
                 catchError((error) => {
                     let e = new PropelError(error);
                     logger.logWarn(`User log off completed with errors. Following details: "${e.message}"`)
-                    this._session.removeSessionData();
+                    this.removeSessionData();
                     this._securityEvent$.emit(SecurityEvent.Logoff);
                     return of()
                 }),
@@ -356,9 +438,35 @@ export class SecurityService {
                     logger.logInfo(`User log off completed.`)
                 }),
                 map(_ => {
-                    this._session.removeSessionData();
+                    this.removeSessionData();
                     this._securityEvent$.emit(SecurityEvent.Logoff);
                 })
             ));
+    }
+
+    private _initialize() {
+        fromEvent(window, "session-storage-changed")
+            .subscribe({
+                next: () => {
+                    logger.logInfo("session-storage-changed event has been fired.");
+                    this.fetchRuntimeInfo();
+                    this.tryReconnectSession();
+                }
+            });
+
+        //This applies ONLY to DEV ENVIRONMENT:
+        fromEvent(window, "load")
+            .subscribe({
+                next: () => {
+
+                    if (environment.production == false && environment.mocks) {
+                        logger.logInfo(`load event has been fired. Loading RuntimeInfo mock "${environment.mocks.activeMocks.runtimeInfo}".`);
+                        //@ts-ignore
+                        this._runtimeInfo = environment.mocks.runtimeInfo![environment.mocks.activeMocks.runtimeInfo];
+                    }
+
+                    this.tryReconnectSession();
+                }
+            });        
     }
 }

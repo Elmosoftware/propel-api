@@ -178,14 +178,9 @@ export class CoreService {
               this.injToast.showError(status.lastError);
             }
 
-            if (!this.injSec.isUserLoggedIn) {
-              //If connectivity is restablished or the app is starting for the first time, we must try to 
-              //establish a user session with a refresh token or Legacy security, whatever is available.
-              //If legacy security is enabled for Propel, a new session will be created for an "unknown" user.
-              //This is strictly for backward compatibility.
-              //If a Refresh token is found, we will try to reconnect the user session by refreshing the 
-              //access token with a new one:
-              logger.logInfo(`Attempting to reconnect user session...`)
+              //If connectivity is restablished, we must check the user session and 
+              //reconnect it if needed.
+              logger.logInfo(`Checking user session...`)
               this.injSec.tryReconnectSession()
                 .then((message: string) => {
                   logger.logInfo(message);
@@ -203,7 +198,6 @@ export class CoreService {
                         "Not able to reconnect your session!")
                     }
                   })
-            }
           }
           else {
             //Navigate to the offline page to show the connectivity issue details:

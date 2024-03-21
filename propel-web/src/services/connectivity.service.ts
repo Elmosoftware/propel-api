@@ -79,6 +79,9 @@ export class ConnectivityService implements OnDestroy {
             this.status = Object.assign({}, newStatus);
             this.onConnectivityStatusChange.emit(newStatus);
         }
+        else {
+            logger.logInfo("Update status requested but nothing new to report event will not be fired.");
+        }
     }
 
     private initialize() {
@@ -96,8 +99,6 @@ export class ConnectivityService implements OnDestroy {
                     this.updateStatus();
                 }
             });
-
-        this.updateStatus();
     }
 
     private isStatusChanged(newStatus: ConnectivityStatus): boolean {
