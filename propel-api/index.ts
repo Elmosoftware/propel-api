@@ -54,6 +54,7 @@ db.start() //Database setup.
 Executing script: "${__filename}".
 Server is ready and listening on port: ${cfg.port}.
 Propel started on "${cfg.environment}" environment.
+Start local time is ${(new Date()).toString()}.
 Powered by Node.js ${process.version}(${process.arch}) on platform ${process.platform}.`);
             })
         .catch((err:any) => {
