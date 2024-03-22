@@ -283,11 +283,6 @@ export class SecurityService {
                 await this.refreshAccessToken(new TokenRefreshRequest(this.refreshToken))
                 return Promise.resolve(`User session reconnected.`);
             } catch (error) {
-                // try {
-                //     await this.logOff()
-                // } catch (e) {
-                //     //We just did our best effort!
-                // }
                 //If the refresh token expired, we try now to start a new session using the Runtime info:
                 try {
                     await this.login(new UserLoginRequest(this.runtimeInfo.runtimeToken))
@@ -447,26 +442,26 @@ The payload in the provided JWT token can't be parsed as JSON. Payload content i
     private _initialize() {
         fromEvent(window, "session-storage-changed")
             .subscribe({
-                next: () => {
+                next: async () => {
                     logger.logInfo("session-storage-changed event has been fired.");
                     this.fetchRuntimeInfo();
-                    this.tryReconnectSession();
+                    await this.tryReconnectSession();
                 }
             });
 
         //This applies ONLY to DEV ENVIRONMENT:
-        fromEvent(window, "load")
-            .subscribe({
-                next: () => {
-
-                    if (environment.production == false && environment.mocks) {
+        //@ts-ignore
+        if (environment.production == false && environment.mocks) {
+            fromEvent(window, "load")
+                .subscribe({
+                    next: async () => {
+                        //@ts-ignore
                         logger.logInfo(`load event has been fired. Loading RuntimeInfo mock "${environment.mocks.activeMocks.runtimeInfo}".`);
                         //@ts-ignore
                         this._runtimeInfo = environment.mocks.runtimeInfo![environment.mocks.activeMocks.runtimeInfo];
+                        await this.tryReconnectSession();
                     }
-
-                    this.tryReconnectSession();
-                }
-            });        
+                });
+        }
     }
 }
