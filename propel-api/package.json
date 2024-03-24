@@ -26,7 +26,7 @@
     "mongoose": "^7.4.5",
     "mongoose-field-encryption": "7.0.1",
     "node-powershell": "^5.0.1",
-    "node-windows": "^1.0.0-beta.6",
+    "node-windows": "^1.0.0-beta.8",
     "short-unique-id": "^4.4.4",
     "tmp": "^0.1.0"
   },
