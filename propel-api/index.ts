@@ -66,8 +66,17 @@ Powered by Node.js ${process.version}(${process.arch}) on platform ${process.pla
     })
 
 function closeHandler(err:any, origin?: any, code: number = 1) {
-    logger.logError(`There was an error on: "${origin}", error details are: \r\n${JSON.stringify(err)}`);
+    let msg = ""
+
+    if (origin) {
+        origin = JSON.stringify(origin);
+    }
+
+    msg = `There was an error on: "${origin}", error details are: \r\n${JSON.stringify(err)}`
+    logger.logError(msg);
+    console.log(msg);
     logger.logInfo(`Exiting now with code ${code}`);
+    console.log(`Exiting now with code ${code}`);
     process.exit(code);
 }
 

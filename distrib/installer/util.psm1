@@ -165,10 +165,65 @@ function InstallNodeWindows() {
 Export-ModuleMember -Function "InstallNodeWindows"
 
 function UninstallPropelService() {
+
+    # Under certain circumstances qhen the service stops the 2 processes (the one that run the 
+    # wrapper and the Propel API itself), keep running. This cause an issue when the service is reinstalled.
+    # For reference: 
+    #   https://github.com/coreybutler/node-windows/issues/12
+    #   https://github.com/coreybutler/node-windows/issues/235
+    #   https://github.com/coreybutler/node-windows/issues/134
+    # The idea here is to stop the service and the processes before to run the uninstall.
+    [console]::ForegroundColor = "DarkGray"   
+
+    Util.Msg ("Checking status of Propel Service (""" + $cfg.serviceName + """) ...");
+    $svc = Get-Service | Where-Object { $_.Name -eq $cfg.serviceName}
+    $nodeProcs = (Get-Process | Where-Object { $_.Name -eq "node"} | Sort-Object -Property Id) # -Descending)
+    
+    if($null -eq $svc) {
+        Util.Msg ("Propel service doesn't exists.");
+        $code = $LASTEXITCODE
+        return $code
+    }
+    else {
+        if ($svc.Status -ne "Stopped") {
+            Util.Msg ("Stopping Propel service...");
+            $svc.Stop();
+            $svc.Refresh();
+
+            #We wait a max of 5s for the service to stop:
+            $statusCount = 0
+            while ($svc.Status -ne "Stopped" -and $statusCount -lt 5) {
+                Util.Msg ("Waiting for the service to stop. Current status is """ + $svc.Status + """.");
+                Start-Sleep -Seconds 1
+                $statusCount += 1
+                $svc.Refresh()
+            }
+        }
+        
+        if($svc.Status -eq "Stopped") {
+            if ($nodeProcs.Count -gt 0) {
+                Util.Msg ("Checking Node processes ...");
+                $nodeProcs | ForEach-Object {
+                    $nodeProc = $_
+                    #If the process still exists, we will kill it:
+                    if ($null -ne (Get-Process | Where-Object { $_.Id -eq $nodeProc.Id})) {
+                        Util.Msg ("Stopping Node.JS process ID """ + $nodeProc.Id + """.");
+                        Stop-Process -Id $nodeProc.Id -Force -ErrorAction Ignore
+                    }
+                    else {
+                        Util.Msg ("Node.JS process with ID """ + $nodeProc.Id + """ was already stopped by the service.");
+                    }
+                }
+            }
+        }
+        else {
+            Util.Msg ("After 5s the service wasn't stopped yet. Current status is """ + $svc.Status + """.");
+        }
+    }
+
     #Changing working dir to the API folder:
     Set-Location -Path ($cfg.installationFolder + "\" + $cfg.APIFolder)
 
-    [console]::ForegroundColor = "DarkGray"    
     Start-Process -FilePath "node"`
         -Wait `
         -NoNewWindow `
