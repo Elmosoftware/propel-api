@@ -19,6 +19,8 @@ class Schemas {
             this.scriptParameter,
             this.parameterValue,
             this.workflowStep,
+            this.workflowSchedule,
+            this.workflowScheduleMonthlyOption,
             this.executionError,
             this.executionTarget,
             this.executionStep,
@@ -558,6 +560,82 @@ class Schemas {
                     })
             ])
             .setDescription("Represents one step of a complete workflow. Contains a reference to the task that is going to be executed")
+            .freeze();
+    }
+
+    /**
+     * **WorkflowSchedule** embedded schema definition.
+     * @implements WorkflowScheduleMonthlyOption embedded schema
+     */
+    get workflowSchedule(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("WorkflowSchedule", "WorkflowSchedules", false)
+            .setFields([
+                new SchemaField("enabled", `Indicates if the schedule is active.`,
+                    {
+                        type: Boolean,
+                        isRequired: true
+                    }),
+                new SchemaField("isRecurrent", `Indicates if the schedule will be executed more than once.`,
+                    {
+                        type: Boolean,
+                        isRequired: true
+                    }),
+                new SchemaField("onlyOn", `Execution date and time for a single execution schedule.`,
+                    {
+                        type: Date,
+                        isRequired: false
+                    }),
+                new SchemaField("everyAmount", `For a recurring schedule, this indicates how many ScheduleUnits between executions.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("everyUnit", `For a recurring schedule, this indicates the schedule unit of time.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("weeklyOptions", `For a recurring schedule, this indicates the weekly options.`,
+                    {
+                        type: Number,
+                        isArray: true,
+                        isRequired: true
+                    }),
+                new SchemaField("monthlyOption", `For a recurring schedule, this indicates the monthly options.`,
+                    {
+                        type: this.workflowScheduleMonthlyOption,
+                        isRequired: true
+                    }),
+                new SchemaField("startingAt", `For a recurring schedule, this indicates the schedule time of the day.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+            ])
+            .setDescription("Represents a Workflow execution schedule")
+            .freeze();
+    }
+
+    /**
+     * **WorkflowScheduleMonthlyOption** embedded schema definition.
+     */
+    get workflowScheduleMonthlyOption(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("WorkflowScheduleMonthlyOption", "WorkflowScheduleMonthlyOptions", false)
+            .setFields([
+                new SchemaField("ordinal", `Indicates the monthly option ordinal.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("day", `Indicates the monthly option day.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+            ])
+            .setDescription("Represents the monthly options of a Workflow schedule.")
             .freeze();
     }
 
