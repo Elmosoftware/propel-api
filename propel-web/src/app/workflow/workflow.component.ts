@@ -24,6 +24,11 @@ const NAME_MAX: number = 50;
 const DESCRIPTION_MAX: number = 512;
 const STEPS_MAX: number = 10;
 
+enum Tabs {
+  Definition = 0,
+  Steps = 1,
+}
+
 @Component({
   selector: 'app-workflow',
   templateUrl: './workflow.component.html',
@@ -38,7 +43,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   showAddNewButton: boolean = false;
   showChangeOrderAlert: boolean = true;
   isDragging: boolean = false;
-
+  activeTab: Tabs = Tabs.Definition;
 
   /**
    * Used by the dropdowns to compare the values.
@@ -129,6 +134,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   newItem() {
     this.fh.setValue(new Workflow());
     this.showAddNewButton = false;
+    this.activeTab = Tabs.Definition;
   }
 
   extractScriptNameAndTargetFromStatus(status: WorkflowStepComponentStatus): void {
@@ -145,7 +151,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   extractScriptNameAndTargetFromWorkflow(w: Workflow): void {
-
     if (w && w.steps && w.steps.length > 0) {
       w.steps.forEach((ws: WorkflowStep) => {
         let scriptId: string = this.getEntityId(ws.script);
@@ -163,7 +168,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   addStep() {
-
     this.fh.form.controls['steps'].markAllAsTouched();
     this.core.dialog.showWorkflowStepDialog(new WorkflowStep())
       .subscribe({
@@ -190,7 +194,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   createStepsFormArray(steps: WorkflowStep[], clearBeforeAdd: boolean = false): void {
-
     if (clearBeforeAdd) {
       (this.fh.form.controls['steps'] as UntypedFormArray).clear();
     }
@@ -226,7 +229,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   editStep(stepIndex: number) {
-
     this.fh.form.controls['steps'].markAllAsTouched();
     this.core.dialog.showWorkflowStepDialog(this.getStep(stepIndex))
       .subscribe({
@@ -334,7 +336,6 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   getStepDetails(stepIndex: number, longDetails: boolean = false): string {
-
     let ret: string = `Script: "${this.getScriptName(stepIndex)}".
 Targets: ${this.getTargetNames(stepIndex)}.
 Parameters: ${this.getParameterValues(stepIndex)}.`
@@ -343,7 +344,6 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
   }
 
   save(run: boolean = false): void {
-
     //We can reduce the payload by excluding the entire script object and the targets and 
     //sending only the ObjectId for each one of them:
     let data: Workflow = Object.assign({}, this.fh.value);
@@ -406,5 +406,53 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
 
   dragReleased(event: any) {
     this.isDragging = false;
+  }
+
+  activeTabChanged($event: Tabs) {
+    this.activeTab = $event
+  }
+
+  isTabDisabled(tabIndex: Tabs): boolean {
+    let ret: boolean = false
+
+    if (this.fh.form.disabled) {
+      ret = true;
+    }
+    else if (tabIndex == Tabs.Definition) {
+      ret = false;
+    }
+    else if (tabIndex == Tabs.Steps) {
+      ret = this.name.invalid || this.description.invalid;
+    }
+
+    return ret;
+  }
+
+  isPreviousButtonDisabled(): boolean {
+    return this.activeTab == Tabs.Definition || this.isTabDisabled(this.activeTab - 1);
+  }
+
+  isNextButtonDisabled(): boolean {
+    return this.activeTab == Tabs.Steps || this.isTabDisabled(this.activeTab + 1);
+  }
+
+  isCancelButtonVisible(): boolean {
+    return !this.fh.form.pristine
+  }
+
+  isAddNewButtonVisible(): boolean {
+    return this.showAddNewButton
+  }
+
+  isSaveButtonVisible(): boolean {
+    return this.isCancelButtonVisible() && this.fh.form.valid
+  }
+
+  next() {
+    this.activeTab++;
+  }
+
+  back() {
+    this.activeTab--;
   }
 }
