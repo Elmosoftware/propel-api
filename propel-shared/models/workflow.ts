@@ -1,5 +1,6 @@
 // @ts-check
 import { AuditedEntity } from "./audited-entity";
+import { WorkflowSchedule } from "./workflow-schedule";
 import { WorkflowStep } from "./workflow-step";
 
 /**
@@ -29,6 +30,11 @@ export class Workflow extends AuditedEntity {
      * Collection of steps, each one defining a task to be executed.
      */
     public steps: WorkflowStep[] = [];
+
+    /**
+     * Schedule to run this Workflow automatically.
+     */
+    public schedule: WorkflowSchedule = new WorkflowSchedule();
 
     constructor() {
         super();

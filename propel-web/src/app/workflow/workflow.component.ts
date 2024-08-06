@@ -1,8 +1,9 @@
-import { UntypedFormGroup, UntypedFormControl, Validators, FormArray, UntypedFormArray } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, Validators, FormArray, UntypedFormArray, FormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
-import { Component, OnInit, EventEmitter } from '@angular/core';
+import { Component, OnInit, EventEmitter, ViewChild } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 import { CoreService } from 'src/services/core.service';
 import { DialogResult } from 'src/core/dialog-result';
@@ -18,6 +19,8 @@ import { Target } from '../../../../propel-shared/models/target';
 import { DataEndpointActions } from 'src/services/data.service';
 import { JSType } from '../../../../propel-shared/core/type-definitions';
 import { Script } from '../../../../propel-shared/models/script';
+import { WorkflowSchedule, ScheduleUnit, WeekDay, MonthlyOptionOrdinal, MonthlyOptionDayOfTheMonth } from "../../../../propel-shared/models/workflow-schedule";
+import { Utils } from '../../../../propel-shared/utils/utils';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -27,6 +30,7 @@ const STEPS_MAX: number = 10;
 enum Tabs {
   Definition = 0,
   Steps = 1,
+  Schedule = 2
 }
 
 @Component({
@@ -36,6 +40,11 @@ enum Tabs {
 })
 export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
+  @ViewChild("everyUnit") scheduleUnitsDropdown!: NgSelectComponent;
+  @ViewChild("weeklyOptions") weeklyOptionsDropdown!: NgSelectComponent;
+  @ViewChild("monthlyOptionOrdinal") monthlyOptionOrdinalDropdown!: NgSelectComponent;
+  @ViewChild("monthlyOptionDay") monthlyOptionDayDropdown!: NgSelectComponent;
+
   private requestCount$: EventEmitter<number>;
   fh: FormHandler<Workflow>;
   scriptNames: Map<string, string> = new Map<string, string>();
@@ -44,6 +53,10 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   showChangeOrderAlert: boolean = true;
   isDragging: boolean = false;
   activeTab: Tabs = Tabs.Definition;
+  allScheduleUnits: { key: string, value: string | number }[] = [];
+  allWeekDays: { key: string, value: string | number }[] = [];
+  allMonthlyOptionOrdinals: { key: string, value: string | number }[] = [];
+  allMonthlyOptionDays: { key: string, value: string | number }[] = [];
 
   /**
    * Used by the dropdowns to compare the values.
@@ -62,8 +75,20 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
     return (this.fh.form.controls['description'] as UntypedFormControl);
   }
 
-  constructor(private core: CoreService, private route: ActivatedRoute) {
+  get scheduleFormGroup(): FormGroup {
+    return (this.fh.form.controls['schedule'] as FormGroup);
+  }
 
+  get isSingleExecutionSchedule(): boolean {
+    if (this.scheduleFormGroup?.controls['isRecurrent']) {
+      return !this.scheduleFormGroup?.controls['isRecurrent'].value;
+    }
+    else {
+      return false;
+    }
+  }
+
+  constructor(private core: CoreService, private route: ActivatedRoute) {
     this.fh = new FormHandler(DataEndpointActions.Workflow, new UntypedFormGroup({
       name: new UntypedFormControl("", [
         Validators.required,
@@ -76,7 +101,21 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
       isQuickTask: new UntypedFormControl(""),
       steps: new FormArray([], [
         ValidatorsHelper.minItems(1),
-        ValidatorsHelper.maxItems(STEPS_MAX)])
+        ValidatorsHelper.maxItems(STEPS_MAX)]),
+      schedule: new UntypedFormGroup({
+        enabled: new UntypedFormControl(false, []),
+        isRecurrent: new UntypedFormControl(false, []),
+        onlyOn: new UntypedFormControl(null, []),
+        everyAmount: new UntypedFormControl(1, []),
+        everyUnit: new UntypedFormControl(ScheduleUnit.Days, []),
+        weeklyOptions: new UntypedFormControl([], []),
+        monthlyOption: new UntypedFormGroup({
+          ordinal: new UntypedFormControl(MonthlyOptionOrdinal.First, []),
+          day: new UntypedFormControl(MonthlyOptionDayOfTheMonth["Day of the Month"], [])
+        }),
+        startingAt: new UntypedFormControl("00:00", []),
+        lastExecution: new UntypedFormControl(null, [])
+      })
     }));
 
     this.requestCount$ = this.core.navigation.getHttpRequestCountSubscription()
@@ -99,6 +138,11 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
 
   ngOnInit(): void {
     this.core.setPageTitle(this.route.snapshot.data);
+    this.allScheduleUnits = Utils.getEnum(ScheduleUnit)
+    this.allWeekDays = Utils.getEnum(WeekDay)
+    this.allMonthlyOptionOrdinals = Utils.getEnum(MonthlyOptionOrdinal)
+    this.allMonthlyOptionDays = [...Utils.getEnum(MonthlyOptionDayOfTheMonth), ...Utils.getEnum(WeekDay)]
+
     this.refreshData()
       .catch((error) => {
         this.core.handleError(error)
@@ -125,6 +169,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
       this.fh.setValue(workflow);
       this.createStepsFormArray(workflow.steps);
       this.extractScriptNameAndTargetFromWorkflow(workflow);
+      this.setScheduleForm(this.fh.value.schedule)
       return Promise.resolve()
     } catch (error) {
       return Promise.reject(error)
@@ -132,7 +177,10 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   }
 
   newItem() {
-    this.fh.setValue(new Workflow());
+    let w = new Workflow();
+    this.fh.setValue(w);
+    this.createStepsFormArray(w.steps, true);
+    this.setScheduleForm(w.schedule)
     this.showAddNewButton = false;
     this.activeTab = Tabs.Definition;
   }
@@ -371,6 +419,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
         this.fh.setValue(this.fh.value) //This is the saved value now, so setting this value 
         //will allow the "Cancel" button to come back to this version.
         this.showAddNewButton = true;
+        this.activeTab = Tabs.Definition;
 
         //Replacing in the navigation history the URL so when the user navigate back 
         //and if we are creating an item it will edit the created item instead of showing 
@@ -390,9 +439,10 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
 
   resetForm() {
     this.fh.resetForm();
-
+    this.activeTab = Tabs.Definition
     //Sadly the form array values are not restored automatically to the previous values: 
     this.createStepsFormArray(this.fh.previousValue.steps, true);
+    this.setScheduleForm(this.fh.value.schedule)
   }
 
   drop(event: CdkDragDrop<string[]>) {
@@ -408,8 +458,221 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
     this.isDragging = false;
   }
 
+  /**
+   * This event is raised when the schedule gets enabled or disabled.
+   * @param $event State event data
+   */
+  onEnabledChange($event: { checked: boolean }) {
+    this.changeAllScheduleControlsState($event.checked);
+  }
+
+  /**
+   * This event is raised when the schedule type change.
+   * @param $event Schedule type change event data.
+   */
+  onScheduleTypeChange($event: any) {
+    setTimeout(() => {
+      this.setScheduleForm(this.fh.value.schedule)
+    });
+  }
+
+  /**
+   * This event is raised when the schedule unit for a recurrent schedule is changed.
+   * @param $event Schedule unit change event data.
+   */
+  onScheduleUnitChange($event: { key: string, value: string | number }) {
+    this.scheduleFormGroup.controls["monthlyOption"].enable({ onlySelf: true, emitEvent: false });
+    this.scheduleFormGroup.controls["weeklyOptions"].enable({ onlySelf: true, emitEvent: false });
+
+    switch ($event.key) {
+      case ScheduleUnit.Weeks:
+        this.scheduleFormGroup.controls["monthlyOption"].disable({ onlySelf: true, emitEvent: false });
+        break;
+      case ScheduleUnit.Months:
+        this.scheduleFormGroup.controls["weeklyOptions"].disable({ onlySelf: true, emitEvent: false });
+        break;
+      default:
+        this.scheduleFormGroup.controls["monthlyOption"].disable({ onlySelf: true, emitEvent: false });
+        this.scheduleFormGroup.controls["weeklyOptions"].disable({ onlySelf: true, emitEvent: false });
+        break;
+    }
+
+    this.scheduleFormGroup.controls["monthlyOption"].updateValueAndValidity();
+    this.scheduleFormGroup.controls["weeklyOptions"].updateValueAndValidity();
+
+    setTimeout(() => {
+      this.setScheduleFormValidators()
+    });
+  }
+
+  /**
+   * Prepare the schedule form for edition by: Reassigning dropdown values, enabling the right 
+   * fields, adding/removing validators.
+   * @param value Workflow schedule
+   */
+  setScheduleForm(value: WorkflowSchedule) {
+    let item: any = null;
+
+    if (value.isRecurrent){
+      //For some reason when the NGSelect controls are hidden, they lost the active selection, so 
+      //we need to set the selected values again: 
+
+      //Schedule units:
+      if (this.scheduleUnitsDropdown) {
+        item = this.scheduleUnitsDropdown.itemsList.items.find((item) => {
+          return item.value.key == value.everyUnit
+        });
+
+        if (item) {
+          this.scheduleUnitsDropdown.select(item); //Selecting the value in the dropdown.      
+        }
+      }
+
+      if (this.weeklyOptionsDropdown) {
+        //Weekly options
+        this.weeklyOptionsDropdown.clearModel(); //Clearing all selections.
+
+        value.weeklyOptions.forEach((weekday: WeekDay) => {
+          let item = this.weeklyOptionsDropdown.itemsList.items.find((item) => item.value.value == weekday)!
+          this.weeklyOptionsDropdown.select(item);
+        })
+      }
+
+      //Monthly options ordinal:
+      if (this.monthlyOptionOrdinalDropdown) {
+        item = this.monthlyOptionOrdinalDropdown.itemsList.items.find((item) => {
+          return item.value.key == value.monthlyOption.ordinal
+        });
+
+        if (item) {
+          this.monthlyOptionOrdinalDropdown.select(item);
+        }
+      }
+
+      //Monthly options day:
+      if (this.monthlyOptionDayDropdown) {
+        item = this.monthlyOptionDayDropdown.itemsList.items.find((item) => {
+          return item.value.value == value.monthlyOption.day
+        });
+
+        if (item) {
+          this.monthlyOptionDayDropdown.select(item);
+        }
+      }
+    }
+
+    this.scheduleFormGroup.updateValueAndValidity();
+    this.scheduleFormGroup.markAsPristine();
+    this.scheduleFormGroup.markAsUntouched();
+
+    setTimeout(() => {
+      this.changeAllScheduleControlsState(value.enabled)
+    });
+  }
+
+  /**
+   * Enabled/disabled the schedule form controls accordingly.
+   * If the schedule form controls gets enabled, this method will also 
+   * disable additional fields based on the form data.
+   * @param enabled Enabled indicator.
+   */
+  changeAllScheduleControlsState(enabled: boolean) {
+    let s: WorkflowSchedule = this.fh.value.schedule;
+
+    for (const controlName in this.scheduleFormGroup.controls) {
+        this.changeScheduleControlsState(controlName, enabled, false)
+    }
+
+    //If it's a recurrent schedule, there is other controls that need to be 
+    //disabled based on selections:
+    if (s.isRecurrent && enabled) {
+      this.changeScheduleControlsState("weeklyOptions", s.everyUnit == ScheduleUnit.Weeks, false)
+      this.changeScheduleControlsState("monthlyOption", s.everyUnit == ScheduleUnit.Months, false)
+    }
+
+    setTimeout(() => {
+      this.setScheduleFormValidators()
+    });
+  }
+
+  /**
+   * Enable/disable a schedule form control and optionally update all the controls validators.
+   * @param controlName Name of the control in the schedule form.
+   * @param enabled Control state, (enable/disabled).
+   * @param updateValidators Boolean value to force update validators. If "false" validators will not be updated
+  */
+  changeScheduleControlsState(controlName: string, enabled: boolean, updateValidators: boolean = true) {
+    if (controlName == "enabled") return; // We can't disable de "Enabled" control itself!!
+
+    if (enabled) {
+      this.scheduleFormGroup.controls[controlName].enable({ onlySelf: true, emitEvent: false });
+    }
+    else {
+      this.scheduleFormGroup.controls[controlName].disable({ onlySelf: true, emitEvent: false });
+    }
+    
+    if (updateValidators) {
+      setTimeout(() => {
+        this.setScheduleFormValidators()
+      });
+    }
+  }
+
+  /**
+   * Set the appropiate schedul form controls validators based in the kind of schedule that is being edited.
+   */
+  setScheduleFormValidators() {
+    let s: WorkflowSchedule = this.fh.value.schedule;
+
+    if (s.isRecurrent) {
+      //Removing Validators for the single execution controls:
+      this.scheduleFormGroup.controls["onlyOn"].clearValidators();
+      this.scheduleFormGroup.controls["onlyOn"].updateValueAndValidity();
+      
+      //Adding Validators for the recurrent controls:
+      this.scheduleFormGroup.controls["everyAmount"].clearValidators();
+      if (s.enabled) {
+        this.scheduleFormGroup.controls["everyAmount"].addValidators([
+        ValidatorsHelper.notNullOrEmpty(),
+        Validators.min(1), 
+        Validators.max(60)]);
+      }      
+      this.scheduleFormGroup.controls["everyAmount"].updateValueAndValidity();
+      
+      this.scheduleFormGroup.controls["weeklyOptions"].clearValidators();
+      if (s.everyUnit == ScheduleUnit.Weeks && s.enabled) {
+        this.scheduleFormGroup.controls["weeklyOptions"].addValidators(ValidatorsHelper.minItems(1));
+      }
+      this.scheduleFormGroup.controls["weeklyOptions"].updateValueAndValidity();
+    }
+    else {
+      //Adding Validators for the Single execution controls:
+      this.scheduleFormGroup.controls["onlyOn"].clearValidators();
+      if (s.enabled) {
+        this.scheduleFormGroup.controls["onlyOn"].addValidators(ValidatorsHelper.notNullOrEmpty());
+      }
+      this.scheduleFormGroup.controls["onlyOn"].updateValueAndValidity();
+      
+      //Removing Validators for the recurrent controls:
+      this.scheduleFormGroup.controls["everyAmount"].clearValidators();
+      this.scheduleFormGroup.controls["everyAmount"].updateValueAndValidity();
+      this.scheduleFormGroup.controls["weeklyOptions"].clearValidators();
+      this.scheduleFormGroup.controls["weeklyOptions"].updateValueAndValidity();
+    }
+
+    this.scheduleFormGroup.updateValueAndValidity();
+    this.scheduleFormGroup.markAsPristine();
+    this.scheduleFormGroup.markAsUntouched();
+  }
+
   activeTabChanged($event: Tabs) {
     this.activeTab = $event
+
+    if (this.activeTab == Tabs.Schedule) {
+      setTimeout(() => {
+        this.setScheduleForm(this.fh.value.schedule)
+      });
+    }
   }
 
   isTabDisabled(tabIndex: Tabs): boolean {
@@ -424,6 +687,9 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
     else if (tabIndex == Tabs.Steps) {
       ret = this.name.invalid || this.description.invalid;
     }
+    else if (tabIndex == Tabs.Schedule) {
+      ret = this.steps.invalid;
+    }
 
     return ret;
   }
@@ -433,7 +699,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
   }
 
   isNextButtonDisabled(): boolean {
-    return this.activeTab == Tabs.Steps || this.isTabDisabled(this.activeTab + 1);
+    return this.activeTab == Tabs.Schedule || this.isTabDisabled(this.activeTab + 1);
   }
 
   isCancelButtonVisible(): boolean {

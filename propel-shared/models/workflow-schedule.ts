@@ -49,6 +49,12 @@ export type WorkflowScheduleMonthlyOption = { ordinal: MonthlyOptionOrdinal, day
  */
 export class WorkflowSchedule {
 
+    constructor() {
+        let d = new Date()
+        this.startingAt = d.getHours().toString().padStart(2, "0") +
+            ":" + d.getMinutes().toString().padStart(2, "0")
+    }
+
     /**
      * Indicates if the schedule is active or not.
      */
@@ -90,5 +96,10 @@ export class WorkflowSchedule {
     /**
      * Time of the day the recurrent execution must be started.
      */
-    public startingAt: string = "00:00"
+    public startingAt: string;
+
+    /**
+     * Date and time of the last execution.
+     */
+    public lastExecution: Date | null = null;
 }

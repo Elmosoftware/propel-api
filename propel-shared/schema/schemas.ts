@@ -270,7 +270,11 @@ class Schemas {
                         isRequired: true,
                         isArray: true
                     }),
-
+                new SchemaField("schedule", `Schedule to run.`,
+                    {
+                        type: this.workflowSchedule,
+                        isRequired: true
+                    }),
             ])
             .merge(this.auditedEntity)
             .setDescription("A Workflow represents a reusable collection of steps. Each one running a task in one or more target servers.")
@@ -612,6 +616,11 @@ class Schemas {
                         type: String,
                         isRequired: true
                     }),
+                new SchemaField("lastExecution", `Last execution date and time.`,
+                    {
+                        type: Date,
+                        isRequired: false
+                    })
             ])
             .setDescription("Represents a Workflow execution schedule")
             .freeze();

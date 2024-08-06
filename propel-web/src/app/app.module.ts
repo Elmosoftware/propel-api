@@ -84,7 +84,6 @@ import { SecurityService } from '../services/security.service';
 import { SecurityGuard } from '../services/security-guard';
 import { CoolSpinerComponent } from './cool-spiner/cool-spiner.component';
 import { DatabaseSecretComponent } from './credential/database-secret/database-secret.component';
-import { WorkflowScheduleComponent } from './workflow-schedule/workflow-schedule.component';
 
 @NgModule({
     declarations: [
@@ -123,8 +122,7 @@ import { WorkflowScheduleComponent } from './workflow-schedule/workflow-schedule
         UserAccountComponent,
         SearchUserAccountLineComponent,
         CoolSpinerComponent,
-        DatabaseSecretComponent,
-        WorkflowScheduleComponent
+        DatabaseSecretComponent
     ],
     imports: [
         BrowserModule,

@@ -343,6 +343,10 @@ input.mat-input-element {
   font-size: 14px;
   font-weight: 500; }
 
+.mat-tab-body-content {
+  overflow-x: hidden !important /* Sometimes the hscroll is 
+  displayed in some forms. This is to avoid that. */
+}
 .mat-toolbar,
 .mat-toolbar h1,
 .mat-toolbar h2,
