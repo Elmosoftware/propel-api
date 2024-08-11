@@ -19,7 +19,10 @@ import { Target } from '../../../../propel-shared/models/target';
 import { DataEndpointActions } from 'src/services/data.service';
 import { JSType } from '../../../../propel-shared/core/type-definitions';
 import { Script } from '../../../../propel-shared/models/script';
-import { WorkflowSchedule, ScheduleUnit, WeekDay, MonthlyOptionOrdinal, MonthlyOptionDayOfTheMonth } from "../../../../propel-shared/models/workflow-schedule";
+import { WorkflowSchedule, ScheduleUnit,  
+  MonthlyOptionOrdinal, MonthlyOptionDayOfTheMonth,
+  EVERY_AMOUNT_MIN, EVERY_AMOUNT_MAX } from "../../../../propel-shared/models/workflow-schedule";
+import { WeekDay } from "../../../../propel-shared/utils/shared-system-helper";
 import { Utils } from '../../../../propel-shared/utils/utils';
 
 const NAME_MIN: number = 3;
@@ -634,8 +637,8 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
       if (s.enabled) {
         this.scheduleFormGroup.controls["everyAmount"].addValidators([
         ValidatorsHelper.notNullOrEmpty(),
-        Validators.min(1), 
-        Validators.max(60)]);
+        Validators.min(EVERY_AMOUNT_MIN), 
+        Validators.max(EVERY_AMOUNT_MAX)]);
       }      
       this.scheduleFormGroup.controls["everyAmount"].updateValueAndValidity();
       

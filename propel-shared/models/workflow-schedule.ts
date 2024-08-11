@@ -1,21 +1,20 @@
+import { WeekDay } from "../utils/shared-system-helper";
+
+/**
+ * Minimum value for the schedule "everyAmount" attribute.
+ */
+export const EVERY_AMOUNT_MIN: number = 1
+
+/**
+ * Maximum value for the schedule "everyAmount" attribute.
+ */
+export const EVERY_AMOUNT_MAX: number = 60
+
 /**
  * Represents any day of the month. Used in the workflow schedule monthly options.
  */
 export enum MonthlyOptionDayOfTheMonth {
     "Day of the Month" = 0
-}
-
-/**
- * Represents the days of the week.
- */
-export enum WeekDay {
-    Sunday = 1,
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
-    Saturday
 }
 
 /**
@@ -36,6 +35,7 @@ export enum MonthlyOptionOrdinal {
     First = "First",
     Second = "Second",
     Third = "Third",
+    Fourth = "Fourth",
     Last = "Last"
 }
 
@@ -73,7 +73,7 @@ export class WorkflowSchedule {
     /**
      * Represents the amount of time units must be between recurrent executions.
      */
-    public everyAmount: number = 1;
+    public everyAmount: number = EVERY_AMOUNT_MIN;
 
     /**
      * Unit of time used for recurrent executions.
