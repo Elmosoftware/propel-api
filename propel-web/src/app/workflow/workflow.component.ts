@@ -26,6 +26,7 @@ import { SharedSystemHelper, WeekDay } from "../../../../propel-shared/utils/sha
 import { Utils } from '../../../../propel-shared/utils/utils';
 import { ScheduleCalculator } from "../../../../propel-shared/core/schedule-calculator";
 import { JavascriptDateConverter } from '../../../../propel-shared/core/converters';
+import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -240,6 +241,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
               this.extractScriptNameAndTargetFromStatus(status);
               this.fh.form.updateValueAndValidity();
               this.fh.form.markAsDirty();
+              this.onStepChanges(this.fh.value.steps)
             }
           }
         },
@@ -310,6 +312,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
               this.extractScriptNameAndTargetFromStatus(status);
               this.fh.form.updateValueAndValidity();
               this.fh.form.markAsDirty();
+              this.onStepChanges(this.fh.value.steps);
             }
           }
         },
@@ -324,6 +327,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
     (this.fh.form.controls['steps'] as UntypedFormArray).removeAt(stepIndex);
     this.fh.form.controls['steps'].markAllAsTouched();
     this.fh.form.controls['steps'].markAsDirty();
+    this.onStepChanges(this.fh.value.steps)
   }
 
   getEntityId(script: any): string {
@@ -398,6 +402,12 @@ Targets: ${this.getTargetNames(stepIndex)}.
 Parameters: ${this.getParameterValues(stepIndex)}.`
 
     return (longDetails) ? ret : ret.slice(0, 50);
+  }
+
+  onStepChanges(steps: WorkflowStep[]): void {
+    this.preventEnabledScheduleIfRuntimeParameters(steps, `<strong>The Workflow schedule was 
+disabled.</strong> 
+You can re-enable it again once all checks have been reverted.`)
   }
 
   getScheduleEnabledStatus(): string {
@@ -513,12 +523,58 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
     this.isDragging = false;
   }
 
+  preventEnabledScheduleIfRuntimeParameters(steps: WorkflowStep[], dlgLastLine: string): boolean {
+    let ret: boolean = false;
+    let stepName: string = "";
+    let runtimePV: ParameterValue | undefined
+
+    if (!steps || !Array.isArray(steps)) return ret;
+
+    steps.forEach((step: WorkflowStep) => {
+      if (!runtimePV) {
+        stepName = step.name;
+        runtimePV = step.values.find((pv: ParameterValue) => pv.isRuntimeParameter)
+      }
+    })
+
+    //We can't have a schedule set on a Workflow that have runtime parameters:
+    if (runtimePV && this.fh.value.schedule.enabled) {
+      this.core.dialog.showConfirmDialog(new StandardDialogConfiguration("Runtime parameters are not compatible with schedules.", 
+        `At least one parameter, ("<i>${runtimePV.name}</i>" on step "<i>${stepName}</i>"), was 
+checked to be modified at the moment the Workflow runs.<br>This is incompatible with setting an 
+execution schedule due to the lack of interactivity of that process.<br> ${dlgLastLine}`))
+        .subscribe({
+          next: async (result: DialogResult<any>) => { },
+          error: (error) => { this.core.handleError(error) }
+        });
+
+        //Disabling the schedule:
+        (this.fh.form.controls["schedule"] as UntypedFormGroup)
+          .controls["enabled"].patchValue(false);
+
+        ret = true
+    }  
+    
+    return ret;
+  }
+
   /**
    * This event is raised when the schedule gets enabled or disabled.
    * @param $event State event data
    */
   onEnabledChange($event: { checked: boolean }) {
-    this.changeAllScheduleControlsState($event.checked);
+
+    setTimeout(() => {
+      if (this.preventEnabledScheduleIfRuntimeParameters(this.fh.value.steps,
+        `<strong>The Workflow schedule can't be enabled in this conditions</strong>. Uncheck all parameters 
+in all the steps and try this operation again.`
+      )) {
+        $event.checked = false
+      }
+
+      this.changeAllScheduleControlsState($event.checked);
+    });
+      
   }
 
   /**
