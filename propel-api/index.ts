@@ -67,12 +67,19 @@ Powered by Node.js ${process.version}(${process.arch}) on platform ${process.pla
 
 function closeHandler(err:any, origin?: any, code: number = 1) {
     let msg = ""
+    let errMsg = ""
 
-    if (origin) {
-        origin = JSON.stringify(origin);
+    origin = String(origin);
+
+    if (err && typeof err == "object") {
+        Object.getOwnPropertyNames(err)
+            .sort((a, b) => a.localeCompare(b))
+            .forEach((prop) => {
+                errMsg += `- ${prop}: ${err[prop]}\r\n`
+            })
     }
 
-    msg = `There was an error on: "${origin}", error details are: \r\n${JSON.stringify(err)}`
+    msg = `There was an error on: "${origin}", error details are: \r\n${errMsg}\r\rExit code is: ${code}`
     logger.logError(msg);
     console.log(msg);
     logger.logInfo(`Exiting now with code ${code}`);
