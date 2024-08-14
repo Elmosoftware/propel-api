@@ -22,8 +22,10 @@ import { Script } from '../../../../propel-shared/models/script';
 import { WorkflowSchedule, ScheduleUnit,  
   MonthlyOptionOrdinal, MonthlyOptionDayOfTheMonth,
   EVERY_AMOUNT_MIN, EVERY_AMOUNT_MAX } from "../../../../propel-shared/models/workflow-schedule";
-import { WeekDay } from "../../../../propel-shared/utils/shared-system-helper";
+import { SharedSystemHelper, WeekDay } from "../../../../propel-shared/utils/shared-system-helper";
 import { Utils } from '../../../../propel-shared/utils/utils';
+import { ScheduleCalculator } from "../../../../propel-shared/core/schedule-calculator";
+import { JavascriptDateConverter } from '../../../../propel-shared/core/converters';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -117,7 +119,8 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
           day: new UntypedFormControl(MonthlyOptionDayOfTheMonth["Day of the Month"], [])
         }),
         startingAt: new UntypedFormControl("00:00", []),
-        lastExecution: new UntypedFormControl(null, [])
+        lastExecution: new UntypedFormControl(null, []),
+        creationTS: new UntypedFormControl(null, [])
       })
     }));
 
@@ -168,6 +171,9 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
         this.newItem();
         return Promise.resolve();
       }
+
+      let dateConv = new JavascriptDateConverter()
+      workflow.schedule.onlyOn = dateConv.convert(workflow.schedule.onlyOn) as unknown as Date
 
       this.fh.setValue(workflow);
       this.createStepsFormArray(workflow.steps);
@@ -394,6 +400,52 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
     return (longDetails) ? ret : ret.slice(0, 50);
   }
 
+  getScheduleEnabledStatus(): string {
+    return `The schedule is now ${(this.fh.value.schedule.enabled) ? "enabled" : "disabled"}`
+  }
+
+  getScheduleDescription(): string {
+    return ScheduleCalculator.getDescription(this.fh.value.schedule)
+  }
+
+  getScheduleReferenceTimeStamp(): string {
+    if (this.fh.value.schedule.lastExecution) {
+      return `Last execution: ${SharedSystemHelper.formatDate(this.fh.value.schedule.lastExecution)}`
+    } 
+    else {
+      return `Created on: ${SharedSystemHelper.formatDate(this.fh.value.schedule.creationTS)}`
+    }
+  }
+
+  getScheduleNextExecution(effectiveDate: boolean = true): string {
+    let nextRun = ScheduleCalculator.getNextRun(this.fh.value.schedule)
+    let ret: string = "Next execution: "
+
+    if (nextRun && this.fh.value.schedule.enabled) {
+      if (effectiveDate && SharedSystemHelper.isBefore(nextRun, new Date())) {
+        nextRun = new Date();
+      }
+
+      ret += "Not before " + SharedSystemHelper.formatDate(nextRun);
+    } 
+    else {
+      ret+= "Never"
+    }
+
+    return ret; 
+  }
+
+  getScheduledForNowText(): string {
+    let nextRun = ScheduleCalculator.getNextRun(this.fh.value.schedule)
+    let ret: string = ""
+
+    if (nextRun && SharedSystemHelper.isBefore(nextRun, new Date())) {
+      ret = "(As soon this schedule is saved)."
+    }
+
+    return ret;
+  }
+
   save(run: boolean = false): void {
     //We can reduce the payload by excluding the entire script object and the targets and 
     //sending only the ObjectId for each one of them:
@@ -484,19 +536,19 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
    * @param $event Schedule unit change event data.
    */
   onScheduleUnitChange($event: { key: string, value: string | number }) {
-    this.scheduleFormGroup.controls["monthlyOption"].enable({ onlySelf: true, emitEvent: false });
-    this.scheduleFormGroup.controls["weeklyOptions"].enable({ onlySelf: true, emitEvent: false });
+    this.scheduleFormGroup.controls["monthlyOption"].enable({ onlySelf: true, emitEvent: true });
+    this.scheduleFormGroup.controls["weeklyOptions"].enable({ onlySelf: true, emitEvent: true });
 
     switch ($event.key) {
       case ScheduleUnit.Weeks:
-        this.scheduleFormGroup.controls["monthlyOption"].disable({ onlySelf: true, emitEvent: false });
+        this.scheduleFormGroup.controls["monthlyOption"].disable({ onlySelf: true, emitEvent: true });
         break;
       case ScheduleUnit.Months:
-        this.scheduleFormGroup.controls["weeklyOptions"].disable({ onlySelf: true, emitEvent: false });
+        this.scheduleFormGroup.controls["weeklyOptions"].disable({ onlySelf: true, emitEvent: true });
         break;
       default:
-        this.scheduleFormGroup.controls["monthlyOption"].disable({ onlySelf: true, emitEvent: false });
-        this.scheduleFormGroup.controls["weeklyOptions"].disable({ onlySelf: true, emitEvent: false });
+        this.scheduleFormGroup.controls["monthlyOption"].disable({ onlySelf: true, emitEvent: true });
+        this.scheduleFormGroup.controls["weeklyOptions"].disable({ onlySelf: true, emitEvent: true });
         break;
     }
 
@@ -637,6 +689,7 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
       if (s.enabled) {
         this.scheduleFormGroup.controls["everyAmount"].addValidators([
         ValidatorsHelper.notNullOrEmpty(),
+        ValidatorsHelper.anyNumber(),
         Validators.min(EVERY_AMOUNT_MIN), 
         Validators.max(EVERY_AMOUNT_MAX)]);
       }      
@@ -664,8 +717,6 @@ Parameters: ${this.getParameterValues(stepIndex)}.`
     }
 
     this.scheduleFormGroup.updateValueAndValidity();
-    this.scheduleFormGroup.markAsPristine();
-    this.scheduleFormGroup.markAsUntouched();
   }
 
   activeTabChanged($event: Tabs) {

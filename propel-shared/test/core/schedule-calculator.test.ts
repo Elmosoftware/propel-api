@@ -171,23 +171,41 @@ describe(`ScheduleCalculator Class - isValid().`, () => {
 
 describe(`ScheduleCalculator Class - getDescription().`, () => {
 
+    function getLocalizedStartingAt(startingAt:string): string {
+        let d: Date = new Date()
+        let split = startingAt.split(":")
+        d.setHours(Number(split[0]),Number(split[1]))
+        return d.toLocaleTimeString([], {hour: 'numeric', minute:'2-digit', hour12: true}); //Displaying only hour s and minutes.
+    }
+
     test('Invalid schedule', () => {
         expect(ScheduleCalculator.getDescription(null as unknown as WorkflowSchedule))
             .toBe("The schedule still incomplete or is not valid.");
     });
     
+    test('Valid Disabled schedule', () => {
+        const schedule = new WorkflowSchedule();
+        schedule.enabled = false;
+
+        expect(ScheduleCalculator.getDescription(schedule))
+            .toBe(`The schedule is disabled.`);
+    });
+
     test('Valid Daily recurrent schedule', () => {
         const schedule = new WorkflowSchedule();
+        schedule.enabled = true;
         schedule.isRecurrent = true;
         schedule.everyUnit = ScheduleUnit.Days;
         schedule.everyAmount = 1;
         schedule.startingAt = '08:00';
     
-        expect(ScheduleCalculator.getDescription(schedule)).toBe("Not before 08:00 every 1 Days.");
+        expect(ScheduleCalculator.getDescription(schedule))
+            .toBe(`Not before ${getLocalizedStartingAt(schedule.startingAt)} every 1 Days.`);
     });
     
     test('Valid Weekly recurrent schedule with multiple days', () => {
         const schedule = new WorkflowSchedule();
+        schedule.enabled = true;
         schedule.isRecurrent = true;
         schedule.everyUnit = ScheduleUnit.Weeks;
         schedule.everyAmount = 2;
@@ -195,11 +213,12 @@ describe(`ScheduleCalculator Class - getDescription().`, () => {
         schedule.weeklyOptions = [WeekDay.Monday, WeekDay.Wednesday, WeekDay.Friday];
     
         expect(ScheduleCalculator.getDescription(schedule))
-            .toBe("Not before 20:10 every 2 Weeks on Monday, Wednesday, Friday.");
+            .toBe(`Not before ${getLocalizedStartingAt(schedule.startingAt)} every 2 Weeks on Monday, Wednesday, Friday.`);
     });
     
     test('Valid Weekly recurrent schedule with single day', () => {
         const schedule = new WorkflowSchedule();
+        schedule.enabled = true;
         schedule.isRecurrent = true;
         schedule.everyUnit = ScheduleUnit.Weeks;
         schedule.everyAmount = 3;
@@ -207,11 +226,12 @@ describe(`ScheduleCalculator Class - getDescription().`, () => {
         schedule.weeklyOptions = [WeekDay.Sunday];
     
         expect(ScheduleCalculator.getDescription(schedule))
-            .toBe("Not before 17:50 every 3 Weeks on Sunday.");
+            .toBe(`Not before ${getLocalizedStartingAt(schedule.startingAt)} every 3 Weeks on Sunday.`);
     });
 
     test('Valid Weekly recurrent schedule including invalid day value', () => {
         const schedule = new WorkflowSchedule();
+        schedule.enabled = true;
         schedule.isRecurrent = true;
         schedule.everyUnit = ScheduleUnit.Weeks;
         schedule.everyAmount = 3;
@@ -220,11 +240,12 @@ describe(`ScheduleCalculator Class - getDescription().`, () => {
         schedule.weeklyOptions = [12 as unknown as WeekDay, WeekDay.Sunday]; 
     
         expect(ScheduleCalculator.getDescription(schedule))
-            .toBe("Not before 17:50 every 3 Weeks on Sunday.");
+            .toBe(`Not before ${getLocalizedStartingAt(schedule.startingAt)} every 3 Weeks on Sunday.`);
     });
 
     test('Valid Monthly recurrent schedule on specific day of the month', () => {
         const schedule = new WorkflowSchedule();
+        schedule.enabled = true;
         schedule.isRecurrent = true;
         schedule.everyUnit = ScheduleUnit.Months;
         schedule.everyAmount = 1;
@@ -235,11 +256,12 @@ describe(`ScheduleCalculator Class - getDescription().`, () => {
         };
 
         expect(ScheduleCalculator.getDescription(schedule))
-            .toBe("Not before 08:30 every 1 Months the First day of the month.");
+            .toBe(`Not before ${getLocalizedStartingAt(schedule.startingAt)} every 1 Months the First day of the month.`);
     });
 
     test('Monthly recurrent schedule on specific weekday of the month', () => {
         const schedule = new WorkflowSchedule();
+        schedule.enabled = true;
         schedule.isRecurrent = true;
         schedule.everyUnit = ScheduleUnit.Months;
         schedule.everyAmount = 1;
@@ -250,16 +272,17 @@ describe(`ScheduleCalculator Class - getDescription().`, () => {
         };
     
         expect(ScheduleCalculator.getDescription(schedule))
-            .toBe("Not before 08:00 every 1 Months the Second Tuesday.");
+            .toBe(`Not before ${getLocalizedStartingAt(schedule.startingAt)} every 1 Months the Second Tuesday.`);
     });
 
     test('Valid single execution schedule', () => {
         const schedule = new WorkflowSchedule();
+        schedule.enabled = true;
         schedule.isRecurrent = false;
         schedule.onlyOn = new Date('2023-12-25');
     
         expect(ScheduleCalculator.getDescription(schedule))
-            .toBe("only once on Sunday, December 24 2023, 9:00:00 PM (-03:00).");
+            .toBe("Only once on Sunday, December 24 2023, 9:00:00 PM (-03:00).");
     });
 })
 
@@ -296,9 +319,17 @@ describe(`ScheduleCalculator Class - getNextRun() - Single execution Schedule.`,
     test('returns a null value when the schedule was already executed.', () => {
         let s: WorkflowSchedule = new WorkflowSchedule();
         s.enabled = true;
-        s.onlyOn = new Date();
+        s.onlyOn = new Date((new Date()).getTime() - (3*60*60*1000)) //3 hours in the past.
         s.lastExecution = new Date();
         expect(ScheduleCalculator.getNextRun(s)).toBeNull();
+    });
+
+    test('returns the date set in onlyOn when the schedule was already executed in the past.', () => {
+        let s: WorkflowSchedule = new WorkflowSchedule();
+        s.enabled = true;
+        s.onlyOn = new Date((new Date()).getTime() + (3*60*60*1000)) //3 hours in the future.
+        s.lastExecution = new Date();
+        expect(ScheduleCalculator.getNextRun(s)?.getTime()).toEqual(s.onlyOn.getTime())
     });
 
     test('returns the value set in the "onlyOn" property if the schedule was not executed yet.', () => {
@@ -541,7 +572,7 @@ describe(`ScheduleCalculator Class - getNextRun() - Recurrent execution in Days.
         expect(nextRun?.getTime()).toEqual(s.lastExecution.getTime() + (s.everyAmount * 24 * 60 * 60 * 1000))
     });
 
-    test('Schedule never executed.', () => {
+    test('Schedule never executed with start time in the future today.', () => {
         let s: WorkflowSchedule = new WorkflowSchedule();
         s.enabled = true;
         s.isRecurrent = true;
@@ -562,6 +593,29 @@ describe(`ScheduleCalculator Class - getNextRun() - Recurrent execution in Days.
         expect(nextRun?.getDay()).toEqual(d.getDay())
         expect(nextRun?.getHours()).toEqual(d.getHours())
         expect(nextRun?.getMinutes()).toEqual(d.getMinutes())
+    });
+
+    test('Schedule never executed with start time in the past today.', () => {
+        let s: WorkflowSchedule = new WorkflowSchedule();
+        s.enabled = true;
+        s.isRecurrent = true;
+        s.everyAmount = 1;
+        s.everyUnit = ScheduleUnit.Days;
+
+        //Setting the start time in 1 minute in the past:
+        let d = new Date((new Date()).getTime() - (60 * 1000))
+        s.startingAt = d.getHours().toString().padStart(2, "0") +
+            ":" + d.getMinutes().toString().padStart(2, "0");
+        s.lastExecution = null;
+
+        let nextRun = ScheduleCalculator.getNextRun(s);
+
+        let expected = SharedSystemHelper.addDays(1, d)
+        expected.setSeconds(0)
+        expected.setMilliseconds(0)
+
+        expect(nextRun).not.toBeNull(); 
+        expect(new Date(nextRun!)).toEqual(new Date(expected))
     });
 })
 

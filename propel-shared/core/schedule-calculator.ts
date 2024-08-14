@@ -42,9 +42,12 @@ export class ScheduleCalculator {
         let allWeekdays = Utils.getEnum(WeekDay)
 
         if (!this.isValid(schedule)) return "The schedule still incomplete or is not valid.";
+        if (!schedule.enabled) return "The schedule is disabled.";
 
         if (schedule.isRecurrent) {
-            desc = `Not before ${schedule.startingAt} every ${schedule.everyAmount} ${schedule.everyUnit}`
+            let formattedStartingAt = SharedSystemHelper.formatDate(
+                this.setStartingTime(this.parseStartingTime(schedule.startingAt)!, new Date()), "t") //Format "t" is localized time.
+            desc = `Not before ${formattedStartingAt} every ${schedule.everyAmount} ${schedule.everyUnit}`
 
             if (schedule.everyUnit == ScheduleUnit.Weeks) {
                 desc += ` on`
@@ -74,7 +77,7 @@ export class ScheduleCalculator {
             }
         }
         else { //Single execution schedule:
-            desc = `only once on ` + SharedSystemHelper.formatDate(schedule.onlyOn!)
+            desc = `Only once on ` + SharedSystemHelper.formatDate(schedule.onlyOn!)
         }
 
         return desc + ".";
@@ -100,7 +103,8 @@ export class ScheduleCalculator {
     }
 
     private static getNextSingleSchedule(schedule: WorkflowSchedule): Date | null {
-        if (schedule.lastExecution !== null) return null;
+        if (schedule.lastExecution !== null && 
+            SharedSystemHelper.isAfter(schedule.lastExecution, schedule.onlyOn!)) return null;
 
         return schedule.onlyOn;
     }
@@ -125,23 +129,31 @@ export class ScheduleCalculator {
 
     private static getNextRecurrentLessThanWeeksSchedule(schedule: WorkflowSchedule,
         amountModifier: number, patchStartingTime: boolean = false): Date | null {
-        let next = new Date()
+        let next: Date;
 
         if (schedule.lastExecution) {
             next = SharedSystemHelper.addMinutes(schedule.everyAmount * amountModifier,
                 schedule.lastExecution)
         }
-
-        if (!schedule.lastExecution || patchStartingTime) {
-            next = this.dateAtStartingTime(this.parseStartingTime(schedule.startingAt)!, next)
+        else {
+            next = new Date(schedule.creationTS);
         }
 
+        if (!schedule.lastExecution || patchStartingTime) {
+            next = this.setStartingTime(this.parseStartingTime(schedule.startingAt)!, next)
+        }
+        
+        if (!schedule.lastExecution && SharedSystemHelper.isBefore(next, schedule.creationTS)) {
+            next = SharedSystemHelper.addDays(1, next)
+        }
+        
         return next;
     }
 
     private static getNextRecurrentWeeksSchedule(schedule: WorkflowSchedule): Date | null {
-        let todayWeekday: WeekDay = SharedSystemHelper.getWeekDay(new Date())
+        let creationTSWeekday: WeekDay = SharedSystemHelper.getWeekDay(schedule.creationTS)
         let sortedWeeklyOptions: number[] = schedule.weeklyOptions.sort((a, b) => a - b)
+        let parsedStartingAt: TimeOnly = this.parseStartingTime(schedule.startingAt)!
         let lastExecWeekDay: WeekDay;
         let nextExecWeekDay: WeekDay | undefined;
         let nextDate: Date;
@@ -168,24 +180,40 @@ export class ScheduleCalculator {
         }
         else {
             //Found the next weekday on this week we must execute:
-            nextExecWeekDay = schedule.weeklyOptions.find((wd) => wd >= todayWeekday)
+
+            let creationTimeOnly: TimeOnly = this.parseStartingTime(
+                SharedSystemHelper.formatDate(schedule.creationTS, "HH:mm"))!
+
+            //If schedule creation is after the configured startingAt, we need to exclude the 
+            //schedule creation weekday:
+            if (creationTimeOnly.hour > parsedStartingAt.hour || 
+                (creationTimeOnly.hour == parsedStartingAt.hour && 
+                creationTimeOnly.minutes > parsedStartingAt.minutes)) {
+                nextExecWeekDay = schedule.weeklyOptions.find((wd) => wd > creationTSWeekday)
+            }
+            else {
+                nextExecWeekDay = schedule.weeklyOptions.find((wd) => wd >= creationTSWeekday)
+            }
 
             //If we must execute this week:
             if (nextExecWeekDay) {
-                nextDate = SharedSystemHelper.addDays(nextExecWeekDay - todayWeekday, new Date())
+                nextDate = SharedSystemHelper.addDays(nextExecWeekDay - creationTSWeekday, 
+                    schedule.creationTS)
             }
             else {
                 //Moving to the first day of the next week that is in the weekly options:
-                nextDate = SharedSystemHelper.addDays((schedule.everyAmount * 7) - todayWeekday + sortedWeeklyOptions[0], new Date())
+                nextDate = SharedSystemHelper.addDays(
+                    (schedule.everyAmount * 7) - creationTSWeekday + sortedWeeklyOptions[0], 
+                    schedule.creationTS)
             }
         }
 
         //Setting the hour and minutes configured in the schedule:        
-        nextDate = this.dateAtStartingTime(this.parseStartingTime(schedule.startingAt)!, nextDate)
+        nextDate = this.setStartingTime(parsedStartingAt, nextDate)
 
         //If the schedule was never executed and the calculated date is in the past, we need to 
         //move the date to next week:
-        if (schedule.lastExecution == null && SharedSystemHelper.isBefore(nextDate, new Date())) {
+        if (schedule.lastExecution == null && SharedSystemHelper.isBefore(nextDate, schedule.creationTS)) {
             nextDate = SharedSystemHelper.addDays(7, nextDate)
         }
 
@@ -193,7 +221,7 @@ export class ScheduleCalculator {
     }
 
     private static getNextRecurrentMonthsSchedule(schedule: WorkflowSchedule): Date | null {
-        let nextDate: Date = new Date();
+        let nextDate: Date = new Date(schedule.creationTS);
         let ordinalInd: number = this.getOrdinalInd(schedule.monthlyOption.ordinal);
 
         //If it was executed at least one time, we need to move to the next scheduled ocurrence:
@@ -220,11 +248,11 @@ export class ScheduleCalculator {
         }
 
         //Setting the hour and minutes configured in the schedule:        
-        nextDate = this.dateAtStartingTime(this.parseStartingTime(schedule.startingAt)!, nextDate)
+        nextDate = this.setStartingTime(this.parseStartingTime(schedule.startingAt)!, nextDate)
 
         //If the schedule was never executed and the calculated date is in the past, we need to 
         //move the date to next month:
-        if (schedule.lastExecution == null && SharedSystemHelper.isBefore(nextDate, new Date())) {
+        if (schedule.lastExecution == null && SharedSystemHelper.isBefore(nextDate, schedule.creationTS)) {
             nextDate = SharedSystemHelper.addMonths(1, nextDate)
 
             //If the schedule is for a specific weekday, we need to move the date to that weekday:
@@ -279,7 +307,6 @@ export class ScheduleCalculator {
     }
 
     private static isValidEveryAmount(everyAmount: number): boolean {
-        if (typeof everyAmount !== "number") return false;
         if (isNaN(everyAmount)) return false;
         if (everyAmount < EVERY_AMOUNT_MIN) return false;
         if (everyAmount > EVERY_AMOUNT_MAX) return false;
@@ -287,7 +314,7 @@ export class ScheduleCalculator {
         return true;
     }
 
-    private static dateAtStartingTime(time: TimeOnly, date: Date = new Date()): Date {
+    private static setStartingTime(time: TimeOnly, date: Date = new Date()): Date {
         date.setHours(time.hour, time.minutes, 0, 0);
         return date;
     }

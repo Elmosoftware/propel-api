@@ -53,6 +53,7 @@ export class WorkflowSchedule {
         let d = new Date()
         this.startingAt = d.getHours().toString().padStart(2, "0") +
             ":" + d.getMinutes().toString().padStart(2, "0")
+        this.creationTS = d;
     }
 
     /**
@@ -102,4 +103,10 @@ export class WorkflowSchedule {
      * Date and time of the last execution.
      */
     public lastExecution: Date | null = null;
+
+    /**
+     * Creation Timestamp. Reflects the date and time this schedule was created.
+     * This date will be used to calculate the first execution of the schedule.
+     */
+    public creationTS: Date;
 }

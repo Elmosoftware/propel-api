@@ -620,6 +620,11 @@ class Schemas {
                     {
                         type: Date,
                         isRequired: false
+                    }),
+                new SchemaField("creationTS", `Date and time this schedule was created.`,
+                    {
+                        type: Date,
+                        isRequired: true
                     })
             ])
             .setDescription("Represents a Workflow execution schedule")
