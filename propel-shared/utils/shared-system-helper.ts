@@ -197,9 +197,9 @@ Supplied value type is: "${typeof days}".`)
     static addMonths(months: number, date: Date | string = new Date()): Date {
         let d: DateTime = this.getDateTime(date, true);
 
-        if (typeof months !== "number") {
+        if (isNaN(months)) {
             throw new PropelError(`We expect a "number" type for the parameter "months". 
-Supplied value type is: "${typeof months}".`)
+Supplied value is: "${months}".`)
         }
 
         return d
