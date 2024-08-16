@@ -78,16 +78,18 @@ export class Runner {
         else return new ExecutionStats()
     }
 
-    /**
-     * This method takes care of the script execution and returns a promised _"ExecutionLog"_ with all 
-     * the execution details.
-     * @param workflow The workflow to execute.
-     * @param subscriptionCallback A callback function to get any realtime message during the execution.
-     */
-    async execute(data: any, token: SecurityToken, subscriptionCallback?: Function): Promise<WebsocketMessage<ExecutionStats>> {
+   /**
+    * This method takes care of the script execution and returns a promised _"ExecutionLog"_ with all 
+    * the execution details.
+    * @param data RunnerServiceDate instance that include the Workflow to run plus 
+    * any runtime parameters vaklues if needed.
+    * @param token Security token. 
+    * @param subscriptionCallback Message callback
+    * @returns The execution stats
+    */
+    async execute(data: RunnerServiceData, token: SecurityToken, subscriptionCallback?: Function): Promise<WebsocketMessage<ExecutionStats>> {
 
         let abort: boolean = false;
-        let resultsMessage: WebsocketMessage<ExecutionStats>;
         this._cb = subscriptionCallback;
         this._cancelledExecution = false;
         this._abortedExecution = false;
@@ -97,20 +99,34 @@ export class Runner {
         this._stats = new ExecutionStats();
         this._stats.isRunning = true;
 
+        //Creating execution log:
+        this._execLog = new ExecutionLog();
+        this._execLog.startedAt = new Date();
+        this._execLog.user = DataService.asObjectIdOf<UserAccount>(token?.userId);//To avoid grabbing 
+        //the full UserAccount object.
+
         //Checking service data validity:
         logger.logDebug(`Validating service data...`);
-        this._serviceData.hydrate(data);
+        try {
+            this._serviceData.hydrate(data);
+        } catch (error) {
+            return Promise.reject(error)
+        }
 
         logger.logDebug(`Preparing for execution...`);
         workflow = await this.getWorkflow(this._serviceData.workflowId, token);
 
         //If the Workflow is missing/deleted, we are not able to proceed.
         if (!workflow) {
-            this._stats.logId = "";
-            this._stats.logStatus = ExecutionStatus.Faulty;
-            this._stats.isRunning = false;
-            throw new PropelError("The workflow does not exists. Please verify if it was deleted before retrying.");
-        }       
+            this._execLog.execError = new ExecutionError(
+                new PropelError("The workflow does not exists. Please verify if it was deleted before retrying."));
+            this._execLog.status = ExecutionStatus.Faulty;
+
+            return this.persistLogAndReturnStats(this._execLog, this._stats, token);
+        }
+        else {
+            this._execLog.workflow = DataService.asObjectIdOf<Workflow>(workflow._id);
+        }      
 
         logger.logInfo(`Starting execution of Workflow "${workflow.name}" with id: "${workflow._id}".`)
 
@@ -121,28 +137,30 @@ ${JSON.stringify(this._serviceData)}`);
             this._mergeRuntimeParameters(workflow, this._serviceData)
         } catch (error) {
             let e = new PropelError(error as Error)
-            this._stats.logId = "";
-            this._stats.logStatus = ExecutionStatus.Faulty;
-            this._stats.isRunning = false;
 
-            throw new PropelError(`There was an error checking the runtime parameters.\r\n` +
-                `This error could be related to some of the values set by the user just before to run ` +
-                `the Workflow. Please verify the details before to retry. Following the error details: ` + 
-                e.message);
+            this._execLog.execError = new ExecutionError(
+                new PropelError(`There was an error checking the runtime parameters.\r\n` +
+                    `This error could be related to some of the values set by the user just before to run ` +
+                    `the Workflow. Please verify the details before to retry. Following the error details: ` + 
+                    e.message));
+            this._execLog.status = ExecutionStatus.Faulty;
+
+            return this.persistLogAndReturnStats(this._execLog, this._stats, token);
         }
 
         try {
             await this._credentialCache.build(workflow, token)
          } catch (error) {
             let e = new PropelError(error as Error)
-            this._stats.logId = "";
-            this._stats.logStatus =ExecutionStatus.Faulty;
-            this._stats.isRunning = false;
 
-            throw new PropelError(`There was an error during the preparation.\r\n` + 
-                `This error is related to the credentials assigned to one specific target or the ` + 
-                `credentials set to one or more Propel parameters in any of the scripts, please verify them ` +
-                `before to retry. Following the error details: ` + e.message);
+            this._execLog.execError = new ExecutionError(
+                new PropelError(`There was an error during the preparation.\r\n` + 
+                    `This error is related to the credentials assigned to one specific target or the ` + 
+                    `credentials set to one or more Propel parameters in any of the scripts, please verify them ` +
+                    `before to retry. Following the error details: ` + e.message));
+            this._execLog.status = ExecutionStatus.Faulty;
+
+            return this.persistLogAndReturnStats(this._execLog, this._stats, token);
         }
 
         this._stats.workflowName = workflow.name;
@@ -155,13 +173,6 @@ ${JSON.stringify(this._serviceData)}`);
 
             return ret;
         });
-
-        //Creating execution log:
-        this._execLog = new ExecutionLog();
-        this._execLog.startedAt = new Date();
-        this._execLog.workflow = DataService.asObjectIdOf<Workflow>(workflow._id);
-        this._execLog.user = DataService.asObjectIdOf<UserAccount>(token?.userId);//To avoid grabbing 
-        //the full UserAccount object.
 
         logger.logDebug(`Pool stats before to start workflow execution:\n${pool.stats.toString()}`)
 
@@ -240,23 +251,28 @@ ${JSON.stringify(this._serviceData)}`);
         })
 
         this._execLog.status = this._summaryStatus(this._execLog.executionSteps);
-        this._execLog.endedAt = new Date();
-        this._stats.isRunning = false;
+        logger.logDebug(`Pool stats at the end of workflow execution:\n${pool.stats.toString()}`);
+
+        return this.persistLogAndReturnStats(this._execLog, this._stats, token);
+    }
+
+    async persistLogAndReturnStats(execLog: ExecutionLog, stats: ExecutionStats, token: SecurityToken): Promise<WebsocketMessage<ExecutionStats>> {
+        let resultsMessage: WebsocketMessage<ExecutionStats>;
 
         try {
-            this._stats.logStatus = this._execLog.status;
-            this._stats.logId = await this.saveExecutionLog(this._prepareLogForSave(this._execLog), token);
-            this._execLog._id = this._stats.logId;
-            resultsMessage = new WebsocketMessage(InvocationStatus.Finished, "", this._stats);
+            stats.logStatus = execLog.status;
+            stats.isRunning = false;
+            execLog.endedAt = new Date();
+            execLog._id = await this.saveExecutionLog(this._prepareLogForSave(execLog), token);
+            stats.logId = execLog._id;
+            resultsMessage = new WebsocketMessage(InvocationStatus.Finished, "", stats);
         } catch (error) {
             let e = new PropelError((error as Error), ErrorCodes.saveLogFailed);
             logger.logError(e);
-            this._stats.logStatus = ExecutionStatus.Faulty
+            stats.logStatus = ExecutionStatus.Faulty
             resultsMessage = new WebsocketMessage(InvocationStatus.Failed,
                 e.errorCode.userMessage, this._stats);
         }
-
-        logger.logDebug(`Pool stats at the end of workflow execution:\n${pool.stats.toString()}`);
 
         return resultsMessage;
     }
@@ -264,7 +280,7 @@ ${JSON.stringify(this._serviceData)}`);
     /**
      * Persist an entire execution log in the database.
      * @param log Log to persist.
-     * @returns A promis with the result of the operation.
+     * @returns A promise with the operation results.
      */
     async saveExecutionLog(log: ExecutionLog, token: SecurityToken): Promise<string> {
         let svc: DataService = db.getService("ExecutionLog", token);

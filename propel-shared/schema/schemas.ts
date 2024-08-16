@@ -290,10 +290,13 @@ class Schemas {
 
         return new SchemaDefinition("ExecutionLog", "ExecutionLogs", true)
             .setFields([
+                new SchemaField("execError", `Any error that prevents the Workflow to run.`,
+                    {
+                        type: this.executionError
+                    }),
                 new SchemaField("workflow", `Executed Workflow.`,
                     {
-                        type: this.workflow,
-                        isRequired: true
+                        type: this.workflow
                     }),
                 new SchemaField("startedAt", `Execution start timestamp (UTC).`,
                     {

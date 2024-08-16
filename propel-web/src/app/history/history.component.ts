@@ -120,11 +120,11 @@ export class HistoryComponent implements OnInit {
         next: (ph: PagingHelper) => {
           this.onDataFeedHandler(ph)
         }
-      });
+      }); 
   }
 
   getWorkflowName(item: ExecutionLogExtended): string {
-    let ret: string = "";
+    let ret: string = "Missing Workflow!";
 
     if (!item.log?.workflow) return ret;
 
@@ -204,21 +204,30 @@ export class ExecutionLogExtended {
     this.startDate = SharedSystemHelper.formatDate(log.startedAt);
     this.startDateFriendly = SharedSystemHelper.getFriendlyTimeFromNow(log.startedAt);
     
-    this.workflowName = log.workflow.name;
-    this.workflowNameTooltip = `${log.workflow.name}:\r\n${(log.workflow.description) ? log.workflow.description : "No description available."}`;
-    
     this.duration = SharedSystemHelper.getDuration(log.startedAt, log.endedAt);
     this.durationTooltip = `Start at: ${SharedSystemHelper.formatDate(log.startedAt)}
 End at: ${SharedSystemHelper.formatDate(log.endedAt)}
 Total duration: ${SharedSystemHelper.getDuration(log.startedAt, log.endedAt)}.`
 
-    this.stepsAmount = log.workflow.steps.length.toString();
-    this.stepsAmountTooltip = `The workflow has defined ${log.workflow.steps.length} step${(log.workflow.steps.length > 1) ? "s" : ""}.`;
-
-    //Building the targets set:
-    log.workflow.steps.forEach((s) => {
-      s.targets.map((t) => targets.add(t.friendlyName));      
-    })
+    if (log.workflow) {
+      this.workflowName = log.workflow.name;
+      this.workflowNameTooltip = `${log.workflow.name}:\r\n${(log.workflow.description) ? log.workflow.description : "No description available."}`;
+      
+  
+      this.stepsAmount = log.workflow.steps.length.toString();
+      this.stepsAmountTooltip = `The workflow has defined ${log.workflow.steps.length} step${(log.workflow.steps.length > 1) ? "s" : ""}.`;
+  
+      //Building the targets set:
+      log.workflow.steps.forEach((s) => {
+        s.targets.map((t) => targets.add(t.friendlyName));      
+      })
+    }
+    else {
+      this.workflowName = "Missing Workflow";
+      this.workflowNameTooltip = `There is no a valid Workflow reference for this Execution. Check the execution errors for more details.`;
+      this.stepsAmount = "0";
+      this.stepsAmountTooltip = ``;
+    }
 
     this.targetsAmount = targets.size.toString();
     this.targetsAmountTooltip = `This workflow is hitting ${targets.size} target${(targets.size > 1) ? "s" : ""}:

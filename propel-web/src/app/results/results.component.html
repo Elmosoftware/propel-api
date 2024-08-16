@@ -1,6 +1,8 @@
 <div class="container-fluid mt-2">
     <div *ngIf="log">
+
         <!-- Start Header -->
+
         <div class="row justify-content-between">
             <div class="col">
                 <div class="row">
@@ -20,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <div class="row align-items-center">
+        <div *ngIf="!log?.execError" class="row align-items-center">
             <div class="col align-self-center">
                 <button class="btn btn-primary button-icon-medium" type="button" (click)="expandAll()"
                     [disabled]="!(collapseStatus == true || collapseStatus == null)">
@@ -44,125 +46,139 @@
                 </button>
             </div>
             <div class="col-auto align-self-center">
-                <button class="btn btn-primary" type="button" [disabled]="!log" (click)="runAgain()">Run
-                    again</button>
+                <button class="btn btn-primary" type="button" [disabled]="!log || !log?.workflow"
+                    (click)="runAgain()">Run again</button>
             </div>
         </div>
         <hr class="mt-2">
+
         <!-- End Header -->
-        <mat-accordion multi displayMode="default" togglePosition="before" #accordion>
-            <mat-expansion-panel *ngFor="let step of log.executionSteps; let i=index"
-                [expanded]="i == (log.executionSteps.length - 1)">
-                <mat-expansion-panel-header class="step-header">
-                    <mat-panel-title class="align-items-baseline justify-content-between">
-                        <div>
-                            <app-status-icon size="small" iconStyle="dark" [status]="step.status" class="mr-2">
-                            </app-status-icon>
-                            <span [ngClass]="{
+
+        <div *ngIf="log?.execError; else execDetails" class="content-container">
+            <div *ngIf="log?.execError">
+                <i class="fas fa-bug fa-2x py-2" matTooltip="Below the errors returned during the Workflow preparation."
+                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                <app-dynamic-table [data]="log?.execError" [show-filter]="false" excluded-fields="stack"
+                    class="errors-header"></app-dynamic-table>
+            </div>
+        </div>
+        <ng-template #execDetails>
+            <mat-accordion multi displayMode="default" togglePosition="before" #accordion>
+                <mat-expansion-panel *ngFor="let step of log.executionSteps; let i=index"
+                    [expanded]="i == (log.executionSteps.length - 1)">
+                    <mat-expansion-panel-header class="step-header">
+                        <mat-panel-title class="align-items-baseline justify-content-between">
+                            <div>
+                                <app-status-icon size="small" iconStyle="dark" [status]="step.status" class="mr-2">
+                                </app-status-icon>
+                                <span [ngClass]="{
                                 'item-disabled': !step.scriptEnabled 
                             }" class="icon-binoculars-after-mini" matTooltip="{{getStepDetails(i)}}"
-                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
-                                {{ getStepName(step.stepName) }}</span>
-                        </div>
-                        <div *ngIf="step.startedAt" class="text-subtle">
-                            <i class="fas fa-stopwatch"></i>
-                            <span matTooltip="{{getDurationDetails(step, false)}}"
-                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
-                                {{getDurationDetails(step)}}</span>
-                        </div>
-                    </mat-panel-title>
-                </mat-expansion-panel-header>
-                <div class="content-container">
-                    <div *ngIf="step.execError">
-                        <i class="fas fa-bug fa-2x py-2"
-                            matTooltip="Below the errors returned during the step preparation."
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                        <app-dynamic-table [data]="step.execError" [show-filter]="false" excluded-fields="stack"
-                            class="errors-header"></app-dynamic-table>
-                    </div>
-                </div>
-                <div *ngIf="showGrouped; else showContinuous">
-                    <!-- Grouped section start -->
-                    <mat-accordion multi displayMode="flat" togglePosition="before">
-                        <mat-expansion-panel *ngFor="let target of step.targets; let i=index" expanded="true">
-                            <mat-expansion-panel-header class="target-header">
-                                <mat-panel-title class="align-items-baseline justify-content-between">
-                                    <div>
-                                        <app-status-icon size="small" iconStyle="dark" [status]="target.status"
-                                            class="mr-2">
-                                        </app-status-icon>
-                                        <span style="padding-top: 1px"
-                                            [ngClass]="{
-                                            'item-disabled': target.status == 'SKIPPED' }">{{target.name}}&nbsp;({{target.FQDN}})</span>
-                                        <i class="fas ml-2 text-mini" [ngClass]="{
-                                                'fa-binoculars': target.status == 'SKIPPED' }"
-                                            matTooltip="The target was disabled or deleted at the moment of the execution."
-                                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                                    </div>
-                                    <div *ngIf="target.startedAt" class="text-subtle">
-                                        <i class="fas fa-stopwatch"></i>
-                                        <span matTooltip="{{getDurationDetails(target, false)}}"
-                                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
-                                            {{getDurationDetails(target)}}</span>
-                                    </div>
-                                </mat-panel-title>
-                            </mat-expansion-panel-header>
-                            <div class="content-container">
-                                <i class="fas fa-th-list fa-2x pb-2"
-                                    matTooltip="Below the data returned by the script invocation."
-                                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                                <div *ngIf="getResults(step, target).length == 0; else withResults">
-                                    <div class="alert fade show alert-info mb-0" role="alert">
-                                        <strong>No results</strong> have been returned by the script.
-                                    </div>
-                                </div>
-                                <ng-template #withResults>
-                                    <app-dynamic-table [data]="getResults(step, target)"
-                                        [show-filter]="getResults(step, target).length > 5">
-                                    </app-dynamic-table>
-                                </ng-template>
+                                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                                    {{ getStepName(step.stepName) }}</span>
                             </div>
-                            <div class="content-container">
-                                <div *ngIf="target.execErrors && target.execErrors.length > 0">
-                                    <i class="fas fa-bug fa-2x py-2"
-                                        matTooltip="Below the errors returned by the script during the invocation."
-                                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                                    <app-dynamic-table [data]="target.execErrors" [show-filter]="false"
-                                        excluded-fields="stack" class="errors-header"></app-dynamic-table>
-                                </div>
+                            <div *ngIf="step.startedAt" class="text-subtle">
+                                <i class="fas fa-stopwatch"></i>
+                                <span matTooltip="{{getDurationDetails(step, false)}}"
+                                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                                    {{getDurationDetails(step)}}</span>
                             </div>
-                        </mat-expansion-panel>
-                    </mat-accordion>
-                    <!-- Grouped section ends -->
-                </div>
-                <!-- Ungrouped section starts -->
-                <ng-template #showContinuous>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
                     <div class="content-container">
-                        <i class="fas fa-th-list fa-2x pb-2"
-                            matTooltip="Below the data returned by the script invocation in all the targets."
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                        <div *ngIf="getResults(step).length == 0; else withContinuousResults">
-                            <div class="alert fade show alert-info mb-0" role="alert">
-                                <strong>No results</strong> have been returned by this step in any of the targets.
-                            </div>
-                        </div>
-                        <ng-template #withContinuousResults>
-                            <app-dynamic-table [data]="getResults(step)" column-order="Target Name"
-                                [show-filter]="getResults(step).length > 5"></app-dynamic-table>
-                        </ng-template>
-                    </div>
-                    <div class="content-container">
-                        <div *ngIf="allErrors && allErrors.length > 0">
+                        <div *ngIf="step.execError">
                             <i class="fas fa-bug fa-2x py-2"
-                                matTooltip="Below the errors returned by any of the targets."
+                                matTooltip="Below the errors returned during the step preparation."
                                 matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
-                            <app-dynamic-table [data]="allErrors" [show-filter]="false" [excluded-fields]="['stack']"
-                                column-order="Target Name" class="errors-header"></app-dynamic-table>
+                            <app-dynamic-table [data]="step.execError" [show-filter]="false" excluded-fields="stack"
+                                class="errors-header"></app-dynamic-table>
                         </div>
                     </div>
-                </ng-template>
-                <!-- Ungrouped section ends -->
-            </mat-expansion-panel>
-        </mat-accordion>
+                    <div *ngIf="showGrouped; else showContinuous">
+                        <!-- Grouped section start -->
+                        <mat-accordion multi displayMode="flat" togglePosition="before">
+                            <mat-expansion-panel *ngFor="let target of step.targets; let i=index" expanded="true">
+                                <mat-expansion-panel-header class="target-header">
+                                    <mat-panel-title class="align-items-baseline justify-content-between">
+                                        <div>
+                                            <app-status-icon size="small" iconStyle="dark" [status]="target.status"
+                                                class="mr-2">
+                                            </app-status-icon>
+                                            <span style="padding-top: 1px"
+                                                [ngClass]="{
+                                            'item-disabled': target.status == 'SKIPPED' }">{{target.name}}&nbsp;({{target.FQDN}})</span>
+                                            <i class="fas ml-2 text-mini" [ngClass]="{
+                                                'fa-binoculars': target.status == 'SKIPPED' }"
+                                                matTooltip="The target was disabled or deleted at the moment of the execution."
+                                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                                        </div>
+                                        <div *ngIf="target.startedAt" class="text-subtle">
+                                            <i class="fas fa-stopwatch"></i>
+                                            <span matTooltip="{{getDurationDetails(target, false)}}"
+                                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right">
+                                                {{getDurationDetails(target)}}</span>
+                                        </div>
+                                    </mat-panel-title>
+                                </mat-expansion-panel-header>
+                                <div class="content-container">
+                                    <i class="fas fa-th-list fa-2x pb-2"
+                                        matTooltip="Below the data returned by the script invocation."
+                                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                                    <div *ngIf="getResults(step, target).length == 0; else withResults">
+                                        <div class="alert fade show alert-info mb-0" role="alert">
+                                            <strong>No results</strong> have been returned by the script.
+                                        </div>
+                                    </div>
+                                    <ng-template #withResults>
+                                        <app-dynamic-table [data]="getResults(step, target)"
+                                            [show-filter]="getResults(step, target).length > 5">
+                                        </app-dynamic-table>
+                                    </ng-template>
+                                </div>
+                                <div class="content-container">
+                                    <div *ngIf="target.execErrors && target.execErrors.length > 0">
+                                        <i class="fas fa-bug fa-2x py-2"
+                                            matTooltip="Below the errors returned by the script during the invocation."
+                                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                                        <app-dynamic-table [data]="target.execErrors" [show-filter]="false"
+                                            excluded-fields="stack" class="errors-header"></app-dynamic-table>
+                                    </div>
+                                </div>
+                            </mat-expansion-panel>
+                        </mat-accordion>
+                        <!-- Grouped section ends -->
+                    </div>
+                    <!-- Ungrouped section starts -->
+                    <ng-template #showContinuous>
+                        <div class="content-container">
+                            <i class="fas fa-th-list fa-2x pb-2"
+                                matTooltip="Below the data returned by the script invocation in all the targets."
+                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                            <div *ngIf="getResults(step).length == 0; else withContinuousResults">
+                                <div class="alert fade show alert-info mb-0" role="alert">
+                                    <strong>No results</strong> have been returned by this step in any of the targets.
+                                </div>
+                            </div>
+                            <ng-template #withContinuousResults>
+                                <app-dynamic-table [data]="getResults(step)" column-order="Target Name"
+                                    [show-filter]="getResults(step).length > 5"></app-dynamic-table>
+                            </ng-template>
+                        </div>
+                        <div class="content-container">
+                            <div *ngIf="allErrors && allErrors.length > 0">
+                                <i class="fas fa-bug fa-2x py-2"
+                                    matTooltip="Below the errors returned by any of the targets."
+                                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i>
+                                <app-dynamic-table [data]="allErrors" [show-filter]="false"
+                                    [excluded-fields]="['stack']" column-order="Target Name"
+                                    class="errors-header"></app-dynamic-table>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <!-- Ungrouped section ends -->
+                </mat-expansion-panel>
+            </mat-accordion>
+        </ng-template>
+
     </div>
 </div>

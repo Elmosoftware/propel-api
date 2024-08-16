@@ -113,26 +113,28 @@ export class UsageStatsService {
                     this.createDailyExecutionsSeriesData(stats, currentDate);
                 }
 
-                if (log.startedAt.toUTCString() == currentDate.toUTCString()) {
+                if (log.workflow && log.startedAt.toUTCString() == currentDate.toUTCString()) {
                     //Increasing in one the right series:
                     this.increaseDailyExecutionsLastSeriesValue(stats.dailyExecutions[(log.workflow.isQuickTask) ? 1 : 0])
                 }
 
                 //Most used Workflows:
                 //====================
-                if (!log.workflow.isQuickTask) {
+                if (log.workflow && !log.workflow.isQuickTask) {
                     this.addMostUsedWorkflowsSeriesData(stats, log.workflow)
                 }
 
                 //Latest Executions:
                 //==================
                 if (stats.latestExecutions.length < TOP_LATEST_EXECUTIONS) {
-                    stats.latestExecutions.push(new GraphSeriesData(log.workflow.name, 1,
-                        log._id, log.startedAt, { 
-                            status: log.status.toString(),
-                            userName: (log?.user) ? log.user.name : "" ,
-                            userFullName: (log?.user) ? log.user.fullName : ""
-                        }));
+                    if (log.workflow) {
+                        stats.latestExecutions.push(new GraphSeriesData(log.workflow.name, 1,
+                            log._id, log.startedAt, { 
+                                status: log.status.toString(),
+                                userName: (log?.user) ? log.user.name : "" ,
+                                userFullName: (log?.user) ? log.user.fullName : ""
+                            }));
+                    }
                 }
 
                 //Last Execution errors:
@@ -191,7 +193,7 @@ export class UsageStatsService {
 
                 //Most used Workflows:
                 //====================
-                if (!log.workflow.isQuickTask) {
+                if (log.workflow && !log.workflow.isQuickTask) {
                     this.addMostUsedWorkflowsSeriesData(stats, log.workflow)
                     stats.totalExecutions++;
                 }

@@ -482,12 +482,13 @@ describe("Runner Class - execute()", () => {
 
         runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
-                expect(msg.context?.logId).toEqual("Don't expect this call!")
+                expect(msg.context?.logId).toEqual("newid")
+                expect(msg.context?.logStatus).toEqual(ExecutionStatus.Faulty)
                 done();
             })
             .catch((err) => {
                 //Workflow must abort if at least one runtime parametrr is missing:
-                expect(err.message).toContain("There was an error checking the runtime parameters.")
+                expect(err).toEqual("Is not expected an error in this call!!!!")
                 done();
             })
 
