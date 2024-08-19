@@ -13,7 +13,8 @@ import { logger } from "./services/logger-service";
 import { cfgVal } from "./validators/config-validator";
 import { webServer } from "./core/web-server";
 import { db } from "./core/database";
-import { usageStatsService } from "./services/usage-stats-service";
+import { systemJobService } from "./services/system-job-service";
+import { UsageStatsSystemJob } from "./core/usage-stats-system-job";
 
 //Configuration validation:
 if (!cfgVal.validate().isValid) {
@@ -35,9 +36,9 @@ db.start() //Database setup.
                 .replace(/{/g, "")
                 .replace(/}/g, "")}\r\n`);
 
-        logger.logInfo("Triggering a usage statistics refresh...")
-        usageStatsService.updateStats(); //Usage stats refresh will be 
-        //triggered by the UsageStatsServices.
+        logger.logInfo("Setting up all System Jobs...")
+        systemJobService.register(new UsageStatsSystemJob())
+        
         logger.logInfo("Starting HTTP server...")
         webServer.start() //Web Server and routing services start.
             .then(() => {

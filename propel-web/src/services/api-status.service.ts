@@ -41,7 +41,7 @@ export class APIStatusService {
   /**
    * Retrieves the Application Usage Statistics.
    */
-  async getApplicationUsageStats(): Promise<UsageStats> {
+  async getApplicationUsageStats(): Promise<UsageStats | null> {
     let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL, 
       [StatusEndpoint, StatusEndpointActions.ApplicationStats]);
 

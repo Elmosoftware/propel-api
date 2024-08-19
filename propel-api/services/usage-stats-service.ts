@@ -22,34 +22,14 @@ const TOP_LAST_ERRORS: number = 5;
  */
 export class UsageStatsService {
 
-    private _stats!: UsageStats;
+    private _stats: UsageStats | null = null;
     private _updatingStats: boolean = false;
 
     /**
      * Return the current application usage stats or no value if the stats are not created yet.
      * If there is no stats or they are stale, it will take care also to schedule a refresh..
      */
-    get currentStats(): UsageStats {
-
-        if (this.areStatsStale) {
-            
-            if (this._stats) {
-                this._stats.areStale = true;
-            }
-
-            let start: number = (new Date()).getTime();
-            
-            this.updateStats()
-                .then(() => {
-                    logger.logDebug(`Propel usage statistics updated at ` + 
-                    this._stats?.statsTimestamp.toLocaleString() + 
-                    ` (took ${((new Date()).getTime() - start)/1000} seconds).`)
-                })
-                .catch((err) => {
-                    logger.logError(`Propel usage statistics failed to update. Error was: ${String(err)}`)
-                })
-        }
-
+    get currentStats(): UsageStats | null {
         return this._stats;
     }
 
@@ -86,16 +66,21 @@ export class UsageStatsService {
         //If the stats are in progress to be updated, we must do nothing.
         if (this._updatingStats) return;
 
+        logger.logInfo(`Start updating the usage stats...`)
+        
         try {
             this._updatingStats = true;
+            logger.logDebug(`Usage stats, Retrieving execution logs.`)
             allExecLogs = await this.getAllExecutionLogs();
-
+            
             stats.totalExecutions = allExecLogs.length;
+            logger.logDebug(`Usage stats, Counting items.`)
             stats.totalWorkflows = await this.getAllWorkflowsCount();
             stats.totalTargets = await this.getAllTargetsCount();
             stats.totalScripts = await this.getAllScriptsCount();
             stats.totalCredentials = await this.getAllCredentialsCount();
 
+            logger.logDebug(`Usage stats, Creating series data.`)            
             //Adding 2 series, one for workflows and the other for Quick Tasks:
             stats.dailyExecutions.push(new GraphSeries("Workflows"));
             stats.dailyExecutions.push(new GraphSeries("Quick Tasks"));
@@ -170,8 +155,9 @@ export class UsageStatsService {
                 .splice(0, TOP_LATEST_EXECUTIONS)
 
             this._stats = stats;
-
+            logger.logInfo(`Update stats operation finished successfully.`)
         } catch (error) {
+            logger.logWarn(`Update stats operation finished with error.`)
             return Promise.reject(error);
         }
         finally {

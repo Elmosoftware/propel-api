@@ -22,7 +22,7 @@ const TOP_RESULTS: number = 5;
 export class HomeComponent implements OnInit, OnDestroy {
 
   loadingResults: boolean = false;
-  stats!: UsageStats;
+  stats: UsageStats | null = null;
   userStats: UsageStats | undefined = undefined;
   graphColors: any = environment.graphs.colorScheme;
   graphExecutionsView: any[] = [650, 200];
