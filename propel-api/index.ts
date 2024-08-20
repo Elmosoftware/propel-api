@@ -15,6 +15,7 @@ import { webServer } from "./core/web-server";
 import { db } from "./core/database";
 import { systemJobService } from "./services/system-job-service";
 import { UsageStatsSystemJob } from "./core/usage-stats-system-job";
+import { ScheduleManagerSystemJob } from "./core/schedule-manager-system-job";
 
 //Configuration validation:
 if (!cfgVal.validate().isValid) {
@@ -38,6 +39,7 @@ db.start() //Database setup.
 
         logger.logInfo("Setting up all System Jobs...")
         systemJobService.register(new UsageStatsSystemJob())
+        systemJobService.register(new ScheduleManagerSystemJob())
         
         logger.logInfo("Starting HTTP server...")
         webServer.start() //Web Server and routing services start.

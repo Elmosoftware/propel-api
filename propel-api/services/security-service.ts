@@ -26,6 +26,8 @@ import { RDPUser } from '../../propel-shared/core/rdp-user';
 
 export const LEGACY_USER_ID: string = "000000010000000000100001"
 export const LEGACY_USER_NAME: string = "Unknown user"
+export const SYSTEM_USER_ID: string = "000000010000000000100002"
+export const SYSTEM_USER_NAME: string = "SYSTEM"
 
 export class SecurityService {
 
@@ -119,6 +121,16 @@ export class SecurityService {
 
         ret._id = LEGACY_USER_ID
         ret.name = LEGACY_USER_NAME
+        ret.role = UserAccountRoles.Administrator
+
+        return ret;
+    }
+
+    getSystemUser(): UserAccount {
+        let ret: UserAccount = new UserAccount();
+
+        ret._id = SYSTEM_USER_ID
+        ret.name = SYSTEM_USER_NAME
         ret.role = UserAccountRoles.Administrator
 
         return ret;
