@@ -19,6 +19,7 @@ function setAllValid() {
     process.env.EXECUTIONLOG_RETENTION_DAYS="30"
     process.env.USAGE_STATS_STALE_MINUTES="30"
     process.env.UPLOAD_PAYLOAD_LIMIT_MB="0"
+    process.env.WORKFLOW_SCHEDULES="On"
 }
 
 describe("ConfigValidator Class", () => {
@@ -473,6 +474,28 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain(`- LEGACY_SECURITY possible values are`);
+        cfgVal.reset();
+    })
+    test(`Missing WORKFLOW_SCHEDULES value`, () => {
+        //@ts-ignore
+        process.env.WORKFLOW_SCHEDULES = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- WORKFLOW_SCHEDULES is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid WORKFLOW_SCHEDULES value`, () => {
+        //@ts-ignore
+        process.env.WORKFLOW_SCHEDULES = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- WORKFLOW_SCHEDULES possible values are`);
         cfgVal.reset();
     })
 })

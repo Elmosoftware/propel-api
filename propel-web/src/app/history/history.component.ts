@@ -11,6 +11,7 @@ import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-syste
 import { DataEndpointActions } from 'src/services/data.service';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
 import { ScheduleCalculator } from '../../../../propel-shared/core/schedule-calculator';
+import { APIStatus } from '../../../../propel-shared/models/api-status';
 
 export enum IntervalType {
   LastHalfHour = 30,
@@ -44,6 +45,8 @@ export class HistoryComponent implements OnInit {
   svcInfScroll!: InfiniteScrollingService<ExecutionLogExtended>;
   onDataFeed!: EventEmitter<PagingHelper>;
   activeTab: Tabs = Tabs.Manual;
+  apiStatus: APIStatus | null = null;
+  showWarning: boolean = true;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
@@ -72,6 +75,10 @@ export class HistoryComponent implements OnInit {
           this.search();
         }
       })
+  }
+
+  hideWarning() {
+    this.showWarning = false;
   }
 
   activeTabChanged($event: Tabs) {
@@ -109,6 +116,8 @@ export class HistoryComponent implements OnInit {
     qm.sortBy = "-startedAt";  
     
     try {
+      //Updating API status:
+      this.apiStatus = await this.core.status.getStatus();
       paged = await this.core.data.find(DataEndpointActions.ExecutionLog, qm) as PagedResponse<ExecutionLog>;
       xLog = paged.data.map((l: ExecutionLog) => new ExecutionLogExtended(l))
       this.svcInfScroll.feed(paged.totalCount, xLog);

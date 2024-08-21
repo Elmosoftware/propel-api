@@ -144,6 +144,13 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`LEGACY_SECURITY possible values are "On" or "Off".`);
         }
 
+        if (!process.env.WORKFLOW_SCHEDULES) {
+            super._addError("WORKFLOW_SCHEDULES is required.");
+        }
+        else if(!(String(process.env.WORKFLOW_SCHEDULES).toLowerCase() == "on" || String(process.env.WORKFLOW_SCHEDULES).toLowerCase() == "off")) {
+            super._addError(`WORKFLOW_SCHEDULES possible values are "On" or "Off".`);
+        }
+
         return this;
     }
 }

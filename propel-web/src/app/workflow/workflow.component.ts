@@ -27,6 +27,7 @@ import { Utils } from '../../../../propel-shared/utils/utils';
 import { ScheduleCalculator } from "../../../../propel-shared/core/schedule-calculator";
 import { JavascriptDateConverter } from '../../../../propel-shared/core/converters';
 import { StandardDialogConfiguration } from '../dialogs/standard-dialog/standard-dlg.component';
+import { APIStatus } from '../../../../propel-shared/models/api-status';
 
 const NAME_MIN: number = 3;
 const NAME_MAX: number = 50;
@@ -63,6 +64,7 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   allWeekDays: { key: string, value: string | number }[] = [];
   allMonthlyOptionOrdinals: { key: string, value: string | number }[] = [];
   allMonthlyOptionDays: { key: string, value: string | number }[] = [];
+  apiStatus: APIStatus | null = null;
 
   /**
    * Used by the dropdowns to compare the values.
@@ -165,6 +167,9 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
     }
 
     try {
+      //Getting the API status
+      this.apiStatus = await this.core.status.getStatus();
+
       let workflow: Workflow = await this.core.data.getById(DataEndpointActions.Workflow, id, true) as Workflow;
 
       if (!workflow) {
@@ -431,6 +436,8 @@ You can re-enable it again once all checks have been reverted.`)
     let nextRun = ScheduleCalculator.getNextRun(this.fh.value.schedule)
     let ret: string = "Next execution: "
 
+    if (!this.apiStatus?.workflowSchedulesEnabled) return ret +  `Scheduled executions are disabled.`;
+
     if (nextRun && this.fh.value.schedule.enabled) {
       if (effectiveDate && SharedSystemHelper.isBefore(nextRun, new Date())) {
         nextRun = new Date();
@@ -448,6 +455,8 @@ You can re-enable it again once all checks have been reverted.`)
   getScheduledForNowText(): string {
     let nextRun = ScheduleCalculator.getNextRun(this.fh.value.schedule)
     let ret: string = ""
+
+    if (!this.apiStatus?.workflowSchedulesEnabled) return ret;
 
     if (nextRun && SharedSystemHelper.isBefore(nextRun, new Date())) {
       ret = "(As soon this schedule is saved)."

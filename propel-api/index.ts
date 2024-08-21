@@ -38,8 +38,18 @@ db.start() //Database setup.
                 .replace(/}/g, "")}\r\n`);
 
         logger.logInfo("Setting up all System Jobs...")
+        logger.logInfo("Registering Usage Stats System Job")
         systemJobService.register(new UsageStatsSystemJob())
-        systemJobService.register(new ScheduleManagerSystemJob())
+
+        if (cfg.workflowSchedulesEnabled) {
+            logger.logInfo("Registering Schedule Manager System Job")
+            systemJobService.register(new ScheduleManagerSystemJob())
+        }
+        else {
+            logger.logInfo(`Workflow schedules feature is disabled in Propel API configuration.` +
+                `The Schedule Manager System Job will not be registered.`
+            )
+        }
         
         logger.logInfo("Starting HTTP server...")
         webServer.start() //Web Server and routing services start.

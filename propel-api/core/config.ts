@@ -196,6 +196,13 @@ class Config {
     public get isLegacySecurityEnabled() : boolean {
         return (String(process.env.LEGACY_SECURITY).toLowerCase() == "on")
     }
+
+    /**
+     * Boolean value indicating if the Workflows schedule feature is enabled.
+     */
+    public get workflowSchedulesEnabled() : boolean {
+        return (String(process.env.WORKFLOW_SCHEDULES).toLowerCase() == "on")
+    }
     
     /**
      * 

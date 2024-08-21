@@ -39,6 +39,7 @@ export class StatusRoute implements Route {
             ret.logSource = cfg.logSource;
             ret.poolOptions = cfg.poolOptions;
             ret.poolStats = pool.stats;
+            ret.workflowSchedulesEnabled = cfg.workflowSchedulesEnabled;
 
             res.json(ret);
         });

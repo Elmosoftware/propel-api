@@ -128,6 +128,15 @@
                         <app-validation-message
                             [control]="scheduleFormGroup.controls['enabled']"></app-validation-message>
                     </div>
+                    <div *ngIf="!apiStatus?.workflowSchedulesEnabled" class="alert alert-dismissible fade show alert-warning" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                        <strong>Scheduled executions are disabled for now!</strong>
+                        Propel API is set to disable scheduled executions. This shouldn't 
+                        prevent you to work on this Workflow schedule but is not going to 
+                        run automatically after saving the changes.
+                    </div>
                     <div class="form-group">
                         <div class="d-flex justify-content-center">
                             <label class="mr-2 mt-1 text-mini">Single execution</label>

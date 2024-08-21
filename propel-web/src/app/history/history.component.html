@@ -40,6 +40,16 @@
             <mat-tab label="Scheduled" />
         </mat-tab-group>
 
+        <div *ngIf="activeTab == 1 && showWarning && !apiStatus?.workflowSchedulesEnabled" 
+            class="alert alert-dismissible fade show alert-warning mt-2" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="hideWarning()">
+                <span aria-hidden="true">×</span>
+            </button>
+            <strong>Scheduled executions are disabled right now!</strong>
+            Propel API is set to disable scheduled executions. So please don't expect new 
+            entries in the history for automatically scheduled executions.
+        </div>
+
         <ul class="list-group mt-2">
             <li class="list-group-item mx-3" *ngFor="let item of svcInfScroll.model">
                 <div class="row">
