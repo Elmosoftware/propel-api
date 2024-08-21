@@ -352,6 +352,27 @@ body{
     color: var(--colors-white); 
 }
 
+.icon-stop-watch::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f2f2";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.icon-numbered-list::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f0cb";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.icon-schedule::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f073";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
 /* 
   FORMS
   ==========================================================

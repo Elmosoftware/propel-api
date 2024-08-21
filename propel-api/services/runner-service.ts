@@ -104,6 +104,7 @@ export class Runner {
         this._execLog.startedAt = new Date();
         this._execLog.user = DataService.asObjectIdOf<UserAccount>(token?.userId);//To avoid grabbing 
         //the full UserAccount object.
+        this._execLog.runOnSchedule = data.runOnSchedule;
 
         //Checking service data validity:
         logger.logDebug(`Validating service data...`);

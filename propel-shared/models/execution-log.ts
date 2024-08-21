@@ -50,6 +50,12 @@ export class ExecutionLog extends Entity {
      */
     public executionSteps: ExecutionStep[] = [];
 
+    /**
+     * Boolean value that indicates if the run was initiated by the System based on a Workflow schedule.
+     * If this was manually started by an user this value must be "false".
+     */
+    public runOnSchedule: boolean = false;
+
     constructor() {
         super();
     }

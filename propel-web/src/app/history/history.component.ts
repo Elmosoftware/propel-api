@@ -10,6 +10,7 @@ import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
 import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { DataEndpointActions } from 'src/services/data.service';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
+import { ScheduleCalculator } from '../../../../propel-shared/core/schedule-calculator';
 
 export enum IntervalType {
   LastHalfHour = 30,
@@ -24,6 +25,11 @@ export enum IntervalType {
  */
 const PAGE_SIZE: number = 50;
 
+enum Tabs {
+  Manual = 0,
+  Scheduled = 1
+}
+
 @Component({
   selector: 'app-history',
   templateUrl: './history.component.html',
@@ -37,6 +43,7 @@ export class HistoryComponent implements OnInit {
   fg!: UntypedFormGroup;
   svcInfScroll!: InfiniteScrollingService<ExecutionLogExtended>;
   onDataFeed!: EventEmitter<PagingHelper>;
+  activeTab: Tabs = Tabs.Manual;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
@@ -67,6 +74,11 @@ export class HistoryComponent implements OnInit {
       })
   }
 
+  activeTabChanged($event: Tabs) {
+    this.activeTab = $event
+    this.search();
+  }
+
   search() {
     this.resetSearch();
     this.fetchData(this.svcInfScroll.pageSize, 0)
@@ -87,10 +99,12 @@ export class HistoryComponent implements OnInit {
     qm.top = top;
     qm.skip = skip;
     qm.populate = true;
+
     qm.filterBy = {
       startedAt: {
         $gte: SharedSystemHelper.addMinutes(this.fg.controls['interval'].value * -1)
-      }
+      },
+      runOnSchedule: (this.activeTab == Tabs.Scheduled)
     };
     qm.sortBy = "-startedAt";  
     
@@ -187,6 +201,8 @@ export class ExecutionLogExtended {
   startDateFriendly: string;
   workflowName: string;
   workflowNameTooltip: string;
+  hasActiveSchedule: boolean;
+  scheduleDescription: string;
   duration: string;
   durationTooltip: string;
   stepsAmount: string;
@@ -221,12 +237,17 @@ Total duration: ${SharedSystemHelper.getDuration(log.startedAt, log.endedAt)}.`
       log.workflow.steps.forEach((s) => {
         s.targets.map((t) => targets.add(t.friendlyName));      
       })
+
+      this.hasActiveSchedule = log.workflow.schedule.enabled;        
+      this.scheduleDescription = ScheduleCalculator.getDescription(log.workflow.schedule)
     }
     else {
       this.workflowName = "Missing Workflow";
       this.workflowNameTooltip = `There is no a valid Workflow reference for this Execution. Check the execution errors for more details.`;
       this.stepsAmount = "0";
       this.stepsAmountTooltip = ``;
+      this.hasActiveSchedule = false;        
+      this.scheduleDescription = "";
     }
 
     this.targetsAmount = targets.size.toString();
@@ -236,6 +257,9 @@ ${Array.from(targets).join("\r\n")}`;
     if (log.user?.fullName) {
       this.executedBy = log.user.fullName; 
     } 
+    else if(log.runOnSchedule) {
+      this.executedBy = "SYSTEM";
+    }
     else {
       this.executedBy = "an Unknown user";
     }   

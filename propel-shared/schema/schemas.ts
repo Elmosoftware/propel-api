@@ -323,6 +323,11 @@ class Schemas {
                         type: this.executionStep,
                         isArray: true,
                         isRequired: true
+                    }),
+                new SchemaField("runOnSchedule", `Boolean value indicating if the run was started by the System based on a Workflow schedule.`,
+                    {
+                        type: Boolean,
+                        isRequired: false
                     })
             ])
             .merge(this.entity)

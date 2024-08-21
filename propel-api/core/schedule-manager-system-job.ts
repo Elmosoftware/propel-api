@@ -83,7 +83,7 @@ export class ScheduleManagerSystemJob implements SystemJob {
     }
 
     private async runWorkflow(w: Workflow): Promise<WebsocketMessage<ExecutionStats>> {
-        let data: RunnerServiceData = new RunnerServiceData(w._id, [])
+        let data: RunnerServiceData = new RunnerServiceData(w._id, [], true)
         let runner: Runner = new Runner();
 
         return runner.execute(data, this.token)

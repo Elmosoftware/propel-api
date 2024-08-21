@@ -181,6 +181,9 @@ export class ResultsComponent implements OnInit {
     if (this.log.user?.fullName) {
       user = this.log.user.fullName; 
     } 
+    else if (this.log.runOnSchedule) {
+      user = "SYSTEM"
+    }
 
     if (this.log) {
       if (friendly) {
