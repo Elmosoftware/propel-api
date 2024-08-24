@@ -1,4 +1,4 @@
-import { SystemJob, SystemJobUnits, SystemJobLogEntry } from "./system-job";
+import { SystemJob, SystemJobUnits, SystemJobLogEntry } from "../../propel-shared/core/system-job";
 import { ScheduleCalculator } from "../../propel-shared/core/schedule-calculator";
 import { db } from "../core/database";
 import { DataService } from "../services/data-service";
@@ -41,13 +41,9 @@ export class ScheduleManagerSystemJob implements SystemJob {
         logger.logDebug(`Retrieving all workflows with active schedules`)
         workflows = await this.getAllWorkflowsWithActiveSchedules()
         
-        logs.push({
-            ts: new Date(),
-            msg: `Fetched ${workflows.length} workflows with an active schedule.`,
-            isError: false
-        })
-
+        logs.push(new SystemJobLogEntry(`Fetched ${workflows.length} workflows with an active schedule.`))
         logger.logDebug(`${workflows.length} workflows with active schedules found.`)
+
         workflows.forEach(async (w) => {
             let nextRun: Date | null = ScheduleCalculator.getNextRun(w.schedule)
 
@@ -56,21 +52,13 @@ export class ScheduleManagerSystemJob implements SystemJob {
             }
             else if(SharedSystemHelper.isBefore(nextRun, now)) {
                 logger.logDebug(`Workflow "${w.name}" is due to start: ${this.dateToLocalAndUTC(nextRun)}`)
-                logs.push({
-                    ts: new Date(),
-                    msg: `Starting execution of Workflow "${w.name}" ...`,
-                    isError: false
-                })
-                
+                logs.push(new SystemJobLogEntry(`Starting execution of Workflow "${w.name}" ...`))
                 logger.logDebug(`Firing Workflow "${w.name}" execution...`)
+                
                 this.runWorkflow(w); //Just fire and forget...
                 
                 w.schedule.lastExecution = new Date();
-                logs.push({
-                    ts: new Date(),
-                    msg: `Updating last execution to ${this.dateToLocalAndUTC(w.schedule.lastExecution)}.`,
-                    isError: false
-                })
+                logs.push(new SystemJobLogEntry(`Updating last execution to ${this.dateToLocalAndUTC(w.schedule.lastExecution)}.`))
                 logger.logDebug(`Updating Workflow "${w.name}" last execution to ${this.dateToLocalAndUTC(w.schedule.lastExecution)}`)
                 await this.updateWorkflow(w)
             }

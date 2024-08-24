@@ -1,4 +1,4 @@
-import { SystemJob, SystemJobUnits, SystemJobLogEntry } from "./system-job";
+import { SystemJob, SystemJobUnits, SystemJobLogEntry } from "../../propel-shared/core/system-job";
 import { usageStatsService } from "../services/usage-stats-service";
 import { cfg } from "./config";
 

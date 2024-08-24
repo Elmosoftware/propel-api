@@ -1,5 +1,5 @@
 import { LogLevel } from "../../core/config";
-import { SystemJob, SystemJobLogEntry, SystemJobUnits } from "../../core/system-job";
+import { SystemJob, SystemJobLogEntry, SystemJobUnits } from "../../../propel-shared/core/system-job";
 import { SystemJobService } from "../../services/system-job-service";
 
 function setEnVars() {
@@ -16,11 +16,7 @@ class TestJobSuccessful implements SystemJob {
     readonly runImmediately: boolean = false;
 
     command(): SystemJobLogEntry | SystemJobLogEntry[] | undefined {
-        return {
-            ts: new Date(),
-            msg: `TestJobSuccessful executed.`,
-            isError: false
-        }
+        return new SystemJobLogEntry(`TestJobSuccessful executed.`)
     }
 }
 
@@ -44,11 +40,7 @@ class AsyncTestJobSuccessful implements SystemJob {
     readonly runImmediately: boolean = false;
 
     async command(): Promise<SystemJobLogEntry | SystemJobLogEntry[] | undefined> {
-        return {
-            ts: new Date(),
-            msg: `AsyncTestJobSuccessful executed.`,
-            isError: false
-        }
+        return new SystemJobLogEntry(`AsyncTestJobSuccessful executed.`);
     }
 }
 
@@ -72,11 +64,7 @@ class TestJobSuccessfulRunImmediately implements SystemJob {
     readonly runImmediately: boolean = true;
 
     command(): SystemJobLogEntry | SystemJobLogEntry[] | undefined {
-        return {
-            ts: new Date(),
-            msg: `TestJobSuccessful that run immediately executed.`,
-            isError: false
-        }
+        return new SystemJobLogEntry(`TestJobSuccessful that run immediately executed.`);
     }
 }
 
@@ -113,9 +101,7 @@ describe("SystemJobService Class", () => {
         expect(svc.jobExists("missing job")).toBe(false);
         expect(Array.isArray(svc.getJobs())).toBe(true);
         expect(svc.getJobs().length).toEqual(0);
-        expect(Array.isArray(svc.getLogs("missing job"))).toBe(true);
-        expect(svc.getLogs("missing job").length).toEqual(0);
-        expect(svc.getJobStats("missing job")).toBe(null);
+        expect(svc.getJobLogs("missing job")).toBe(null);
         expect(svc.getJobNextExecution("missing job")).toBe(null);
         done()
     }, 5000);
@@ -130,11 +116,10 @@ describe("SystemJobService Class", () => {
         expect(Array.isArray(svc.getJobs())).toBe(true);
         expect(svc.getJobs().length).toEqual(1);
         expect(svc.getJobs()[0].name).toEqual(testJobSuccessful.name);
-        expect(Array.isArray(svc.getLogs(testJobSuccessful.name))).toBe(true);
-        expect(svc.getLogs(testJobSuccessful.name).length).toEqual(0);
-        expect(svc.getJobStats(testJobSuccessful.name)).not.toBe(null);
-        expect(svc.getJobStats(testJobSuccessful.name)?.errors).toEqual(0);
-        expect(svc.getJobStats(testJobSuccessful.name)?.successful).toEqual(0);
+        expect(svc.getJobLogs(testJobSuccessful.name)).not.toBe(null);
+        expect(svc.getJobLogs(testJobSuccessful.name)?.logs.length).toEqual(0);
+        expect(svc.getJobLogs(testJobSuccessful.name)?.stats.errors).toEqual(0);
+        expect(svc.getJobLogs(testJobSuccessful.name)?.stats.successful).toEqual(0);
         expect(svc.getJobNextExecution(testJobSuccessful.name)).not.toBe(null);
         done()
     }, 5000);
@@ -149,11 +134,10 @@ describe("SystemJobService Class", () => {
         expect(Array.isArray(svc.getJobs())).toBe(true);
         expect(svc.getJobs().length).toEqual(1);
         expect(svc.getJobs()[0].name).toEqual(asyncTestJobSuccessful.name);
-        expect(Array.isArray(svc.getLogs(asyncTestJobSuccessful.name))).toBe(true);
-        expect(svc.getLogs(asyncTestJobSuccessful.name).length).toEqual(0);
-        expect(svc.getJobStats(asyncTestJobSuccessful.name)).not.toBe(null);
-        expect(svc.getJobStats(asyncTestJobSuccessful.name)?.errors).toEqual(0);
-        expect(svc.getJobStats(asyncTestJobSuccessful.name)?.successful).toEqual(0);
+        expect(svc.getJobLogs(asyncTestJobSuccessful.name)).not.toBe(null);
+        expect(svc.getJobLogs(asyncTestJobSuccessful.name)?.logs.length).toEqual(0);
+        expect(svc.getJobLogs(asyncTestJobSuccessful.name)?.stats.errors).toEqual(0);
+        expect(svc.getJobLogs(asyncTestJobSuccessful.name)?.stats.successful).toEqual(0);
         expect(svc.getJobNextExecution(asyncTestJobSuccessful.name)).not.toBe(null);
         done()
     }, 5000);
@@ -177,24 +161,21 @@ describe("SystemJobService Class", () => {
         expect(svc.getJobs()[1].name).toEqual(testJobWithError.name);
         expect(svc.getJobs()[2].name).toEqual(asyncTestJobSuccessful.name);
         expect(svc.getJobs()[3].name).toEqual(asyncTestJobWithError.name);
-        expect(Array.isArray(svc.getLogs(testJobSuccessful.name))).toBe(true);
-        expect(svc.getLogs(testJobSuccessful.name).length).toEqual(0);
-        expect(svc.getLogs(testJobWithError.name).length).toEqual(0);
-        expect(svc.getLogs(asyncTestJobSuccessful.name).length).toEqual(0);
-        expect(svc.getLogs(asyncTestJobWithError.name).length).toEqual(0);
-        expect(svc.getJobStats(testJobSuccessful.name)).not.toBe(null);
-        expect(svc.getJobStats(testJobSuccessful.name)?.errors).toEqual(0);
-        expect(svc.getJobStats(testJobSuccessful.name)?.successful).toEqual(0);
-        expect(svc.getJobNextExecution(testJobSuccessful.name)).not.toBe(null);
-        expect(svc.getJobStats(testJobWithError.name)).not.toBe(null);
-        expect(svc.getJobStats(testJobWithError.name)?.errors).toEqual(0);
-        expect(svc.getJobStats(testJobWithError.name)?.successful).toEqual(0);
-        expect(svc.getJobStats(asyncTestJobSuccessful.name)).not.toBe(null);
-        expect(svc.getJobStats(asyncTestJobSuccessful.name)?.errors).toEqual(0);
-        expect(svc.getJobStats(asyncTestJobSuccessful.name)?.successful).toEqual(0);
-        expect(svc.getJobStats(asyncTestJobWithError.name)).not.toBe(null);
-        expect(svc.getJobStats(asyncTestJobWithError.name)?.errors).toEqual(0);
-        expect(svc.getJobStats(asyncTestJobWithError.name)?.successful).toEqual(0);
+        expect(svc.getJobLogs(testJobSuccessful.name)).not.toBe(null);
+        expect(svc.getJobLogs(testJobWithError.name)).not.toBe(null);
+        expect(svc.getJobLogs(asyncTestJobSuccessful.name)).not.toBe(null);
+        expect(svc.getJobLogs(asyncTestJobWithError.name)).not.toBe(null);
+        expect(svc.getJobLogs(testJobSuccessful.name)?.stats.errors).toEqual(0);
+        expect(svc.getJobLogs(testJobSuccessful.name)?.stats.successful).toEqual(0);
+        expect(svc.getJobLogs(testJobWithError.name)).not.toBe(null);
+        expect(svc.getJobLogs(testJobWithError.name)?.stats.errors).toEqual(0);
+        expect(svc.getJobLogs(testJobWithError.name)?.stats.successful).toEqual(0);
+        expect(svc.getJobLogs(asyncTestJobSuccessful.name)).not.toBe(null);
+        expect(svc.getJobLogs(asyncTestJobSuccessful.name)?.stats.errors).toEqual(0);
+        expect(svc.getJobLogs(asyncTestJobSuccessful.name)?.stats.successful).toEqual(0);
+        expect(svc.getJobLogs(asyncTestJobWithError.name)).not.toBe(null);
+        expect(svc.getJobLogs(asyncTestJobWithError.name)?.stats.errors).toEqual(0);
+        expect(svc.getJobLogs(asyncTestJobWithError.name)?.stats.successful).toEqual(0);
         expect(svc.getJobNextExecution(testJobSuccessful.name)).not.toBe(null);
         expect(svc.getJobNextExecution(testJobWithError.name)).not.toBe(null);
         expect(svc.getJobNextExecution(asyncTestJobSuccessful.name)).not.toBe(null);
@@ -212,11 +193,11 @@ describe("SystemJobService Class", () => {
             expect(Array.isArray(svc.getJobs())).toBe(true);
             expect(svc.getJobs().length).toEqual(1);
             expect(svc.getJobs()[0].name).toEqual(testJobSuccessful.name);
-            expect(Array.isArray(svc.getLogs(testJobSuccessful.name))).toBe(true);
-            expect(svc.getLogs(testJobSuccessful.name).length).toBeGreaterThan(0);
-            expect(svc.getJobStats(testJobSuccessful.name)).not.toBe(null);
-            expect(svc.getJobStats(testJobSuccessful.name)?.errors).toEqual(0);
-            expect(svc.getJobStats(testJobSuccessful.name)?.successful).toEqual(1);
+            expect(svc.getJobLogs(testJobSuccessful.name)).not.toBe(null);
+            expect(svc.getJobLogs(testJobSuccessful.name)?.logs.length).toBeGreaterThan(0);
+            expect(svc.getJobLogs(testJobSuccessful.name)).not.toBe(null);
+            expect(svc.getJobLogs(testJobSuccessful.name)?.stats.errors).toEqual(0);
+            expect(svc.getJobLogs(testJobSuccessful.name)?.stats.successful).toEqual(1);
             expect(svc.getJobNextExecution(testJobSuccessful.name)).not.toBe(null);
             done()
         }, 1000);
@@ -233,11 +214,11 @@ describe("SystemJobService Class", () => {
             expect(Array.isArray(svc.getJobs())).toBe(true);
             expect(svc.getJobs().length).toEqual(1);
             expect(svc.getJobs()[0].name).toEqual(testJobSuccessfulRunImmediately.name);
-            expect(Array.isArray(svc.getLogs(testJobSuccessfulRunImmediately.name))).toBe(true);
-            expect(svc.getLogs(testJobSuccessfulRunImmediately.name).length).toBeGreaterThan(0);
-            expect(svc.getJobStats(testJobSuccessfulRunImmediately.name)).not.toBe(null);
-            expect(svc.getJobStats(testJobSuccessfulRunImmediately.name)?.errors).toEqual(0);
-            expect(svc.getJobStats(testJobSuccessfulRunImmediately.name)?.successful).toEqual(1);
+            expect(svc.getJobLogs(testJobSuccessfulRunImmediately.name)).not.toBe(null);
+            expect(svc.getJobLogs(testJobSuccessfulRunImmediately.name)?.logs.length).toBeGreaterThan(0);
+            expect(svc.getJobLogs(testJobSuccessfulRunImmediately.name)).not.toBe(null);
+            expect(svc.getJobLogs(testJobSuccessfulRunImmediately.name)?.stats.errors).toEqual(0);
+            expect(svc.getJobLogs(testJobSuccessfulRunImmediately.name)?.stats.successful).toEqual(1);
             expect(svc.getJobNextExecution(testJobSuccessfulRunImmediately.name)).not.toBe(null);
             done()
         }, 1000); //Checking the status at 1 sec.
@@ -253,11 +234,11 @@ describe("SystemJobService Class", () => {
             expect(Array.isArray(svc.getJobs())).toBe(true);
             expect(svc.getJobs().length).toEqual(1);
             expect(svc.getJobs()[0].name).toEqual(asyncTestJobSuccessful.name);
-            expect(Array.isArray(svc.getLogs(asyncTestJobSuccessful.name))).toBe(true);
-            expect(svc.getLogs(asyncTestJobSuccessful.name).length).toBeGreaterThan(0);
-            expect(svc.getJobStats(asyncTestJobSuccessful.name)).not.toBe(null);
-            expect(svc.getJobStats(asyncTestJobSuccessful.name)?.errors).toEqual(0);
-            expect(svc.getJobStats(asyncTestJobSuccessful.name)?.successful).toEqual(1);
+            expect(svc.getJobLogs(asyncTestJobSuccessful.name)).not.toBe(null);
+            expect(svc.getJobLogs(asyncTestJobSuccessful.name)?.logs.length).toBeGreaterThan(0);
+            expect(svc.getJobLogs(asyncTestJobSuccessful.name)).not.toBe(null);
+            expect(svc.getJobLogs(asyncTestJobSuccessful.name)?.stats.errors).toEqual(0);
+            expect(svc.getJobLogs(asyncTestJobSuccessful.name)?.stats.successful).toEqual(1);
             expect(svc.getJobNextExecution(asyncTestJobSuccessful.name)).not.toBe(null);
             done()
         }, 1000);
@@ -273,11 +254,11 @@ describe("SystemJobService Class", () => {
             expect(Array.isArray(svc.getJobs())).toBe(true);
             expect(svc.getJobs().length).toEqual(1);
             expect(svc.getJobs()[0].name).toEqual(asyncTestJobWithError.name);
-            expect(Array.isArray(svc.getLogs(asyncTestJobWithError.name))).toBe(true);
-            expect(svc.getLogs(asyncTestJobWithError.name).length).toBeGreaterThan(0);
-            expect(svc.getJobStats(asyncTestJobWithError.name)).not.toBe(null);
-            expect(svc.getJobStats(asyncTestJobWithError.name)?.errors).toEqual(1);
-            expect(svc.getJobStats(asyncTestJobWithError.name)?.successful).toEqual(0);
+            expect(svc.getJobLogs(asyncTestJobWithError.name)).not.toBe(null);
+            expect(svc.getJobLogs(asyncTestJobWithError.name)?.logs.length).toBeGreaterThan(0);
+            expect(svc.getJobLogs(asyncTestJobWithError.name)).not.toBe(null);
+            expect(svc.getJobLogs(asyncTestJobWithError.name)?.stats.errors).toEqual(1);
+            expect(svc.getJobLogs(asyncTestJobWithError.name)?.stats.successful).toEqual(0);
             expect(svc.getJobNextExecution(asyncTestJobWithError.name)).not.toBe(null);
             done()
         }, 1000);
@@ -290,15 +271,15 @@ describe("SystemJobService Class", () => {
 
         setTimeout(() => {
             svc.stopAllJobs();
-            expect(Array.isArray(svc.getLogs(testJobSuccessful.name))).toBe(true);
-            expect(svc.getLogs(testJobSuccessful.name).length).toBeGreaterThan(0);
-            expect(svc.getJobStats(testJobSuccessful.name)).not.toBe(null);
-            expect(svc.getJobStats(testJobSuccessful.name)?.errors).toEqual(0);
-            expect(svc.getJobStats(testJobSuccessful.name)?.successful).toEqual(1);
+            expect(svc.getJobLogs(testJobSuccessful.name)).not.toBe(null);
+            expect(svc.getJobLogs(testJobSuccessful.name)?.logs.length).toBeGreaterThan(0);
+            expect(svc.getJobLogs(testJobSuccessful.name)).not.toBe(null);
+            expect(svc.getJobLogs(testJobSuccessful.name)?.stats.errors).toEqual(0);
+            expect(svc.getJobLogs(testJobSuccessful.name)?.stats.successful).toEqual(1);
             expect(svc.getJobNextExecution(testJobSuccessful.name)).not.toBe(null);
-            expect(svc.getJobStats(testJobWithError.name)).not.toBe(null);
-            expect(svc.getJobStats(testJobWithError.name)?.errors).toEqual(1);
-            expect(svc.getJobStats(testJobWithError.name)?.successful).toEqual(0);
+            expect(svc.getJobLogs(testJobWithError.name)).not.toBe(null);
+            expect(svc.getJobLogs(testJobWithError.name)?.stats.errors).toEqual(1);
+            expect(svc.getJobLogs(testJobWithError.name)?.stats.successful).toEqual(0);
             expect(svc.getJobNextExecution(testJobWithError.name)).not.toBe(null);
             done()
         }, 1000);

@@ -1,12 +1,12 @@
 import { CronJob, CronJobParams } from "cron";
 import { DateTime } from "luxon";
 
-import { SystemJob, SystemJobUnits, SystemJobLogEntry, MAX_LOG_ENTRIES } from "../core/system-job";
+import { SystemJob, SystemJobUnits, SystemJobLogEntry, MAX_LOG_ENTRIES, SystemJobStats, SystemJobLogs } from "../../propel-shared/core/system-job";
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { logger } from "./logger-service";
+import { SharedSystemHelper } from "../../propel-shared/utils/shared-system-helper";
 
-type JobStats = { successful: number, errors: number}
-type Job = { sysJob: SystemJob, cronJob: CronJob, stats: JobStats }
+type Job = { sysJob: SystemJob, cronJob: CronJob, stats: SystemJobStats }
 
 /**
  * This class manage all the System jobs by:
@@ -96,24 +96,27 @@ export class SystemJobService {
     }
 
     /**
-     * Returns all the logs recorder for a specified job.
-     * @param jobName Job name to get logs for.
-     * @returns All the logs recorded by the specified job.
+     * Returns a System job stats and logs if the job exists, otherwise it will return a null value.
+     * @param jobName Name of the job whose stats and logs we want to get.
+     * @returns A System Job stats and logs.
      */
-    getLogs(jobName: string): SystemJobLogEntry[] {
-        if (!this._logs.has(jobName)) return [];
-        else return this._logs.get(jobName)!;
-    }
+    getJobLogs(jobName: string): SystemJobLogs | null {
+        let job: Job;
+        let ret: SystemJobLogs | null = null
 
-    /**
-     * Return the specified job stats or a null reference if there is no job with the given name.
-     * @param jobName Name of the job whose stats we want to get.
-     * @returns The job execution stats.
-     */
-    getJobStats(jobName: string): JobStats | null{
-        if (!this._jobs.has(jobName)) return null;
-        let job: Job = this._jobs.get(jobName)!;
-        return job.stats
+        if (!this._jobs.has(jobName)) return ret;
+        job = this._jobs.get(jobName)!;
+        ret = new SystemJobLogs();
+        ret.stats = job.stats;
+        
+        if (this._logs.has(jobName)) {
+            ret.logs = this._logs.get(jobName)! 
+        }
+        else {
+            ret.logs = [];
+        }
+
+        return ret;
     }
 
     /**
@@ -128,80 +131,57 @@ export class SystemJobService {
 
     private async run(jobName: string) {
         let job = this._jobs.get(jobName)
+        let startTime: Date;
+        let logs: SystemJobLogEntry[] = [];
+        let jobLogs: SystemJobLogEntry | SystemJobLogEntry[] | undefined;
+        
+        if (!job) {
+            throw new PropelError(`The job with name "${jobName}" wasn't found ` + 
+                `in the internal jobs list in the SystemJobService at the moment of run.`)
+        }
 
         try {
-            if (!job) {
-                throw new PropelError(`The job with name "${jobName}" wasn't found ` + 
-                    `in the internal jobs list in the SystemJobService at the moment of run.`)
-            }
             logger.logDebug(`Starting system job "${jobName}" execution.`)
-            this.addLogEntry(job.sysJob, `Job Execution started.`)
-            this.addLogEntry(job.sysJob, await job.sysJob.command())
+            logs.push(new SystemJobLogEntry(`JOB START`))
+            startTime = new Date()
+            
+            jobLogs = await job.sysJob.command();
+
+            if (jobLogs) {
+                if (Array.isArray(jobLogs)) {
+                    logs.push(...jobLogs)
+                }
+                else {
+                    logs.push(jobLogs)
+                }
+            }
+
             job.stats.successful += 1
-            this.addLogEntry(job.sysJob, `Job Execution ended succesfully.`)
+            logs.push(new SystemJobLogEntry(`JOB END [Duration: ${SharedSystemHelper.getDuration(startTime, new Date(), "hh:mm:ss.SSS")}]`))
             logger.logDebug(`Execution of system job "${jobName}" finished succesfully.`)
-        } catch (error) {
+        } catch (error: any) {
             logger.logDebug(`Execution of system job "${jobName}" finished with error.`)
             logger.logError(error as Error)
-
-            if (job) {
-                job.stats.errors += 1
-                this.addLogEntry(jobName, { 
-                    ts: new Date(), 
-                    msg: `Job Execution ended With Error. ERROR details:\r\n${this.extractErrorDetails(error)}`, 
-                    isError: true 
-                })
-            }
+            job.stats.errors += 1
+            logs.push(new SystemJobLogEntry(error))
+        }
+        finally {
+            this.addLogEntry(job.sysJob, logs)
         }
     }
 
-    private extractErrorDetails(err: any): string {
-        let ret: string = "";
+    private addLogEntry(job: SystemJob, newLogs: SystemJobLogEntry[]): void {
+        let allLogs: SystemJobLogEntry[];
 
-        if (!err) return ret;
-        if(typeof err =="string") return err;
-        if (typeof err == "object") {
-            Object.getOwnPropertyNames(err)
-                .sort((a, b) => a.localeCompare(b))
-                .forEach((prop) => {
-                    ret += `- ${prop}: ${err[prop].toString()}\r\n`
-                })
+        if (!this._logs.has(job.name)) {
+            this._logs.set(job.name, [])
         }
 
-        return ret;
-    }
+        allLogs = this._logs.get(job.name)!
+        allLogs.unshift(...newLogs)
 
-    private addLogEntry(job: SystemJob | string, msg: string | SystemJobLogEntry | SystemJobLogEntry[] | undefined): void {
-        let logs: SystemJobLogEntry[];
-        let jobName: string;
-
-        if (!msg)  return;
-        if (!job) return;
-        if (typeof job == "string") {
-            jobName = job;
-        } 
-        else {
-            jobName = job.name
-        }
-        
-        if (!this._logs.has(jobName)) {
-            this._logs.set(jobName, [])
-        }
-
-        logs = this._logs.get(jobName)!
-
-        if (typeof msg == "string") {
-            logs.push({ts: new Date(), msg: msg, isError: false})
-        }
-        else if (Array.isArray(msg)) {
-            logs.push(...msg)
-        }
-        else {
-            logs.push(msg)
-        }
-
-        if (logs.length > MAX_LOG_ENTRIES) {
-            logs.splice(0, logs.length - MAX_LOG_ENTRIES)
+        if (allLogs.length > MAX_LOG_ENTRIES) {
+            allLogs.splice(MAX_LOG_ENTRIES, allLogs.length - MAX_LOG_ENTRIES)
         }
     }
 

@@ -373,6 +373,20 @@ body{
     font-size: 1rem;
 }
 
+.icon-system-job::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f722";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.icon-system-job-mini::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f722";
+    font-weight: 900;
+    font-size: .8rem;
+}
+
 /* 
   FORMS
   ==========================================================

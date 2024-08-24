@@ -361,6 +361,14 @@ export class NavigationService {
     }
 
     /**
+     * Allows access to Propel internals System jobs logs and stats.
+     */
+    toSystemJobs(): void {
+        let url: string = this.buildURL(this.pages.SystemJobs);
+        this.to(url)
+    }
+
+    /**
      * Navigate to sandbox page. For testing purposes only.
      * This will not be available in production.
      */

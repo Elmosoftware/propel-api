@@ -69,7 +69,7 @@
     "../propel-shared/test/test-schemas.ts", 
     "../propel-shared/test/core/api-response.test.ts", 
     "../propel-shared/core/api-response.ts"
-  ],
+, "../propel-shared/core/system-job.ts"  ],
   "exclude": [
     "node_modules",
     "../propel-shared/test/**/*",

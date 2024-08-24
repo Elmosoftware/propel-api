@@ -1,0 +1,87 @@
+<div class="container mt-2">
+    <!-- Jobs list -->
+    <div *ngIf="!loading">
+        <div *ngIf="allJobs && allJobs?.length > 0; else noJobs" class="form-group">
+            <div *ngIf="!apiStatus?.workflowSchedulesEnabled" class="mt-2 alert alert-dismissible fade show alert-warning"
+                role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <strong>Scheduled executions are disabled for now!</strong>
+                Propel API is set to disable scheduled executions. So, the schedule manager system job is not running.
+            </div>
+            <div class="mt-2">
+                <ng-select #jobs [items]="allJobs" [multiple]="false" class="w" labelForId="jobs" [closeOnSelect]="true"
+                    [clearSearchOnAdd]="true" [searchable]="true" bindValue="name" bindLabel="name" clearAllText="Clear"
+                    [clearable]="false" [compareWith]="compareFn" (change)="onJobChange($event)"
+                    placeholder="Select a system job from the list.">
+                </ng-select>
+            </div>
+        </div>
+        <ng-template #noJobs>
+            <div class="mt-2">
+                <div class="alert fade show alert-info" role="alert">
+                    <p><strong>No System jobs found!</strong></p>
+                    <p>There is no active System jobs in Propel running at the moment.</p>
+                    <p>Please check with Propel administrators to see if there is any errors preventing the System jobs to
+                        be displayed.</p>
+                </div>
+            </div>
+        </ng-template>        
+    </div>
+
+    <!-- Job details and logs -->
+    <div *ngIf="selectedJob">
+        <div class="mt-4 d-flex justify-content-center">
+            <button class="btn btn-primary" type="button" (click)="refreshJobLogs()">Refresh</button>
+        </div>
+        <div class="mt-4 alert alert-primary" role="alert">
+            <div class="text-mini"><strong>{{selectedJob.Description}}</strong></div>
+            <div class="text-subtle">Cycle:&nbsp;{{getSelectedJobCycle()}}</div>
+            <div class="text-subtle">FirstRun:&nbsp;{{getSelectedJobFirstRun()}}</div>
+            <div *ngIf="selectedJobLogs">
+                <div class="text-subtle"><strong>Total executions:&nbsp;{{selectedJobLogs.stats.successful +
+                        selectedJobLogs.stats.errors}}</strong></div>
+                <div class="text-subtle">Successful:&nbsp;{{selectedJobLogs.stats.successful}}</div>
+                <div class="text-subtle">With errors:&nbsp;{{selectedJobLogs.stats.errors}}</div>
+            </div>
+        </div>
+        <div *ngIf="selectedJobLogs">
+            <div class="mt-4" *ngIf="selectedJobLogs.logs.length > 0; else noLogs">
+                <div *ngIf="selectedJobLogs.stats.errors > 0" class="row justify-content-around">
+                    <div class="custom-control custom-radio col-auto mx-2">
+                        <input type="radio" id="showAll" class="custom-control-input" name="filter" value="showAll"
+                            checked="checked" (click)="onFilterClick(false)">
+                        <label class="custom-control-label" for="showAll">All entries</label>
+                    </div>
+                    <div class="custom-control custom-radio col-auto mx-2">
+                        <input type="radio" id="onlyErrors" class="custom-control-input" name="filter"
+                            value="onlyErrors" (click)="onFilterClick(true)">
+                        <label class="custom-control-label" for="onlyErrors">Only Errors</label>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <app-dynamic-table [data]="getSelectedJobLogEntries()" [show-filter]="true"
+                        excluded-fields="isError"></app-dynamic-table>
+                </div>
+            </div>
+            <ng-template #noLogs>
+                <div class="row justify-content-center mr-0">
+                    <div class="col col-lg-8 mt-4">
+                        <div class="alert fade show alert-info" role="alert">
+                            <strong>No logs found for job "{{selectedJob.name}}".</strong>&nbsp;Please check if it was
+                            executed at least once.
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</div>
+
+<!-- 
+<pre>Selected Job:</pre>
+<pre>{{ selectedJob | json}}</pre>
+<pre>LOGS:</pre>
+<pre>{{ selectedJobLogs | json}}</pre> 
+-->

@@ -124,6 +124,10 @@ export class NavigationBarComponent implements OnInit {
     return this.core.security.isAccessGranted(this.core.navigation.pages.BrowseUserAccounts)
   }
 
+  get canBrowseSystemJobs(): boolean {
+    return this.core.security.isAccessGranted(this.core.navigation.pages.SystemJobs)
+  }
+
   get canAccessMoreItems(): boolean {
     return this.canAccessTarget || this.canAccessScript || this.canAccessTarget 
       || this.canAccessCredentials || this.canAccessUserAccount || this.canBrowseCredentials
@@ -295,6 +299,10 @@ export class NavigationBarComponent implements OnInit {
 
   goToUserAccount() {
     this.core.navigation.toUserAccount();
+  }
+
+  goToSystemJobs() {
+    this.core.navigation.toSystemJobs();
   }
 
   goToSandbox() {
