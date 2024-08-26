@@ -54,11 +54,10 @@ describe("ObjectPool Class - Constructor", () => {
         expect(pool.options.maxSize).toEqual(ObjectPoolOptions.DEFAULT_MAX_SIZE);
         expect(pool.options.preallocatedSize).toEqual(preAlloc);
 
-        expect(pool.stats.canGrow).toBe(true);
-        expect(pool.stats.availableToGrow).toEqual(ObjectPoolOptions.DEFAULT_MAX_SIZE - preAlloc);
-        expect(pool.stats.objectsAvailable).toEqual(preAlloc);
-        expect(pool.stats.objectsLocked).toEqual(0);
-        expect(pool.stats.objectsCreated).toEqual(preAlloc);
+        expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(ObjectPoolOptions.DEFAULT_MAX_SIZE - preAlloc);
+        expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(preAlloc);
+        expect(pool.stats.lockedObjects).toEqual(0);
+        expect(pool.stats.totalObjects).toEqual(preAlloc);
     })
     test(`new ObjectPool with maxSize = 0 need to be DEFAULT_MAX_SIZE.`, () => {
         let pool: ObjectPool<TestPool>;
@@ -96,11 +95,10 @@ describe("ObjectPool Class - Constructor", () => {
             //@ts-ignore
             { maxSize: 10, preallocatedSize: 0 })
 
-        expect(pool.stats.canGrow).toBe(true);
-        expect(pool.stats.availableToGrow).toEqual(10);
-        expect(pool.stats.objectsAvailable).toEqual(0);
-        expect(pool.stats.objectsLocked).toEqual(0);
-        expect(pool.stats.objectsCreated).toEqual(0);
+        expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(10);
+        expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0);
+        expect(pool.stats.lockedObjects).toEqual(0);
+        expect(pool.stats.totalObjects).toEqual(0);
     })
     test(`new ObjectPool with maxSize = 10, preallocated = 3`, () => {
         let pool: ObjectPool<TestPool>;
@@ -109,11 +107,10 @@ describe("ObjectPool Class - Constructor", () => {
             //@ts-ignore
             { maxSize: 10, preallocatedSize: 3 })
 
-        expect(pool.stats.canGrow).toBe(true);
-        expect(pool.stats.availableToGrow).toEqual(7);
-        expect(pool.stats.objectsAvailable).toEqual(3);
-        expect(pool.stats.objectsLocked).toEqual(0);
-        expect(pool.stats.objectsCreated).toEqual(3);
+        expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(7);
+        expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(3);
+        expect(pool.stats.lockedObjects).toEqual(0);
+        expect(pool.stats.totalObjects).toEqual(3);
     })
     test(`new ObjectPool with maxQueueSize = 0 is allowed`, () => {
         let pool: ObjectPool<TestPool>;
@@ -122,7 +119,7 @@ describe("ObjectPool Class - Constructor", () => {
             //@ts-ignore
             { maxQueueSize: 0 })
 
-        expect(pool.stats.remainingQueueSpace).toEqual(0);
+        expect(pool.stats.queueSizeLimit - pool.stats.queuedRequests).toEqual(0);
     })
     test(`new ObjectPool with invalid maxQueueSize = 0 is converted to the default queue size value`, () => {
         let pool: ObjectPool<TestPool>;
@@ -131,7 +128,7 @@ describe("ObjectPool Class - Constructor", () => {
             //@ts-ignore
             { maxQueueSize: -1 })
 
-        expect(pool.stats.remainingQueueSpace).toEqual(ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE);
+        expect(pool.stats.queueSizeLimit - pool.stats.queuedRequests).toEqual(ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE);
     })
 });
 
@@ -156,17 +153,17 @@ describe("ObjectPool Class - Usage", () => {
     })
     test(`aquiring one and releasing one"`, (done) => {
         pool.aquire().then((o: TestPool) => {
-            expect(pool.stats.objectsAvailable).toEqual(0)
-            expect(pool.stats.objectsLocked).toEqual(1)
-            expect(pool.stats.availableToGrow).toEqual(2)
-            expect(pool.stats.objectsCreated).toEqual(1)
+            expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.lockedObjects).toEqual(1)
+            expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(2)
+            expect(pool.stats.totalObjects).toEqual(1)
 
             pool.release(o);
 
-            expect(pool.stats.objectsAvailable).toEqual(1)
-            expect(pool.stats.objectsLocked).toEqual(0)
-            expect(pool.stats.availableToGrow).toEqual(2)
-            expect(pool.stats.objectsCreated).toEqual(1)
+            expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(1)
+            expect(pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(2)
+            expect(pool.stats.totalObjects).toEqual(1)
 
             done();
         })
@@ -179,30 +176,30 @@ describe("ObjectPool Class - Usage", () => {
         pool.aquire().then((o: TestPool) => {
             // console.log(`Getting 1st. (In use: ${myPool.length}`)
             myPool.push(o);
-            expect(pool.stats.objectsAvailable).toEqual(0)
-            expect(pool.stats.objectsLocked).toEqual(1)
-            expect(pool.stats.availableToGrow).toEqual(2)
-            expect(pool.stats.objectsCreated).toEqual(1)
+            expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.lockedObjects).toEqual(1)
+            expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(2)
+            expect(pool.stats.totalObjects).toEqual(1)
 
             //aquiring 2nd:
             // console.log(`Aquiring 2nd. (In use: ${myPool.length}`)
             pool.aquire().then((o: TestPool) => {
                 // console.log(`Getting 2nd. (In use: ${myPool.length}`)
                 myPool.push(o);
-                expect(pool.stats.objectsAvailable).toEqual(0)
-                expect(pool.stats.objectsLocked).toEqual(2)
-                expect(pool.stats.availableToGrow).toEqual(1)
-                expect(pool.stats.objectsCreated).toEqual(2)
+                expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+                expect(pool.stats.lockedObjects).toEqual(2)
+                expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(1)
+                expect(pool.stats.totalObjects).toEqual(2)
 
                 //aquiring 3rd:
                 // console.log(`Aquiring 3rd. (In use: ${myPool.length}`)
                 pool.aquire().then((o: TestPool) => {
                     // console.log(`Getting 3rd. (In use: ${myPool.length}`)
                     myPool.push(o);
-                    expect(pool.stats.objectsAvailable).toEqual(0)
-                    expect(pool.stats.objectsLocked).toEqual(3)
-                    expect(pool.stats.availableToGrow).toEqual(0)
-                    expect(pool.stats.objectsCreated).toEqual(3)
+                    expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+                    expect(pool.stats.lockedObjects).toEqual(3)
+                    expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(0)
+                    expect(pool.stats.totalObjects).toEqual(3)
 
                     //In 2sec we will start releasing:
                     setTimeout(() => {
@@ -217,10 +214,10 @@ describe("ObjectPool Class - Usage", () => {
                     // console.log(`Aquiring 4th. (In use: ${myPool.length}`)
                     pool.aquire().then((o: TestPool) => {
                         // console.log(`Getting 4th!!!!`)
-                        expect(pool.stats.objectsAvailable).toBeGreaterThan(0);
-                        expect(pool.stats.objectsLocked).toBeGreaterThan(0);
-                        expect(pool.stats.availableToGrow).toEqual(0)
-                        expect(pool.stats.objectsCreated).toEqual(3)
+                        expect(pool.stats.totalObjects - pool.stats.lockedObjects).toBeGreaterThan(0);
+                        expect(pool.stats.lockedObjects).toBeGreaterThan(0);
+                        expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(0)
+                        expect(pool.stats.totalObjects).toEqual(3)
                         done();
                     });
                 });
@@ -271,42 +268,42 @@ describe("ObjectPool Class - Usage", () => {
     }, 10000);
     test(`releasing a disposed object"`, (done) => {
         pool.aquire().then((o: TestPool) => {
-            expect(pool.stats.objectsAvailable).toEqual(0)
-            expect(pool.stats.objectsLocked).toEqual(1)
-            expect(pool.stats.availableToGrow).toEqual(2)
-            expect(pool.stats.objectsCreated).toEqual(1)
+            expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.lockedObjects).toEqual(1)
+            expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(2)
+            expect(pool.stats.totalObjects).toEqual(1)
 
             o.disposeAnForget();
             pool.release(o);
 
-            expect(pool.stats.objectsAvailable).toEqual(0)
-            expect(pool.stats.objectsLocked).toEqual(0)
-            expect(pool.stats.availableToGrow).toEqual(3)
-            expect(pool.stats.objectsCreated).toEqual(0)
+            expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(3)
+            expect(pool.stats.totalObjects).toEqual(0)
 
             done();
         })
     })
     test(`releasing a disposed object and aquiring a new one"`, (done) => {
         pool.aquire().then((o: TestPool) => {
-            expect(pool.stats.objectsAvailable).toEqual(0)
-            expect(pool.stats.objectsLocked).toEqual(1)
-            expect(pool.stats.availableToGrow).toEqual(2)
-            expect(pool.stats.objectsCreated).toEqual(1)
+            expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.lockedObjects).toEqual(1)
+            expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(2)
+            expect(pool.stats.totalObjects).toEqual(1)
 
             o.disposeAnForget();
             pool.release(o);
 
-            expect(pool.stats.objectsAvailable).toEqual(0)
-            expect(pool.stats.objectsLocked).toEqual(0)
-            expect(pool.stats.availableToGrow).toEqual(3)
-            expect(pool.stats.objectsCreated).toEqual(0)
+            expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.lockedObjects).toEqual(0)
+            expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(3)
+            expect(pool.stats.totalObjects).toEqual(0)
 
             pool.aquire().then((o: TestPool) => {
-                expect(pool.stats.objectsAvailable).toEqual(0)
-                expect(pool.stats.objectsLocked).toEqual(1)
-                expect(pool.stats.availableToGrow).toEqual(2)
-                expect(pool.stats.objectsCreated).toEqual(1)
+                expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0)
+                expect(pool.stats.lockedObjects).toEqual(1)
+                expect(pool.stats.poolSizeLimit - pool.stats.totalObjects).toEqual(2)
+                expect(pool.stats.totalObjects).toEqual(1)
                 done();
             });               
         });
@@ -335,11 +332,9 @@ describe("ObjectPool Class - Disposition", () => {
         pool.disposeAnForget();
 
         expect(pool.isDisposing).toBe(true)
-        expect(pool.stats.objectsAvailable).toEqual(0)
-        expect(pool.stats.objectsLocked).toEqual(0)
-        expect(pool.stats.availableToGrow).toEqual(0)
-        expect(pool.stats.canGrow).toBe(false)
-        expect(pool.stats.objectsCreated).toEqual(0)
+        expect(pool.stats.totalObjects).toEqual(0) //Total 
+        expect(pool.stats.lockedObjects).toEqual(0) //Locked
+        expect(pool.stats.totalObjects - pool.stats.lockedObjects).toEqual(0) //Available
 
         pool.aquire()
             .catch((err) => {

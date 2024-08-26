@@ -103,8 +103,7 @@ export class ScheduleManagerSystemJob implements SystemJob {
     }
 
     private updateToken() {
-        let security: SecurityService = new SecurityService()
-        let sysAccount: UserAccount = security.getSystemUser()
+        let sysAccount: UserAccount = SecurityService.getSystemUser()
         this.token = new SecurityToken();
         this.token.hydrateFromUser(sysAccount);
     }

@@ -26,7 +26,8 @@ class Schemas {
             this.executionStep,
             this.secret,
             this.credential,
-            this.userSession
+            this.userSession,
+            this.objectPoolEvent
         ]
     }
 
@@ -418,6 +419,60 @@ class Schemas {
             ])
             .merge(this.auditedEntity)
             .setDescription("A Credential to be stored encrypted in the database and intended to be pass to the script for authentication purposes.")
+            .freeze();
+    }
+
+    /**
+     * **ObjectPoolEvent** schema definition.
+     * @extends Entity schema definition
+     */
+    get objectPoolEvent(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("ObjectPoolEvent", "ObjectPoolEvents", true)
+            .setFields([
+                new SchemaField("eventType", `Object pool event type name.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("timestamp", `Event timestamp.`,
+                    {
+                        type: Date,
+                        isRequired: true
+                    }),
+                new SchemaField("lockedObjects", `Amount of locked objects in the pool at the event time.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("totalObjects", `Total amount of objects, (locked and released), in the pool at the event time.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("poolSizeLimit", `Total amount of objects the pool is configured to allow.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("queuedRequests", `Amount of object request queued at the event time.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("queueSizeLimit", `Total anount of queued request allowed in the pool waiting for a released object.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("queueOverflowError", `It will be higher than 0 if a que overflow error was throw at the event time.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    })
+            ])
+            .merge(this.entity)
+            .setDescription("Object pool events.")
             .freeze();
     }
 

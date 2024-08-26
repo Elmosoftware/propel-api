@@ -129,7 +129,7 @@ export class Runner {
             this._execLog.workflow = DataService.asObjectIdOf<Workflow>(workflow._id);
         }      
 
-        logger.logInfo(`Starting execution of Workflow "${workflow.name}" with id: "${workflow._id}".`)
+        logger.logInfo(`Starting preparation of Workflow "${workflow.name}" with id: "${workflow._id}".`)
 
         logger.logDebug(`Merging the provided runtime parameters in the Workflow.\r\n Values provided:
 ${JSON.stringify(this._serviceData)}`);
@@ -175,7 +175,7 @@ ${JSON.stringify(this._serviceData)}`);
             return ret;
         });
 
-        logger.logDebug(`Pool stats before to start workflow execution:\n${pool.stats.toString()}`)
+        logger.logDebug(`Starting workflow execution ...`)
 
         await Utils.asyncForEach(workflow.steps, async (step: WorkflowStep, i: number) => {
             let argsList: string[] = [];
@@ -252,7 +252,7 @@ ${JSON.stringify(this._serviceData)}`);
         })
 
         this._execLog.status = this._summaryStatus(this._execLog.executionSteps);
-        logger.logDebug(`Pool stats at the end of workflow execution:\n${pool.stats.toString()}`);
+        logger.logDebug(`Workflow Execution just finished.`);
 
         return this.persistLogAndReturnStats(this._execLog, this._stats, token);
     }

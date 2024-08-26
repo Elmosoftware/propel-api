@@ -126,7 +126,7 @@ export class SecurityService {
         return ret;
     }
 
-    getSystemUser(): UserAccount {
+    static getSystemUser(): UserAccount {
         let ret: UserAccount = new UserAccount();
 
         ret._id = SYSTEM_USER_ID
