@@ -1,0 +1,64 @@
+<div class="container mt-4">
+    <div *ngIf="!loading">
+        <div class="mt-4 d-flex justify-content-center">
+            <button class="btn btn-primary" type="button" (click)="refreshStats()">Refresh</button>
+        </div>
+        <div *ngIf="stats && stats.totalEvents; else noData">
+            <div class="flex justify-content-center">
+                <!-- Totals Cards chart -->
+                <div class="chart-container">
+                    <h4 class="mt-3">Totals</h4>
+                    <div class="mt-2">
+                        <ngx-charts-number-card [results]="stats.totals[0].series" [view]="view" [scheme]="graphColors"
+                            [cardColor]="cardColor">
+                        </ngx-charts-number-card>
+                    </div>
+                </div>
+                <!-- Object pool usage -->
+                <div class="chart-container">
+                    <h4 class="mt-3">Object pool usage</h4>
+                    <div class="mt-2">
+                        <ngx-charts-line-chart [results]="stats.objectPoolUsage" [view]="graphViewSize"
+                            [scheme]="graphColors" [xAxis]="true" [yAxis]="true" [showXAxisLabel]="true"
+                            [showYAxisLabel]="true" xAxisLabel="Time" yAxisLabel="Object pool usage" [legend]="true"
+                            legendPosition="below">
+                        </ngx-charts-line-chart>
+                    </div>
+                </div>
+                <!-- Object pool Queue -->
+                <div class="chart-container">
+                    <h4 class="mt-3">Queue activity</h4>
+                    <div class="mt-2">
+                        <ngx-charts-line-chart [results]="stats.objectPoolQueue" [view]="graphViewSize"
+                            [scheme]="graphColors" [xAxis]="true" [yAxis]="true" [showXAxisLabel]="true"
+                            [showYAxisLabel]="true" xAxisLabel="Time" yAxisLabel="Object pool queue" [legend]="true"
+                            legendPosition="below">
+                        </ngx-charts-line-chart>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h4 class="mt-3">Queue overflow errors</h4>
+                    <div class="mt-2">
+                        <ngx-charts-bar-vertical-2d [results]="stats.objectPoolQueueOverflow" [view]="graphViewSize"
+                            [scheme]="graphColorsErrors" [xAxis]="true" [yAxis]="true" [showXAxisLabel]="true"
+                            [showYAxisLabel]="true" xAxisLabel="Time" yAxisLabel="Overflow errors" [legend]="true"
+                            legendPosition="below">
+                        </ngx-charts-bar-vertical-2d>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ng-template #noData>
+            <div class="mt-2 alert fade show alert-info" role="alert">
+                <strong>We didn't found any Object pool stats!</strong>
+                Recall this stats are generated only when a Workflow run and any metrics are going to be deleted after 1
+                week.
+            </div>
+        </ng-template>
+    </div>
+</div>
+
+<!--
+<pre>Stats:</pre>
+<pre>{{ stats | json}}</pre>
+ -->

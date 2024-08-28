@@ -20,6 +20,7 @@ import { pages } from '../services/app-pages.service';
 import { SecurityGuard } from '../services/security-guard';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { SystemJobsComponent } from './system-jobs/system-jobs.component';
+import { ObjectPoolEventStatsComponent } from './object-pool-event-stats/object-pool-event-stats.component';
 
 const routes: Routes = [
   {
@@ -273,6 +274,14 @@ const routes: Routes = [
     component: SystemJobsComponent,
     data: {
       title: pages.SystemJobs.title
+    },
+    canActivate: [SecurityGuard]
+  },
+  {
+    path: pages.ObjectPoolStats.name,
+    component: ObjectPoolEventStatsComponent,
+    data: {
+      title: pages.ObjectPoolStats.title
     },
     canActivate: [SecurityGuard]
   },

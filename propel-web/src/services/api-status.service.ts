@@ -8,6 +8,7 @@ import { UsageStats } from "../../../propel-shared/models/usage-stats";
 import { logger } from '../../../propel-shared/services/logger-service';
 import { HttpHelper, Headers } from 'src/util/http-helper';
 import { SystemJob, SystemJobLogs } from "../../../propel-shared/core/system-job";
+import { ObjectPoolEventStats } from "../../../propel-shared/models/object-pool-event-stats";
 
 export const StatusEndpoint: string = "status"
 
@@ -15,7 +16,8 @@ export const enum StatusEndpointActions {
   ApplicationStats = "stats",
   UserStats = "user-stats",
   SystemJobs = "system-jobs",
-  SystemJobLogs = "system-job-logs"
+  SystemJobLogs = "system-job-logs",
+  ObjectPoolStats = "object-pool-stats"
 }
 
 /**
@@ -79,6 +81,15 @@ export class APIStatusService {
       [StatusEndpoint, StatusEndpointActions.SystemJobLogs, jobName]);
 
     return lastValueFrom(this.http.get<SystemJobLogs | null>(url, {
+      headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
+    }));
+  }
+
+  async getObjectPoolStats(): Promise<ObjectPoolEventStats> {
+    let url: string = HttpHelper.buildURL(env.api.protocol, env.api.baseURL,
+      [StatusEndpoint, StatusEndpointActions.ObjectPoolStats]);
+
+    return lastValueFrom(this.http.get<ObjectPoolEventStats>(url, {
       headers: HttpHelper.buildHeaders(Headers.ContentTypeJson)
     }));
   }

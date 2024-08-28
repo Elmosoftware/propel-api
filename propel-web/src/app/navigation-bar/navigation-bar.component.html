@@ -115,7 +115,7 @@
             <span>Manage Users</span>
           </a>  
            
-          <div *ngIf="canBrowseSystemJobs" class="form-inline" (click)="doNotPropagate($event)">
+          <div *ngIf="canBrowseSystemJobs || canBrowseObjectPoolStats" class="form-inline" (click)="doNotPropagate($event)">
             <div class="dropdown-divider menu-divider-line divider-left"></div>
             <div class="text-subtle ml-2">Propel Internals</div>
             <div class="dropdown-divider menu-divider-line divider-right"></div>
@@ -123,6 +123,10 @@
           <a *ngIf="canBrowseSystemJobs" class="dropdown-item" href="javascript:void(0)" (click)="goToSystemJobs()">
             <span class="icon-system-job-mini menu-icon"></span>
             <span>System jobs activity</span>
+          </a>
+          <a *ngIf="canBrowseObjectPoolStats" class="dropdown-item" href="javascript:void(0)" (click)="goToObjectPoolStats()">
+            <span class="icon-stats-mini menu-icon"></span>
+            <span>Object pool usage stats</span>
           </a>
           <!-- Developers only Submenu -->
           <a *ngIf="isDevMode" class="dropdown-item" href="javascript:void(0)" (click)="goToSandbox()">

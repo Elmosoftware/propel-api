@@ -387,6 +387,20 @@ body{
     font-size: .8rem;
 }
 
+.icon-stats::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f080";
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.icon-stats-mini::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f080";
+    font-weight: 900;
+    font-size: .8rem;
+}
+
 /* 
   FORMS
   ==========================================================

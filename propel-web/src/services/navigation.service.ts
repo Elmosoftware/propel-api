@@ -369,6 +369,14 @@ export class NavigationService {
     }
 
     /**
+     * Allows access to Propel stats on Object pool usage.
+     */
+    toObjectPoolStats(): void {
+        let url: string = this.buildURL(this.pages.ObjectPoolStats);
+        this.to(url)
+    }
+
+    /**
      * Navigate to sandbox page. For testing purposes only.
      * This will not be available in production.
      */

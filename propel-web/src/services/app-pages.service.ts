@@ -275,6 +275,18 @@ export class AppPages {
     excludeFromHistory: false
   }
 
+  ObjectPoolStats: PageMetadata = {
+    title: "Object pool stats",
+    name: "object-pool-stats",
+    showNavBar: true,
+    showSearchBox: true,
+    security: {
+      restricted: true,
+      adminOnly: true,
+    },
+    excludeFromHistory: false
+  }
+
   constructor() {
     logger.logInfo("ApplicationPages instance created");
   }

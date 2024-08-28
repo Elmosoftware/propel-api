@@ -1,0 +1,5 @@
+.chart-container {
+    /* This is because size of the chart is 800x400 but for some reason Legend is displayed 
+    below and outside div end*/
+    height: 500px; 
+}

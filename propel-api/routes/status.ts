@@ -10,6 +10,7 @@ import { SecurityRule } from "../core/security-rule";
 import { REQUEST_TOKEN_KEY } from "../core/middleware";
 import { SecurityToken } from "../../propel-shared/core/security-token";
 import { systemJobService } from "../services/system-job-service";
+import { objectPoolStatsService } from "../services/object-pool-stats-service";
 
 /**
  * Status route. Returns the api stats, metrics, etc.
@@ -61,6 +62,11 @@ export class StatusRoute implements Route {
         handler.get("/system-job-logs/:jobName", async (req, res) => {
             let jobName: string = req.params.jobName;
             res.json(systemJobService.getJobLogs(jobName));
+        });
+
+        handler.get("/object-pool-stats", async (req, res) => {
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            res.json(await objectPoolStatsService.getStats(token));
         });
 
         return handler;
