@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
+## [2.3.0] - 8/28/2024
+ 
+### Added
+- Workflow Schedules.
+- System Jobs.
+- App Pool usage monitoring.
+ 
+### Changed
+- Minimal upgrades: 
+  - Mongo DB v7.0.12
+  - Node.js v20.16.0 LTS.
+
+### Fixed
+
+- Errors in Propel API do not display enough info.
+- Closing Electron APP window or browser whith a running Workflow that retrieves 
+lot of data cause the API to hang.
+
+
 ## [2.2.0] - 3/14/2024
  
 ### Added
