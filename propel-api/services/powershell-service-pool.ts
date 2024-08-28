@@ -77,6 +77,8 @@ class PowerShellServicePool implements Disposable, Resettable {
     private _handleObjectPoolEvent(event: ObjectPoolEvent): void { 
         let svc: DataService;
 
+        if (!cfg.poolOptions.statsEnabled) return;
+
         try {
             svc = db.getService("ObjectPoolEvent", this._getToken())
 
@@ -91,8 +93,7 @@ class PowerShellServicePool implements Disposable, Resettable {
 
     private _getToken() {
         let ret: SecurityToken = new SecurityToken();
-        // let security: SecurityService = new SecurityService()
-        let sysAccount: UserAccount = SecurityService.getSystemUser() //security.getSystemUser()
+        let sysAccount: UserAccount = SecurityService.getSystemUser();
 
         ret.hydrateFromUser(sysAccount);
 

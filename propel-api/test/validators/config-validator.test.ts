@@ -15,6 +15,7 @@ function setAllValid() {
     process.env.POOL_MAX_SIZE="40"
     process.env.POOL_PRE_ALLOC="10"
     process.env.POOL_QUEUE_SIZE="5"
+    process.env.POOL_STATS="on"
     process.env.MAX_WORKFLOW_RESULTS_SIZE="12582912"
     process.env.EXECUTIONLOG_RETENTION_DAYS="30"
     process.env.USAGE_STATS_STALE_MINUTES="30"
@@ -176,6 +177,28 @@ describe("ConfigValidator Class", () => {
         expect(cfgVal.getErrors().message).not.toBeFalsy();
         //@ts-ignore
         expect(cfgVal.getErrors().message).toContain("POOL_QUEUE_SIZE is not a number or is less than zero.");
+        cfgVal.reset();
+    })
+    test(`Missing POOL_STATS value`, () => {
+        //@ts-ignore
+        process.env.POOL_STATS = ""
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- POOL_STATS is required`);
+        cfgVal.reset();
+    })
+    test(`Invalid POOL_STATS value`, () => {
+        //@ts-ignore
+        process.env.POOL_STATS = "Invalid"
+        cfgVal.validate()
+        expect(cfgVal.isValid).toBe(false)
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).not.toBeFalsy();
+        //@ts-ignore
+        expect(cfgVal.getErrors().message).toContain(`- POOL_STATS possible values are`);
         cfgVal.reset();
     })
     test(`Invalid MAX_WORKFLOW_RESULTS_SIZE as a null value`, () => {

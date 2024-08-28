@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CoreService } from 'src/services/core.service';
 import { ObjectPoolEventStats } from '../../../../propel-shared/models/object-pool-event-stats';
 import { environment } from 'src/environments/environment';
+import { APIStatus } from '../../../../propel-shared/models/api-status';
 
 @Component({
   selector: 'app-object-pool-event-stats',
@@ -13,6 +14,7 @@ import { environment } from 'src/environments/environment';
 export class ObjectPoolEventStatsComponent implements OnInit {
 
   loading: boolean = true;
+  apiStatus: APIStatus | null = null;
   stats: ObjectPoolEventStats | null = null;
   graphViewSize: any[] = [800, 400];
   graphColors: any = environment.graphs.colorScheme;
@@ -38,6 +40,7 @@ export class ObjectPoolEventStatsComponent implements OnInit {
 
   async refreshData(): Promise<void> {
     try {
+      this.apiStatus = await this.core.status.getStatus();
       this.stats = await this.core.status.getObjectPoolStats();
       return Promise.resolve()
     } catch (error) {

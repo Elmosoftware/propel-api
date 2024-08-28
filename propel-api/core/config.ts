@@ -79,6 +79,7 @@ class Config {
         o.maxSize = Number(process.env.POOL_MAX_SIZE);
         o.preallocatedSize = Number(process.env.POOL_PRE_ALLOC)
         o.maxQueueSize = Number(process.env.POOL_QUEUE_SIZE)
+        o.statsEnabled = (String(process.env.POOL_STATS).toLowerCase() == "on")
         return o;
     }
 

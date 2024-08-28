@@ -50,7 +50,7 @@ describe("ObjectPool Class - Constructor", () => {
 
         pool = new ObjectPool<TestPool>(() => new TestPool())
 
-        expect(pool.options.maxQueueSize).toEqual(ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE);
+        expect(pool.options.maxQueueSize).toEqual(ObjectPoolOptions.DEFAULT_MAX_QUEUE_SIZE);
         expect(pool.options.maxSize).toEqual(ObjectPoolOptions.DEFAULT_MAX_SIZE);
         expect(pool.options.preallocatedSize).toEqual(preAlloc);
 
@@ -86,7 +86,7 @@ describe("ObjectPool Class - Constructor", () => {
             //@ts-ignore
             { maxQueueSize: -45 })
 
-        expect(pool.options.maxQueueSize).toEqual(ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE);
+        expect(pool.options.maxQueueSize).toEqual(ObjectPoolOptions.DEFAULT_MAX_QUEUE_SIZE);
     })
     test(`new ObjectPool with maxSize = 10, preallocated = 0`, () => {
         let pool: ObjectPool<TestPool>;
@@ -128,7 +128,7 @@ describe("ObjectPool Class - Constructor", () => {
             //@ts-ignore
             { maxQueueSize: -1 })
 
-        expect(pool.stats.queueSizeLimit - pool.stats.queuedRequests).toEqual(ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE);
+        expect(pool.stats.queueSizeLimit - pool.stats.queuedRequests).toEqual(ObjectPoolOptions.DEFAULT_MAX_QUEUE_SIZE);
     })
 });
 

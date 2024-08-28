@@ -78,7 +78,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         this._opt.preallocatedSize = (this._opt.preallocatedSize > this._opt.maxSize) ?
             Math.round(ObjectPoolOptions.DEFAULT_PREALLOCATED_PERC * this._opt.maxSize) : this._opt.preallocatedSize;
         this._opt.maxQueueSize = (this._opt.maxQueueSize && this._opt.maxQueueSize < 0) ?
-            ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE : this._opt.maxQueueSize;
+            ObjectPoolOptions.DEFAULT_MAX_QUEUE_SIZE : this._opt.maxQueueSize;
         
         if(objectPoolEventListener) {
             this._eventEmitter.addListener("data",
