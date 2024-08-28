@@ -67,7 +67,7 @@ export class SystemJobLogEntry {
             Object.getOwnPropertyNames(msg)
                 .sort((a, b) => a.localeCompare(b))
                 .forEach((prop) => {
-                    ret += `- ${prop}: ${msg[prop].toString()}\r\n`
+                    ret += `- ${prop}: ${String(msg[prop])}\r\n`
                 })
         }
 
