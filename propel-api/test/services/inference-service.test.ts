@@ -111,6 +111,10 @@ describe("InferenceService Class - infer()", () => {
         process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
         //to void having a flood of logging messages during the test.
         //You can comment the line if you wouldlike to see extra details.
+        process.env.POOL_STATS = "off" //This is to prevent to log pool stats in the DB (private 
+        //method _handleObjectPoolEvent in the PowerSHellServicePool), which is going to cause errors 
+        //and is difficult to mock.
+
         infer = new ParamInferenceService();
     })
 
