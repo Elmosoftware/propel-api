@@ -424,12 +424,12 @@ You can re-enable it again once all checks have been reverted.`)
   }
 
   getScheduleReferenceTimeStamp(): string {
-    if (this.fh.value.schedule.lastExecution) {
+    if (this.fh.value.schedule.lastExecution) 
       return `Last execution: ${SharedSystemHelper.formatDate(this.fh.value.schedule.lastExecution)}`
-    } 
-    else {
+    if (this.fh.value.schedule.enabled)
       return `Created on: ${SharedSystemHelper.formatDate(this.fh.value.schedule.creationTS)}`
-    }
+
+    return ""
   }
 
   getScheduleNextExecution(effectiveDate: boolean = true): string {
@@ -458,7 +458,7 @@ You can re-enable it again once all checks have been reverted.`)
 
     if (!this.apiStatus?.workflowSchedulesEnabled) return ret;
 
-    if (nextRun && SharedSystemHelper.isBefore(nextRun, new Date())) {
+    if (nextRun && this.fh.value.schedule.enabled && SharedSystemHelper.isBefore(nextRun, new Date())) {
       ret = "(As soon this schedule is saved)."
     }
 
@@ -579,6 +579,15 @@ execution schedule due to the lack of interactivity of that process.<br> ${dlgLa
 in all the steps and try this operation again.`
       )) {
         $event.checked = false
+      }
+
+      //If we just enable the schedule and is a new one, (never executed), we need 
+      //to update the creation and start time attributes so the schedule calculation is correct: 
+      if ($event.checked && !this.fh.value.schedule.lastExecution) {
+        let newSched = new WorkflowSchedule();
+        let schedForm = (this.fh.form.controls["schedule"] as UntypedFormGroup)
+        schedForm.controls["startingAt"].patchValue(newSched.startingAt);
+        schedForm.controls["creationTS"].patchValue(newSched.creationTS);
       }
 
       this.changeAllScheduleControlsState($event.checked);
