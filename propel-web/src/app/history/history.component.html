@@ -67,19 +67,23 @@
                             matTooltipPosition="right" [innerHtml]="getTimeStamp(item)"></div>
                     </div>
                     <div class="col-auto ml-auto text-subtle">
-                        <div class="mx-2 d-inline icon-stop-watch" [matTooltip]="item.durationTooltip"
+                        <div class="mx-2 d-inline icon-stop-watch" 
+                            [matTooltip]="item.durationTooltip"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
                             <span class="mx-1">{{item.duration}}</span>
                         </div>
-                        <div class="mx-2 d-inline icon-numbered-list" [matTooltip]="item.stepsAmountTooltip"
+                        <div class="mx-2 d-inline icon-numbered-list" 
+                            [matTooltip]="item.stepsAmountTooltip"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
                             <span class="mx-1">{{item.stepsAmount}}</span>
                         </div>
-                        <div *ngIf="item.targetsAmount !== '0'" class="mx-2 d-inline icon-targets" [matTooltip]="item.targetsAmountTooltip"
+                        <div *ngIf="item.targetsAmount !== '0'" class="mx-2 d-inline icon-targets" 
+                            [matTooltip]="item.targetsAmountTooltip"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
                             <span class="mx-1">{{item.targetsAmount}}</span>
                         </div>
-                        <div *ngIf="item.hasActiveSchedule" class="mx-2 d-inline icon-schedule" [matTooltip]="item.targetsAmountTooltip"
+                        <div *ngIf="item.hasActiveSchedule" class="mx-2 d-inline icon-schedule" 
+                            [matTooltip]="item.scheduleTooltip"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
                             <span class="mx-1">{{item.scheduleDescription}}</span>
                         </div>

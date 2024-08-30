@@ -212,6 +212,7 @@ export class ExecutionLogExtended {
   workflowNameTooltip: string;
   hasActiveSchedule: boolean;
   scheduleDescription: string;
+  scheduleTooltip: string;
   duration: string;
   durationTooltip: string;
   stepsAmount: string;
@@ -249,6 +250,17 @@ Total duration: ${SharedSystemHelper.getDuration(log.startedAt, log.endedAt)}.`
 
       this.hasActiveSchedule = log.workflow.schedule.enabled;        
       this.scheduleDescription = ScheduleCalculator.getDescription(log.workflow.schedule)
+      this.scheduleTooltip = ""
+
+      if (this.hasActiveSchedule) {
+        let nextExec = ScheduleCalculator.getNextRun(log.workflow.schedule)
+
+        this.scheduleTooltip = "Last execution:";
+        this.scheduleTooltip += (log.workflow.schedule.lastExecution) ? 
+          SharedSystemHelper.formatDate(log.workflow.schedule.lastExecution!)  : "None."
+        this.scheduleTooltip += "\r\nNext execution:"
+        this.scheduleTooltip += (nextExec) ? SharedSystemHelper.formatDate(nextExec) : "Never."
+      }
     }
     else {
       this.workflowName = "Missing Workflow";
@@ -257,6 +269,7 @@ Total duration: ${SharedSystemHelper.getDuration(log.startedAt, log.endedAt)}.`
       this.stepsAmountTooltip = ``;
       this.hasActiveSchedule = false;        
       this.scheduleDescription = "";
+      this.scheduleTooltip = "";
     }
 
     this.targetsAmount = targets.size.toString();
