@@ -1,7 +1,13 @@
 <a id="topSearch"></a>
 <div class="container mt-4">
+    <!-- Tabs are not displaying content here, we are using only the buttons. -->
+    <mat-tab-group class="mt-2" [selectedIndex]="activeTab" (selectedIndexChange)="activeTabChanged($event)"
+        backgroundColor="primary" color="primary">
+        <mat-tab label="Manual" />
+        <mat-tab label="Scheduled" />
+    </mat-tab-group>
     <form [formGroup]="fg">
-        <div class="row justify-content-around">
+        <div class="row justify-content-around mt-2">
             <div class="custom-control custom-radio col-auto mx-2">
                 <input type="radio" id="interval1" formControlName="interval" class="custom-control-input"
                     [value]="intervalTypeEnum.LastHalfHour">
@@ -29,17 +35,8 @@
             </div>
         </div>
     </form>
-
-    <div class="mt-4" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+    <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
         infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-
-        <!-- Tabs are not displaying content here, we are using only the buttons. -->
-        <mat-tab-group class="mt-2" [selectedIndex]="activeTab" (selectedIndexChange)="activeTabChanged($event)"
-            backgroundColor="primary" color="primary">
-            <mat-tab label="Manual" />
-            <mat-tab label="Scheduled" />
-        </mat-tab-group>
-
         <div *ngIf="activeTab == 1 && showWarning && !apiStatus?.workflowSchedulesEnabled" 
             class="alert alert-dismissible fade show alert-warning mt-2" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="hideWarning()">
