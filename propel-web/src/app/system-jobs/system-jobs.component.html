@@ -48,7 +48,7 @@
         </div>
         <div *ngIf="selectedJobLogs">
             <div class="mt-4" *ngIf="selectedJobLogs.logs.length > 0; else noLogs">
-                <div *ngIf="selectedJobLogs.stats.errors > 0" class="row justify-content-around">
+                <div class="row justify-content-around">
                     <div class="custom-control custom-radio col-auto mx-2">
                         <input type="radio" id="showAll" class="custom-control-input" name="filter" value="showAll"
                             checked="checked" (click)="onFilterClick(false)">
