@@ -161,14 +161,14 @@ export class WorkflowComponent implements OnInit, DataLossPreventionInterface {
   async refreshData(): Promise<void> {
     let id: string = this.route.snapshot.paramMap.get("id") ?? "";
 
-    if (!id) {
-      this.newItem();
-      return Promise.resolve();
-    }
-
     try {
       //Getting the API status
       this.apiStatus = await this.core.status.getStatus();
+    
+      if (!id) {
+        this.newItem();
+        return Promise.resolve();
+      }
 
       let workflow: Workflow = await this.core.data.getById(DataEndpointActions.Workflow, id, true) as Workflow;
 
