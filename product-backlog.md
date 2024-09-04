@@ -1,5 +1,6 @@
 # Propel Product Backlog
-Not a real product Backlog here, but just a way to note on some interesting ideas for the future that were not included in the last version.
+Not a real product Backlog here, but just a way to note on some interesting ideas and pending work 
+for the future that were not included in the last release.
 
 ## OPEN BUGS
 
