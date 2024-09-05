@@ -61,3 +61,11 @@
 .user-initials {
     font-size: 1.2em;
 }
+
+.divider-left {
+    min-width: 5%;
+}
+
+.divider-right {
+    min-width: 30%;
+}

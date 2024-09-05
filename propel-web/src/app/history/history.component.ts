@@ -10,6 +10,8 @@ import { ExecutionLog } from '../../../../propel-shared/models/execution-log';
 import { SharedSystemHelper } from '../../../../propel-shared/utils/shared-system-helper';
 import { DataEndpointActions } from 'src/services/data.service';
 import { PagedResponse } from '../../../../propel-shared/core/paged-response';
+import { ScheduleCalculator } from '../../../../propel-shared/core/schedule-calculator';
+import { APIStatus } from '../../../../propel-shared/models/api-status';
 
 export enum IntervalType {
   LastHalfHour = 30,
@@ -24,6 +26,11 @@ export enum IntervalType {
  */
 const PAGE_SIZE: number = 50;
 
+enum Tabs {
+  Manual = 0,
+  Scheduled = 1
+}
+
 @Component({
   selector: 'app-history',
   templateUrl: './history.component.html',
@@ -37,6 +44,9 @@ export class HistoryComponent implements OnInit {
   fg!: UntypedFormGroup;
   svcInfScroll!: InfiniteScrollingService<ExecutionLogExtended>;
   onDataFeed!: EventEmitter<PagingHelper>;
+  activeTab: Tabs = Tabs.Manual;
+  apiStatus: APIStatus | null = null;
+  showWarning: boolean = true;
 
   constructor(private core: CoreService, private route: ActivatedRoute) {
 
@@ -67,6 +77,15 @@ export class HistoryComponent implements OnInit {
       })
   }
 
+  hideWarning() {
+    this.showWarning = false;
+  }
+
+  activeTabChanged($event: Tabs) {
+    this.activeTab = $event
+    this.search();
+  }
+
   search() {
     this.resetSearch();
     this.fetchData(this.svcInfScroll.pageSize, 0)
@@ -87,14 +106,18 @@ export class HistoryComponent implements OnInit {
     qm.top = top;
     qm.skip = skip;
     qm.populate = true;
+
     qm.filterBy = {
       startedAt: {
         $gte: SharedSystemHelper.addMinutes(this.fg.controls['interval'].value * -1)
-      }
+      },
+      runOnSchedule: (this.activeTab == Tabs.Scheduled)
     };
     qm.sortBy = "-startedAt";  
     
     try {
+      //Updating API status:
+      this.apiStatus = await this.core.status.getStatus();
       paged = await this.core.data.find(DataEndpointActions.ExecutionLog, qm) as PagedResponse<ExecutionLog>;
       xLog = paged.data.map((l: ExecutionLog) => new ExecutionLogExtended(l))
       this.svcInfScroll.feed(paged.totalCount, xLog);
@@ -120,11 +143,11 @@ export class HistoryComponent implements OnInit {
         next: (ph: PagingHelper) => {
           this.onDataFeedHandler(ph)
         }
-      });
+      }); 
   }
 
   getWorkflowName(item: ExecutionLogExtended): string {
-    let ret: string = "";
+    let ret: string = "Missing Workflow!";
 
     if (!item.log?.workflow) return ret;
 
@@ -187,6 +210,9 @@ export class ExecutionLogExtended {
   startDateFriendly: string;
   workflowName: string;
   workflowNameTooltip: string;
+  hasActiveSchedule: boolean;
+  scheduleDescription: string;
+  scheduleTooltip: string;
   duration: string;
   durationTooltip: string;
   stepsAmount: string;
@@ -204,21 +230,47 @@ export class ExecutionLogExtended {
     this.startDate = SharedSystemHelper.formatDate(log.startedAt);
     this.startDateFriendly = SharedSystemHelper.getFriendlyTimeFromNow(log.startedAt);
     
-    this.workflowName = log.workflow.name;
-    this.workflowNameTooltip = `${log.workflow.name}:\r\n${(log.workflow.description) ? log.workflow.description : "No description available."}`;
-    
     this.duration = SharedSystemHelper.getDuration(log.startedAt, log.endedAt);
     this.durationTooltip = `Start at: ${SharedSystemHelper.formatDate(log.startedAt)}
 End at: ${SharedSystemHelper.formatDate(log.endedAt)}
 Total duration: ${SharedSystemHelper.getDuration(log.startedAt, log.endedAt)}.`
 
-    this.stepsAmount = log.workflow.steps.length.toString();
-    this.stepsAmountTooltip = `The workflow has defined ${log.workflow.steps.length} step${(log.workflow.steps.length > 1) ? "s" : ""}.`;
+    if (log.workflow) {
+      this.workflowName = log.workflow.name;
+      this.workflowNameTooltip = `${log.workflow.name}:\r\n${(log.workflow.description) ? log.workflow.description : "No description available."}`;
+      
+  
+      this.stepsAmount = log.workflow.steps.length.toString();
+      this.stepsAmountTooltip = `The workflow has defined ${log.workflow.steps.length} step${(log.workflow.steps.length > 1) ? "s" : ""}.`;
+  
+      //Building the targets set:
+      log.workflow.steps.forEach((s) => {
+        s.targets.map((t) => targets.add(t.friendlyName));      
+      })
 
-    //Building the targets set:
-    log.workflow.steps.forEach((s) => {
-      s.targets.map((t) => targets.add(t.friendlyName));      
-    })
+      this.hasActiveSchedule = log.workflow.schedule.enabled;        
+      this.scheduleDescription = ScheduleCalculator.getDescription(log.workflow.schedule)
+      this.scheduleTooltip = ""
+
+      if (this.hasActiveSchedule) {
+        let nextExec = ScheduleCalculator.getNextRun(log.workflow.schedule)
+
+        this.scheduleTooltip = "Last execution:";
+        this.scheduleTooltip += (log.workflow.schedule.lastExecution) ? 
+          SharedSystemHelper.formatDate(log.workflow.schedule.lastExecution!)  : "None."
+        this.scheduleTooltip += "\r\nNext execution:"
+        this.scheduleTooltip += (nextExec) ? SharedSystemHelper.formatDate(nextExec) : "Never."
+      }
+    }
+    else {
+      this.workflowName = "Missing Workflow";
+      this.workflowNameTooltip = `There is no a valid Workflow reference for this Execution. Check the execution errors for more details.`;
+      this.stepsAmount = "0";
+      this.stepsAmountTooltip = ``;
+      this.hasActiveSchedule = false;        
+      this.scheduleDescription = "";
+      this.scheduleTooltip = "";
+    }
 
     this.targetsAmount = targets.size.toString();
     this.targetsAmountTooltip = `This workflow is hitting ${targets.size} target${(targets.size > 1) ? "s" : ""}:
@@ -227,6 +279,9 @@ ${Array.from(targets).join("\r\n")}`;
     if (log.user?.fullName) {
       this.executedBy = log.user.fullName; 
     } 
+    else if(log.runOnSchedule) {
+      this.executedBy = "SYSTEM";
+    }
     else {
       this.executedBy = "an Unknown user";
     }   

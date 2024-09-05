@@ -9,6 +9,8 @@ import { logger } from "../services/logger-service";
 import { SecurityRule } from "../core/security-rule";
 import { REQUEST_TOKEN_KEY } from "../core/middleware";
 import { SecurityToken } from "../../propel-shared/core/security-token";
+import { systemJobService } from "../services/system-job-service";
+import { objectPoolStatsService } from "../services/object-pool-stats-service";
 
 /**
  * Status route. Returns the api stats, metrics, etc.
@@ -39,6 +41,7 @@ export class StatusRoute implements Route {
             ret.logSource = cfg.logSource;
             ret.poolOptions = cfg.poolOptions;
             ret.poolStats = pool.stats;
+            ret.workflowSchedulesEnabled = cfg.workflowSchedulesEnabled;
 
             res.json(ret);
         });
@@ -50,6 +53,20 @@ export class StatusRoute implements Route {
         handler.get("/user-stats", async (req, res) => {
             let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
             res.json(await usageStatsService.getUserStats(token));
+        });
+
+        handler.get("/system-jobs", async (req, res) => {
+            res.json(systemJobService.getJobs());
+        });
+
+        handler.get("/system-job-logs/:jobName", async (req, res) => {
+            let jobName: string = req.params.jobName;
+            res.json(systemJobService.getJobLogs(jobName));
+        });
+
+        handler.get("/object-pool-stats", async (req, res) => {
+            let token: SecurityToken = (req as any)[REQUEST_TOKEN_KEY];
+            res.json(await objectPoolStatsService.getStats(token));
         });
 
         return handler;

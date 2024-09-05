@@ -111,8 +111,7 @@ export class RunRoute implements Route {
         if (ws.readyState !== ws.OPEN) {
             logger.logWarn(`A message was sent when the socket is not opened. 
 This is mostly caused by the user closing the app or browser. Message will be disregard, but the execution will continue.
-Current websocket status is: "${this.getWebsocketStatusName(ws.readyState)}".
-Message was: "${JSON.stringify(message)}".`)
+Current websocket status is: "${this.getWebsocketStatusName(ws.readyState)}".`)
         }
         else {
             ws.send(JSON.stringify(message));

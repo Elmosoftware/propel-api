@@ -22,34 +22,14 @@ const TOP_LAST_ERRORS: number = 5;
  */
 export class UsageStatsService {
 
-    private _stats!: UsageStats;
+    private _stats: UsageStats | null = null;
     private _updatingStats: boolean = false;
 
     /**
      * Return the current application usage stats or no value if the stats are not created yet.
      * If there is no stats or they are stale, it will take care also to schedule a refresh..
      */
-    get currentStats(): UsageStats {
-
-        if (this.areStatsStale) {
-            
-            if (this._stats) {
-                this._stats.areStale = true;
-            }
-
-            let start: number = (new Date()).getTime();
-            
-            this.updateStats()
-                .then(() => {
-                    logger.logDebug(`Propel usage statistics updated at ` + 
-                    this._stats?.statsTimestamp.toLocaleString() + 
-                    ` (took ${((new Date()).getTime() - start)/1000} seconds).`)
-                })
-                .catch((err) => {
-                    logger.logError(`Propel usage statistics failed to update. Error was: ${String(err)}`)
-                })
-        }
-
+    get currentStats(): UsageStats | null {
         return this._stats;
     }
 
@@ -86,16 +66,21 @@ export class UsageStatsService {
         //If the stats are in progress to be updated, we must do nothing.
         if (this._updatingStats) return;
 
+        logger.logInfo(`Start updating the usage stats...`)
+        
         try {
             this._updatingStats = true;
+            logger.logDebug(`Usage stats, Retrieving execution logs.`)
             allExecLogs = await this.getAllExecutionLogs();
-
+            
             stats.totalExecutions = allExecLogs.length;
+            logger.logDebug(`Usage stats, Counting items.`)
             stats.totalWorkflows = await this.getAllWorkflowsCount();
             stats.totalTargets = await this.getAllTargetsCount();
             stats.totalScripts = await this.getAllScriptsCount();
             stats.totalCredentials = await this.getAllCredentialsCount();
 
+            logger.logDebug(`Usage stats, Creating series data.`)            
             //Adding 2 series, one for workflows and the other for Quick Tasks:
             stats.dailyExecutions.push(new GraphSeries("Workflows"));
             stats.dailyExecutions.push(new GraphSeries("Quick Tasks"));
@@ -113,26 +98,28 @@ export class UsageStatsService {
                     this.createDailyExecutionsSeriesData(stats, currentDate);
                 }
 
-                if (log.startedAt.toUTCString() == currentDate.toUTCString()) {
+                if (log.workflow && log.startedAt.toUTCString() == currentDate.toUTCString()) {
                     //Increasing in one the right series:
                     this.increaseDailyExecutionsLastSeriesValue(stats.dailyExecutions[(log.workflow.isQuickTask) ? 1 : 0])
                 }
 
                 //Most used Workflows:
                 //====================
-                if (!log.workflow.isQuickTask) {
+                if (log.workflow && !log.workflow.isQuickTask) {
                     this.addMostUsedWorkflowsSeriesData(stats, log.workflow)
                 }
 
                 //Latest Executions:
                 //==================
                 if (stats.latestExecutions.length < TOP_LATEST_EXECUTIONS) {
-                    stats.latestExecutions.push(new GraphSeriesData(log.workflow.name, 1,
-                        log._id, log.startedAt, { 
-                            status: log.status.toString(),
-                            userName: (log?.user) ? log.user.name : "" ,
-                            userFullName: (log?.user) ? log.user.fullName : ""
-                        }));
+                    if (log.workflow) {
+                        stats.latestExecutions.push(new GraphSeriesData(log.workflow.name, 1,
+                            log._id, log.startedAt, { 
+                                status: log.status.toString(),
+                                userName: (log?.user) ? log.user.name : "" ,
+                                userFullName: (log?.user) ? log.user.fullName : ""
+                            }));
+                    }
                 }
 
                 //Last Execution errors:
@@ -168,8 +155,9 @@ export class UsageStatsService {
                 .splice(0, TOP_LATEST_EXECUTIONS)
 
             this._stats = stats;
-
+            logger.logInfo(`Update stats operation finished successfully.`)
         } catch (error) {
+            logger.logWarn(`Update stats operation finished with error.`)
             return Promise.reject(error);
         }
         finally {
@@ -191,7 +179,7 @@ export class UsageStatsService {
 
                 //Most used Workflows:
                 //====================
-                if (!log.workflow.isQuickTask) {
+                if (log.workflow && !log.workflow.isQuickTask) {
                     this.addMostUsedWorkflowsSeriesData(stats, log.workflow)
                     stats.totalExecutions++;
                 }

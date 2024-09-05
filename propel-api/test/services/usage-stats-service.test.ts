@@ -326,7 +326,7 @@ describe("UsageStatsService Class - updateStats", () => {
             expect(us.currentStats).not.toBe(null);
             expect(us.currentStats?.latestExecutions.length).toEqual(1);
             expect(us.currentStats?.latestExecutions[0]._id).toEqual(logs[0]._id);
-            expect(us.currentStats?.latestExecutions[0].name).toEqual(logs[0].workflow.name);
+            expect(us.currentStats?.latestExecutions[0].name).toEqual(logs[0].workflow?.name);
             expect(us.currentStats?.latestExecutions[0].value).toEqual(1);
             expect(us.currentStats?.latestExecutions[0].lastTimeUpdated).toEqual(logs[0].startedAt);
         });

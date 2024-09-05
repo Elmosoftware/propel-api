@@ -51,6 +51,12 @@
           More
         </div>
         <div class="dropdown-menu dropdown-user" aria-labelledby="dropdown02">
+
+          <div *ngIf="canAccessTarget || canAccessScript || canAccessWorkflow" class="form-inline" (click)="doNotPropagate($event)">
+            <div class="dropdown-divider menu-divider-line divider-left"></div>
+            <div class="text-subtle ml-2">To start</div>
+            <div class="dropdown-divider menu-divider-line divider-right"></div>
+          </div> 
           <a *ngIf="canAccessTarget" class="dropdown-item" href="javascript:void(0)" (click)="goToTarget()">
             <span class="icon-targets menu-icon"></span>
             <span>Add a Target</span>
@@ -63,9 +69,12 @@
             <span class="icon-workflows menu-icon"></span>
             <span>Create a Workflow</span>
           </a>
-          <div *ngIf="canAccessCredentials" (click)="doNotPropagate($event)">
-            <div class="dropdown-divider menu-divider-line"></div>
-          </div>
+
+          <div *ngIf="canAccessCredentials" class="form-inline" (click)="doNotPropagate($event)">
+            <div class="dropdown-divider menu-divider-line divider-left"></div>
+            <div class="text-subtle ml-2">Security</div>
+            <div class="dropdown-divider menu-divider-line divider-right"></div>
+          </div> 
           <a *ngIf="canAccessCredentialWindows" class="dropdown-item" href="javascript:void(0)"
             (click)="goToCredentialWin()">
             <span class="icon-credential-windows menu-icon"></span>
@@ -86,16 +95,16 @@
             <span class="icon-credential-database menu-icon"></span>
             <span>New Database Credential</span>
           </a>
-          <div *ngIf="canAccessUserAccount" (click)="doNotPropagate($event)">
-            <div class="dropdown-divider menu-divider-line"></div>
-          </div>
           <a *ngIf="canAccessUserAccount" class="dropdown-item" href="javascript:void(0)" (click)="goToUserAccount()">
             <span class="icon-user-mini menu-icon"></span>
             <span>New User Account</span>
           </a>
-          <div *ngIf="canAccessCredentials && canBrowseCredentials" (click)="doNotPropagate($event)">
-            <div class="dropdown-divider menu-divider-line"></div>
-          </div>
+
+          <div *ngIf="canBrowseCredentials || canBrowseUserAccounts" class="form-inline" (click)="doNotPropagate($event)">
+            <div class="dropdown-divider menu-divider-line divider-left"></div>
+            <div class="text-subtle ml-2">Manage</div>
+            <div class="dropdown-divider menu-divider-line divider-right"></div>
+          </div> 
           <a *ngIf="canBrowseCredentials" class="dropdown-item" href="javascript:void(0)"
             (click)="goToBrowseCredentials()">
             <span class="icon-credentials menu-icon"></span>
@@ -104,11 +113,22 @@
           <a *ngIf="canBrowseUserAccounts" class="dropdown-item" href="javascript:void(0)" (click)="goToBrowseUsers()">
             <span class="icon-users-mini menu-icon"></span>
             <span>Manage Users</span>
+          </a>  
+           
+          <div *ngIf="canBrowseSystemJobs || canBrowseObjectPoolStats" class="form-inline" (click)="doNotPropagate($event)">
+            <div class="dropdown-divider menu-divider-line divider-left"></div>
+            <div class="text-subtle ml-2">Propel Internals</div>
+            <div class="dropdown-divider menu-divider-line divider-right"></div>
+          </div> 
+          <a *ngIf="canBrowseSystemJobs" class="dropdown-item" href="javascript:void(0)" (click)="goToSystemJobs()">
+            <span class="icon-system-job-mini menu-icon"></span>
+            <span>System jobs activity</span>
+          </a>
+          <a *ngIf="canBrowseObjectPoolStats" class="dropdown-item" href="javascript:void(0)" (click)="goToObjectPoolStats()">
+            <span class="icon-stats-mini menu-icon"></span>
+            <span>Object pool usage stats</span>
           </a>
           <!-- Developers only Submenu -->
-          <div *ngIf="isDevMode" (click)="doNotPropagate($event)">
-            <div class="dropdown-divider menu-divider-line"></div>
-          </div>
           <a *ngIf="isDevMode" class="dropdown-item" href="javascript:void(0)" (click)="goToSandbox()">
             <span class="menu-icon"><i class="fas fa-flask"></i></span>
             <span>Sandbox</span>

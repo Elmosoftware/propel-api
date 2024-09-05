@@ -143,7 +143,7 @@ export class ResultsComponent implements OnInit {
   }
 
   getWorkflowName(): string {
-    let ret: string = "";
+    let ret: string = "Missing Workflow!";
 
     if (!this.log?.workflow) return ret;
 
@@ -159,8 +159,11 @@ export class ResultsComponent implements OnInit {
   getWorkflowDescription() {
     let ret: string = ""
 
-    if (this.log) {
+    if (this.log?.workflow) {
       ret = `${this.log.workflow.name}:\r\n${this.log.workflow.description}`
+    }
+    else {
+      ret = `Missing workflow, (check errors for details).`
     }
 
     return ret;
@@ -178,10 +181,18 @@ export class ResultsComponent implements OnInit {
     if (this.log.user?.fullName) {
       user = this.log.user.fullName; 
     } 
+    else if (this.log.runOnSchedule) {
+      user = "SYSTEM"
+    }
 
     if (this.log) {
       if (friendly) {
-        ret = `Started by ${user} ${SharedSystemHelper.getFriendlyTimeFromNow(this.log.startedAt)}, took ${SharedSystemHelper.getFriendlyDuration(this.log.startedAt, this.log.endedAt)} to finish.`
+        if (this.log?.execError) {
+          ret = `The Workflow was started by ${user}, but failed to start. Check error details below.`          
+        }
+        else {
+          ret = `Started by ${user} ${SharedSystemHelper.getFriendlyTimeFromNow(this.log.startedAt)}, took ${SharedSystemHelper.getFriendlyDuration(this.log.startedAt, this.log.endedAt)} to finish.`
+        }
       }
       else {
         ret = `Start at: ${SharedSystemHelper.formatDate(this.log.startedAt)}
@@ -226,6 +237,7 @@ Total duration: ${SharedSystemHelper.getDuration(partial.startedAt, partial.ende
   }
 
   runAgain() {
+    if (!this.log?.workflow) return;
     this.core.navigation.toRun(this.log.workflow._id);
   }
 

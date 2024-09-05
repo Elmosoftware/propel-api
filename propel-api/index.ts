@@ -13,7 +13,9 @@ import { logger } from "./services/logger-service";
 import { cfgVal } from "./validators/config-validator";
 import { webServer } from "./core/web-server";
 import { db } from "./core/database";
-import { usageStatsService } from "./services/usage-stats-service";
+import { systemJobService } from "./services/system-job-service";
+import { UsageStatsSystemJob } from "./core/usage-stats-system-job";
+import { ScheduleManagerSystemJob } from "./core/schedule-manager-system-job";
 
 //Configuration validation:
 if (!cfgVal.validate().isValid) {
@@ -35,9 +37,20 @@ db.start() //Database setup.
                 .replace(/{/g, "")
                 .replace(/}/g, "")}\r\n`);
 
-        logger.logInfo("Triggering a usage statistics refresh...")
-        usageStatsService.updateStats(); //Usage stats refresh will be 
-        //triggered by the UsageStatsServices.
+        logger.logInfo("Setting up all System Jobs...")
+        logger.logInfo("Registering Usage Stats System Job")
+        systemJobService.register(new UsageStatsSystemJob())
+
+        if (cfg.workflowSchedulesEnabled) {
+            logger.logInfo("Registering Schedule Manager System Job")
+            systemJobService.register(new ScheduleManagerSystemJob())
+        }
+        else {
+            logger.logInfo(`Workflow schedules feature is disabled in Propel API configuration.` +
+                `The Schedule Manager System Job will not be registered.`
+            )
+        }
+        
         logger.logInfo("Starting HTTP server...")
         webServer.start() //Web Server and routing services start.
             .then(() => {
@@ -67,12 +80,19 @@ Powered by Node.js ${process.version}(${process.arch}) on platform ${process.pla
 
 function closeHandler(err:any, origin?: any, code: number = 1) {
     let msg = ""
+    let errMsg = ""
 
-    if (origin) {
-        origin = JSON.stringify(origin);
+    origin = String(origin);
+
+    if (err && typeof err == "object") {
+        Object.getOwnPropertyNames(err)
+            .sort((a, b) => a.localeCompare(b))
+            .forEach((prop) => {
+                errMsg += `- ${prop}: ${err[prop]}\r\n`
+            })
     }
 
-    msg = `There was an error on: "${origin}", error details are: \r\n${JSON.stringify(err)}`
+    msg = `There was an error on: "${origin}", error details are: \r\n${errMsg}\r\rExit code is: ${code}`
     logger.logError(msg);
     console.log(msg);
     logger.logInfo(`Exiting now with code ${code}`);

@@ -16,7 +16,7 @@ try {
     db.auth(adu, adp);
 
     print(`${sep}`)
-    print(`Removing user secrets.`)
+    print(`Updating Workflows - Adding a disabled schedule.`)
     print(`${sep}`)
     print(`Opening database.`);
     db = conn.getDB("Propel");
@@ -30,34 +30,34 @@ try {
     collection.find().forEach((doc) => {
         let alreadyPatched = true;
 
-        print(`Patching Workflow "${doc.name}"\r\n-------------------------`)
-
-        doc.steps.forEach((step) => {
-            print(`Updating Step "${step.name}" values...`)
-            if (step.values && step.values.length > 0) {
-                let paramCount = 0;
-                step.values.forEach((pv) => {
-                    if (pv.isRuntimeParameter === undefined) {
-                        pv.isRuntimeParameter = false;
-                        alreadyPatched = false
-                        paramCount++;
-                    }
-                })
-                print(`${paramCount.toString()} of ${step.values.length.toString()} parameter values needed to be updated.`)
+        if (doc.schedule === undefined) {
+            doc.schedule = {
+                enabled: false,
+                isRecurrent: false,
+                onlyOn: null,
+                everyAmount: 1,
+                everyUnit: "Days",
+                weeklyOptions: [],
+                monthlyOption: {
+                    ordinal: "First",
+                    day: 0
+                },
+                startingAt: "00:00",
+                lastExecution: null,
+                creationTS: new Date()
             }
-            else {
-                print(`No values found...`)
-            }
-        })
+            alreadyPatched = false;
+        }
 
         if (!alreadyPatched) {
-            print(`Saving changes to workflow "${doc.name}", ("${doc._id.toString()}") ...`)
+            print(`Updating Workflow "${doc.name}", ("${doc._id.toString()}") ...`)
             patchResult = collection.replaceOne({ _id: ObjectId(doc._id.toString()) }, doc)
             print(`Patch results: ${JSON.stringify(patchResult)}.`)
             counter++;
+            print(` -> The Workflow document was updated.`)
         }
         else {
-            print(` -> The workflow was already updated or it has no parameter values on any of his steps, no patching required.`)
+            print(` -> The Workflow document was already updated, no patching required.`)
         }
     });
 

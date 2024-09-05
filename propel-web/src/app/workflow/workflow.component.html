@@ -1,113 +1,232 @@
-<div class="form-container mt-2">
+<div class="container mt-2">
     <form [formGroup]="fh.form">
-        <div class="form-group">
-            <label for="name" class="data-required">Name</label>
-            <input type="text" class="form-control" id="name" aria-describedby="name"
-                placeholder="Enter the Workflow name." formControlName="name" required>
-            <app-validation-message [control]="name"></app-validation-message>
+        <div class="d-flex justify-content-between mb-1">
+            <button class="btn btn-primary" type="button" [disabled]="isPreviousButtonDisabled()"
+                (click)="back()">Previous</button>
+            <button *ngIf="isCancelButtonVisible()" class="btn btn-primary ml-2" type="button"
+                (click)="resetForm()">Cancel</button>
+            <button *ngIf="isAddNewButtonVisible()" class="btn btn-secondary" type="button" (click)="newItem()">Add
+                new</button>
+            <button *ngIf="isSaveButtonVisible()" class="btn btn-primary ml-2" type="button"
+                (click)="save()">Save</button>
+            <button *ngIf="isSaveButtonVisible()" class="btn btn-primary ml-2" type="button" (click)="save(true)">Save &
+                Run</button>
+            <button class="btn btn-primary" type="button" [disabled]="isNextButtonDisabled()"
+                (click)="next()">Next</button>
         </div>
-        <div class="form-group">
-            <label for="description">Description</label>
-            <textarea class="form-control" id="description" aria-describedby="description"
-                placeholder="Explain here what exactly this workflow does."
-                rows="4" formControlName="description"></textarea>
-            <app-validation-message [control]="description"></app-validation-message>
-        </div>
-        <div class="form-group mb-0">
-            <div class="d-flex justify-content-center mb-2">
-                <button class="btn btn-primary" type="button" (click)="addStep()"><i class="fas fa-list-ol mr-2"></i>Add Step</button>
-            </div>
-            <div class="d-flex justify-content-center mb-2">
-                <app-validation-message [control]="steps"></app-validation-message>
-            </div>
-            <div *ngIf="steps && steps.controls.length > 1 && showChangeOrderAlert" 
-                class="d-flex justify-content-center mb-2">
-                <div class="alert alert-dismissible fade show alert-info" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                      <span aria-hidden="true" (click)="stopShowingChangeStepOrderAlert()">×</span>
-                    </button>
-                    <strong>Need to change step order?</strong> Don't worry, you can use the <i class="fas fa-ellipsis-v"></i>
-                    <i class="fas fa-ellipsis-v"></i> icon to drag the steps in the way you need to be executed.
-                  </div>
-            </div>
-        </div>
-        <div *ngIf="steps && steps.controls.length > 0" class="form-group">
-            <table class="table">
-            <thead>
-              <tr>
-                <th scope="col" class="no-wrap-headers text-center">&nbsp;</th>
-                <th scope="col" class="no-wrap-headers text-center">#</th>
-                <th scope="col" class="no-wrap-headers text-center">Enabled</th>
-                <th scope="col" class="no-wrap-headers text-center">Name</th>
-                <th scope="col" class="no-wrap-headers text-center">If Step fails&hellip;</th>
-              </tr>
-            </thead>
-            <tbody formArrayName="steps" cdkDropList (cdkDropListDropped)="drop($event)"
-                [ngClass]="{'drag-drop-container': isDragging}">
-              <tr [formGroupName]="i" *ngFor="let child of steps.controls; let i = index" cdkDrag
-              (cdkDragStarted)="dragStarted($event)"
-              (cdkDragReleased)="dragReleased($event)">
-                <td>
-                    <div class="d-flex drag-drop-cursor">
-                        <div class="d-flex justify-content-center align-items-center mr-2" 
-                        matTooltip="Click and drag to change the order of this step." 
-                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
-                        cdkDragHandle>
-                            <i class="fas fa-ellipsis-v"></i>
-                            <i class="fas fa-ellipsis-v"></i>
+        <mat-tab-group [selectedIndex]="activeTab" (selectedIndexChange)="activeTabChanged($event)"
+            backgroundColor="primary" color="primary">
+            <mat-tab label="Definition" [disabled]="isTabDisabled(0)">
+                <div class="form-group mt-2">
+                    <label for="name" class="data-required">Name</label>
+                    <input type="text" class="form-control" id="name" aria-describedby="name"
+                        placeholder="Enter the Workflow name." formControlName="name" required>
+                    <app-validation-message [control]="name"></app-validation-message>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" aria-describedby="description"
+                        placeholder="Explain here what exactly this workflow does." rows="4"
+                        formControlName="description"></textarea>
+                    <app-validation-message [control]="description"></app-validation-message>
+                </div>
+            </mat-tab>
+            <mat-tab label="Steps" [disabled]="isTabDisabled(1)">
+                <div class="form-group mt-2">
+                    <div class="d-flex justify-content-center mb-2">
+                        <button class="btn btn-primary" type="button" (click)="addStep()"><i
+                                class="fas fa-list-ol mr-2"></i>Add
+                            Step</button>
+                    </div>
+                    <div class="d-flex justify-content-center mb-2">
+                        <app-validation-message [control]="steps"></app-validation-message>
+                    </div>
+                    <div *ngIf="steps && steps.controls.length > 1 && showChangeOrderAlert"
+                        class="d-flex justify-content-center mb-2">
+                        <div class="alert alert-dismissible fade show alert-info" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true" (click)="stopShowingChangeStepOrderAlert()">×</span>
+                            </button>
+                            <strong>Need to change step order?</strong> Don't worry, you can use the <i
+                                class="fas fa-ellipsis-v"></i>
+                            <i class="fas fa-ellipsis-v"></i> icon to drag the steps in the way you need to be executed.
                         </div>
-                        <button class="btn btn-primary button-icon-medium" type="button" 
-                            matTooltip="Delete this step." 
-                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
-                            (click)="removeStep(i)">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
                     </div>
-                </td>
-                <td>{{i + 1}}</td>
-                <td>
+                </div>
+                <div *ngIf="steps && steps.controls.length > 0" class="form-group">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="no-wrap-headers text-center">&nbsp;</th>
+                                <th scope="col" class="no-wrap-headers text-center">#</th>
+                                <th scope="col" class="no-wrap-headers text-center">Enabled</th>
+                                <th scope="col" class="no-wrap-headers text-center">Name</th>
+                                <th scope="col" class="no-wrap-headers text-center">If Step fails&hellip;</th>
+                            </tr>
+                        </thead>
+                        <tbody formArrayName="steps" cdkDropList (cdkDropListDropped)="drop($event)"
+                            [ngClass]="{'drag-drop-container': isDragging}">
+                            <tr [formGroupName]="i" *ngFor="let child of steps.controls; let i = index" cdkDrag
+                                (cdkDragStarted)="dragStarted($event)" (cdkDragReleased)="dragReleased($event)">
+                                <td>
+                                    <div class="d-flex drag-drop-cursor">
+                                        <div class="d-flex justify-content-center align-items-center mr-2"
+                                            matTooltip="Click and drag to change the order of this step."
+                                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above"
+                                            cdkDragHandle>
+                                            <i class="fas fa-ellipsis-v"></i>
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </div>
+                                        <button class="btn btn-primary button-icon-medium" type="button"
+                                            matTooltip="Delete this step." matTooltipClass="tooltipsWithBreakLines"
+                                            matTooltipPosition="above" (click)="removeStep(i)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td>{{i + 1}}</td>
+                                <td>
+                                    <div class="form-group">
+                                        <mat-slide-toggle color="primary" formControlName="enabled"
+                                            matTooltip="If the step is disabled, it will be skipped during Workflow execution."
+                                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                                        </mat-slide-toggle>
+                                    </div>
+                                </td>
+                                <td><a href="javascript:void(0)" (click)="editStep(i)" class="text-mini mr-2">
+                                        {{getStepName(i)}}</a><i class="fas fa-binoculars"
+                                        matTooltip="{{getStepDetails(i, true)}}"
+                                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i></td>
+                                <td>
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <label class="mr-2 mt-1 text-mini text-center">
+                                                Keep going.
+                                            </label>
+                                            <mat-slide-toggle color="primary" formControlName="abortOnError">
+                                            </mat-slide-toggle>
+                                            <label class="ml-2 mt-1 text-mini text-center">
+                                                Abort workflow.
+                                            </label>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </mat-tab>
+            <mat-tab label="Schedule" [disabled]="isTabDisabled(2)">
+                <div formGroupName="schedule" class="mt-2">
                     <div class="form-group">
-                        <mat-slide-toggle color="primary" formControlName="enabled" 
-                        matTooltip="If the step is disabled, it will be skipped during Workflow execution." 
-                        matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
-                        </mat-slide-toggle>
-                    </div>
-                </td>
-                <td><a href="javascript:void(0)" (click)="editStep(i)" class="text-mini mr-2">
-                    {{getStepName(i)}}</a><i class="fas fa-binoculars" matTooltip="{{getStepDetails(i, true)}}" 
-                    matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="right"></i></td>
-                <td>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-center align-items-center">
-                            <label class="mr-2 mt-1 text-mini text-center">
-                                Keep going.
-                            </label>
-                            <mat-slide-toggle color="primary" formControlName="abortOnError">
+                            <mat-slide-toggle color="primary" id="enabled" formControlName="enabled"
+                                (change)="onEnabledChange($event)" matTooltip="Enable or disable this schedule."
+                                matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"
+                                class="ml-1">
                             </mat-slide-toggle>
-                            <label class="ml-2 mt-1 text-mini text-center">
-                                Abort workflow.
-                            </label>
-                        </div>
+                            <label for="onlyOn" class="ml-2">{{ getScheduleEnabledStatus() }}</label>
+                        <app-validation-message
+                            [control]="scheduleFormGroup.controls['enabled']"></app-validation-message>
                     </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="form-group">
-            <hr class="my-4">
-            <div class="d-flex">
-                <div class="mr-auto">
-                    <button *ngIf="showAddNewButton" class="btn btn-secondary" type="button" (click)="newItem()">Add new</button>
-                    <button class="btn btn-primary ml-2" type="button" [disabled]="fh.form.pristine" (click)="resetForm()">Cancel</button>
-                </div>                
-                <button class="btn btn-primary ml-2" type="button" [disabled]="!fh.form.valid" (click)="save()">Save</button>
-                <button class="btn btn-primary ml-2" type="button" [disabled]="!fh.form.valid" (click)="save(true)">Save & Run</button>
-            </div>
-        </div>
+                    <div *ngIf="!apiStatus?.workflowSchedulesEnabled" class="alert alert-dismissible fade show alert-warning" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                        <strong>Scheduled executions are disabled for now!</strong>
+                        Propel API is set to disable scheduled executions. This shouldn't 
+                        prevent you to work on this Workflow schedule but is not going to 
+                        run automatically after saving the changes.
+                    </div>
+                    <div class="form-group">
+                        <div class="d-flex justify-content-center">
+                            <label class="mr-2 mt-1 text-mini">Single execution</label>
+                            <mat-slide-toggle color="primary" id="isRecurrent" formControlName="isRecurrent"
+                                (change)="onScheduleTypeChange($event)">
+                            </mat-slide-toggle>
+                            <label class="ml-2 mt-1 text-mini">Recurrent schedule</label>
+                        </div>
+                        <app-validation-message
+                            [control]="scheduleFormGroup.controls['isRecurrent']"></app-validation-message>
+                    </div>
+                    <div *ngIf="isSingleExecutionSchedule; else recurrentSchedule" class="form-group">
+                        <label for="onlyOn">Scheduled for</label>
+                        <input type="datetime-local" class="form-control w-auto" formControlName="onlyOn">
+                        <app-validation-message
+                            [control]="scheduleFormGroup.controls['onlyOn']"></app-validation-message>
+                    </div>
+                    <ng-template #recurrentSchedule>
+                        <div class="form-group">
+                            <label for="everyAmount" class="data-required">Every</label>
+                            <div class="form-inline">
+                                <input type="text" class="form-control" id="everyAmount" aria-describedby="everyAmount"
+                                    placeholder="How often will be scheduled for execution"
+                                    formControlName="everyAmount" required>
+                                <ng-select #everyUnit [items]="allScheduleUnits" [multiple]="false"
+                                    labelForId="everyUnit" [closeOnSelect]="true" [clearSearchOnAdd]="true"
+                                    [searchable]="true" bindValue="value" bindLabel="key" clearAllText="Clear"
+                                    [clearable]="false" [compareWith]="compareFn"
+                                    (change)="onScheduleUnitChange($event)" placeholder="Select the recurrence unit."
+                                    formControlName="everyUnit" class="ml-2">
+                                </ng-select>
+                            </div>
+                            <app-validation-message
+                                [control]="scheduleFormGroup.controls['everyAmount']"></app-validation-message>
+                            <app-validation-message
+                                [control]="scheduleFormGroup.controls['everyUnit']"></app-validation-message>
+                        </div>
+                        <div class="form-group">
+                            <label for="weeklyOptions" class="data-required">Weekly options</label>
+                            <ng-select #weeklyOptions [items]="allWeekDays" [multiple]="true" labelForId="weeklyOptions"
+                                [closeOnSelect]="false" [clearSearchOnAdd]="true" [searchable]="true" bindValue="value"
+                                bindLabel="key" clearAllText="Clear" [compareWith]="compareFn"
+                                placeholder="Select the days of the week the schedule will be executed."
+                                formControlName="weeklyOptions">
+                            </ng-select>
+                            <app-validation-message
+                                [control]="scheduleFormGroup.controls['weeklyOptions']"></app-validation-message>
+                        </div>
+                        <div formGroupName="monthlyOption">
+                            <div class="form-group">
+                                <label for="monthlyOptionOrdinal" class="data-required">Monthly options</label>
+                                <div class="form-inline">
+                                    <ng-select #monthlyOptionOrdinal [items]="allMonthlyOptionOrdinals"
+                                        [multiple]="false" labelForId="monthlyOptionOrdinal" [closeOnSelect]="true"
+                                        [clearSearchOnAdd]="true" [searchable]="true" bindValue="value" bindLabel="key"
+                                        clearAllText="Clear" [clearable]="false" [compareWith]="compareFn"
+                                        placeholder="Select the monthly recurrence option."
+                                        formControlName="ordinal"></ng-select>
+                                    <ng-select #monthlyOptionDay [items]="allMonthlyOptionDays" [multiple]="false"
+                                        labelForId="monthlyOptionDay" [closeOnSelect]="true" [clearSearchOnAdd]="true"
+                                        [searchable]="true" bindValue="value" bindLabel="key" clearAllText="Clear"
+                                        [clearable]="false" [compareWith]="compareFn"
+                                        placeholder="Select the day is going to be executed." formControlName="day"
+                                        class="ml-2"></ng-select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="startingAt">Not before</label>
+                            <input type="time" min="00:00" max="23:59" class="form-control w-auto"
+                                formControlName="startingAt" required>
+                            <app-validation-message
+                                [control]="scheduleFormGroup.controls['startingAt']"></app-validation-message>
+                        </div>
+                    </ng-template>
+                </div>
+                <div class="alert alert-primary" role="alert">
+                    <div class="text-mini"><strong>{{ getScheduleDescription() }}</strong></div>
+                    <div class="text-subtle">{{ getScheduleReferenceTimeStamp() }}</div>
+                    <div class="text-subtle">{{ getScheduleNextExecution() }}&nbsp;<strong>{{ getScheduledForNowText()
+                            }}</strong></div>
+                </div>
+            </mat-tab>
+        </mat-tab-group>
     </form>
 </div>
 
-        <!-- <pre>Is Dragging: {{ isDragging }}</pre>
-        <pre>Is Form Valid: {{ fh.form.valid }}</pre>
-        <pre>{{fh.form.value | json }}</pre> -->
+<!-- 
+<pre>Next exec calc: {{ getScheduleNextExecution(false) }}</pre>
+<pre>Is Dragging: {{ isDragging }}</pre>
+<pre>Is Form Valid: {{ fh.form.valid }}</pre>
+<pre>{{fh.value | json }}</pre>
+-->

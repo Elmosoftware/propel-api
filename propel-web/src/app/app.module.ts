@@ -84,6 +84,8 @@ import { SecurityService } from '../services/security.service';
 import { SecurityGuard } from '../services/security-guard';
 import { CoolSpinerComponent } from './cool-spiner/cool-spiner.component';
 import { DatabaseSecretComponent } from './credential/database-secret/database-secret.component';
+import { SystemJobsComponent } from './system-jobs/system-jobs.component';
+import { ObjectPoolEventStatsComponent } from './object-pool-event-stats/object-pool-event-stats.component';
 
 @NgModule({
     declarations: [
@@ -122,7 +124,9 @@ import { DatabaseSecretComponent } from './credential/database-secret/database-s
         UserAccountComponent,
         SearchUserAccountLineComponent,
         CoolSpinerComponent,
-        DatabaseSecretComponent
+        DatabaseSecretComponent,
+        SystemJobsComponent,
+        ObjectPoolEventStatsComponent
     ],
     imports: [
         BrowserModule,

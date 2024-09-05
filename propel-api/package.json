@@ -1,7 +1,7 @@
 {
   "productName": "Propel",
   "name": "propel-api",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Propel. Reach your servers!",
   "main": "index.js",
   "scripts": {
@@ -17,6 +17,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "cron": "^3.1.7",
     "dotenv": "^16.3.1",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",

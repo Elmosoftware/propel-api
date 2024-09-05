@@ -79,6 +79,7 @@ class Config {
         o.maxSize = Number(process.env.POOL_MAX_SIZE);
         o.preallocatedSize = Number(process.env.POOL_PRE_ALLOC)
         o.maxQueueSize = Number(process.env.POOL_QUEUE_SIZE)
+        o.statsEnabled = (String(process.env.POOL_STATS).toLowerCase() == "on")
         return o;
     }
 
@@ -195,6 +196,13 @@ class Config {
      */
     public get isLegacySecurityEnabled() : boolean {
         return (String(process.env.LEGACY_SECURITY).toLowerCase() == "on")
+    }
+
+    /**
+     * Boolean value indicating if the Workflows schedule feature is enabled.
+     */
+    public get workflowSchedulesEnabled() : boolean {
+        return (String(process.env.WORKFLOW_SCHEDULES).toLowerCase() == "on")
     }
     
     /**

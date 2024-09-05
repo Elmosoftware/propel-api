@@ -19,12 +19,15 @@ class Schemas {
             this.scriptParameter,
             this.parameterValue,
             this.workflowStep,
+            this.workflowSchedule,
+            this.workflowScheduleMonthlyOption,
             this.executionError,
             this.executionTarget,
             this.executionStep,
             this.secret,
             this.credential,
-            this.userSession
+            this.userSession,
+            this.objectPoolEvent
         ]
     }
 
@@ -268,7 +271,11 @@ class Schemas {
                         isRequired: true,
                         isArray: true
                     }),
-
+                new SchemaField("schedule", `Schedule to run.`,
+                    {
+                        type: this.workflowSchedule,
+                        isRequired: true
+                    }),
             ])
             .merge(this.auditedEntity)
             .setDescription("A Workflow represents a reusable collection of steps. Each one running a task in one or more target servers.")
@@ -284,10 +291,13 @@ class Schemas {
 
         return new SchemaDefinition("ExecutionLog", "ExecutionLogs", true)
             .setFields([
+                new SchemaField("execError", `Any error that prevents the Workflow to run.`,
+                    {
+                        type: this.executionError
+                    }),
                 new SchemaField("workflow", `Executed Workflow.`,
                     {
-                        type: this.workflow,
-                        isRequired: true
+                        type: this.workflow
                     }),
                 new SchemaField("startedAt", `Execution start timestamp (UTC).`,
                     {
@@ -314,6 +324,11 @@ class Schemas {
                         type: this.executionStep,
                         isArray: true,
                         isRequired: true
+                    }),
+                new SchemaField("runOnSchedule", `Boolean value indicating if the run was started by the System based on a Workflow schedule.`,
+                    {
+                        type: Boolean,
+                        isRequired: false
                     })
             ])
             .merge(this.entity)
@@ -404,6 +419,60 @@ class Schemas {
             ])
             .merge(this.auditedEntity)
             .setDescription("A Credential to be stored encrypted in the database and intended to be pass to the script for authentication purposes.")
+            .freeze();
+    }
+
+    /**
+     * **ObjectPoolEvent** schema definition.
+     * @extends Entity schema definition
+     */
+    get objectPoolEvent(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("ObjectPoolEvent", "ObjectPoolEvents", true)
+            .setFields([
+                new SchemaField("eventType", `Object pool event type name.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("timestamp", `Event timestamp.`,
+                    {
+                        type: Date,
+                        isRequired: true
+                    }),
+                new SchemaField("lockedObjects", `Amount of locked objects in the pool at the event time.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("totalObjects", `Total amount of objects, (locked and released), in the pool at the event time.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("poolSizeLimit", `Total amount of objects the pool is configured to allow.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("queuedRequests", `Amount of object request queued at the event time.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("queueSizeLimit", `Total anount of queued request allowed in the pool waiting for a released object.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("queueOverflowError", `It will be higher than 0 if a que overflow error was throw at the event time.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    })
+            ])
+            .merge(this.entity)
+            .setDescription("Object pool events.")
             .freeze();
     }
 
@@ -558,6 +627,92 @@ class Schemas {
                     })
             ])
             .setDescription("Represents one step of a complete workflow. Contains a reference to the task that is going to be executed")
+            .freeze();
+    }
+
+    /**
+     * **WorkflowSchedule** embedded schema definition.
+     * @implements WorkflowScheduleMonthlyOption embedded schema
+     */
+    get workflowSchedule(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("WorkflowSchedule", "WorkflowSchedules", false)
+            .setFields([
+                new SchemaField("enabled", `Indicates if the schedule is active.`,
+                    {
+                        type: Boolean,
+                        isRequired: true
+                    }),
+                new SchemaField("isRecurrent", `Indicates if the schedule will be executed more than once.`,
+                    {
+                        type: Boolean,
+                        isRequired: true
+                    }),
+                new SchemaField("onlyOn", `Execution date and time for a single execution schedule.`,
+                    {
+                        type: Date,
+                        isRequired: false
+                    }),
+                new SchemaField("everyAmount", `For a recurring schedule, this indicates how many ScheduleUnits between executions.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+                new SchemaField("everyUnit", `For a recurring schedule, this indicates the schedule unit of time.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("weeklyOptions", `For a recurring schedule, this indicates the weekly options.`,
+                    {
+                        type: Number,
+                        isArray: true,
+                        isRequired: true
+                    }),
+                new SchemaField("monthlyOption", `For a recurring schedule, this indicates the monthly options.`,
+                    {
+                        type: this.workflowScheduleMonthlyOption,
+                        isRequired: true
+                    }),
+                new SchemaField("startingAt", `For a recurring schedule, this indicates the schedule time of the day.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("lastExecution", `Last execution date and time.`,
+                    {
+                        type: Date,
+                        isRequired: false
+                    }),
+                new SchemaField("creationTS", `Date and time this schedule was created.`,
+                    {
+                        type: Date,
+                        isRequired: true
+                    })
+            ])
+            .setDescription("Represents a Workflow execution schedule")
+            .freeze();
+    }
+
+    /**
+     * **WorkflowScheduleMonthlyOption** embedded schema definition.
+     */
+    get workflowScheduleMonthlyOption(): Readonly<SchemaDefinition> {
+
+        return new SchemaDefinition("WorkflowScheduleMonthlyOption", "WorkflowScheduleMonthlyOptions", false)
+            .setFields([
+                new SchemaField("ordinal", `Indicates the monthly option ordinal.`,
+                    {
+                        type: String,
+                        isRequired: true
+                    }),
+                new SchemaField("day", `Indicates the monthly option day.`,
+                    {
+                        type: Number,
+                        isRequired: true
+                    }),
+            ])
+            .setDescription("Represents the monthly options of a Workflow schedule.")
             .freeze();
     }
 

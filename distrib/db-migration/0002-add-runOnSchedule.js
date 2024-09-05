@@ -16,48 +16,38 @@ try {
     db.auth(adu, adp);
 
     print(`${sep}`)
-    print(`Removing user secrets.`)
+    print(`Updating ExecutionLogs - Adding new attribute "runOnSchedule".`)
     print(`${sep}`)
     print(`Opening database.`);
     db = conn.getDB("Propel");
 
     //-----------------------------------------------------------------
 
-    print(`\r\nPatching UserAccounts collection.\r\n`)
-    collection = db.getCollection("UserAccounts");
+    print(`\r\nPatching ExecutionLogs collection.\r\n`)
+    collection = db.getCollection("ExecutionLogs");
     counter = 0;
 
     collection.find().forEach((doc) => {
         let alreadyPatched = true;
 
-        if (!(doc.secretId === undefined)) {
-            delete doc.secretId;
-            alreadyPatched = false;
-        }
-
-        if (!(doc.lastPasswordChange === undefined)) {
-            delete doc.lastPasswordChange;
-            alreadyPatched = false;
-        }
-
-        if (!(doc.mustReset === undefined)) {
-            delete doc.mustReset;
+        if (doc.runOnSchedule === undefined) {
+            doc.runOnSchedule = false;
             alreadyPatched = false;
         }
 
         if (!alreadyPatched) {
-            print(`Updating user "${doc.name}", ("${doc._id.toString()}") ...`)
+            print(`Updating ExecutionLog "${doc._id.toString()}" ...`)
             patchResult = collection.replaceOne({ _id: ObjectId(doc._id.toString()) }, doc)
             print(`Patch results: ${JSON.stringify(patchResult)}.`)
             counter++;
-            print(` -> The UserAccount document was updated.`)
+            print(` -> The ExecutionLog document was updated.`)
         }
         else {
-            print(` -> The UserAccount document was already updated, no patching required.`)
+            print(` -> The ExecutionLog document was already updated, no patching required.`)
         }
     });
 
-    print(`\r\n${counter} documents updated on collection "UserAccounts".\r\n`)
+    print(`\r\n${counter} documents updated on collection "ExecutionLog".\r\n`)
     print(`\r\nThe script is now finished.${sep}`)
 } catch (error) {
     print(`\n\nTHERE WAS AN ERROR: The Database migration process didn't finish successfully.

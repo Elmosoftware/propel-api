@@ -77,6 +77,13 @@ class ConfigValidator extends ValidatorBase {
             super._addError(`POOL_QUEUE_SIZE is not a number or is less than zero. Supplied value: "${process.env.POOL_QUEUE_SIZE}".`);
         }
 
+        if (!process.env.POOL_STATS) {
+            super._addError("POOL_STATS is required.");
+        }
+        else if(!(String(process.env.POOL_STATS).toLowerCase() == "on" || String(process.env.POOL_STATS).toLowerCase() == "off")) {
+            super._addError(`POOL_STATS possible values are "On" or "Off".`);
+        }
+
         if (!process.env.MAX_WORKFLOW_RESULTS_SIZE) {
             super._addError("MAX_WORKFLOW_RESULTS_SIZE is required.");
         }
@@ -142,6 +149,13 @@ class ConfigValidator extends ValidatorBase {
         }
         else if(!(String(process.env.LEGACY_SECURITY).toLowerCase() == "on" || String(process.env.LEGACY_SECURITY).toLowerCase() == "off")) {
             super._addError(`LEGACY_SECURITY possible values are "On" or "Off".`);
+        }
+
+        if (!process.env.WORKFLOW_SCHEDULES) {
+            super._addError("WORKFLOW_SCHEDULES is required.");
+        }
+        else if(!(String(process.env.WORKFLOW_SCHEDULES).toLowerCase() == "on" || String(process.env.WORKFLOW_SCHEDULES).toLowerCase() == "off")) {
+            super._addError(`WORKFLOW_SCHEDULES possible values are "On" or "Off".`);
         }
 
         return this;

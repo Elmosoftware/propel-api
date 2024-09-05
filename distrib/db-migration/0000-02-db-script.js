@@ -61,7 +61,7 @@ try {
         }, {
             name: "I_StartedAt",
             background: true,
-            expireAfterSeconds: 2592000  //1 month
+            expireAfterSeconds: 2592000  //1 month: : (60*60*24*30)
         })
         showIndexes(coll);
     }
@@ -95,7 +95,7 @@ try {
         }, {
             name: "I_StartedAt",
             background: true,
-            expireAfterSeconds: 2592000  //1 month
+            expireAfterSeconds: 2592000  //1 month: (60*60*24*30)
         })
         showIndexes(coll);
     }
@@ -324,6 +324,40 @@ try {
             name: "IU_EntityConstraint",
             unique: true,
             background: true
+        })
+        showIndexes(coll);
+    }
+    else {
+        print(`\r\n Collection "${collName}" already exists.`)
+    }
+
+    /**
+     * ObjectPoolEvents
+     */
+    collName = "ObjectPoolEvents"
+
+    if (!db.getCollectionNames().find((name) => name == collName)) {
+        print(`\n------------------------------------------------\nAdding collection "${collName}"`)
+        db.createCollection(collName);
+
+        print(`Creating indexes.`)
+        coll = db.getCollection(collName);
+
+        coll.createIndex({
+            _id: 1,
+            deletedOn: 1
+        }, {
+            name: "IU_EntityConstraint",
+            unique: true,
+            background: true
+        })
+
+        coll.createIndex({
+            timestamp: 1
+        }, {
+            name: "I_timestamp",
+            background: true,
+            expireAfterSeconds: 604800  //1 week: (60*60*24*7)
         })
         showIndexes(coll);
     }

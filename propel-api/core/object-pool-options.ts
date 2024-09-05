@@ -7,7 +7,8 @@ export class ObjectPoolOptions {
 
     public maxSize: number = ObjectPoolOptions.DEFAULT_MAX_SIZE;
     public preallocatedSize: number = Math.round(ObjectPoolOptions.DEFAULT_PREALLOCATED_PERC * this.maxSize);
-    public maxQueueSize: number = ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE;
+    public maxQueueSize: number = ObjectPoolOptions.DEFAULT_MAX_QUEUE_SIZE;
+    public statsEnabled: boolean = ObjectPoolOptions.DEFAULT_STATS_ENABLED;
 
     constructor() {
     }
@@ -29,7 +30,14 @@ export class ObjectPoolOptions {
     /**
      * Default @property maxQueueSize value.
      */
-    static get DEfAULT_MAX_QUEUE_SIZE(): number {
+    static get DEFAULT_MAX_QUEUE_SIZE(): number {
         return 100;
+    }
+
+    /**
+     * Default @property statsEnabled value.
+     */
+    static get DEFAULT_STATS_ENABLED(): boolean {
+        return true;
     }
 }

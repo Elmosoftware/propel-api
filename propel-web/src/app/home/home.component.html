@@ -1,7 +1,7 @@
 <div class="container-fluid">
 
     <!-- Totals -->
-    <div *ngIf="stats" class="row justify-content-center mt-3 font-weight-bold subtitle not-break text-center">
+    <div *ngIf="stats; else noStats" class="row justify-content-center mt-3 font-weight-bold subtitle not-break text-center">
         <div class="capsule py-2 my-2 rounded cursor-pointer" matTooltip="Total amount of workflows created.
 Click here to browse them." matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="below"
             (click)="goToBrowseWorkflows()">
@@ -28,6 +28,14 @@ Click here to browse them." (click)="goToBrowseCredentials()" matTooltipClass="t
             <i class="fas fa-key mr-2"></i>{{stats.totalCredentials}}
         </div>
     </div>
+    <ng-template #noStats>
+        <div *ngIf="!loadingResults" class="alert alert-dismissible fade show alert-info mt-2" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+            <strong>Application stats are on his way!</strong> As soon they are available, you will see them here.
+          </div>
+    </ng-template>
 
     <!-- Executions -->
     <div class="row justify-content-center mt-3">

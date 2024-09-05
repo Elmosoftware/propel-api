@@ -1,8 +1,11 @@
+import { EventEmitter } from "events";
+
 import { PropelError } from "../../propel-shared/core/propel-error";
 import { ErrorCodes } from "../../propel-shared/core/error-codes";
 import { logger } from "../services/logger-service";
 import { ObjectPoolOptions } from "./object-pool-options";
-import { ObjectPoolStats } from "./object-pool-stats";
+import { ObjectPoolEvent } from "../../propel-shared/models/object-pool-event";
+import { ObjectPoolEventType } from "../../propel-shared/models/object-pool-event-type";
 
 /**
  * Implementations can be reseted. Mean to flush all content and restore the state to some default state.
@@ -52,13 +55,16 @@ export class ObjectPool<T extends Resettable & Disposable> implements Disposable
     private _cb: Function;
     private _disposing: boolean = false;
     private _isDisposed: boolean = false;
+    private _eventEmitter = new EventEmitter();
 
     /**
      * Creates a new pool of T objects.
      * @param createInstanceCallback A Function that return a new instance of T.
      * @param options Object pool options.
      */
-    constructor(createInstanceCallback: Function, options?: ObjectPoolOptions) {
+    constructor(createInstanceCallback: Function, options?: ObjectPoolOptions, 
+        objectPoolEventListener?: Function) {
+
         this._opt = (!options) ? new ObjectPoolOptions() : options;
 
         if (!createInstanceCallback || typeof createInstanceCallback !== "function") {
@@ -72,7 +78,12 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         this._opt.preallocatedSize = (this._opt.preallocatedSize > this._opt.maxSize) ?
             Math.round(ObjectPoolOptions.DEFAULT_PREALLOCATED_PERC * this._opt.maxSize) : this._opt.preallocatedSize;
         this._opt.maxQueueSize = (this._opt.maxQueueSize && this._opt.maxQueueSize < 0) ?
-            ObjectPoolOptions.DEfAULT_MAX_QUEUE_SIZE : this._opt.maxQueueSize;
+            ObjectPoolOptions.DEFAULT_MAX_QUEUE_SIZE : this._opt.maxQueueSize;
+        
+        if(objectPoolEventListener) {
+            this._eventEmitter.addListener("data",
+                 (event: ObjectPoolEvent) => objectPoolEventListener(event));
+        }
 
         this._initialize();
     }
@@ -87,18 +98,8 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
     /**
      * Current object pool stats.
      */
-    get stats(): ObjectPoolStats {
-        let ret = new ObjectPoolStats();
-
-        ret.objectsAvailable = this._availableRepo.length;
-        ret.objectsLocked = this._lockedRepo.length;
-        ret.objectsCreated = ret.objectsAvailable + ret.objectsLocked;
-        ret.availableToGrow = (this._disposing) ? 0 : this._opt.maxSize - ret.objectsCreated; 
-        ret.queueSize = this._requestQueue.length;
-        ret.remainingQueueSpace = this._opt.maxQueueSize - ret.queueSize;
-        ret.canGrow = (ret.availableToGrow > 0);
-
-        return ret;
+    get stats(): ObjectPoolEvent {
+        return this._createEvent(ObjectPoolEventType.Info)
     }
 
     /**
@@ -117,7 +118,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
     get isDisposed() : boolean {
         return this._isDisposed;
     }
-
+    
     /**
      * Allows to aquire a resource from the list of available resource in the pool.
      * If there is no resource available and there is space to grow, the pool will create a
@@ -130,34 +131,45 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         return new Promise<T>((resolve, reject) => {
 
             let obj: T;
+            let poolFreeSpace: number = 0;
+            let queueFreeSpace: number = 0;
+
+            if (!this._disposing) {
+                poolFreeSpace = this._opt.maxSize - (this._availableRepo.length + this._lockedRepo.length)
+            }
+
+            queueFreeSpace = this._opt.maxQueueSize - this._requestQueue.length;
 
             if (this._disposing) {
                 reject(this._disposingError());
             }
             //If there is some objects available in the repo, we will take one of those:
-            else if (this.stats.objectsAvailable > 0) {
+            else if (this._availableRepo.length > 0) {
                 obj = (this._availableRepo.pop() as T);
                 this._lockedRepo.push(obj);
                 resolve(obj);
+                this._eventEmitter.emit("data", this._createEvent(ObjectPoolEventType.ObjectLocked))
             }
             //If there is no available objects, but we can create, we will add a new one:
-            else if (this.stats.canGrow) {
+            else if (poolFreeSpace > 0) {
                 obj = this._cb();
                 this._lockedRepo.push(obj);
                 resolve(obj);
+                this._eventEmitter.emit("data", this._createEvent(ObjectPoolEventType.ObjectAdded))
             }
             //If there is no available object and also the repo is full, (mean we can't create new instances), 
             //the only option is to queue the client request. In order to do so we need to check first if 
             //there is remaining space in the requests queue: 
-            else if (this.stats.remainingQueueSpace > 0) {
+            else if (queueFreeSpace > 0) {
                 //we will queue the request. As soon an istance is released will be assigned to the first 
                 //client in the queue.
                 this._requestQueue.push(resolve);
+                this._eventEmitter.emit("data", this._createEvent(ObjectPoolEventType.QueuedRequest))
             }
             //If the queue is also full of waiting clients, there is no option than throw an error.
             else {
-                reject(new PropelError(`ObjectPool memory queue overflow.\r\n${this.stats.toString()}`, 
-                    ErrorCodes.QueueOverflow));
+                reject(new PropelError(`ObjectPool memory queue overflow.`, ErrorCodes.QueueOverflow));
+                this._eventEmitter.emit("data", this._createEvent(ObjectPoolEventType.QueueOverflow))
             }
         });
     }
@@ -189,9 +201,10 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
                     this._lockedRepo.splice(i, 1); //Dropping it.
                     released = false;
                 }
-                else if (this.stats.queueSize > 0) {//If there is a pending request queued:
+                else if (this._requestQueue.length > 0) {//If there is a pending request queued:
                     //We extract and invoke the resolve function passing as argument for the object:
                     (this._requestQueue.shift() as Function)(item);
+                    this._eventEmitter.emit("data", this._createEvent(ObjectPoolEventType.UnqueuedRequest))
                 }
                 else {
                     //If there is no request waiting, we can finally release the resource.
@@ -210,6 +223,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         //to the list of available objects in the pool:
         if (released) {
             this._availableRepo.push(object);
+            this._eventEmitter.emit("data", this._createEvent(ObjectPoolEventType.ObjectReleased))
         }
     }
 
@@ -229,7 +243,7 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         
         let dispositions: Promise<any>[] = [];
 
-        logger.logDebug(`Object pool start disposing objects.\r\n${this.stats.toString()}`)
+        logger.logDebug(`Object pool start disposing objects.`)
         this._disposing = true;
         this._cb = () => {};
         this._requestQueue = [];
@@ -266,11 +280,26 @@ Received type is ${ typeof createInstanceCallback}, Is a null or undefined refer
         }
         
         this._disposing = false;
-        logger.logDebug(`Object pool was initialized.\r\n${this.stats.toString()}`);
+        logger.logDebug(`Object pool was initialized.`);
     }
 
     private _disposingError(): Error {
         return new PropelError(`ObjectPool is right now disposing objects. The Aquire or Release operations are now forbidden.
 All the objects in the pool will free his resources and been deleted.`);
+    }
+
+    private _createEvent(type: ObjectPoolEventType): ObjectPoolEvent  {
+        let event: ObjectPoolEvent = new ObjectPoolEvent()
+
+        event.eventType = type;
+        event.poolSizeLimit = this._opt.maxSize;
+        event.queueSizeLimit = this._opt.maxQueueSize;
+        
+        event.lockedObjects = this._lockedRepo.length;
+        event.totalObjects = event.lockedObjects + this._availableRepo.length;
+        event.queuedRequests = this._requestQueue.length;
+        event.queueOverflowError = (type == ObjectPoolEventType.QueueOverflow) ? 1 : 0
+
+        return event;
     }
 }

@@ -35,6 +35,9 @@ describe("Runner Class - execute()", () => {
         process.env.LOGGING_LEVEL = LogLevel.Error //Setting the logging level to "Error"
         //to void having a flood of logging messages during the test.
         //You can comment the line if you wouldlike to see extra details.
+        process.env.POOL_STATS = "off" //This is to prevent to log pool stats in the DB (private 
+        //method _handleObjectPoolEvent in the PowerSHellServicePool), which is going to cause errors 
+        //and is difficult to mock.
         
         runner = new Runner();
 
@@ -482,12 +485,13 @@ describe("Runner Class - execute()", () => {
 
         runner.execute(data, st)
             .then((msg: WebsocketMessage<ExecutionStats>) => {
-                expect(msg.context?.logId).toEqual("Don't expect this call!")
+                expect(msg.context?.logId).toEqual("newid")
+                expect(msg.context?.logStatus).toEqual(ExecutionStatus.Faulty)
                 done();
             })
             .catch((err) => {
                 //Workflow must abort if at least one runtime parametrr is missing:
-                expect(err.message).toContain("There was an error checking the runtime parameters.")
+                expect(err).toEqual("Is not expected an error in this call!!!!")
                 done();
             })
 

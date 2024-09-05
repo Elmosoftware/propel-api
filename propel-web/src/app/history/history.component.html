@@ -1,7 +1,13 @@
 <a id="topSearch"></a>
 <div class="container mt-4">
+    <!-- Tabs are not displaying content here, we are using only the buttons. -->
+    <mat-tab-group class="mt-2" [selectedIndex]="activeTab" (selectedIndexChange)="activeTabChanged($event)"
+        backgroundColor="primary" color="primary">
+        <mat-tab label="Manual" />
+        <mat-tab label="Scheduled" />
+    </mat-tab-group>
     <form [formGroup]="fg">
-        <div class="row justify-content-around">
+        <div class="row justify-content-around mt-2">
             <div class="custom-control custom-radio col-auto mx-2">
                 <input type="radio" id="interval1" formControlName="interval" class="custom-control-input"
                     [value]="intervalTypeEnum.LastHalfHour">
@@ -29,16 +35,25 @@
             </div>
         </div>
     </form>
-
-    <div class="mt-4" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
+    <div class="mt-2" *ngIf="svcInfScroll && svcInfScroll.model && svcInfScroll.model.length > 0; else NoData"
         infinite-scrolling [scrollWindow]="true" (scrollEnd)="onScrollEndHandler($event)">
-        <ul class="list-group">
+        <div *ngIf="activeTab == 1 && showWarning && !apiStatus?.workflowSchedulesEnabled" 
+            class="alert alert-dismissible fade show alert-warning mt-2" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="hideWarning()">
+                <span aria-hidden="true">×</span>
+            </button>
+            <strong>Scheduled executions are disabled right now!</strong>
+            Propel API is set to disable scheduled executions. So please don't expect new 
+            entries in the history for automatically scheduled executions.
+        </div>
+
+        <ul class="list-group mt-2">
             <li class="list-group-item mx-3" *ngFor="let item of svcInfScroll.model">
                 <div class="row">
                     <app-status-icon size="small" [status]="item.log.status" class="mr-2"></app-status-icon>
                     <a href="javascript:void(0)" (click)="goToResults(item.log._id)">
                         {{ getWorkflowName(item) }}</a>
-                    <button *ngIf="!item.log.workflow.isQuickTask" 
+                    <button *ngIf="item.log.workflow && !item.log.workflow?.isQuickTask" 
                         class="btn button-icon-small icon-edit-subtle ml-2"
                         type="button" (click)="goToEditWorkflow(item.log.workflow._id)" 
                         [matTooltip]="getWorkflowNameTooltip(item)"
@@ -52,20 +67,25 @@
                             matTooltipPosition="right" [innerHtml]="getTimeStamp(item)"></div>
                     </div>
                     <div class="col-auto ml-auto text-subtle">
-                        <div class="mx-2 d-inline" [matTooltip]="item.durationTooltip"
+                        <div class="mx-2 d-inline icon-stop-watch" 
+                            [matTooltip]="item.durationTooltip"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
-                            <i class="fas fa-stopwatch"></i>
                             <span class="mx-1">{{item.duration}}</span>
                         </div>
-                        <div class="mx-2 d-inline" [matTooltip]="item.stepsAmountTooltip"
+                        <div class="mx-2 d-inline icon-numbered-list" 
+                            [matTooltip]="item.stepsAmountTooltip"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
-                            <i class="fas fa-list-ol"></i>
                             <span class="mx-1">{{item.stepsAmount}}</span>
                         </div>
-                        <div class="mx-2 d-inline" [matTooltip]="item.targetsAmountTooltip"
+                        <div *ngIf="item.targetsAmount !== '0'" class="mx-2 d-inline icon-targets" 
+                            [matTooltip]="item.targetsAmountTooltip"
                             matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
-                            <i class="fas fa-server"></i>
                             <span class="mx-1">{{item.targetsAmount}}</span>
+                        </div>
+                        <div *ngIf="item.hasActiveSchedule" class="mx-2 d-inline icon-schedule" 
+                            [matTooltip]="item.scheduleTooltip"
+                            matTooltipClass="tooltipsWithBreakLines" matTooltipPosition="above">
+                            <span class="mx-1">{{item.scheduleDescription}}</span>
                         </div>
                     </div>
                 </div>
@@ -88,8 +108,7 @@
         <div *ngIf="svcInfScroll && this.fg.enabled" class="row justify-content-center mr-0">
             <div class="col col-lg-8 mt-4">
                 <div class="alert fade show alert-info" role="alert">
-                    <strong>There is no executions on that interval.</strong>&nbsp;Please try with a broader timeframe
-                    or one closer to today.
+                    <strong>There is no executions on that interval.</strong>&nbsp;Please try with a broader timeframe.
                 </div>
             </div>
         </div>

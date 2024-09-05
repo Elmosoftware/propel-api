@@ -29,6 +29,11 @@ export class APIStatus {
      */
     poolStats!: any;
 
+    /**
+     * Indicates if the Workflow Schedules feature is enabled in the API.
+     */
+    workflowSchedulesEnabled!: boolean
+
     constructor() {
     
     }

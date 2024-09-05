@@ -20,15 +20,23 @@ export class RunnerServiceData {
     public runtimeParameters: RuntimeParameters[] = []
 
     /**
+     * Boolean value that indicates if the run was initiated by the System based on a Workflow schedule.
+     */
+    public runOnSchedule: boolean = false;
+
+    /**
      * Parameterized constructor
      * @param workflowId Identifier of the Workflow or Quick task to run.
      * @param runtimeParameters Optional collection of runtime parameters.
+     * @param runOnSchedule Optional boolean value indicating if the execution will be 
+     * marked as initiated by a Schedule and not manually started. By default will be "false", (manual run).
      */
-    constructor(workflowId?: string, runtimeParameters?: RuntimeParameters[]) {
+    constructor(workflowId?: string, runtimeParameters?: RuntimeParameters[], runOnSchedule: boolean = false) {
         this.workflowId = String(workflowId ?? this.workflowId)
         if (runtimeParameters && Array.isArray(runtimeParameters)) {
             this.runtimeParameters = new Array(...runtimeParameters);
         }
+        this.runOnSchedule = runOnSchedule
     }
 
     /**
@@ -42,6 +50,7 @@ invalid format.`);
 
         this.workflowId = String(obj.workflowId);
         this.runtimeParameters = new Array(...obj.runtimeParameters);
+        this.runOnSchedule = Boolean(obj.runOnSchedule)
     }
 
     getParameter(stepIndex: number, parameterName: string): ParameterValue | undefined {
